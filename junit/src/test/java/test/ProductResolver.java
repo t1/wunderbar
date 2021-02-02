@@ -21,7 +21,7 @@ public class ProductResolver {
         return products.product(item.getProductId());
     }
 
-    @GraphQlClientApi(endpoint = "http://localhost:8180/graphql")
+    @GraphQlClientApi(endpoint = "dummy")
     interface Products {
         Product product(String id);
     }

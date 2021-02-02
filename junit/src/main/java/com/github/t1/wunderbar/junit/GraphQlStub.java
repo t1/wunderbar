@@ -6,6 +6,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.Singular;
 import lombok.ToString;
+import org.eclipse.microprofile.graphql.Name;
 
 import javax.json.bind.Jsonb;
 import javax.json.bind.JsonbBuilder;
@@ -33,7 +34,7 @@ class GraphQlStub extends Stub {
         exchange.getResponseHeaders().put(CONTENT_TYPE, APPLICATION_JSON);
         var responseBuilder = GraphQlResponse.builder();
         if (response != null)
-            responseBuilder.data(Map.of("product", response)); // TODO get name from request
+            responseBuilder.data(Map.of(dataName(), response));
         if (exception != null)
             responseBuilder.error(GraphQlError.builder()
                 .message(exception.getMessage())
@@ -41,6 +42,23 @@ class GraphQlStub extends Stub {
                 .build());
         var body = JSONB.toJson(responseBuilder.build());
         exchange.getResponseSender().send(body);
+    }
+
+    private String dataName() {
+        if (method.isAnnotationPresent(Name.class))
+            return method.getAnnotation(Name.class).value();
+        String name = method.getName();
+        if (isGetter(name))
+            return lowerFirst(name.substring(3));
+        return name;
+    }
+
+    private boolean isGetter(String name) {
+        return name.startsWith("get") && name.length() > 3 && Character.isUpperCase(name.charAt(3));
+    }
+
+    private String lowerFirst(String name) {
+        return Character.toLowerCase(name.charAt(0)) + name.substring(1);
     }
 
     private String errorCode() { return camelToKebab(exception.getClass().getSimpleName()); }

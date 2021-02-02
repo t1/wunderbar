@@ -4,8 +4,11 @@ import com.github.t1.wunderbar.junit.JUnitWunderBarException;
 import com.github.t1.wunderbar.junit.Service;
 import com.github.t1.wunderbar.junit.SystemUnderTest;
 import com.github.t1.wunderbar.junit.WunderBarExtension;
+import io.smallrye.graphql.client.typesafe.api.GraphQlClientApi;
 import io.smallrye.graphql.client.typesafe.api.GraphQlClientException;
+import org.eclipse.microprofile.graphql.Name;
 import org.eclipse.microprofile.rest.client.inject.RegisterRestClient;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import test.ProductResolver.Item;
@@ -27,13 +30,45 @@ import static org.assertj.core.api.BDDAssertions.then;
 @WunderBarExtension
 class ProductResolverTest {
     @Service Products products;
+    @Service NamedProducts namedProducts;
+    @Service ProductsGetter productsGetter;
     @SystemUnderTest ProductResolver resolver;
+
+    @GraphQlClientApi
+    interface NamedProducts {
+        @Name("p")
+        Product productById(String id);
+    }
+
+    @GraphQlClientApi
+    interface ProductsGetter {
+        Product getProduct(String id);
+    }
 
     @Test void shouldResolveProduct() {
         var givenProduct = Product.builder().id("x").name("some-product-name").build();
         given(products.product(givenProduct.getId())).willReturn(givenProduct);
 
         var resolvedProduct = resolver.product(Item.builder().productId(givenProduct.getId()).build());
+
+        then(resolvedProduct).usingRecursiveComparison().isEqualTo(givenProduct);
+    }
+
+    @Disabled("https://github.com/smallrye/smallrye-graphql/issues/624")
+    @Test void shouldResolveNamedProductMethod() {
+        var givenProduct = Product.builder().id("x").name("some-product-name").build();
+        given(namedProducts.productById(givenProduct.getId())).willReturn(givenProduct);
+
+        var resolvedProduct = namedProducts.productById(givenProduct.getId());
+
+        then(resolvedProduct).usingRecursiveComparison().isEqualTo(givenProduct);
+    }
+
+    @Test void shouldResolveProductGetter() {
+        var givenProduct = Product.builder().id("x").name("some-product-name").build();
+        given(productsGetter.getProduct(givenProduct.getId())).willReturn(givenProduct);
+
+        var resolvedProduct = productsGetter.getProduct(givenProduct.getId());
 
         then(resolvedProduct).usingRecursiveComparison().isEqualTo(givenProduct);
     }
