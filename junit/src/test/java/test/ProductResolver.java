@@ -28,6 +28,7 @@ public class ProductResolver {
 
     @Getter @Setter @ToString @NoArgsConstructor
     @Builder(toBuilder = true) @AllArgsConstructor(access = PRIVATE)
+    public // Yasson requires the POJO to be `public`
     static class Product {
         @Id String id;
         String name;

@@ -1,6 +1,7 @@
-package com.github.t1.bar.junit;
+package com.github.t1.wunderbar.junit;
 
 import lombok.SneakyThrows;
+import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.extension.AfterEachCallback;
 import org.junit.jupiter.api.extension.BeforeEachCallback;
 import org.junit.jupiter.api.extension.Extension;
@@ -17,19 +18,20 @@ import java.util.Objects;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
 
-class BarJUnit implements Extension, BeforeEachCallback, AfterEachCallback {
+@Slf4j
+class WunderBarJUnit implements Extension, BeforeEachCallback, AfterEachCallback {
 
     private TestInstances testInstances;
-    private final List<Object> mocks = new ArrayList<>();
+    private final List<Object> proxies = new ArrayList<>();
     private final List<Stub> stubs = new ArrayList<>();
     private final List<Stub> invocations = new ArrayList<>();
 
     @Override public void beforeEach(ExtensionContext context) {
         this.testInstances = context.getRequiredTestInstances();
 
-        forEach(Service.class, this::mock);
+        forEach(Service.class, this::proxy);
 
-        forEach(SUT.class, this::initSut);
+        forEach(SystemUnderTest.class, this::initSut);
     }
 
     private void forEach(Class<? extends Annotation> annotationClass, Consumer<Field> action) {
@@ -39,33 +41,35 @@ class BarJUnit implements Extension, BeforeEachCallback, AfterEachCallback {
             .forEach(action);
     }
 
-    private void mock(Field field) {
-        Object mock = createMock(field.getType());
-        setField(instanceFor(field), field, mock);
-        this.mocks.add(mock);
+    private void proxy(Field field) {
+        var proxy = createProxy(field.getType());
+        setField(instanceFor(field), field, proxy);
+        this.proxies.add(proxy);
     }
 
     private Object instanceFor(Field field) {
         return testInstances.findInstance(field.getDeclaringClass()).orElseThrow();
     }
 
-    private <T> T createMock(Class<T> type) {
+    private <T> T createProxy(Class<T> type) {
         return type.cast(Proxy.newProxyInstance(getClassLoader(), new Class[]{type}, this::proxyInvoked));
     }
 
     private static ClassLoader getClassLoader() {
-        ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
+        var classLoader = Thread.currentThread().getContextClassLoader();
         return (classLoader == null) ? ClassLoader.getSystemClassLoader() : classLoader;
     }
 
     private Object proxyInvoked(Object proxy, Method method, Object... args) throws Exception {
-        for (Stub stub : stubs)
+        if (args == null) args = new Object[0];
+
+        for (var stub : stubs)
             if (stub.matches(method, args))
                 return invokeStub(stub);
 
-        Stub stub = new Stub(method, args);
+        var stub = Stub.on(method, args);
         stubs.add(stub);
-        BarOngoingStubbing.stub = stub;
+        OngoingStubbing.stub = stub;
 
         return null;
     }
@@ -77,33 +81,35 @@ class BarJUnit implements Extension, BeforeEachCallback, AfterEachCallback {
 
 
     private void initSut(Field field) {
-        Object testInstance = instanceFor(field);
+        var testInstance = instanceFor(field);
         if (getField(testInstance, field) == null)
             setField(testInstance, field, newInstance(field));
-        Object sutInstance = getField(testInstance, field);
+        var systemUnderTest = getField(testInstance, field);
         Stream.of(field.getType().getDeclaredFields())
             .filter(Objects::nonNull)
-            .forEach(targetField -> injectMock(sutInstance, targetField));
+            .forEach(targetField -> injectProxy(systemUnderTest, targetField));
     }
 
-    private void injectMock(Object instance, Field field) {
-        mocks.stream()
-            .filter(mock -> field.getType().isAssignableFrom(mock.getClass()))
-            .forEach(mock -> setField(instance, field, mock));
+    private void injectProxy(Object instance, Field field) {
+        proxies.stream()
+            .filter(proxy -> field.getType().isAssignableFrom(proxy.getClass()))
+            .forEach(proxy -> setField(instance, field, proxy));
     }
 
 
     @Override public void afterEach(ExtensionContext context) {
-        if (BarOngoingStubbing.stub != null)
-            throw new JUnitBarException("unfinished stubbing of " + BarOngoingStubbing.stub);
+        if (OngoingStubbing.stub != null)
+            throw new JUnitWunderBarException("unfinished stubbing of " + OngoingStubbing.stub);
+
+        proxies.clear();
 
         if (!invocations.isEmpty()) {
-            System.out.println("Invocations in " + context.getDisplayName());
-            invocations.forEach(invocation -> System.out.println("- " + invocation));
+            log.info("Invocations in {}", context.getDisplayName());
+            invocations.forEach(invocation -> log.info("- {}", invocation));
         }
-
         invocations.clear();
-        mocks.clear();
+
+        stubs.forEach(Stub::close);
         stubs.clear();
     }
 
