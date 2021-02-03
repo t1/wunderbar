@@ -8,7 +8,6 @@
         <groupId>com.github.t1</groupId>
         <artifactId>wunderbar</artifactId>
         <version>1.0-SNAPSHOT</version>
-        <relativePath>../pom.xml</relativePath>
     </parent>
 
     <artifactId>wunderbar.junit</artifactId>
@@ -17,7 +16,7 @@
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
-            <version>1.18.18</version>
+            <version>${lombok.version}</version>
             <scope>provided</scope>
         </dependency>
 
