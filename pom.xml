@@ -16,6 +16,7 @@
         <maven.compiler.target>11</maven.compiler.target>
         <maven.compiler.parameters>true</maven.compiler.parameters>
         <project.build.sourceEncoding>utf-8</project.build.sourceEncoding>
+        <project.reporting.outputEncoding>utf-8</project.reporting.outputEncoding>
 
         <smallrye-graphql.version>1.0.21</smallrye-graphql.version>
         <resteasy.version>4.6.0.Final</resteasy.version>
@@ -29,5 +30,18 @@
 
     <build>
         <defaultGoal>install</defaultGoal>
+        <plugins>
+            <plugin>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.8.1</version>
+                <configuration>
+                    <parameters>true</parameters><!-- see https://youtrack.jetbrains.com/issue/IDEA-201496 -->
+                </configuration>
+            </plugin>
+            <plugin>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>2.22.2</version>
+            </plugin>
+        </plugins>
     </build>
 </project>
