@@ -1,9 +1,7 @@
 package test;
 
-import com.github.t1.wunderbar.junit.JUnitWunderBarException;
 import com.github.t1.wunderbar.junit.Service;
 import com.github.t1.wunderbar.junit.SystemUnderTest;
-import com.github.t1.wunderbar.junit.WunderBarExtension;
 import io.smallrye.graphql.client.typesafe.api.GraphQlClientApi;
 import io.smallrye.graphql.client.typesafe.api.GraphQlClientException;
 import org.eclipse.microprofile.graphql.Name;
@@ -27,8 +25,7 @@ import static org.assertj.core.api.Assertions.catchThrowable;
 import static org.assertj.core.api.Assertions.catchThrowableOfType;
 import static org.assertj.core.api.BDDAssertions.then;
 
-@WunderBarExtension
-class ProductResolverTest {
+abstract class ProductResolverTest {
     @Service Products products;
     @Service NamedProducts namedProducts;
     @Service ProductsGetter productsGetter;
@@ -106,16 +103,14 @@ class ProductResolverTest {
         @Test void shouldFailToCallGivenWithoutCallToProxyNull() {
             var throwable = catchThrowable(() -> given(null).willReturn(null));
 
-            then(throwable).isInstanceOf(JUnitWunderBarException.class)
-                .hasMessage("call `given` only on the response object of a proxy (invocation)");
+            then(throwable).hasMessage("call `given` only on the response object of a proxy (invocation)");
         }
 
         @Test void shouldFailToCallGivenWithoutCallToProxyNonNull() {
             @SuppressWarnings("ConstantConditions")
             var throwable = catchThrowable(() -> given(1L).willReturn(null));
 
-            then(throwable).isInstanceOf(JUnitWunderBarException.class)
-                .hasMessage("call `given` only once and only on the response object of a proxy (null)");
+            then(throwable).hasMessage("call `given` only once and only on the response object of a proxy (null)");
         }
 
         @Test void shouldFailToCallTheSameGivenTwice() {
@@ -124,8 +119,7 @@ class ProductResolverTest {
 
             var throwable = catchThrowable(() -> given(products.product(givenProduct.getId())).willReturn(givenProduct));
 
-            then(throwable).isInstanceOf(JUnitWunderBarException.class)
-                .hasMessage("call `given` only once and only on the response object of a proxy (null)");
+            then(throwable).hasMessage("call `given` only once and only on the response object of a proxy (null)");
         }
     }
 
@@ -136,8 +130,7 @@ class ProductResolverTest {
         @Test void shouldFailToRecognizeTechnology() {
             var throwable = catchThrowable(() -> given(unrecognizableTechnologyService.call()).willReturn(null));
 
-            then(throwable).isInstanceOf(JUnitWunderBarException.class)
-                .hasMessage("no technology recognized on " + UnrecognizableTechnologyService.class);
+            then(throwable).hasMessage("no technology recognized on " + UnrecognizableTechnologyService.class);
         }
 
         @Test void shouldCallRestService() {

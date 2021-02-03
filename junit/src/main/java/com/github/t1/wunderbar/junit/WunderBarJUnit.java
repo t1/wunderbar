@@ -17,6 +17,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
+import java.util.stream.Stream.Builder;
 
 @Slf4j
 class WunderBarJUnit implements Extension, BeforeEachCallback, AfterEachCallback {
@@ -36,9 +37,16 @@ class WunderBarJUnit implements Extension, BeforeEachCallback, AfterEachCallback
 
     private void forEach(Class<? extends Annotation> annotationClass, Consumer<Field> action) {
         testInstances.getAllInstances().stream()
-            .flatMap(instance -> Stream.of(instance.getClass().getDeclaredFields()))
+            .flatMap(this::allFields)
             .filter(field -> field.isAnnotationPresent(annotationClass))
             .forEach(action);
+    }
+
+    private Stream<Field> allFields(Object instance) {
+        Builder<Field> builder = Stream.builder();
+        for (Class<?> c = instance.getClass(); c != null; c = c.getSuperclass())
+            Stream.of(c.getDeclaredFields()).forEach(builder::add);
+        return builder.build();
     }
 
     private void proxy(Field field) {
@@ -60,7 +68,7 @@ class WunderBarJUnit implements Extension, BeforeEachCallback, AfterEachCallback
         return (classLoader == null) ? ClassLoader.getSystemClassLoader() : classLoader;
     }
 
-    private Object proxyInvoked(Object proxy, Method method, Object... args) throws Exception {
+    private Object proxyInvoked(@SuppressWarnings("unused") Object proxy, Method method, Object... args) throws Exception {
         if (args == null) args = new Object[0];
 
         for (var stub : stubs)

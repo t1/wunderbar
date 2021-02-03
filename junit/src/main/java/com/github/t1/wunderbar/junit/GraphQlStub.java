@@ -23,7 +23,7 @@ class GraphQlStub extends Stub {
 
     private final HttpServer server = new HttpServer(this::handleRequest);
 
-    public GraphQlStub(Method method, Object... args) { super(method, args); }
+    GraphQlStub(Method method, Object... args) { super(method, args); }
 
     @Override Object invoke() throws Exception {
         var client = GraphQlClientBuilder.newBuilder().endpoint(server.baseUri()).build(method.getDeclaringClass());

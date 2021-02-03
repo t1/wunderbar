@@ -13,12 +13,12 @@ import static io.undertow.util.Headers.CONTENT_TYPE;
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
 
 @Slf4j
-public class RestStub extends Stub {
+class RestStub extends Stub {
     private static final Jsonb JSONB = JsonbBuilder.create();
 
     private final HttpServer server = new HttpServer(this::handleRequest);
 
-    public RestStub(Method method, Object[] args) { super(method, args); }
+    RestStub(Method method, Object[] args) { super(method, args); }
 
     @Override Object invoke() throws Exception {
         var client = RestClientBuilder.newBuilder().baseUri(server.baseUri()).build(method.getDeclaringClass());

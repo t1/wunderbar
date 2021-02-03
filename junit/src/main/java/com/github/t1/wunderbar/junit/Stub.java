@@ -13,7 +13,7 @@ import java.util.Arrays;
 
 @RequiredArgsConstructor @ToString
 abstract class Stub implements Closeable {
-    public static Stub on(Method method, Object... args) {
+    static Stub on(Method method, Object... args) {
         var declaringClass = method.getDeclaringClass();
         if (declaringClass.isAnnotationPresent(GraphQlClientApi.class))
             return new GraphQlStub(method, args);
