@@ -10,6 +10,10 @@ import java.io.Closeable;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Arrays;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
+import static java.util.stream.Collectors.joining;
 
 @RequiredArgsConstructor @ToString
 abstract class Stub implements Closeable {
@@ -52,4 +56,9 @@ abstract class Stub implements Closeable {
 
     // default implementation and without `throws IOException`
     @Override public void close() {}
+
+    String name() {
+        return method.toGenericString() +
+            Stream.of(args).map(Object::toString).collect(joining(", ", " [", "]"));
+    }
 }

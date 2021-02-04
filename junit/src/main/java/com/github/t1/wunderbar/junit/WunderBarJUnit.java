@@ -2,16 +2,21 @@ package com.github.t1.wunderbar.junit;
 
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
+import org.junit.jupiter.api.extension.AfterAllCallback;
 import org.junit.jupiter.api.extension.AfterEachCallback;
 import org.junit.jupiter.api.extension.BeforeEachCallback;
 import org.junit.jupiter.api.extension.Extension;
 import org.junit.jupiter.api.extension.ExtensionContext;
 import org.junit.jupiter.api.extension.TestInstances;
+import org.mockito.BDDMockito;
+import org.mockito.Mockito;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
+import java.time.Duration;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -19,26 +24,46 @@ import java.util.function.Consumer;
 import java.util.stream.Stream;
 import java.util.stream.Stream.Builder;
 
+import static java.time.temporal.ChronoUnit.NANOS;
+import static java.util.Locale.ROOT;
+
 @Slf4j
-class WunderBarJUnit implements Extension, BeforeEachCallback, AfterEachCallback {
+class WunderBarJUnit implements Extension, BeforeEachCallback, AfterEachCallback, AfterAllCallback {
+    private static WunderBarExtension settings;
 
     private TestInstances testInstances;
     private final List<Object> proxies = new ArrayList<>();
     private final List<Stub> stubs = new ArrayList<>();
     private final List<Stub> invocations = new ArrayList<>();
+    private Instant start;
 
     @Override public void beforeEach(ExtensionContext context) {
         this.testInstances = context.getRequiredTestInstances();
+        if (settings == null) init();
 
-        forEach(Service.class, this::proxy);
+        forEachField(Service.class, this::proxy);
 
-        forEach(SystemUnderTest.class, this::initSut);
+        forEachField(SystemUnderTest.class, this::initSut);
+
+        log.info("==================== start {}", context.getDisplayName());
+        start = Instant.now();
     }
 
-    private void forEach(Class<? extends Annotation> annotationClass, Consumer<Field> action) {
+    private void init() {
+        settings = testInstances.getAllInstances().stream()
+            .map(Object::getClass)
+            .filter(testClass -> testClass.isAnnotationPresent(WunderBarExtension.class))
+            .findFirst()
+            .map(testClass -> testClass.getAnnotation(WunderBarExtension.class))
+            .orElseThrow(() -> new JUnitWunderBarException("annotation not found: " + WunderBarExtension.class.getName()));
+        Bar.bar = new Bar();
+        log.info("start {} tests", settings.level().name().toLowerCase(ROOT));
+    }
+
+    private void forEachField(Class<? extends Annotation> annotationType, Consumer<Field> action) {
         testInstances.getAllInstances().stream()
             .flatMap(this::allFields)
-            .filter(field -> field.isAnnotationPresent(annotationClass))
+            .filter(field -> field.isAnnotationPresent(annotationType))
             .forEach(action);
     }
 
@@ -71,6 +96,21 @@ class WunderBarJUnit implements Extension, BeforeEachCallback, AfterEachCallback
     private Object proxyInvoked(@SuppressWarnings("unused") Object proxy, Method method, Object... args) throws Exception {
         if (args == null) args = new Object[0];
 
+        switch (settings.level()) {
+            case UNIT:
+                return handleUnitTest(method, args);
+            case INTEGRATION:
+                return handleIntegrationTest(method, args);
+        }
+        throw new UnsupportedOperationException("unreachable");
+    }
+
+    private Object handleUnitTest(Method method, Object... args) {
+        BDDMockito.given(method);
+        return null; // Mockito.mock(type);
+    }
+
+    private Object handleIntegrationTest(Method method, Object[] args) throws Exception {
         for (var stub : stubs)
             if (stub.matches(method, args))
                 return invokeStub(stub);
@@ -119,6 +159,8 @@ class WunderBarJUnit implements Extension, BeforeEachCallback, AfterEachCallback
 
         stubs.forEach(Stub::close);
         stubs.clear();
+
+        log.info("{} took {} ms", context.getDisplayName(), Duration.between(start, Instant.now()).get(NANOS) / 1_000_000);
     }
 
 
@@ -137,5 +179,10 @@ class WunderBarJUnit implements Extension, BeforeEachCallback, AfterEachCallback
     private static void setField(Object instance, Field field, Object value) {
         field.setAccessible(true);
         field.set(instance, value);
+    }
+
+    @Override public void afterAll(ExtensionContext context) {
+        settings = null;
+        Bar.bar = null;
     }
 }
