@@ -10,12 +10,12 @@ import com.github.t1.wunderbar.junit.WunderBarExtension;
 import io.smallrye.graphql.client.typesafe.api.GraphQlClientException;
 import org.junit.jupiter.api.Test;
 
-import static com.github.t1.wunderbar.junit.OngoingStubbing.given;
+import static com.github.t1.wunderbar.junit.ExpectedResponseBuilder.given;
 import static org.assertj.core.api.Assertions.catchThrowableOfType;
 import static org.assertj.core.api.BDDAssertions.then;
 
 @WunderBarExtension
-class ProductsGraphQlResolverTest {
+class ProductsGraphQlResolverIT {
     @Service Products products;
     @SystemUnderTest ProductsGraphQlResolver resolver;
 

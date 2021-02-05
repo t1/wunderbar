@@ -3,9 +3,7 @@ package test;
 import com.github.t1.wunderbar.junit.Service;
 import com.github.t1.wunderbar.junit.SystemUnderTest;
 import io.smallrye.graphql.client.typesafe.api.GraphQlClientApi;
-import io.smallrye.graphql.client.typesafe.api.GraphQlClientException;
 import org.eclipse.microprofile.graphql.Name;
-import org.eclipse.microprofile.rest.client.inject.RegisterRestClient;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -13,22 +11,15 @@ import test.ProductResolver.Item;
 import test.ProductResolver.Product;
 import test.ProductResolver.Products;
 
-import javax.ws.rs.ForbiddenException;
-import javax.ws.rs.GET;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.WebApplicationException;
-
-import static com.github.t1.wunderbar.junit.OngoingStubbing.given;
-import static javax.ws.rs.core.Response.Status.FORBIDDEN;
+import static com.github.t1.wunderbar.junit.ExpectedResponseBuilder.given;
 import static org.assertj.core.api.Assertions.catchThrowable;
-import static org.assertj.core.api.Assertions.catchThrowableOfType;
 import static org.assertj.core.api.BDDAssertions.then;
 
 abstract class ProductResolverTest {
     @Service Products products;
     @Service NamedProducts namedProducts;
     @Service ProductsGetter productsGetter;
+    @Service ReturnTypesService returnTypesService;
     @SystemUnderTest ProductResolver resolver;
 
     @GraphQlClientApi
@@ -51,7 +42,6 @@ abstract class ProductResolverTest {
         then(resolvedProduct).usingRecursiveComparison().isEqualTo(givenProduct);
     }
 
-    @Disabled("https://github.com/smallrye/smallrye-graphql/issues/624")
     @Test void shouldResolveNamedProductMethod() {
         var givenProduct = Product.builder().id("x").name("some-product-name").build();
         given(namedProducts.productById(givenProduct.getId())).willReturn(givenProduct);
@@ -87,12 +77,12 @@ abstract class ProductResolverTest {
         given(products.product("x")).willThrow(new RuntimeException("product x not found"));
         var item = Item.builder().productId("x").build();
 
-        var throwable = catchThrowableOfType(() -> resolver.product(item), GraphQlClientException.class);
+        var throwable = catchThrowable(() -> resolver.product(item));
 
-        then(throwable.getErrors()).hasSize(1);
-        var error = throwable.getErrors().get(0);
-        then(error.getMessage()).isEqualTo("product x not found");
+        failsWith(throwable, "product x not found");
     }
+
+    abstract void failsWith(Throwable throwable, String message);
 
     @Nested class StubbingFailures {
         // TODO how can I test that this throws an exception in afterEach?
@@ -103,64 +93,24 @@ abstract class ProductResolverTest {
         @Test void shouldFailToCallGivenWithoutCallToProxyNull() {
             var throwable = catchThrowable(() -> given(null).willReturn(null));
 
-            then(throwable).hasMessage("call `given` only on the response object of a proxy (invocation)");
+            then(throwable).hasMessage("Stubbing mismatch: call `given` exactly once on the response object of a proxy call");
         }
 
         @Test void shouldFailToCallGivenWithoutCallToProxyNonNull() {
-            @SuppressWarnings("ConstantConditions")
             var throwable = catchThrowable(() -> given(1L).willReturn(null));
 
-            then(throwable).hasMessage("call `given` only once and only on the response object of a proxy (null)");
+            then(throwable).hasMessage("Stubbing mismatch: call `given` exactly once on the response object of a proxy call");
         }
 
-        @Test void shouldFailToCallTheSameGivenTwice() {
+        @Test void shouldFailToCallTheSameExpectedResponseBuilderTwice() {
             var givenProduct = Product.builder().id("x").build();
-            given(products.product(givenProduct.getId())).willReturn(givenProduct);
+            var expectedResponseBuilder = given(products.product(givenProduct.getId()));
+            expectedResponseBuilder.willReturn(givenProduct);
 
-            var throwable = catchThrowable(() -> given(products.product(givenProduct.getId())).willReturn(givenProduct));
+            var throwable = catchThrowable(() -> expectedResponseBuilder.willReturn(givenProduct));
 
-            then(throwable).hasMessage("call `given` only once and only on the response object of a proxy (null)");
+            then(throwable).hasMessage("Stubbing mismatch: call `given` exactly once on the response object of a proxy call");
         }
-    }
-
-    @Nested class OtherTechnologies {
-        @Service UnrecognizableTechnologyService unrecognizableTechnologyService;
-        @Service RestService restService;
-
-        @Test void shouldFailToRecognizeTechnology() {
-            var throwable = catchThrowable(() -> given(unrecognizableTechnologyService.call()).willReturn(null));
-
-            then(throwable).hasMessage("no technology recognized on " + UnrecognizableTechnologyService.class);
-        }
-
-        @Test void shouldCallRestService() {
-            var givenProduct = Product.builder().id("r").name("some-product-name").build();
-            given(restService.getProduct(givenProduct.id)).willReturn(givenProduct);
-
-            var response = restService.getProduct(givenProduct.id);
-
-            then(response).usingRecursiveComparison().isEqualTo(givenProduct);
-        }
-
-        @Test void shouldFailToCallFailingRestService() {
-            var productId = "rx";
-            given(restService.getProduct(productId)).willThrow(new ForbiddenException());
-
-            var throwable = catchThrowableOfType(() -> restService.getProduct(productId), WebApplicationException.class);
-
-            then(throwable.getResponse().getStatusInfo()).isEqualTo(FORBIDDEN);
-        }
-    }
-
-    interface UnrecognizableTechnologyService {
-        Object call();
-    }
-
-    @RegisterRestClient(baseUri = "dummy") @Path("/hello")
-    public // RestEasy MP Rest Client requires the interface to be `public`
-    interface RestService {
-        @Path("/{productId}")
-        @GET Product getProduct(@PathParam("productId") String productId);
     }
 
     @Nested class NestedService {
@@ -187,5 +137,68 @@ abstract class ProductResolverTest {
 
             then(resolvedProduct).usingRecursiveComparison().isEqualTo(givenProduct);
         }
+    }
+
+    @Nested class ReturnTypes {
+        @Service ReturnTypesService service;
+
+        @Test void shouldGetBoolean() {
+            given(service.getBoolean()).willReturn(true);
+            then(service.getBoolean()).isTrue();
+        }
+
+        @Test void shouldGetByte() {
+            given(service.getByte()).willReturn((byte) 0x12);
+            then(service.getByte()).isEqualTo((byte) 0x12);
+        }
+
+        @Test void shouldGetChar() {
+            given(service.getChar()).willReturn('c');
+            then(service.getChar()).isEqualTo('c');
+        }
+
+        @Test void shouldGetShort() {
+            given(service.getShort()).willReturn((short) 0x12);
+            then(service.getShort()).isEqualTo((short) 0x12);
+        }
+
+        @Test void shouldGetInt() {
+            given(service.getInt()).willReturn(0x12);
+            then(service.getInt()).isEqualTo(0x12);
+        }
+
+        @Test void shouldGetLong() {
+            given(service.getLong()).willReturn(0x12L);
+            then(service.getLong()).isEqualTo(0x12L);
+        }
+
+        @Test void shouldGetFloat() {
+            given(service.getFloat()).willReturn(1.2f);
+            then(service.getFloat()).isEqualTo(1.2f);
+        }
+
+        @Test void shouldGetDouble() {
+            given(service.getDouble()).willReturn(1.2d);
+            then(service.getDouble()).isEqualTo(1.2d);
+        }
+    }
+
+    @GraphQlClientApi
+    public interface ReturnTypesService {
+        boolean getBoolean();
+
+        byte getByte();
+
+        char getChar();
+
+        short getShort();
+
+        int getInt();
+
+        long getLong();
+
+        float getFloat();
+
+        double getDouble();
     }
 }

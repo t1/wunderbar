@@ -1,6 +1,5 @@
-package com.github.t1.wunderbar.junit;
+package com.github.t1.wunderbar.junit.integration;
 
-import com.github.t1.wunderbar.junit.http.HttpServer;
 import com.github.t1.wunderbar.junit.http.HttpServerRequest;
 import com.github.t1.wunderbar.junit.http.HttpServerResponse;
 import io.smallrye.graphql.client.typesafe.api.GraphQlClientBuilder;
@@ -10,43 +9,33 @@ import lombok.Singular;
 import lombok.ToString;
 import org.eclipse.microprofile.graphql.Name;
 
-import javax.json.bind.Jsonb;
-import javax.json.bind.JsonbBuilder;
 import java.lang.reflect.Method;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 
 import static java.util.Locale.US;
 
-class GraphQlStub extends Stub {
-    private static final Jsonb JSONB = JsonbBuilder.create();
+class GraphQlInvocation extends HttpServiceInvocation {
+    GraphQlInvocation(String name, Method method, Object... args) { super(name, method, args); }
 
-    private final HttpServer server = new HttpServer(Bar.save(this::name, this::handleRequest));
-
-    GraphQlStub(Method method, Object... args) { super(method, args); }
-
-    @Override Object invoke() throws Exception {
-        var client = GraphQlClientBuilder.newBuilder().endpoint(server.baseUri()).build(method.getDeclaringClass());
-        return invokeOn(client);
+    @Override protected Object service() {
+        return GraphQlClientBuilder.newBuilder().endpoint(baseUri()).build(method.getDeclaringClass());
     }
 
-    private HttpServerResponse handleRequest(HttpServerRequest request) {
-        return HttpServerResponse.builder()
-            .body(Optional.of(body()))
-            .build();
+    @Override protected HttpServerResponse handleRequest(HttpServerRequest request) {
+        return HttpServerResponse.builder().body(buildResponseBody()).build();
     }
 
-    private String body() {
+    private GraphQlResponseBody buildResponseBody() {
         var responseBuilder = GraphQlResponseBody.builder();
-        if (response != null)
-            responseBuilder.data(Map.of(dataName(), response));
-        if (exception != null)
+        if (getResponse() != null)
+            responseBuilder.data(Map.of(dataName(), getResponse()));
+        if (getException() != null)
             responseBuilder.error(GraphQlError.builder()
-                .message(exception.getMessage())
+                .message(getException().getMessage())
                 .extension("code", errorCode())
                 .build());
-        return JSONB.toJson(responseBuilder.build());
+        return responseBuilder.build();
     }
 
     private String dataName() {
@@ -66,7 +55,7 @@ class GraphQlStub extends Stub {
         return Character.toLowerCase(name.charAt(0)) + name.substring(1);
     }
 
-    private String errorCode() { return camelToKebab(exception.getClass().getSimpleName()); }
+    private String errorCode() { return camelToKebab(getException().getClass().getSimpleName()); }
 
     private static String camelToKebab(String in) { return String.join("-", in.split("(?=\\p{javaUpperCase})")).toLowerCase(US); }
 
@@ -81,6 +70,4 @@ class GraphQlStub extends Stub {
         String message;
         @Singular Map<String, Object> extensions;
     }
-
-    @Override public void close() { server.stop(); }
 }

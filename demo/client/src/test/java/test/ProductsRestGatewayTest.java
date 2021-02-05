@@ -12,7 +12,7 @@ import org.junit.jupiter.api.Test;
 import javax.ws.rs.ForbiddenException;
 import javax.ws.rs.WebApplicationException;
 
-import static com.github.t1.wunderbar.junit.OngoingStubbing.given;
+import static com.github.t1.wunderbar.junit.ExpectedResponseBuilder.given;
 import static javax.ws.rs.core.Response.Status.FORBIDDEN;
 import static org.assertj.core.api.Assertions.catchThrowableOfType;
 import static org.assertj.core.api.BDDAssertions.then;

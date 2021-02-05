@@ -7,14 +7,9 @@ import org.junit.jupiter.api.extension.AfterEachCallback;
 import org.junit.jupiter.api.extension.BeforeEachCallback;
 import org.junit.jupiter.api.extension.Extension;
 import org.junit.jupiter.api.extension.ExtensionContext;
-import org.junit.jupiter.api.extension.TestInstances;
-import org.mockito.BDDMockito;
-import org.mockito.Mockito;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
-import java.lang.reflect.Method;
-import java.lang.reflect.Proxy;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
@@ -31,14 +26,13 @@ import static java.util.Locale.ROOT;
 class WunderBarJUnit implements Extension, BeforeEachCallback, AfterEachCallback, AfterAllCallback {
     private static WunderBarExtension settings;
 
-    private TestInstances testInstances;
-    private final List<Object> proxies = new ArrayList<>();
-    private final List<Stub> stubs = new ArrayList<>();
-    private final List<Stub> invocations = new ArrayList<>();
+    private ExtensionContext context;
     private Instant start;
+    private final List<Proxy> proxies = new ArrayList<>();
 
     @Override public void beforeEach(ExtensionContext context) {
-        this.testInstances = context.getRequiredTestInstances();
+        this.context = context;
+
         if (settings == null) init();
 
         forEachField(Service.class, this::proxy);
@@ -50,18 +44,19 @@ class WunderBarJUnit implements Extension, BeforeEachCallback, AfterEachCallback
     }
 
     private void init() {
-        settings = testInstances.getAllInstances().stream()
+        settings = context.getRequiredTestInstances().getAllInstances().stream()
             .map(Object::getClass)
             .filter(testClass -> testClass.isAnnotationPresent(WunderBarExtension.class))
             .findFirst()
             .map(testClass -> testClass.getAnnotation(WunderBarExtension.class))
             .orElseThrow(() -> new JUnitWunderBarException("annotation not found: " + WunderBarExtension.class.getName()));
-        Bar.bar = new Bar();
         log.info("start {} tests", settings.level().name().toLowerCase(ROOT));
+
+        Bar.bar = new Bar();
     }
 
     private void forEachField(Class<? extends Annotation> annotationType, Consumer<Field> action) {
-        testInstances.getAllInstances().stream()
+        context.getRequiredTestInstances().getAllInstances().stream()
             .flatMap(this::allFields)
             .filter(field -> field.isAnnotationPresent(annotationType))
             .forEach(action);
@@ -75,97 +70,55 @@ class WunderBarJUnit implements Extension, BeforeEachCallback, AfterEachCallback
     }
 
     private void proxy(Field field) {
-        var proxy = createProxy(field.getType());
-        setField(instanceFor(field), field, proxy);
+        var name = context.getDisplayName().replace("()", "");
+        var proxy = new Proxy(settings, name, field.getType());
+        setField(instanceFor(field), field, proxy.instance);
         this.proxies.add(proxy);
     }
 
     private Object instanceFor(Field field) {
-        return testInstances.findInstance(field.getDeclaringClass()).orElseThrow();
+        return context.getRequiredTestInstances().findInstance(field.getDeclaringClass()).orElseThrow();
     }
 
-    private <T> T createProxy(Class<T> type) {
-        return type.cast(Proxy.newProxyInstance(getClassLoader(), new Class[]{type}, this::proxyInvoked));
+    private void initSut(Field sutField) {
+        var testInstance = instanceFor(sutField);
+        if (getField(testInstance, sutField) == null)
+            setField(testInstance, sutField, newInstance(sutField));
+        var systemUnderTest = getField(testInstance, sutField);
+        injectProxiesIntoSut(systemUnderTest);
     }
 
-    private static ClassLoader getClassLoader() {
-        var classLoader = Thread.currentThread().getContextClassLoader();
-        return (classLoader == null) ? ClassLoader.getSystemClassLoader() : classLoader;
-    }
-
-    private Object proxyInvoked(@SuppressWarnings("unused") Object proxy, Method method, Object... args) throws Exception {
-        if (args == null) args = new Object[0];
-
-        switch (settings.level()) {
-            case UNIT:
-                return handleUnitTest(method, args);
-            case INTEGRATION:
-                return handleIntegrationTest(method, args);
-        }
-        throw new UnsupportedOperationException("unreachable");
-    }
-
-    private Object handleUnitTest(Method method, Object... args) {
-        BDDMockito.given(method);
-        return null; // Mockito.mock(type);
-    }
-
-    private Object handleIntegrationTest(Method method, Object[] args) throws Exception {
-        for (var stub : stubs)
-            if (stub.matches(method, args))
-                return invokeStub(stub);
-
-        var stub = Stub.on(method, args);
-        stubs.add(stub);
-        OngoingStubbing.stub = stub;
-
-        return null;
-    }
-
-    private Object invokeStub(Stub stub) throws Exception {
-        invocations.add(stub);
-        return stub.invoke();
-    }
-
-
-    private void initSut(Field field) {
-        var testInstance = instanceFor(field);
-        if (getField(testInstance, field) == null)
-            setField(testInstance, field, newInstance(field));
-        var systemUnderTest = getField(testInstance, field);
-        Stream.of(field.getType().getDeclaredFields())
+    private void injectProxiesIntoSut(Object systemUnderTest) {
+        Stream.of(systemUnderTest.getClass().getDeclaredFields())
             .filter(Objects::nonNull)
             .forEach(targetField -> injectProxy(systemUnderTest, targetField));
     }
 
     private void injectProxy(Object instance, Field field) {
         proxies.stream()
-            .filter(proxy -> field.getType().isAssignableFrom(proxy.getClass()))
-            .forEach(proxy -> setField(instance, field, proxy));
+            .filter(proxy -> proxy.isAssignableTo(field))
+            .forEach(proxy -> setField(instance, field, proxy.instance));
     }
 
 
     @Override public void afterEach(ExtensionContext context) {
-        if (OngoingStubbing.stub != null)
-            throw new JUnitWunderBarException("unfinished stubbing of " + OngoingStubbing.stub);
+        if (ExpectedResponseBuilder.buildingInvocation != null)
+            throw new JUnitWunderBarException("unfinished stubbing of " + ExpectedResponseBuilder.buildingInvocation);
 
+        proxies.forEach(Proxy::done);
         proxies.clear();
-
-        if (!invocations.isEmpty()) {
-            log.info("Invocations in {}", context.getDisplayName());
-            invocations.forEach(invocation -> log.info("- {}", invocation));
-        }
-        invocations.clear();
-
-        stubs.forEach(Stub::close);
-        stubs.clear();
 
         log.info("{} took {} ms", context.getDisplayName(), Duration.between(start, Instant.now()).get(NANOS) / 1_000_000);
     }
 
+    @Override public void afterAll(ExtensionContext context) {
+        settings = null;
+        Bar.bar = null;
+    }
+
 
     @SneakyThrows(ReflectiveOperationException.class)
-    private Object newInstance(Field field) {
+    private static Object newInstance(Field field) {
         return field.getType().getConstructor().newInstance();
     }
 
@@ -179,10 +132,5 @@ class WunderBarJUnit implements Extension, BeforeEachCallback, AfterEachCallback
     private static void setField(Object instance, Field field, Object value) {
         field.setAccessible(true);
         field.set(instance, value);
-    }
-
-    @Override public void afterAll(ExtensionContext context) {
-        settings = null;
-        Bar.bar = null;
     }
 }

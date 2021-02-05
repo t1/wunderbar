@@ -2,7 +2,7 @@ package com.github.t1.wunderbar.junit;
 
 public enum Level {
     /**
-     * Use Mockito to directly stub the invocation.
+     * Use Mockito to stub the invocation.
      * This is generally done in a test class ending with <code>Test</code>.
      */
     UNIT,
