@@ -1,5 +1,6 @@
 package com.github.t1.wunderbar.junit;
 
+import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 
 import java.lang.reflect.Method;
@@ -8,8 +9,8 @@ import static lombok.AccessLevel.PROTECTED;
 
 @RequiredArgsConstructor(access = PROTECTED)
 public abstract class Invocation {
-    protected final Method method;
-    protected final Object[] args;
+    protected final @NonNull Method method;
+    protected final @NonNull Object[] args;
 
     public final Object nullValue() { return nullValue(method.getReturnType()); }
 

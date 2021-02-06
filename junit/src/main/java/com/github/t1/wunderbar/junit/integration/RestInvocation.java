@@ -18,7 +18,7 @@ import static javax.ws.rs.core.Response.Status.INTERNAL_SERVER_ERROR;
 @Slf4j
 class RestInvocation extends HttpServiceInvocation {
 
-    RestInvocation(String name, Method method, Object[] args) { super(name, method, args); }
+    RestInvocation(String id, Method method, Object... args) { super(id, method, args); }
 
     @Override protected Object service() {
         return RestClientBuilder.newBuilder().baseUri(baseUri()).build(method.getDeclaringClass());

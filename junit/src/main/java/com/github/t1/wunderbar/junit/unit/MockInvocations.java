@@ -29,7 +29,7 @@ public class MockInvocations implements Invocations {
         return invocation.nullValue();
     }
 
-    private Object invokeOnMock(Method method, Object[] args) throws Exception {
+    private Object invokeOnMock(Method method, Object... args) throws Exception {
         try {
             return method.invoke(mock, args);
         } catch (InvocationTargetException e) {

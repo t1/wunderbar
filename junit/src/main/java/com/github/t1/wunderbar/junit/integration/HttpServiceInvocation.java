@@ -17,19 +17,18 @@ import java.util.Arrays;
 
 import static lombok.AccessLevel.PACKAGE;
 
-@Getter(PACKAGE) @ToString
 abstract class HttpServiceInvocation extends Invocation {
-    private final String name;
+    private final String id;
 
     private final HttpServer server;
 
-    private Object response;
-    private Exception exception;
+    @Getter(PACKAGE) private Object response;
+    @Getter(PACKAGE) private Exception exception;
 
-    public HttpServiceInvocation(String name, @NonNull Method method, @NonNull Object[] args) {
+    public HttpServiceInvocation(String id, Method method, Object... args) {
         super(method, args);
-        this.name = name;
-        this.server = new HttpServer(Bar.save(name, this::handleRequest));
+        this.id = id;
+        this.server = new HttpServer(Bar.save(id, this::handleRequest));
     }
 
     boolean matches(Method method, Object... args) {

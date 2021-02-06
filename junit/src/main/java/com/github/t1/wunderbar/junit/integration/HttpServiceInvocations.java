@@ -14,7 +14,7 @@ import java.util.List;
 
 @Slf4j @RequiredArgsConstructor
 public class HttpServiceInvocations implements Invocations {
-    private final String name;
+    private final String id;
     private final List<HttpServiceInvocation> invocations = new ArrayList<>();
 
     @Override public Object invoke(Method method, Object... args) throws Exception {
@@ -32,9 +32,9 @@ public class HttpServiceInvocations implements Invocations {
     private HttpServiceInvocation createFor(Method method, Object... args) {
         var declaringClass = method.getDeclaringClass();
         if (declaringClass.isAnnotationPresent(GraphQlClientApi.class))
-            return new GraphQlInvocation(name, method, args);
+            return new GraphQlInvocation(id, method, args);
         if (declaringClass.isAnnotationPresent(RegisterRestClient.class))
-            return new RestInvocation(name, method, args);
+            return new RestInvocation(id, method, args);
         throw new JUnitWunderBarException("no technology recognized on " + declaringClass);
     }
 

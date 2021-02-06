@@ -6,6 +6,7 @@ import lombok.Value;
 
 import javax.json.bind.Jsonb;
 import javax.json.bind.JsonbBuilder;
+import javax.json.bind.JsonbConfig;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response.StatusType;
 import java.util.Optional;
@@ -30,7 +31,8 @@ public class HttpServerResponse {
     @SuppressWarnings("unused")
     public static class HttpServerResponseBuilder {
         public HttpServerResponseBuilder body(Object body) {
-            return body(JSONB.toJson(body));
+            // JSON-B may produce a leading nl, but we want only a trailing nl
+            return body(JSONB.toJson(body).trim() + "\n");
         }
 
         public HttpServerResponseBuilder body(String body) {
@@ -40,5 +42,5 @@ public class HttpServerResponse {
         }
     }
 
-    private static final Jsonb JSONB = JsonbBuilder.create();
+    private static final Jsonb JSONB = JsonbBuilder.create(new JsonbConfig().withFormatting(true));
 }

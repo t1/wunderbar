@@ -9,14 +9,14 @@ import java.lang.reflect.Method;
 
 class Proxy {
     private final WunderBarExtension settings;
-    private final String name;
+    private final String id;
     private final Class<?> type;
     final Object instance;
     private final Invocations invocations;
 
-    public Proxy(WunderBarExtension settings, String name, Class<?> type) {
+    public Proxy(WunderBarExtension settings, String id, Class<?> type) {
         this.settings = settings;
-        this.name = name;
+        this.id = id;
         this.type = type;
         this.instance = createProxy(type);
         this.invocations = createInvocations();
@@ -36,7 +36,7 @@ class Proxy {
             case UNIT:
                 return new MockInvocations(type);
             case INTEGRATION:
-                return new HttpServiceInvocations(name);
+                return new HttpServiceInvocations(id);
         }
         throw new UnsupportedOperationException("unreachable");
     }

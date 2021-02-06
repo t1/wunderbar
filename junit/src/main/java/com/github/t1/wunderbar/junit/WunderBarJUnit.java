@@ -13,6 +13,7 @@ import java.lang.reflect.Field;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Objects;
 import java.util.function.Consumer;
@@ -32,14 +33,13 @@ class WunderBarJUnit implements Extension, BeforeEachCallback, AfterEachCallback
 
     @Override public void beforeEach(ExtensionContext context) {
         this.context = context;
-
         if (settings == null) init();
 
         forEachField(Service.class, this::proxy);
 
         forEachField(SystemUnderTest.class, this::initSut);
 
-        log.info("==================== start {}", context.getDisplayName());
+        log.info("==================== start {}", testId());
         start = Instant.now();
     }
 
@@ -52,7 +52,14 @@ class WunderBarJUnit implements Extension, BeforeEachCallback, AfterEachCallback
             .orElseThrow(() -> new JUnitWunderBarException("annotation not found: " + WunderBarExtension.class.getName()));
         log.info("start {} tests", settings.level().name().toLowerCase(ROOT));
 
-        Bar.bar = new Bar();
+        Bar.bar = new Bar(topContext().getDisplayName());
+    }
+
+    private ExtensionContext topContext() {
+        ExtensionContext result = context;
+        while (result.getParent().orElse(null) != context.getRoot())
+            result = result.getParent().orElseThrow();
+        return result;
     }
 
     private void forEachField(Class<? extends Annotation> annotationType, Consumer<Field> action) {
@@ -70,10 +77,17 @@ class WunderBarJUnit implements Extension, BeforeEachCallback, AfterEachCallback
     }
 
     private void proxy(Field field) {
-        var name = context.getDisplayName().replace("()", "");
-        var proxy = new Proxy(settings, name, field.getType());
+        var proxy = new Proxy(settings, testId(), field.getType());
         setField(instanceFor(field), field, proxy.instance);
         this.proxies.add(proxy);
+    }
+
+    private String testId() {
+        var top = topContext();
+        var elements = new LinkedList<String>();
+        for (ExtensionContext c = context; c != top && c.getParent().isPresent(); c = c.getParent().get())
+            elements.push(c.getDisplayName().replaceAll("\\(\\)$", ""));
+        return String.join("/", elements);
     }
 
     private Object instanceFor(Field field) {
@@ -108,11 +122,17 @@ class WunderBarJUnit implements Extension, BeforeEachCallback, AfterEachCallback
         proxies.forEach(Proxy::done);
         proxies.clear();
 
-        log.info("{} took {} ms", context.getDisplayName(), Duration.between(start, Instant.now()).get(NANOS) / 1_000_000);
+        log.info("{} took {} ms", testId(), Duration.between(start, Instant.now()).get(NANOS) / 1_000_000);
     }
 
     @Override public void afterAll(ExtensionContext context) {
+        if (context == topContext()) done();
+    }
+
+    private void done() {
         settings = null;
+
+        Bar.bar.close();
         Bar.bar = null;
     }
 

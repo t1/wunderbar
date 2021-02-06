@@ -3,23 +3,35 @@ package test;
 import com.github.t1.wunderbar.junit.Service;
 import com.github.t1.wunderbar.junit.SystemUnderTest;
 import io.smallrye.graphql.client.typesafe.api.GraphQlClientApi;
+import io.smallrye.graphql.client.typesafe.api.GraphQlClientException;
 import org.eclipse.microprofile.graphql.Name;
-import org.junit.jupiter.api.Disabled;
+import org.eclipse.microprofile.rest.client.inject.RegisterRestClient;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import test.ProductResolver.Item;
 import test.ProductResolver.Product;
 import test.ProductResolver.Products;
 
+import javax.ws.rs.ForbiddenException;
+import javax.ws.rs.GET;
+import javax.ws.rs.NotFoundException;
+import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
+import javax.ws.rs.WebApplicationException;
+import javax.ws.rs.core.Response.Status;
+
 import static com.github.t1.wunderbar.junit.ExpectedResponseBuilder.given;
+import static javax.ws.rs.core.Response.Status.FORBIDDEN;
+import static javax.ws.rs.core.Response.Status.NOT_FOUND;
 import static org.assertj.core.api.Assertions.catchThrowable;
+import static org.assertj.core.api.Assertions.catchThrowableOfType;
 import static org.assertj.core.api.BDDAssertions.then;
 
 abstract class ProductResolverTest {
     @Service Products products;
     @Service NamedProducts namedProducts;
     @Service ProductsGetter productsGetter;
-    @Service ReturnTypesService returnTypesService;
     @SystemUnderTest ProductResolver resolver;
 
     @GraphQlClientApi
@@ -60,6 +72,7 @@ abstract class ProductResolverTest {
         then(resolvedProduct).usingRecursiveComparison().isEqualTo(givenProduct);
     }
 
+    @DisplayName("test two calls in one test")
     @Test void shouldResolveTwoProducts() {
         var givenProductA = Product.builder().id("a").name("some-product-a").build();
         var givenProductB = Product.builder().id("b").name("some-product-b").build();
@@ -79,11 +92,65 @@ abstract class ProductResolverTest {
 
         var throwable = catchThrowable(() -> resolver.product(item));
 
-        failsWith(throwable, "product x not found");
+        failsWith(throwable, "product x not found", NOT_FOUND);
     }
 
-    abstract void failsWith(Throwable throwable, String message);
+    void failsWith(Throwable throwable, String message, @SuppressWarnings("SameParameterValue") Status status) {
+        then(throwable).isNotNull();
+        if (throwable instanceof GraphQlClientException) {
+            GraphQlClientException e = (GraphQlClientException) throwable;
+            then(e.getErrors()).hasSize(1);
+            var error = e.getErrors().get(0);
+            then(error.getMessage()).isEqualTo(message);
+        } else if (throwable instanceof WebApplicationException) {
+            var response = ((WebApplicationException) throwable).getResponse();
+            then(response.getStatusInfo()).isEqualTo(status);
+            if (!throwable.getMessage().equals(message)) // i.e. not level=UNIT
+                then(response.readEntity(String.class)).contains("\"detail\": \"" + message + "\"");
+        } else {
+            then(throwable.getMessage()).isEqualTo(message);
+        }
+    }
 
+    @Nested class Rest {
+        @Service RestService restService;
+
+        @Test void shouldCallRestService() {
+            var givenProduct = Product.builder().id("r").name("some-product-name").build();
+            given(restService.getProduct(givenProduct.id)).willReturn(givenProduct);
+
+            var response = restService.getProduct(givenProduct.id);
+
+            then(response).usingRecursiveComparison().isEqualTo(givenProduct);
+        }
+
+        @Test void shouldFailToCallFailingRestService() {
+            var productId = "rx";
+            given(restService.getProduct(productId)).willThrow(new ForbiddenException());
+
+            var throwable = catchThrowableOfType(() -> restService.getProduct(productId), WebApplicationException.class);
+
+            then(throwable.getResponse().getStatusInfo()).isEqualTo(FORBIDDEN);
+        }
+
+        @Test void shouldFailToResolveUnknownProduct() {
+            given(restService.getProduct("y")).willThrow(new NotFoundException("product y not found"));
+
+            var throwable = catchThrowableOfType(() -> restService.getProduct("y"), WebApplicationException.class);
+
+            failsWith(throwable, "product y not found", NOT_FOUND);
+        }
+    }
+
+    @RegisterRestClient(baseUri = "dummy") @Path("/hello")
+    public // RestEasy MP Rest Client requires the interface to be `public`
+    interface RestService {
+        @Path("/{productId}")
+        @GET Product getProduct(@PathParam("productId") String productId);
+    }
+
+
+    @DisplayName("stubbing failures")
     @Nested class StubbingFailures {
         // TODO how can I test that this throws an exception in afterEach?
         //  @Test void shouldFailUnfinishedStubbing() {
@@ -113,6 +180,7 @@ abstract class ProductResolverTest {
         }
     }
 
+    @DisplayName("nested/service")
     @Nested class NestedService {
         @Service Products nestedProducts;
 
@@ -126,6 +194,7 @@ abstract class ProductResolverTest {
         }
     }
 
+    @DisplayName("nested/sut")
     @Nested class NestedSystemUnderTest {
         @SystemUnderTest ProductResolver nestedResolver;
 

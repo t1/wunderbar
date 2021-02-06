@@ -16,7 +16,7 @@ import java.util.Map;
 import static java.util.Locale.US;
 
 class GraphQlInvocation extends HttpServiceInvocation {
-    GraphQlInvocation(String name, Method method, Object... args) { super(name, method, args); }
+    GraphQlInvocation(String id, Method method, Object... args) { super(id, method, args); }
 
     @Override protected Object service() {
         return GraphQlClientBuilder.newBuilder().endpoint(baseUri()).build(method.getDeclaringClass());
