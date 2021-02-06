@@ -18,7 +18,7 @@ import static org.assertj.core.api.Assertions.catchThrowableOfType;
 import static org.assertj.core.api.BDDAssertions.then;
 
 @WunderBarExtension
-class ProductsRestGatewayTest {
+class ProductsRestGatewayIT {
     @Service ProductsRestClient products;
     @SystemUnderTest ProductsRestGateway gateway;
 

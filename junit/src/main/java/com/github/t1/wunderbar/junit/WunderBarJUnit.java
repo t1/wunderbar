@@ -20,6 +20,9 @@ import java.util.function.Consumer;
 import java.util.stream.Stream;
 import java.util.stream.Stream.Builder;
 
+import static com.github.t1.wunderbar.junit.Level.AUTO;
+import static com.github.t1.wunderbar.junit.Level.INTEGRATION;
+import static com.github.t1.wunderbar.junit.Level.UNIT;
 import static java.time.temporal.ChronoUnit.NANOS;
 import static org.junit.jupiter.api.extension.ExtensionContext.Namespace.GLOBAL;
 
@@ -34,7 +37,7 @@ class WunderBarJUnit implements Extension, BeforeEachCallback, AfterEachCallback
 
     @Override public void beforeEach(ExtensionContext context) {
         this.context = context;
-        settings = findSettings();
+        settings = findWunderBarTest().getClass().getAnnotation(WunderBarExtension.class);
         if (bar == null) init();
 
         forEachField(Service.class, this::proxy);
@@ -43,16 +46,14 @@ class WunderBarJUnit implements Extension, BeforeEachCallback, AfterEachCallback
 
         var testId = testId();
         bar.setDirectory(testId);
-        log.info("==================== start {} test: {}", settings.level(), testId);
+        log.info("==================== start {} test: {}", level(), testId);
         start = Instant.now();
     }
 
-    private WunderBarExtension findSettings() {
+    private Object findWunderBarTest() {
         return context.getRequiredTestInstances().getAllInstances().stream()
-            .map(Object::getClass)
-            .filter(testClass -> testClass.isAnnotationPresent(WunderBarExtension.class))
+            .filter(test -> test.getClass().isAnnotationPresent(WunderBarExtension.class))
             .findFirst()
-            .map(testClass -> testClass.getAnnotation(WunderBarExtension.class))
             .orElseThrow(() -> new JUnitWunderBarException("annotation not found: " + WunderBarExtension.class.getName()));
     }
 
@@ -80,9 +81,19 @@ class WunderBarJUnit implements Extension, BeforeEachCallback, AfterEachCallback
     }
 
     private void proxy(Field field) {
-        var proxy = new Proxy(settings, bar, field.getType());
+        var proxy = new Proxy(level(), bar, field.getType());
         setField(instanceFor(field), field, proxy.instance);
         this.proxies.add(proxy);
+    }
+
+    private Level level() {
+        var level = settings.level();
+        if (level == AUTO) level = isIT() ? INTEGRATION : UNIT;
+        return level;
+    }
+
+    private boolean isIT() {
+        return findWunderBarTest().getClass().getName().endsWith("IT");
     }
 
     private String testId() {

@@ -8,14 +8,14 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 
 class Proxy {
-    private final WunderBarExtension settings;
+    private final Level level;
     private final Bar bar;
     private final Class<?> type;
     final Object instance;
     private final Invocations invocations;
 
-    public Proxy(WunderBarExtension settings, Bar bar, Class<?> type) {
-        this.settings = settings;
+    public Proxy(Level level, Bar bar, Class<?> type) {
+        this.level = level;
         this.bar = bar;
         this.type = type;
         this.instance = createProxy(type);
@@ -32,7 +32,7 @@ class Proxy {
     }
 
     private Invocations createInvocations() {
-        switch (settings.level()) {
+        switch (level) {
             case UNIT:
                 return new MockInvocations(type);
             case INTEGRATION:
