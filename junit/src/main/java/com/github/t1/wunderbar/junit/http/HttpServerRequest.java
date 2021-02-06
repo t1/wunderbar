@@ -15,11 +15,13 @@ public class HttpServerRequest {
     MediaType accept;
     Optional<String> body;
 
-    @Override public String toString() {
-        return (method + " " + uri + "\n" +
+    @Override public String toString() { return (headerProperties() + body.orElse("")).trim(); }
+
+    public String headerProperties() {
+        return "" +
+            "Method: " + method + "\n" +
+            "URI: " + uri + "\n" +
             ((accept == null) ? "" : "Accept: " + accept + "\n") +
-            ((contentType == null) ? "" : "Content-Type: " + contentType + "\n") +
-            body.orElse("")
-        ).trim();
+            ((contentType == null) ? "" : "Content-Type: " + contentType + "\n");
     }
 }

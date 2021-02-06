@@ -2,11 +2,11 @@ package com.github.t1.wunderbar.junit;
 
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
-import org.junit.jupiter.api.extension.AfterAllCallback;
 import org.junit.jupiter.api.extension.AfterEachCallback;
 import org.junit.jupiter.api.extension.BeforeEachCallback;
 import org.junit.jupiter.api.extension.Extension;
 import org.junit.jupiter.api.extension.ExtensionContext;
+import org.junit.jupiter.api.extension.ExtensionContext.Store.CloseableResource;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
@@ -21,45 +21,48 @@ import java.util.stream.Stream;
 import java.util.stream.Stream.Builder;
 
 import static java.time.temporal.ChronoUnit.NANOS;
-import static java.util.Locale.ROOT;
+import static org.junit.jupiter.api.extension.ExtensionContext.Namespace.GLOBAL;
 
 @Slf4j
-class WunderBarJUnit implements Extension, BeforeEachCallback, AfterEachCallback, AfterAllCallback {
-    private static WunderBarExtension settings;
+class WunderBarJUnit implements Extension, BeforeEachCallback, AfterEachCallback {
+    private static Bar bar;
 
     private ExtensionContext context;
+    private WunderBarExtension settings;
     private Instant start;
     private final List<Proxy> proxies = new ArrayList<>();
 
     @Override public void beforeEach(ExtensionContext context) {
         this.context = context;
-        if (settings == null) init();
+        settings = findSettings();
+        if (bar == null) init();
 
         forEachField(Service.class, this::proxy);
 
         forEachField(SystemUnderTest.class, this::initSut);
 
-        log.info("==================== start {}", testId());
+        var testId = testId();
+        bar.setDirectory(testId);
+        log.info("==================== start {} test: {}", settings.level(), testId);
         start = Instant.now();
     }
 
-    private void init() {
-        settings = context.getRequiredTestInstances().getAllInstances().stream()
+    private WunderBarExtension findSettings() {
+        return context.getRequiredTestInstances().getAllInstances().stream()
             .map(Object::getClass)
             .filter(testClass -> testClass.isAnnotationPresent(WunderBarExtension.class))
             .findFirst()
             .map(testClass -> testClass.getAnnotation(WunderBarExtension.class))
             .orElseThrow(() -> new JUnitWunderBarException("annotation not found: " + WunderBarExtension.class.getName()));
-        log.info("start {} tests", settings.level().name().toLowerCase(ROOT));
-
-        Bar.bar = new Bar(topContext().getDisplayName());
     }
 
-    private ExtensionContext topContext() {
-        ExtensionContext result = context;
-        while (result.getParent().orElse(null) != context.getRoot())
-            result = result.getParent().orElseThrow();
-        return result;
+    private void init() {
+        bar = new Bar();
+        registerShutdownHook();
+    }
+
+    private void registerShutdownHook() {
+        context.getRoot().getStore(GLOBAL).put(WunderBarJUnit.class.getName(), (CloseableResource) this::shutDown);
     }
 
     private void forEachField(Class<? extends Annotation> annotationType, Consumer<Field> action) {
@@ -77,15 +80,14 @@ class WunderBarJUnit implements Extension, BeforeEachCallback, AfterEachCallback
     }
 
     private void proxy(Field field) {
-        var proxy = new Proxy(settings, testId(), field.getType());
+        var proxy = new Proxy(settings, bar, field.getType());
         setField(instanceFor(field), field, proxy.instance);
         this.proxies.add(proxy);
     }
 
     private String testId() {
-        var top = topContext();
         var elements = new LinkedList<String>();
-        for (ExtensionContext c = context; c != top && c.getParent().isPresent(); c = c.getParent().get())
+        for (ExtensionContext c = context; c != context.getRoot() && c.getParent().isPresent(); c = c.getParent().get())
             elements.push(c.getDisplayName().replaceAll("\\(\\)$", ""));
         return String.join("/", elements);
     }
@@ -122,20 +124,16 @@ class WunderBarJUnit implements Extension, BeforeEachCallback, AfterEachCallback
         proxies.forEach(Proxy::done);
         proxies.clear();
 
-        log.info("{} took {} ms", testId(), Duration.between(start, Instant.now()).get(NANOS) / 1_000_000);
+        bar.setDirectory(null);
+        log.info("{} took {} ms", testId(), duration());
     }
 
-    @Override public void afterAll(ExtensionContext context) {
-        if (context == topContext()) done();
+    private long duration() { return Duration.between(start, Instant.now()).get(NANOS) / 1_000_000L; }
+
+    private void shutDown() {
+        bar.close();
+        bar = null;
     }
-
-    private void done() {
-        settings = null;
-
-        Bar.bar.close();
-        Bar.bar = null;
-    }
-
 
     @SneakyThrows(ReflectiveOperationException.class)
     private static Object newInstance(Field field) {

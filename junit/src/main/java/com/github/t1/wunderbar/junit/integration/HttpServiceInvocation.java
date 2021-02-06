@@ -7,8 +7,6 @@ import com.github.t1.wunderbar.junit.http.HttpServer;
 import com.github.t1.wunderbar.junit.http.HttpServerRequest;
 import com.github.t1.wunderbar.junit.http.HttpServerResponse;
 import lombok.Getter;
-import lombok.NonNull;
-import lombok.ToString;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -18,17 +16,14 @@ import java.util.Arrays;
 import static lombok.AccessLevel.PACKAGE;
 
 abstract class HttpServiceInvocation extends Invocation {
-    private final String id;
-
     private final HttpServer server;
 
     @Getter(PACKAGE) private Object response;
     @Getter(PACKAGE) private Exception exception;
 
-    public HttpServiceInvocation(String id, Method method, Object... args) {
+    public HttpServiceInvocation(Bar bar, Method method, Object... args) {
         super(method, args);
-        this.id = id;
-        this.server = new HttpServer(Bar.save(id, this::handleRequest));
+        this.server = new HttpServer(bar.save(this::handleRequest));
     }
 
     boolean matches(Method method, Object... args) {

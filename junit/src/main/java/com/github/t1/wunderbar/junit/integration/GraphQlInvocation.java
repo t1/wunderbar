@@ -1,5 +1,6 @@
 package com.github.t1.wunderbar.junit.integration;
 
+import com.github.t1.wunderbar.junit.Bar;
 import com.github.t1.wunderbar.junit.http.HttpServerRequest;
 import com.github.t1.wunderbar.junit.http.HttpServerResponse;
 import io.smallrye.graphql.client.typesafe.api.GraphQlClientBuilder;
@@ -16,7 +17,7 @@ import java.util.Map;
 import static java.util.Locale.US;
 
 class GraphQlInvocation extends HttpServiceInvocation {
-    GraphQlInvocation(String id, Method method, Object... args) { super(id, method, args); }
+    GraphQlInvocation(Bar bar, Method method, Object... args) { super(bar, method, args); }
 
     @Override protected Object service() {
         return GraphQlClientBuilder.newBuilder().endpoint(baseUri()).build(method.getDeclaringClass());

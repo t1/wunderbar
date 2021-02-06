@@ -1,5 +1,6 @@
 package com.github.t1.wunderbar.junit.integration;
 
+import com.github.t1.wunderbar.junit.Bar;
 import com.github.t1.wunderbar.junit.ExpectedResponseBuilder;
 import com.github.t1.wunderbar.junit.Invocation;
 import com.github.t1.wunderbar.junit.JUnitWunderBarException;
@@ -14,7 +15,7 @@ import java.util.List;
 
 @Slf4j @RequiredArgsConstructor
 public class HttpServiceInvocations implements Invocations {
-    private final String id;
+    private final Bar bar;
     private final List<HttpServiceInvocation> invocations = new ArrayList<>();
 
     @Override public Object invoke(Method method, Object... args) throws Exception {
@@ -32,9 +33,9 @@ public class HttpServiceInvocations implements Invocations {
     private HttpServiceInvocation createFor(Method method, Object... args) {
         var declaringClass = method.getDeclaringClass();
         if (declaringClass.isAnnotationPresent(GraphQlClientApi.class))
-            return new GraphQlInvocation(id, method, args);
+            return new GraphQlInvocation(bar, method, args);
         if (declaringClass.isAnnotationPresent(RegisterRestClient.class))
-            return new RestInvocation(id, method, args);
+            return new RestInvocation(bar, method, args);
         throw new JUnitWunderBarException("no technology recognized on " + declaringClass);
     }
 

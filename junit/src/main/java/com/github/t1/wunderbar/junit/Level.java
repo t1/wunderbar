@@ -1,5 +1,7 @@
 package com.github.t1.wunderbar.junit;
 
+import static java.util.Locale.ROOT;
+
 public enum Level {
     /**
      * Use Mockito to stub the invocation.
@@ -12,5 +14,7 @@ public enum Level {
      * This is generally done in a test class ending with <code>IT</code>.
      * This is the default.
      */
-    INTEGRATION
+    INTEGRATION;
+
+    @Override public String toString() { return name().toLowerCase(ROOT); }
 }

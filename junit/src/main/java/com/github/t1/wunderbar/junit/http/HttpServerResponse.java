@@ -20,12 +20,12 @@ public class HttpServerResponse {
     @Default MediaType contentType = APPLICATION_JSON_TYPE.withCharset("utf-8");
     @Default Optional<String> body = Optional.empty();
 
-    @Override public String toString() {
-        return ("" +
+    @Override public String toString() { return (headerProperties() + body.orElse("")).trim(); }
+
+    public String headerProperties() {
+        return "" +
             "Status: " + status.getStatusCode() + " " + status.getReasonPhrase() + "\n" +
-            "Content-Type: " + contentType + "\n" +
-            body.orElse("")
-        ).trim();
+            ((contentType == null) ? "" : "Content-Type: " + contentType + "\n");
     }
 
     @SuppressWarnings("unused")
