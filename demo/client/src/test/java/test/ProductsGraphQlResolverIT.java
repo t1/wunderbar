@@ -6,7 +6,7 @@ import com.github.t1.wunderbar.demo.client.ProductsGraphQlResolver;
 import com.github.t1.wunderbar.demo.client.ProductsGraphQlResolver.Products;
 import com.github.t1.wunderbar.junit.Service;
 import com.github.t1.wunderbar.junit.SystemUnderTest;
-import com.github.t1.wunderbar.junit.WunderBarExtension;
+import com.github.t1.wunderbar.junit.WunderBarCustomerExtension;
 import io.smallrye.graphql.client.typesafe.api.GraphQlClientException;
 import org.junit.jupiter.api.Test;
 
@@ -14,7 +14,7 @@ import static com.github.t1.wunderbar.junit.ExpectedResponseBuilder.given;
 import static org.assertj.core.api.Assertions.catchThrowableOfType;
 import static org.assertj.core.api.BDDAssertions.then;
 
-@WunderBarExtension
+@WunderBarCustomerExtension
 class ProductsGraphQlResolverIT {
     @Service Products products;
     @SystemUnderTest ProductsGraphQlResolver resolver;

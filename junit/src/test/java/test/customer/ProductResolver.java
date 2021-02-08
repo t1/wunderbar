@@ -1,4 +1,4 @@
-package test;
+package test.customer;
 
 import io.smallrye.graphql.client.typesafe.api.GraphQlClientApi;
 import lombok.AllArgsConstructor;
@@ -11,13 +11,16 @@ import org.eclipse.microprofile.graphql.GraphQLApi;
 import org.eclipse.microprofile.graphql.Id;
 import org.eclipse.microprofile.graphql.Source;
 
+import javax.inject.Inject;
+
 import static lombok.AccessLevel.PRIVATE;
 
 @GraphQLApi
-public class ProductResolver {
-    Products products;
+class ProductResolver {
+    @Inject @SuppressWarnings("CdiInjectionPointsInspection")
+    private Products products;
 
-    public Product product(@Source Item item) {
+    Product product(@Source Item item) {
         return products.product(item.getProductId());
     }
 

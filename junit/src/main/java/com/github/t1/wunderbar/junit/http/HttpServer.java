@@ -2,6 +2,7 @@ package com.github.t1.wunderbar.junit.http;
 
 import io.undertow.Undertow;
 import io.undertow.server.HttpServerExchange;
+import lombok.NonNull;
 
 import javax.ws.rs.core.MediaType;
 import java.net.InetSocketAddress;
@@ -17,16 +18,21 @@ import static java.nio.charset.StandardCharsets.ISO_8859_1;
 import static javax.ws.rs.core.MediaType.CHARSET_PARAMETER;
 
 public class HttpServer {
-    private final Undertow server;
     private final Function<HttpServerRequest, HttpServerResponse> handler;
+    private final Undertow server;
 
-    public HttpServer(Function<HttpServerRequest, HttpServerResponse> handler) {
+    public HttpServer(@NonNull Function<HttpServerRequest, HttpServerResponse> handler) {
         this.handler = handler;
-        this.server = Undertow.builder()
+        this.server = start();
+    }
+
+    private Undertow start() {
+        Undertow server = Undertow.builder()
             .addHttpListener(0, "localhost")
             .setHandler(this::aroundInvoke)
             .build();
         server.start();
+        return server;
     }
 
     private void aroundInvoke(HttpServerExchange exchange) {
@@ -65,7 +71,7 @@ public class HttpServer {
     public URI baseUri() {
         var listener = server.getListenerInfo().get(0);
         var address = (InetSocketAddress) listener.getAddress();
-        return URI.create(listener.getProtcol() + "://" + address.getHostString() + ":" + address.getPort() + "/mock");
+        return URI.create(listener.getProtcol() + "://" + address.getHostString() + ":" + address.getPort());
     }
 
     public void stop() {

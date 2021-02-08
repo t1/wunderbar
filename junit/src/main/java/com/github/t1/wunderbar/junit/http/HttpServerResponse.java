@@ -4,20 +4,18 @@ import lombok.Builder;
 import lombok.Builder.Default;
 import lombok.Value;
 
-import javax.json.bind.Jsonb;
-import javax.json.bind.JsonbBuilder;
-import javax.json.bind.JsonbConfig;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response.StatusType;
 import java.util.Optional;
 
-import static javax.ws.rs.core.MediaType.APPLICATION_JSON_TYPE;
+import static com.github.t1.wunderbar.junit.http.HttpServerRequest.APPLICATION_JSON_UTF8;
+import static com.github.t1.wunderbar.junit.http.HttpServerRequest.JSONB;
 import static javax.ws.rs.core.Response.Status.OK;
 
 @Value @Builder
 public class HttpServerResponse {
     @Default StatusType status = OK;
-    @Default MediaType contentType = APPLICATION_JSON_TYPE.withCharset("utf-8");
+    @Default MediaType contentType = APPLICATION_JSON_UTF8;
     @Default Optional<String> body = Optional.empty();
 
     @Override public String toString() { return (headerProperties() + body.orElse("")).trim(); }
@@ -25,7 +23,7 @@ public class HttpServerResponse {
     public String headerProperties() {
         return "" +
             "Status: " + status.getStatusCode() + " " + status.getReasonPhrase() + "\n" +
-            ((contentType == null) ? "" : "Content-Type: " + contentType + "\n");
+            "Content-Type: " + contentType + "\n";
     }
 
     @SuppressWarnings("unused")
@@ -41,6 +39,4 @@ public class HttpServerResponse {
             return this;
         }
     }
-
-    private static final Jsonb JSONB = JsonbBuilder.create(new JsonbConfig().withFormatting(true));
 }

@@ -6,7 +6,7 @@ import com.github.t1.wunderbar.demo.client.ProductsRestGateway;
 import com.github.t1.wunderbar.demo.client.ProductsRestGateway.ProductsRestClient;
 import com.github.t1.wunderbar.junit.Service;
 import com.github.t1.wunderbar.junit.SystemUnderTest;
-import com.github.t1.wunderbar.junit.WunderBarExtension;
+import com.github.t1.wunderbar.junit.WunderBarCustomerExtension;
 import org.junit.jupiter.api.Test;
 
 import javax.ws.rs.ForbiddenException;
@@ -17,7 +17,7 @@ import static javax.ws.rs.core.Response.Status.FORBIDDEN;
 import static org.assertj.core.api.Assertions.catchThrowableOfType;
 import static org.assertj.core.api.BDDAssertions.then;
 
-@WunderBarExtension
+@WunderBarCustomerExtension
 class ProductsRestGatewayIT {
     @Service ProductsRestClient products;
     @SystemUnderTest ProductsRestGateway gateway;

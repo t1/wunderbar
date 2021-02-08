@@ -21,7 +21,7 @@ abstract class HttpServiceInvocation extends Invocation {
     @Getter(PACKAGE) private Object response;
     @Getter(PACKAGE) private Exception exception;
 
-    public HttpServiceInvocation(Bar bar, Method method, Object... args) {
+    HttpServiceInvocation(Bar bar, Method method, Object... args) {
         super(method, args);
         this.server = new HttpServer(bar.save(this::handleRequest));
     }

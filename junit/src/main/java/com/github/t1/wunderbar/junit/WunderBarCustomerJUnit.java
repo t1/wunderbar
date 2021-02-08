@@ -9,7 +9,9 @@ import org.junit.jupiter.api.extension.ExtensionContext;
 import org.junit.jupiter.api.extension.ExtensionContext.Store.CloseableResource;
 
 import java.lang.annotation.Annotation;
+import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
+import java.nio.file.Path;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
@@ -27,17 +29,17 @@ import static java.time.temporal.ChronoUnit.NANOS;
 import static org.junit.jupiter.api.extension.ExtensionContext.Namespace.GLOBAL;
 
 @Slf4j
-class WunderBarJUnit implements Extension, BeforeEachCallback, AfterEachCallback {
+class WunderBarCustomerJUnit implements Extension, BeforeEachCallback, AfterEachCallback {
     private static Bar bar;
 
     private ExtensionContext context;
-    private WunderBarExtension settings;
+    private WunderBarCustomerExtension settings;
     private Instant start;
     private final List<Proxy> proxies = new ArrayList<>();
 
     @Override public void beforeEach(ExtensionContext context) {
         this.context = context;
-        settings = findWunderBarTest().getClass().getAnnotation(WunderBarExtension.class);
+        settings = findWunderBarTest().getClass().getAnnotation(WunderBarCustomerExtension.class);
         if (bar == null) init();
 
         forEachField(Service.class, this::proxy);
@@ -52,18 +54,18 @@ class WunderBarJUnit implements Extension, BeforeEachCallback, AfterEachCallback
 
     private Object findWunderBarTest() {
         return context.getRequiredTestInstances().getAllInstances().stream()
-            .filter(test -> test.getClass().isAnnotationPresent(WunderBarExtension.class))
+            .filter(test -> test.getClass().isAnnotationPresent(WunderBarCustomerExtension.class))
             .findFirst()
-            .orElseThrow(() -> new JUnitWunderBarException("annotation not found: " + WunderBarExtension.class.getName()));
+            .orElseThrow(() -> new JUnitWunderBarException("annotation not found: " + WunderBarCustomerExtension.class.getName()));
     }
 
     private void init() {
-        bar = new Bar();
+        bar = new Bar(Path.of(System.getProperty("user.dir")).getFileName().toString());
         registerShutdownHook();
     }
 
     private void registerShutdownHook() {
-        context.getRoot().getStore(GLOBAL).put(WunderBarJUnit.class.getName(), (CloseableResource) this::shutDown);
+        context.getRoot().getStore(GLOBAL).put(WunderBarCustomerJUnit.class.getName(), (CloseableResource) this::shutDown);
     }
 
     private void forEachField(Class<? extends Annotation> annotationType, Consumer<Field> action) {
@@ -148,7 +150,9 @@ class WunderBarJUnit implements Extension, BeforeEachCallback, AfterEachCallback
 
     @SneakyThrows(ReflectiveOperationException.class)
     private static Object newInstance(Field field) {
-        return field.getType().getConstructor().newInstance();
+        Constructor<?> constructor = field.getType().getDeclaredConstructor();
+        constructor.setAccessible(true);
+        return constructor.newInstance();
     }
 
     @SneakyThrows(ReflectiveOperationException.class)

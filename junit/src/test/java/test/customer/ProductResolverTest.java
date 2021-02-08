@@ -1,7 +1,8 @@
-package test;
+package test.customer;
 
 import com.github.t1.wunderbar.junit.Service;
 import com.github.t1.wunderbar.junit.SystemUnderTest;
+import com.github.t1.wunderbar.junit.WunderBarCustomerExtension;
 import io.smallrye.graphql.client.typesafe.api.GraphQlClientApi;
 import io.smallrye.graphql.client.typesafe.api.GraphQlClientException;
 import org.eclipse.microprofile.graphql.Name;
@@ -9,9 +10,9 @@ import org.eclipse.microprofile.rest.client.inject.RegisterRestClient;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
-import test.ProductResolver.Item;
-import test.ProductResolver.Product;
-import test.ProductResolver.Products;
+import test.customer.ProductResolver.Item;
+import test.customer.ProductResolver.Product;
+import test.customer.ProductResolver.Products;
 
 import javax.ws.rs.ForbiddenException;
 import javax.ws.rs.GET;
@@ -28,6 +29,7 @@ import static org.assertj.core.api.Assertions.catchThrowable;
 import static org.assertj.core.api.Assertions.catchThrowableOfType;
 import static org.assertj.core.api.BDDAssertions.then;
 
+@WunderBarCustomerExtension
 abstract class ProductResolverTest {
     @Service Products products;
     @Service NamedProducts namedProducts;
