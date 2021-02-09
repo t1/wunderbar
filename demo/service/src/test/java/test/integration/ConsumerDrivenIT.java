@@ -1,13 +1,12 @@
 package test.integration;
 
-import com.github.t1.wunderbar.junit.WunderBarExecutorJUnit;
 import org.junit.jupiter.api.DynamicNode;
 import org.junit.jupiter.api.TestFactory;
 
-import java.nio.file.Path;
+import static com.github.t1.wunderbar.junit.WunderBarJUnitExecutor.findTestsIn;
 
 public class ConsumerDrivenIT {
     @TestFactory DynamicNode demoClient() {
-        return new WunderBarExecutorJUnit(Path.of("../client/target/wunder.bar")).build();
+        return findTestsIn("../client/target/wunder.bar");
     }
 }

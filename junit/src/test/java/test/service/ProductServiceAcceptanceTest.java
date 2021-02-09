@@ -1,24 +1,23 @@
 package test.service;
 
 import com.github.t1.wunderbar.junit.Bar;
-import com.github.t1.wunderbar.junit.WunderBarExecutorJUnit;
 import com.github.t1.wunderbar.junit.http.HttpServer;
 import com.github.t1.wunderbar.junit.http.HttpServerRequest;
 import com.github.t1.wunderbar.junit.http.HttpServerResponse;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DynamicNode;
 import org.junit.jupiter.api.TestFactory;
+import org.junit.jupiter.api.function.Executable;
 import org.junit.jupiter.api.io.TempDir;
 
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Function;
 
-import static com.github.t1.wunderbar.junit.WunderBarExecutorJUnit.DEFAULT_TEST_FACTORY;
-import static com.github.t1.wunderbar.junit.WunderBarExecutorJUnit.TEST_FACTORY;
-import static com.github.t1.wunderbar.junit.WunderBarExecutorJUnit.Test;
+import static com.github.t1.wunderbar.junit.WunderBarJUnitExecutor.Test;
+import static com.github.t1.wunderbar.junit.WunderBarJUnitExecutor.findTestsIn;
 import static org.assertj.core.api.BDDAssertions.then;
 
 class ProductServiceAcceptanceTest {
@@ -34,16 +33,15 @@ class ProductServiceAcceptanceTest {
     List<Test> expected = new ArrayList<>();
     List<Test> executed = new ArrayList<>();
 
-    @BeforeEach void setUp() { TEST_FACTORY = test -> () -> executed.add(test); }
+    Function<Test, Executable> executableFactory = test -> () -> executed.add(test);
 
     @AfterEach void tearDown() {
-        TEST_FACTORY = DEFAULT_TEST_FACTORY;
         then(executed).describedAs("executed tests").containsExactlyElementsOf(expected);
     }
 
     @AfterAll static void afterAll() { httpServer.stop(); }
 
-    @TestFactory DynamicNode standardTests() {
+    @TestFactory DynamicNode standardTest() {
         var bar = new BarBuilder("standard-behavior")
             .with("some-container/some-test",
                 HttpServerRequest.builder()
@@ -63,38 +61,40 @@ class ProductServiceAcceptanceTest {
                     .build())
             .build();
 
-        expect("some-test", 1);
+        expect("some-container/some-test", 1);
 
-        return new WunderBarExecutorJUnit(bar.getPath()).build();
+        return build(bar);
     }
 
     @TestFactory DynamicNode nestedTests() {
         var bar = new BarBuilder("nesting-behavior")
             .with("root-1")
             .with("root-2")
-            .with("root-3")
-            .with("root-3")
+            .with("root-2")
             .with("root/flat-1")
             .with("root/flat-2")
             .with("root/flat-3")
             .with("root/nested/nest-1")
             .with("root/deeply/nested/deep-1")
             .with("root/deeply/nested/deep-2")
+            .with("root-3")
             .build();
 
         expect("root-1", 1);
         expect("root-2", 1);
+        expect("root-2", 2);
+        expect("root/flat-1", 1);
+        expect("root/flat-2", 1);
+        expect("root/flat-3", 1);
+        expect("root/nested/nest-1", 1);
+        expect("root/deeply/nested/deep-1", 1);
+        expect("root/deeply/nested/deep-2", 1);
         expect("root-3", 1);
-        // expect("root-3", 2);
-        expect("flat-1", 1);
-        expect("flat-2", 1);
-        expect("flat-3", 1);
-        expect("nest-1", 1);
-        expect("deep-1", 1);
-        expect("deep-2", 1);
 
-        return new WunderBarExecutorJUnit(bar.getPath()).build();
+        return build(bar);
     }
+
+    private DynamicNode build(Bar bar) { return findTestsIn(bar.getPath(), executableFactory); }
 
     static class BarBuilder {
         private final Bar bar;
@@ -133,7 +133,7 @@ class ProductServiceAcceptanceTest {
         return HttpServerResponse.builder().body("{\"value\":\"" + value + "\"}").build();
     }
 
-    private boolean expect(String path, int number) {
-        return expected.add(new Test(Path.of(path), number));
+    private void expect(String path, int number) {
+        expected.add(new Test(Path.of(path).resolve(Integer.toString(number))));
     }
 }
