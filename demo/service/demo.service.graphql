@@ -1,0 +1,11 @@
+query product($id: String!) { product(id: $id) {id name} }
+
+query all { all {id name} }
+
+mutation { store(product: {id: "1", name:"product-name"}) {id name} }
+
+mutation { forbid(productId:"1"){id name} }
+
+mutation { store(product: {id: "some-product-id", name:"some-product-name"}) {id name} }
+
+mutation { delete(productId: "some-product-id") {id name}}

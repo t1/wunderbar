@@ -7,13 +7,23 @@ import lombok.Value;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response.StatusType;
 import java.util.Optional;
+import java.util.Properties;
 
-import static com.github.t1.wunderbar.junit.http.HttpServerRequest.APPLICATION_JSON_UTF8;
-import static com.github.t1.wunderbar.junit.http.HttpServerRequest.JSONB;
+import static com.github.t1.wunderbar.junit.http.HttpUtils.APPLICATION_JSON_UTF8;
+import static com.github.t1.wunderbar.junit.http.HttpUtils.JSONB;
+import static com.github.t1.wunderbar.junit.http.HttpUtils.optional;
 import static javax.ws.rs.core.Response.Status.OK;
 
 @Value @Builder
 public class HttpServerResponse {
+    public static HttpServerResponse from(Properties properties, Optional<String> body) {
+        var builder = HttpServerResponse.builder();
+        optional(properties, "Status").map(HttpUtils::toStatus).ifPresent(builder::status);
+        optional(properties, "Content-Type").map(MediaType::valueOf).ifPresent(builder::contentType);
+        body.ifPresent(builder::body);
+        return builder.build();
+    }
+
     @Default StatusType status = OK;
     @Default MediaType contentType = APPLICATION_JSON_UTF8;
     @Default Optional<String> body = Optional.empty();

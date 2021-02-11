@@ -4,17 +4,17 @@ import com.github.t1.wunderbar.demo.client.OrderItem;
 import com.github.t1.wunderbar.demo.client.Product;
 import com.github.t1.wunderbar.demo.client.ProductsGraphQlResolver;
 import com.github.t1.wunderbar.demo.client.ProductsGraphQlResolver.Products;
-import com.github.t1.wunderbar.junit.Service;
-import com.github.t1.wunderbar.junit.SystemUnderTest;
-import com.github.t1.wunderbar.junit.WunderBarCustomerExtension;
+import com.github.t1.wunderbar.junit.consumer.Service;
+import com.github.t1.wunderbar.junit.consumer.SystemUnderTest;
+import com.github.t1.wunderbar.junit.consumer.WunderBarConsumerExtension;
 import io.smallrye.graphql.client.typesafe.api.GraphQlClientException;
 import org.junit.jupiter.api.Test;
 
-import static com.github.t1.wunderbar.junit.ExpectedResponseBuilder.given;
+import static com.github.t1.wunderbar.junit.consumer.ExpectedResponseBuilder.given;
 import static org.assertj.core.api.Assertions.catchThrowableOfType;
 import static org.assertj.core.api.BDDAssertions.then;
 
-@WunderBarCustomerExtension
+@WunderBarConsumerExtension
 class ProductsGraphQlResolverIT {
     @Service Products products;
     @SystemUnderTest ProductsGraphQlResolver resolver;
@@ -29,7 +29,7 @@ class ProductsGraphQlResolverIT {
     }
 
     @Test void shouldFailToResolveUnknownProduct() {
-        given(products.product("x")).willThrow(new RuntimeException("product x not found"));
+        given(products.product("x")).willThrow(new ProductNotFoundException("x"));
         var item = OrderItem.builder().productId("x").build();
 
         var throwable = catchThrowableOfType(() -> resolver.product(item), GraphQlClientException.class);
@@ -37,5 +37,26 @@ class ProductsGraphQlResolverIT {
         then(throwable.getErrors()).hasSize(1);
         var error = throwable.getErrors().get(0);
         then(error.getMessage()).isEqualTo("product x not found");
+        then(error.getErrorCode()).isEqualTo("product-not-found");
+    }
+
+    @Test void shouldFailToResolveForbiddenProduct() {
+        given(products.product("x")).willThrow(new ProductForbiddenException("x"));
+        var item = OrderItem.builder().productId("x").build();
+
+        var throwable = catchThrowableOfType(() -> resolver.product(item), GraphQlClientException.class);
+
+        then(throwable.getErrors()).hasSize(1);
+        var error = throwable.getErrors().get(0);
+        then(error.getMessage()).isEqualTo("product x is forbidden");
+        then(error.getErrorCode()).isEqualTo("product-forbidden");
+    }
+
+    private static class ProductNotFoundException extends RuntimeException {
+        public ProductNotFoundException(String id) { super("product " + id + " not found"); }
+    }
+
+    private static class ProductForbiddenException extends RuntimeException {
+        public ProductForbiddenException(String id) { super("product " + id + " is forbidden"); }
     }
 }

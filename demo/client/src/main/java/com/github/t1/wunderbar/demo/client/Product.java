@@ -7,12 +7,13 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 import org.eclipse.microprofile.graphql.Id;
+import org.eclipse.microprofile.graphql.NonNull;
 
 import static lombok.AccessLevel.PRIVATE;
 
 @Getter @Setter @ToString @NoArgsConstructor
 @Builder(toBuilder = true) @AllArgsConstructor(access = PRIVATE)
 public class Product {
-    @Id String id;
+    @Id @NonNull String id;
     String name;
 }

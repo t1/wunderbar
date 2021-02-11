@@ -4,19 +4,28 @@ import lombok.Builder;
 import lombok.Builder.Default;
 import lombok.Value;
 
-import javax.json.bind.Jsonb;
-import javax.json.bind.JsonbBuilder;
-import javax.json.bind.JsonbConfig;
 import javax.ws.rs.core.MediaType;
 import java.net.URI;
 import java.util.Optional;
+import java.util.Properties;
 
-import static javax.ws.rs.core.MediaType.APPLICATION_JSON_TYPE;
+import static com.github.t1.wunderbar.junit.http.HttpUtils.APPLICATION_JSON_UTF8;
+import static com.github.t1.wunderbar.junit.http.HttpUtils.JSONB;
+import static com.github.t1.wunderbar.junit.http.HttpUtils.optional;
+import static javax.ws.rs.core.HttpHeaders.ACCEPT;
+import static javax.ws.rs.core.HttpHeaders.CONTENT_TYPE;
 
 @Value @Builder
 public class HttpServerRequest {
-    public static final MediaType APPLICATION_JSON_UTF8 = APPLICATION_JSON_TYPE.withCharset("utf-8");
-    static final Jsonb JSONB = JsonbBuilder.create(new JsonbConfig().withFormatting(true));
+    public static HttpServerRequest from(Properties properties, Optional<String> body) {
+        var builder = HttpServerRequest.builder();
+        optional(properties, "Method").ifPresent(builder::method);
+        optional(properties, "URI").map(URI::create).ifPresent(builder::uri);
+        optional(properties, ACCEPT).map(MediaType::valueOf).ifPresent(builder::accept);
+        optional(properties, CONTENT_TYPE).map(MediaType::valueOf).ifPresent(builder::contentType);
+        body.ifPresent(builder::body);
+        return builder.build();
+    }
 
     @Default String method = "GET";
     @Default URI uri = URI.create("/");
@@ -30,8 +39,8 @@ public class HttpServerRequest {
         return "" +
             "Method: " + method + "\n" +
             "URI: " + uri + "\n" +
-            "Accept: " + accept + "\n" +
-            "Content-Type: " + contentType + "\n";
+            ((accept == null) ? "" : ACCEPT + ": " + accept + "\n") +
+            ((contentType == null) ? "" : CONTENT_TYPE + ": " + contentType + "\n");
     }
 
     @SuppressWarnings("unused")
