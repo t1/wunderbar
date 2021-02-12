@@ -15,24 +15,26 @@ import lombok.Setter;
 import lombok.ToString;
 import org.eclipse.microprofile.graphql.Mutation;
 import org.eclipse.microprofile.graphql.NonNull;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DynamicNode;
 import org.junit.jupiter.api.TestFactory;
 
 import javax.json.bind.Jsonb;
 import javax.json.bind.JsonbBuilder;
 import javax.ws.rs.core.Response.Status;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Pattern;
 
 import static com.github.t1.wunderbar.junit.runner.WunderBarTestFinder.findTestsIn;
-import static javax.ws.rs.core.Response.Status.FORBIDDEN;
-import static javax.ws.rs.core.Response.Status.NOT_FOUND;
-import static javax.ws.rs.core.Response.Status.OK;
 import static org.assertj.core.api.BDDAssertions.then;
 
 @WunderBarRunnerExtension(baseUri = "http://localhost:8080")
 class ConsumerDrivenIT {
+    private static Process SERVICE;
+
     private final Products products = GraphQlClientBuilder.newBuilder().endpoint("http://localhost:8080/graphql").build(Products.class);
     private final List<String> created = new ArrayList<>();
 
@@ -43,6 +45,15 @@ class ConsumerDrivenIT {
         @Mutation @NonNull Product forbid(@NonNull String productId);
 
         @Mutation Product delete(@NonNull String productId);
+    }
+
+    @BeforeAll static void startService() throws IOException {
+        // inheritIO: while working fine in the IDE, maven logs: [WARNING] Corrupted STDOUT by directly writing to native stream in forked JVM
+        SERVICE = new ProcessBuilder().command("java", "-jar", "target/wunderbar.demo.service-runner.jar").inheritIO().start();
+    }
+
+    @AfterAll static void stopService() {
+        if (SERVICE != null) SERVICE.destroy();
     }
 
     @TestFactory DynamicNode demoClientConsumerTests() {
@@ -82,18 +93,26 @@ class ConsumerDrivenIT {
         }
 
         @Override public void run() {
-            if (graphQlResponse.errors == null || graphQlResponse.errors.isEmpty()) {
-                store(graphQlResponse.data.product);
-            } else if ("product-forbidden".equals(code())) {
-                forbidProduct(forbiddenProductId());
-            } else if ("product-not-found".equals(code())) {
-                doNothing();
-            } else {
-                throw new RuntimeException("unsupported status");
+            switch (code()) {
+                case "":
+                    store(graphQlResponse.data.product);
+                    break;
+                case "product-forbidden":
+                    forbidProduct(forbiddenProductId());
+                    break;
+                case "product-not-found":
+                    doNothing();
+                    break;
+                default:
+                    throw new RuntimeException("unsupported error: " + code());
             }
         }
 
-        private Object code() { return graphQlResponse.errors.get(0).getExtensions().get("code"); }
+        private String code() {
+            if (graphQlResponse.errors == null || graphQlResponse.errors.isEmpty()) return "";
+            assert graphQlResponse.errors.size() == 1 : "expected exactly one error but got " + graphQlResponse.errors;
+            return (String) graphQlResponse.errors.get(0).getExtensions().get("code");
+        }
 
         private String forbiddenProductId() {
             var message = graphQlResponse.errors.get(0).getMessage();
@@ -109,14 +128,18 @@ class ConsumerDrivenIT {
         private RestSetUp(HttpServerInteraction interaction) { super(interaction); }
 
         @Override public void run() {
-            if (OK.equals(status())) {
-                store(requestedProduct());
-            } else if (FORBIDDEN.equals(status())) {
-                forbidProduct(forbiddenProductId());
-            } else if (NOT_FOUND.equals(status())) {
-                doNothing();
-            } else {
-                throw new RuntimeException("unsupported status");
+            switch (status()) {
+                case OK:
+                    store(requestedProduct());
+                    break;
+                case FORBIDDEN:
+                    forbidProduct(forbiddenProductId());
+                    break;
+                case NOT_FOUND:
+                    doNothing();
+                    break;
+                default:
+                    throw new RuntimeException("unsupported status");
             }
         }
 
