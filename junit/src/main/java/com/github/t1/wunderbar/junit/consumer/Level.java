@@ -11,7 +11,7 @@ public enum Level {
     AUTO,
 
     /**
-     * Use Mockito to stub the invocation.
+     * Use Mockito to stub the expectation.
      * This is generally done in a test class ending with <code>Test</code>.
      */
     UNIT,

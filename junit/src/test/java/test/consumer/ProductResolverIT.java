@@ -6,7 +6,7 @@ import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
-import static com.github.t1.wunderbar.junit.consumer.ExpectedResponseBuilder.given;
+import static com.github.t1.wunderbar.junit.consumer.WunderbarExpectationBuilder.given;
 import static org.assertj.core.api.Assertions.catchThrowable;
 import static org.assertj.core.api.BDDAssertions.then;
 

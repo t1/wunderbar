@@ -133,8 +133,8 @@ class WunderBarConsumerJUnit implements Extension, BeforeEachCallback, AfterEach
 
 
     @Override public void afterEach(ExtensionContext context) {
-        if (ExpectedResponseBuilder.buildingInvocation != null)
-            throw new WunderBarException("unfinished stubbing of " + ExpectedResponseBuilder.buildingInvocation);
+        if (WunderbarExpectationBuilder.buildingExpectation != null)
+            throw new WunderBarException("unfinished stubbing of " + WunderbarExpectationBuilder.buildingExpectation);
 
         proxies.forEach(Proxy::done);
         proxies.clear();

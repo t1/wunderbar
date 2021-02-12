@@ -8,7 +8,7 @@ import java.lang.reflect.Method;
 import static lombok.AccessLevel.PROTECTED;
 
 @RequiredArgsConstructor(access = PROTECTED)
-public abstract class Invocation {
+public abstract class WunderBarExpectation {
     protected final @NonNull Method method;
     protected final @NonNull Object[] args;
 

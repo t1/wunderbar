@@ -2,20 +2,20 @@ package com.github.t1.wunderbar.junit.runner;
 
 import com.github.t1.wunderbar.junit.WunderBarException;
 import com.github.t1.wunderbar.junit.http.HttpServerInteraction;
-import lombok.SneakyThrows;
 import org.junit.jupiter.api.extension.AfterEachCallback;
 import org.junit.jupiter.api.extension.BeforeEachCallback;
 import org.junit.jupiter.api.extension.Extension;
 import org.junit.jupiter.api.extension.ExtensionContext;
 
 import java.lang.annotation.Annotation;
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
 import java.util.stream.Stream.Builder;
+
+import static com.github.t1.wunderbar.junit.Utils.invoke;
 
 class WunderBarRunnerJUnitExtension implements Extension, BeforeEachCallback, AfterEachCallback {
     static WunderBarRunnerJUnitExtension INSTANCE;
@@ -62,17 +62,5 @@ class WunderBarRunnerJUnitExtension implements Extension, BeforeEachCallback, Af
         for (Class<?> c = instance.getClass(); c != null; c = c.getSuperclass())
             Stream.of(c.getDeclaredMethods()).forEach(builder::add);
         return builder.build();
-    }
-
-    @SneakyThrows(ReflectiveOperationException.class)
-    private void invoke(Object instance, Method method, List<HttpServerInteraction> list) {
-        method.setAccessible(true);
-        try {
-            method.invoke(instance, list);
-        } catch (InvocationTargetException e) {
-            if (e.getTargetException() instanceof RuntimeException)
-                throw (RuntimeException) e.getTargetException();
-            throw e;
-        }
     }
 }

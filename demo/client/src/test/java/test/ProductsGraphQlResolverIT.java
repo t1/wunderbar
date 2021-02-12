@@ -10,7 +10,7 @@ import com.github.t1.wunderbar.junit.consumer.WunderBarConsumerExtension;
 import io.smallrye.graphql.client.typesafe.api.GraphQlClientException;
 import org.junit.jupiter.api.Test;
 
-import static com.github.t1.wunderbar.junit.consumer.ExpectedResponseBuilder.given;
+import static com.github.t1.wunderbar.junit.consumer.WunderbarExpectationBuilder.given;
 import static org.assertj.core.api.Assertions.catchThrowableOfType;
 import static org.assertj.core.api.BDDAssertions.then;
 

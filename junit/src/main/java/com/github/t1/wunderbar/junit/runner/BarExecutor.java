@@ -41,7 +41,7 @@ class BarExecutor implements Executable {
     private final HttpServerInteraction interaction;
 
     @Override public void execute() throws IOException, InterruptedException {
-        var interactions = List.of(this.interaction); // TODO before/after for all invocations in one test
+        var interactions = List.of(this.interaction); // TODO before/after for all expectations in one test
         WunderBarRunnerJUnitExtension.INSTANCE.beforeBarTestConsumers.forEach(consumer -> consumer.accept(interactions));
 
         log.debug("send {}", this.interaction.getRequest());

@@ -1,8 +1,8 @@
 package com.github.t1.wunderbar.junit.consumer;
 
 import com.github.t1.wunderbar.junit.Bar;
-import com.github.t1.wunderbar.junit.consumer.integration.HttpServiceInvocations;
-import com.github.t1.wunderbar.junit.consumer.unit.MockInvocations;
+import com.github.t1.wunderbar.junit.consumer.integration.HttpServiceExpectations;
+import com.github.t1.wunderbar.junit.consumer.unit.MockExpectations;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
@@ -12,14 +12,14 @@ class Proxy {
     private final Bar bar;
     private final Class<?> type;
     final Object instance;
-    private final Invocations invocations;
+    private final WunderBarExpectations expectations;
 
     public Proxy(Level level, Bar bar, Class<?> type) {
         this.level = level;
         this.bar = bar;
         this.type = type;
         this.instance = createProxy(type);
-        this.invocations = createInvocations();
+        this.expectations = createExpectations();
     }
 
     private <T> T createProxy(Class<T> type) {
@@ -31,12 +31,17 @@ class Proxy {
         return (classLoader == null) ? ClassLoader.getSystemClassLoader() : classLoader;
     }
 
-    private Invocations createInvocations() {
+    private Object proxyInvoked(@SuppressWarnings("unused") Object proxy, Method method, Object... args) {
+        if (args == null) args = new Object[0];
+        return expectations.invoke(method, args);
+    }
+
+    private WunderBarExpectations createExpectations() {
         switch (level) {
             case UNIT:
-                return new MockInvocations(type);
+                return new MockExpectations(type);
             case INTEGRATION:
-                return new HttpServiceInvocations(bar);
+                return new HttpServiceExpectations(bar);
         }
         throw new UnsupportedOperationException("unreachable");
     }
@@ -45,10 +50,5 @@ class Proxy {
         return field.getType().isAssignableFrom(type);
     }
 
-    private Object proxyInvoked(@SuppressWarnings("unused") Object proxy, Method method, Object... args) throws Exception {
-        if (args == null) args = new Object[0];
-        return invocations.invoke(method, args);
-    }
-
-    void done() { invocations.done(); }
+    void done() { expectations.done(); }
 }

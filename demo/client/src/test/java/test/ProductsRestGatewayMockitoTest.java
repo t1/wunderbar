@@ -4,25 +4,26 @@ import com.github.t1.wunderbar.demo.client.OrderItem;
 import com.github.t1.wunderbar.demo.client.Product;
 import com.github.t1.wunderbar.demo.client.ProductsRestGateway;
 import com.github.t1.wunderbar.demo.client.ProductsRestGateway.ProductsRestClient;
-import com.github.t1.wunderbar.junit.consumer.Service;
-import com.github.t1.wunderbar.junit.consumer.SystemUnderTest;
-import com.github.t1.wunderbar.junit.consumer.WunderBarConsumerExtension;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 import javax.ws.rs.ForbiddenException;
 import javax.ws.rs.NotFoundException;
 import javax.ws.rs.WebApplicationException;
 
-import static com.github.t1.wunderbar.junit.consumer.WunderbarExpectationBuilder.given;
 import static javax.ws.rs.core.Response.Status.FORBIDDEN;
 import static javax.ws.rs.core.Response.Status.NOT_FOUND;
 import static org.assertj.core.api.Assertions.catchThrowableOfType;
 import static org.assertj.core.api.BDDAssertions.then;
+import static org.mockito.BDDMockito.given;
 
-@WunderBarConsumerExtension
-class ProductsRestGatewayIT {
-    @Service ProductsRestClient products;
-    @SystemUnderTest ProductsRestGateway gateway;
+@ExtendWith(MockitoExtension.class)
+class ProductsRestGatewayMockitoTest {
+    @Mock ProductsRestClient products;
+    @InjectMocks ProductsRestGateway gateway;
 
     private static final String PRODUCT_ID = "some-product-id";
     private static final OrderItem ITEM = OrderItem.builder().productId(PRODUCT_ID).build();

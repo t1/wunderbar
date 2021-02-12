@@ -22,7 +22,7 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Response.Status;
 
-import static com.github.t1.wunderbar.junit.consumer.ExpectedResponseBuilder.given;
+import static com.github.t1.wunderbar.junit.consumer.WunderbarExpectationBuilder.given;
 import static javax.ws.rs.core.Response.Status.FORBIDDEN;
 import static javax.ws.rs.core.Response.Status.NOT_FOUND;
 import static org.assertj.core.api.Assertions.catchThrowable;
