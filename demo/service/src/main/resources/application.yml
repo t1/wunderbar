@@ -1,4 +1,0 @@
-mp:
-  graphql:
-    showErrorMessage:
-      "com.github.t1.wunderbar.demo.server.Products$BusinessException"

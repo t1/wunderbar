@@ -10,6 +10,7 @@ import java.lang.reflect.Method;
 public class Utils {
     @SneakyThrows(ReflectiveOperationException.class)
     public static Object invoke(Object instance, Method method, Object... args) {
+        method.setAccessible(true);
         try {
             return method.invoke(instance, args);
         } catch (InvocationTargetException e) {
