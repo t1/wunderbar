@@ -12,6 +12,8 @@ import lombok.Getter;
 import java.lang.reflect.Method;
 import java.net.URI;
 import java.util.Arrays;
+import java.util.Optional;
+import java.util.function.Function;
 
 import static lombok.AccessLevel.PACKAGE;
 
@@ -21,9 +23,11 @@ abstract class HttpServiceExpectation extends WunderBarExpectation {
     @Getter(PACKAGE) private Object response;
     @Getter(PACKAGE) private Exception exception;
 
-    HttpServiceExpectation(Bar bar, Method method, Object... args) {
+    HttpServiceExpectation(Optional<Bar> bar, Method method, Object... args) {
         super(method, args);
-        this.server = new HttpServer(bar.save(this::handleRequest));
+        Function<HttpServerRequest, HttpServerResponse> handler = this::handleRequest;
+        if (bar.isPresent()) handler = bar.get().save(handler);
+        this.server = new HttpServer(handler);
     }
 
     boolean matches(Method method, Object... args) {

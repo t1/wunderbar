@@ -25,6 +25,14 @@ public class Products {
     private static final ConcurrentMap<String, Product> PRODUCTS = new ConcurrentHashMap<>();
     private static final ConcurrentMap<String, Product> FORBIDDEN_PRODUCTS = new ConcurrentHashMap<>();
 
+    private static final Product EXISTING_PRODUCT = Product.builder().id("existing-product-id").name("some-product-name").build();
+    private static final Product FORBIDDEN_PRODUCT = Product.builder().id("forbidden-product-id").name("some-product-name").build();
+
+    static {
+        PRODUCTS.put(EXISTING_PRODUCT.id, EXISTING_PRODUCT);
+        FORBIDDEN_PRODUCTS.put(FORBIDDEN_PRODUCT.id, FORBIDDEN_PRODUCT);
+    }
+
     @Query
     @GET
     public @NonNull Collection<@NonNull Product> all() {
@@ -44,7 +52,7 @@ public class Products {
 
     @Mutation public @NonNull Product store(@NonNull Product product) {
         log.info("store({})", product);
-        PRODUCTS.put(product.getId(), product);
+        PRODUCTS.put(product.id, product);
         return product;
     }
 

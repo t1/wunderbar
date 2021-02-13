@@ -1,4 +1,4 @@
-package test.integration;
+package test.acceptance;
 
 import com.github.t1.wunderbar.demo.product.Product;
 import com.github.t1.wunderbar.junit.consumer.integration.GraphQlError;
@@ -30,17 +30,20 @@ import java.util.regex.Pattern;
 
 import static com.github.t1.wunderbar.junit.runner.WunderBarTestFinder.findTestsIn;
 import static org.assertj.core.api.BDDAssertions.then;
+import static test.acceptance.ConsumerDrivenAT.ENDPOINT;
 
-@WunderBarRunnerExtension(baseUri = "http://localhost:8080")
-class ConsumerDrivenIT {
+@WunderBarRunnerExtension(baseUri = ENDPOINT)
+class ConsumerDrivenAT {
+    protected static final String ENDPOINT = "http://localhost:8080";
+
     private static Process SERVICE;
 
-    private final Products products = GraphQlClientBuilder.newBuilder().endpoint("http://localhost:8080/graphql").build(Products.class);
+    private final Backdoor backdoor = GraphQlClientBuilder.newBuilder().endpoint(ENDPOINT + "/graphql").build(Backdoor.class);
     private final List<String> created = new ArrayList<>();
 
     @GraphQlClientApi
     @SuppressWarnings("UnusedReturnValue")
-    private interface Products {
+    private interface Backdoor {
         @Mutation @NonNull Product store(@NonNull Product product);
 
         @Mutation @NonNull Product forbid(@NonNull String productId);
@@ -74,12 +77,12 @@ class ConsumerDrivenIT {
 
     private void store(Product product) {
         created.add(product.getId());
-        products.store(product);
+        backdoor.store(product);
     }
 
     private void forbidProduct(String id) {
         store(Product.builder().id(id).build());
-        products.forbid(id);
+        backdoor.forbid(id);
     }
 
     private void doNothing() {}
@@ -184,7 +187,7 @@ class ConsumerDrivenIT {
     }
 
     @AfterBarTest void tearDown(List<HttpServerInteraction> interactions) {
-        created.forEach(products::delete);
+        created.forEach(backdoor::delete);
     }
 
     private static final Jsonb JSONB = JsonbBuilder.create();

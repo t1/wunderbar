@@ -13,10 +13,11 @@ import org.eclipse.microprofile.rest.client.inject.RegisterRestClient;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @Slf4j @RequiredArgsConstructor
 public class HttpServiceExpectations implements WunderBarExpectations {
-    private final Bar bar;
+    private final Optional<Bar> bar;
     private final List<HttpServiceExpectation> expectations = new ArrayList<>();
 
     @Override public Object invoke(Method method, Object... args) {

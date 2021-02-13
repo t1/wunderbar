@@ -11,7 +11,6 @@ import lombok.extern.slf4j.Slf4j;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -23,8 +22,8 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 
 @Slf4j @RequiredArgsConstructor
 public class Bar {
-    private final String name;
-    @Getter @Setter Path path = Paths.get("target/wunder.bar");
+    private final String archiveComment;
+    @Getter @Setter Path path;
     @Setter private String directory;
     private JarOutputStream archive;
     private final Map<String, AtomicInteger> counters = new LinkedHashMap<>();
@@ -72,10 +71,11 @@ public class Bar {
     @SneakyThrows(IOException.class)
     private JarOutputStream archive() {
         if (archive == null) {
+            if (path == null) throw new IllegalStateException("expected path to be set");
             Files.deleteIfExists(path);
             var outputStream = Files.newOutputStream(path);
             archive = new JarOutputStream(outputStream);
-            archive.setComment(name);
+            archive.setComment(archiveComment);
         }
         return archive;
     }

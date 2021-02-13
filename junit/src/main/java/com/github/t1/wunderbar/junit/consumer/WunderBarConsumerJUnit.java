@@ -20,19 +20,23 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
 import java.util.stream.Stream.Builder;
 
 import static com.github.t1.wunderbar.junit.consumer.Level.AUTO;
 import static com.github.t1.wunderbar.junit.consumer.Level.INTEGRATION;
+import static com.github.t1.wunderbar.junit.consumer.Level.SYSTEM;
 import static com.github.t1.wunderbar.junit.consumer.Level.UNIT;
+import static com.github.t1.wunderbar.junit.consumer.WunderBarConsumerExtension.NONE;
 import static java.time.temporal.ChronoUnit.NANOS;
 import static org.junit.jupiter.api.extension.ExtensionContext.Namespace.GLOBAL;
 
 @Slf4j
 class WunderBarConsumerJUnit implements Extension, BeforeEachCallback, AfterEachCallback {
-    private static Bar bar;
+    private static boolean initialized = false;
+    private static Optional<Bar> bar = Optional.empty();
 
     private ExtensionContext context;
     private WunderBarConsumerExtension settings;
@@ -42,14 +46,15 @@ class WunderBarConsumerJUnit implements Extension, BeforeEachCallback, AfterEach
     @Override public void beforeEach(ExtensionContext context) {
         this.context = context;
         this.settings = findWunderBarTest().getClass().getAnnotation(WunderBarConsumerExtension.class);
-        if (bar == null) init();
+
+        if (!initialized) init();
 
         forEachField(Service.class, this::proxy);
 
         forEachField(SystemUnderTest.class, this::initSut);
 
         var testId = testId();
-        bar.setDirectory(testId);
+        bar.ifPresent(b -> b.setDirectory(testId));
         log.info("==================== start {} test: {}", level(), testId);
         start = Instant.now();
     }
@@ -62,8 +67,18 @@ class WunderBarConsumerJUnit implements Extension, BeforeEachCallback, AfterEach
     }
 
     private void init() {
-        bar = new Bar(Path.of(System.getProperty("user.dir")).getFileName().toString());
+        WunderBarConsumerJUnit.bar = createBar();
         registerShutdownHook();
+        initialized = true;
+    }
+
+    private Optional<Bar> createBar() {
+        var fileName = settings.fileName();
+        if (fileName.equals(NONE)) return Optional.empty();
+        var archiveComment = Path.of(System.getProperty("user.dir")).getFileName().toString();
+        var bar = new Bar(archiveComment);
+        bar.setPath(Path.of(fileName));
+        return Optional.of(bar);
     }
 
     private void registerShutdownHook() {
@@ -85,19 +100,17 @@ class WunderBarConsumerJUnit implements Extension, BeforeEachCallback, AfterEach
     }
 
     private void proxy(Field field) {
-        var proxy = new Proxy(level(), bar, field.getType());
+        var proxy = new Proxy(level(), bar, field.getType(), settings.endpoint());
         setField(instanceFor(field), field, proxy.instance);
         this.proxies.add(proxy);
     }
 
     private Level level() {
-        var level = settings.level();
-        if (level == AUTO) level = isIT() ? INTEGRATION : UNIT;
-        return level;
-    }
-
-    private boolean isIT() {
-        return findWunderBarTest().getClass().getName().endsWith("IT");
+        if (settings.level() != AUTO) return settings.level();
+        var testName = findWunderBarTest().getClass().getName();
+        if (testName.endsWith("ST")) return SYSTEM;
+        if (testName.endsWith("IT")) return INTEGRATION;
+        return UNIT;
     }
 
     private String testId() {
@@ -139,15 +152,16 @@ class WunderBarConsumerJUnit implements Extension, BeforeEachCallback, AfterEach
         proxies.forEach(Proxy::done);
         proxies.clear();
 
-        bar.setDirectory(null);
+        bar.ifPresent(b -> b.setDirectory(null));
         log.info("{} took {} ms", testId(), duration());
     }
 
     private long duration() { return Duration.between(start, Instant.now()).get(NANOS) / 1_000_000L; }
 
     private void shutDown() {
-        bar.close();
-        bar = null;
+        bar.ifPresent(Bar::close);
+        bar = Optional.empty();
+        initialized = false;
     }
 
     @SneakyThrows(ReflectiveOperationException.class)
