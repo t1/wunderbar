@@ -17,7 +17,7 @@ import java.util.Optional;
 
 @Slf4j @RequiredArgsConstructor
 public class HttpServiceExpectations implements WunderBarExpectations {
-    private final Optional<Bar> bar;
+    private final Bar bar;
     private final List<HttpServiceExpectation> expectations = new ArrayList<>();
 
     @Override public Object invoke(Method method, Object... args) {

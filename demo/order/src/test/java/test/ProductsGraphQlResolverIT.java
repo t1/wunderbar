@@ -23,16 +23,15 @@ class ProductsGraphQlResolverIT {
         var givenProduct = Product.builder().id("x").name("some-product-name").build();
         given(products.product(givenProduct.getId())).willReturn(givenProduct);
 
-        var resolvedProduct = resolver.product(OrderItem.builder().productId(givenProduct.getId()).build());
+        var resolvedProduct = resolver.product(item(givenProduct.getId()));
 
         then(resolvedProduct).usingRecursiveComparison().isEqualTo(givenProduct);
     }
 
     @Test void shouldFailToResolveUnknownProduct() {
         given(products.product("x")).willThrow(new ProductNotFoundException("x"));
-        var item = OrderItem.builder().productId("x").build();
 
-        var throwable = catchThrowableOfType(() -> resolver.product(item), GraphQlClientException.class);
+        var throwable = catchThrowableOfType(() -> resolver.product(item("x")), GraphQlClientException.class);
 
         then(throwable.getErrors()).hasSize(1);
         var error = throwable.getErrors().get(0);
@@ -42,14 +41,17 @@ class ProductsGraphQlResolverIT {
 
     @Test void shouldFailToResolveForbiddenProduct() {
         given(products.product("x")).willThrow(new ProductForbiddenException("x"));
-        var item = OrderItem.builder().productId("x").build();
 
-        var throwable = catchThrowableOfType(() -> resolver.product(item), GraphQlClientException.class);
+        var throwable = catchThrowableOfType(() -> resolver.product(item("x")), GraphQlClientException.class);
 
         then(throwable.getErrors()).hasSize(1);
         var error = throwable.getErrors().get(0);
         then(error.getMessage()).isEqualTo("product x is forbidden");
         then(error.getErrorCode()).isEqualTo("product-forbidden");
+    }
+
+    private OrderItem item(String x) {
+        return OrderItem.builder().productId(x).build();
     }
 
     private static class ProductNotFoundException extends RuntimeException {

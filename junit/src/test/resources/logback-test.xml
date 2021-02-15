@@ -10,4 +10,5 @@
     </root>
     <logger name="org.jboss.resteasy.resteasy_jaxrs.i18n" level="INFO"/>
     <logger name="org.xnio.nio" level="INFO"/>
+    <logger name="org.jboss.resteasy.microprofile.client.RestClientBuilderImpl" level="ERROR"/>
 </configuration>

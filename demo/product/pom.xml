@@ -13,7 +13,7 @@
     <artifactId>wunderbar.demo.product</artifactId>
 
     <properties>
-        <quarkus.platform.version>1.11.1.Final</quarkus.platform.version>
+        <quarkus.platform.version>${quarkus.version}</quarkus.platform.version>
     </properties>
 
     <dependencyManagement>
@@ -104,14 +104,6 @@
                         <java.util.logging.manager>org.jboss.logmanager.LogManager</java.util.logging.manager>
                         <maven.home>${maven.home}</maven.home>
                     </systemPropertyVariables>
-                </configuration>
-            </plugin>
-            <plugin>
-                <artifactId>maven-failsafe-plugin</artifactId>
-                <configuration>
-                    <includes>
-                        <include>*AT</include>
-                    </includes>
                 </configuration>
             </plugin>
         </plugins>

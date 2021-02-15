@@ -9,12 +9,11 @@ import org.eclipse.microprofile.graphql.Name;
 import java.lang.reflect.Method;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 
 import static java.util.Locale.US;
 
 class GraphQlExpectation extends HttpServiceExpectation {
-    GraphQlExpectation(Optional<Bar> bar, Method method, Object... args) { super(bar, method, args); }
+    GraphQlExpectation(Bar bar, Method method, Object... args) { super(bar, method, args); }
 
     @Override protected Object service() {
         return GraphQlClientBuilder.newBuilder().endpoint(baseUri().resolve("/graphql")).build(method.getDeclaringClass());

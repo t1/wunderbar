@@ -17,10 +17,11 @@ import java.nio.file.Path;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
 import java.util.stream.Stream.Builder;
@@ -36,27 +37,47 @@ import static org.junit.jupiter.api.extension.ExtensionContext.Namespace.GLOBAL;
 @Slf4j
 class WunderBarConsumerJUnit implements Extension, BeforeEachCallback, AfterEachCallback {
     private static boolean initialized = false;
-    private static Optional<Bar> bar = Optional.empty();
+    private static final Map<String, Bar> BARS = new LinkedHashMap<>();
 
     private ExtensionContext context;
     private WunderBarConsumerExtension settings;
+    private String testId;
+    private Bar bar;
     private Instant start;
     private final List<Proxy> proxies = new ArrayList<>();
 
     @Override public void beforeEach(ExtensionContext context) {
+        if (!initialized) init(context);
+
         this.context = context;
+        this.testId = testId();
         this.settings = findWunderBarTest().getClass().getAnnotation(WunderBarConsumerExtension.class);
+        log.info("==================== {} test: {}", level(), testId);
 
-        if (!initialized) init();
+        this.bar = BARS.computeIfAbsent(settings.fileName(), this::createBar);
+        if (bar != null) bar.setDirectory(testId);
 
-        forEachField(Service.class, this::proxy);
+        forEachField(Service.class, this::createProxy);
 
         forEachField(SystemUnderTest.class, this::initSut);
 
-        var testId = testId();
-        bar.ifPresent(b -> b.setDirectory(testId));
-        log.info("==================== start {} test: {}", level(), testId);
         start = Instant.now();
+    }
+
+    private static void init(ExtensionContext context) {
+        registerShutdownHook(WunderBarConsumerJUnit::shutDown, context);
+        initialized = true;
+    }
+
+    private static void registerShutdownHook(CloseableResource shutDown, ExtensionContext context) {
+        context.getRoot().getStore(GLOBAL).put(WunderBarConsumerJUnit.class.getName(), shutDown);
+    }
+
+    private static void shutDown() {
+        log.info("shut down");
+        BARS.values().forEach(Bar::close);
+        BARS.clear();
+        initialized = false;
     }
 
     private Object findWunderBarTest() {
@@ -66,23 +87,13 @@ class WunderBarConsumerJUnit implements Extension, BeforeEachCallback, AfterEach
             .orElseThrow(() -> new WunderBarException("annotation not found: " + WunderBarConsumerExtension.class.getName()));
     }
 
-    private void init() {
-        WunderBarConsumerJUnit.bar = createBar();
-        registerShutdownHook();
-        initialized = true;
-    }
-
-    private Optional<Bar> createBar() {
-        var fileName = settings.fileName();
-        if (fileName.equals(NONE)) return Optional.empty();
+    private Bar createBar(String fileName) {
+        if (fileName.equals(NONE)) return null;
         var archiveComment = Path.of(System.getProperty("user.dir")).getFileName().toString();
+        log.info("create bar [{}] in {}", archiveComment, fileName);
         var bar = new Bar(archiveComment);
         bar.setPath(Path.of(fileName));
-        return Optional.of(bar);
-    }
-
-    private void registerShutdownHook() {
-        context.getRoot().getStore(GLOBAL).put(WunderBarConsumerJUnit.class.getName(), (CloseableResource) this::shutDown);
+        return bar;
     }
 
     private void forEachField(Class<? extends Annotation> annotationType, Consumer<Field> action) {
@@ -99,7 +110,7 @@ class WunderBarConsumerJUnit implements Extension, BeforeEachCallback, AfterEach
         return builder.build();
     }
 
-    private void proxy(Field field) {
+    private void createProxy(Field field) {
         var proxy = new Proxy(level(), bar, field.getType(), settings.endpoint());
         setField(instanceFor(field), field, proxy.instance);
         this.proxies.add(proxy);
@@ -146,23 +157,20 @@ class WunderBarConsumerJUnit implements Extension, BeforeEachCallback, AfterEach
 
 
     @Override public void afterEach(ExtensionContext context) {
+        var duration = duration();
+
         if (WunderbarExpectationBuilder.buildingExpectation != null)
             throw new WunderBarException("unfinished stubbing of " + WunderbarExpectationBuilder.buildingExpectation);
 
         proxies.forEach(Proxy::done);
         proxies.clear();
 
-        bar.ifPresent(b -> b.setDirectory(null));
-        log.info("{} took {} ms", testId(), duration());
+        if (bar != null) bar.setDirectory(null);
+        log.info("{} took {} ms", testId, duration);
+        testId = null;
     }
 
     private long duration() { return Duration.between(start, Instant.now()).get(NANOS) / 1_000_000L; }
-
-    private void shutDown() {
-        bar.ifPresent(Bar::close);
-        bar = Optional.empty();
-        initialized = false;
-    }
 
     @SneakyThrows(ReflectiveOperationException.class)
     private static Object newInstance(Field field) {

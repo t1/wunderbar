@@ -7,17 +7,16 @@ import com.github.t1.wunderbar.junit.consumer.unit.MockExpectations;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
-import java.util.Optional;
 
 class Proxy {
     private final Level level;
-    private final Optional<Bar> bar;
+    private final Bar bar;
     private final Class<?> type;
     final Object instance;
     private final String endpoint;
     private final WunderBarExpectations expectations;
 
-    public Proxy(Level level, Optional<Bar> bar, Class<?> type, String endpoint) {
+    public Proxy(Level level, Bar bar, Class<?> type, String endpoint) {
         this.level = level;
         this.bar = bar;
         this.type = type;
@@ -49,7 +48,7 @@ class Proxy {
             case INTEGRATION:
                 return new HttpServiceExpectations(bar);
             case SYSTEM:
-                return new SystemExpectations(type, endpoint);
+                return new SystemExpectations(type, endpoint, bar);
         }
         throw new UnsupportedOperationException("unreachable");
     }

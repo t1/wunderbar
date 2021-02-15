@@ -6,6 +6,7 @@ import javax.inject.Inject;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
+import java.io.Closeable;
 
 public class ProductsRestGateway {
     @Inject ProductsRestClient products;
@@ -15,7 +16,7 @@ public class ProductsRestGateway {
     }
 
     @RegisterRestClient @Path("/products")
-    public interface ProductsRestClient {
+    public interface ProductsRestClient extends Closeable {
         @GET @Path("/{id}")
         Product product(@PathParam("id") String id);
     }

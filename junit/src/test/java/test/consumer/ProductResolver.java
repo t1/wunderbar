@@ -12,14 +12,12 @@ import org.eclipse.microprofile.graphql.Id;
 import org.eclipse.microprofile.graphql.NonNull;
 import org.eclipse.microprofile.graphql.Source;
 
-import javax.inject.Inject;
-
 import static lombok.AccessLevel.PRIVATE;
 
 @GraphQLApi
 class ProductResolver {
-    @Inject @SuppressWarnings("CdiInjectionPointsInspection")
-    private Products products;
+    // would be @Inject
+    Products products;
 
     Product product(@Source Item item) {
         return products.product(item.getProductId());

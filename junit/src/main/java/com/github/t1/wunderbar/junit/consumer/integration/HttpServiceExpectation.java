@@ -8,25 +8,28 @@ import com.github.t1.wunderbar.junit.http.HttpServer;
 import com.github.t1.wunderbar.junit.http.HttpServerRequest;
 import com.github.t1.wunderbar.junit.http.HttpServerResponse;
 import lombok.Getter;
+import lombok.SneakyThrows;
 
+import java.io.Closeable;
+import java.io.IOException;
 import java.lang.reflect.Method;
 import java.net.URI;
 import java.util.Arrays;
-import java.util.Optional;
 import java.util.function.Function;
 
 import static lombok.AccessLevel.PACKAGE;
 
 abstract class HttpServiceExpectation extends WunderBarExpectation {
     private final HttpServer server;
+    private Object service;
 
     @Getter(PACKAGE) private Object response;
     @Getter(PACKAGE) private Exception exception;
 
-    HttpServiceExpectation(Optional<Bar> bar, Method method, Object... args) {
+    HttpServiceExpectation(Bar bar, Method method, Object... args) {
         super(method, args);
         Function<HttpServerRequest, HttpServerResponse> handler = this::handleRequest;
-        if (bar.isPresent()) handler = bar.get().save(handler);
+        if (bar != null) handler = bar.save(handler);
         this.server = new HttpServer(handler);
     }
 
@@ -38,7 +41,10 @@ abstract class HttpServiceExpectation extends WunderBarExpectation {
 
     URI baseUri() { return server.baseUri(); }
 
-    final Object invoke() { return Utils.invoke(service(), method, args); }
+    final Object invoke() {
+        if (this.service == null) this.service = service();
+        return Utils.invoke(service, method, args);
+    }
 
     protected abstract Object service();
 
@@ -59,5 +65,9 @@ abstract class HttpServiceExpectation extends WunderBarExpectation {
         assert exception == null : "double " + method + " (exception)";
     }
 
-    @Override public void done() { server.stop(); }
+    @SneakyThrows(IOException.class)
+    @Override public void done() {
+        if (service instanceof Closeable) ((Closeable) service).close();
+        server.stop();
+    }
 }

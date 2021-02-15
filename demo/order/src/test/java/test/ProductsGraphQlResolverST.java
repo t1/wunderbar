@@ -13,7 +13,7 @@ import org.junit.jupiter.api.Test;
 import static org.assertj.core.api.Assertions.catchThrowableOfType;
 import static org.assertj.core.api.BDDAssertions.then;
 
-@WunderBarConsumerExtension
+@WunderBarConsumerExtension(fileName = "target/system-wunder.bar")
 class ProductsGraphQlResolverST {
     @Service Products products;
     @SystemUnderTest ProductsGraphQlResolver resolver;

@@ -13,13 +13,12 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response.StatusType;
 import java.lang.reflect.Method;
 import java.net.URI;
-import java.util.Optional;
 
 import static javax.ws.rs.core.Response.Status.INTERNAL_SERVER_ERROR;
 
 @Slf4j
 class RestExpectation extends HttpServiceExpectation {
-    RestExpectation(Optional<Bar> bar, Method method, Object... args) { super(bar, method, args); }
+    RestExpectation(Bar bar, Method method, Object... args) { super(bar, method, args); }
 
     @Override protected Object service() {
         return RestClientBuilder.newBuilder().baseUri(baseUri().resolve("/rest")).build(method.getDeclaringClass());

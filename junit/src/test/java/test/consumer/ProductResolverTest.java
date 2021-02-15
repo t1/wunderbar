@@ -22,6 +22,8 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Response.Status;
 
+import java.io.Closeable;
+
 import static com.github.t1.wunderbar.junit.consumer.WunderbarExpectationBuilder.given;
 import static javax.ws.rs.core.Response.Status.FORBIDDEN;
 import static javax.ws.rs.core.Response.Status.NOT_FOUND;
@@ -146,7 +148,7 @@ abstract class ProductResolverTest {
 
     @RegisterRestClient(baseUri = "dummy") @Path("/hello")
     public // RestEasy MP Rest Client requires the interface to be `public`
-    interface RestService {
+    interface RestService extends Closeable {
         @Path("/{productId}")
         @GET Product getProduct(@PathParam("productId") String productId);
     }

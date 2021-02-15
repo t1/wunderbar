@@ -28,32 +28,32 @@ public class Bar {
     private JarOutputStream archive;
     private final Map<String, AtomicInteger> counters = new LinkedHashMap<>();
 
+    @Override public String toString() {
+        return "Bar[" + archiveComment + ":" + path + " : " + directory + " : " + counters + ']';
+    }
+
     public Function<HttpServerRequest, HttpServerResponse> save(Function<HttpServerRequest, HttpServerResponse> handler) {
         return (request) -> {
-            var prefix = nextPrefix();
-            save(prefix, request);
-
             var response = handler.apply(request);
-
-            save(prefix, response);
+            save(request, response);
             return response;
         };
     }
 
     private String nextPrefix() {
-        assert directory != null : "must set directory before calling save";
+        if (directory == null)
+            throw new IllegalStateException("must set directory before calling save: " + this);
         var counter = counters.computeIfAbsent(directory, i -> new AtomicInteger())
             .incrementAndGet();
         return directory + "/" + counter + " ";
     }
 
 
-    private void save(String id, HttpServerRequest request) {
+    public void save(HttpServerRequest request, HttpServerResponse response) {
+        String id = nextPrefix();
         write(id + "request-headers.properties", request.headerProperties());
         request.getBody().ifPresent(body -> write(id + "request-body.json", body));
-    }
 
-    private void save(String id, HttpServerResponse response) {
         write(id + "response-headers.properties", response.headerProperties());
         response.getBody().ifPresent(body -> write(id + "response-body.json", body));
     }
@@ -63,7 +63,7 @@ public class Bar {
         var archive = archive();
         archive.putNextEntry(new ZipEntry(fileName));
         var bytes = content.getBytes(UTF_8);
-        log.debug("write {} bytes to {}", bytes.length, fileName);
+        log.debug("write [{}] ({} bytes)", fileName, bytes.length);
         archive.write(bytes);
         archive.closeEntry();
     }
