@@ -15,8 +15,11 @@ import java.io.IOException;
 import java.lang.reflect.Method;
 import java.net.URI;
 import java.util.Arrays;
+import java.util.Optional;
 import java.util.function.Function;
 
+import static com.github.t1.wunderbar.junit.Utils.formatJson;
+import static javax.ws.rs.core.MediaType.APPLICATION_JSON_TYPE;
 import static lombok.AccessLevel.PACKAGE;
 
 abstract class HttpServiceExpectation extends WunderBarExpectation {
@@ -29,7 +32,8 @@ abstract class HttpServiceExpectation extends WunderBarExpectation {
     HttpServiceExpectation(Bar bar, Method method, Object... args) {
         super(method, args);
         Function<HttpServerRequest, HttpServerResponse> handler = this::handleRequest;
-        if (bar != null) handler = bar.save(handler);
+        if (bar != null) handler = save(bar, handler);
+        handler = this.formatRequestBody(handler);
         this.server = new HttpServer(handler);
     }
 
@@ -38,6 +42,22 @@ abstract class HttpServiceExpectation extends WunderBarExpectation {
     }
 
     abstract protected HttpServerResponse handleRequest(HttpServerRequest request);
+
+    private Function<HttpServerRequest, HttpServerResponse> save(Bar bar, Function<HttpServerRequest, HttpServerResponse> handler) {
+        return request -> {
+            var response = handler.apply(request);
+            bar.save(request, response);
+            return response;
+        };
+    }
+
+    private Function<HttpServerRequest, HttpServerResponse> formatRequestBody(Function<HttpServerRequest, HttpServerResponse> handler) {
+        return request -> {
+            if (request.getBody().isPresent() && APPLICATION_JSON_TYPE.isCompatible(request.getContentType()))
+                request = request.withBody(Optional.of(formatJson(request.getBody().get())));
+            return handler.apply(request);
+        };
+    }
 
     URI baseUri() { return server.baseUri(); }
 

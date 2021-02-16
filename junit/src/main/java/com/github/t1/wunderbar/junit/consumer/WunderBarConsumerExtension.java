@@ -23,7 +23,11 @@ public @interface WunderBarConsumerExtension {
 
     /**
      * Base uri template where a service needed for a {@link Level#SYSTEM SYSTEM} level test runs.
-     * The template variable <code>technology</code> will be replaced by <code>graphql</code> or <code>rest</code> respectively.
+     * <ol>
+     * <li>A method template variable like <code>{foo()}</code> will be replaced by the result of a call to the (maybe static) method
+     *     of that name in the test class.
+     * <li>The template variable <code>technology</code> will be replaced by <code>graphql</code> or <code>rest</code> respectively.
+     * </ol>
      */
     String endpoint() default "http://localhost:8080/{technology}";
 

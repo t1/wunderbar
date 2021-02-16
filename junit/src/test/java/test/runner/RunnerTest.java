@@ -125,7 +125,7 @@ class RunnerTest {
             bar.setDirectory(directory);
             RunnerTest.request = request;
             RunnerTest.response = response;
-            bar.save(r -> response).apply(request);
+            bar.save(request, response);
             return this;
         }
 

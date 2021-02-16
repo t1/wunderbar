@@ -21,11 +21,11 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Response.Status;
-
 import java.io.Closeable;
 
 import static com.github.t1.wunderbar.junit.consumer.WunderbarExpectationBuilder.given;
 import static javax.ws.rs.core.Response.Status.FORBIDDEN;
+import static javax.ws.rs.core.Response.Status.INTERNAL_SERVER_ERROR;
 import static javax.ws.rs.core.Response.Status.NOT_FOUND;
 import static org.assertj.core.api.Assertions.catchThrowable;
 import static org.assertj.core.api.Assertions.catchThrowableOfType;
@@ -91,27 +91,35 @@ abstract class ProductResolverTest {
     }
 
     @Test void shouldFailToResolveUnknownProduct() {
-        given(products.product("x")).willThrow(new RuntimeException("product x not found"));
+        given(products.product("x")).willThrow(new ProductNotFoundException("x"));
         var item = Item.builder().productId("x").build();
 
         var throwable = catchThrowable(() -> resolver.product(item));
 
-        failsWith(throwable, "product x not found", NOT_FOUND);
+        failsWith(throwable, "product-not-found", "product x not found", NOT_FOUND);
     }
 
-    void failsWith(Throwable throwable, String message, @SuppressWarnings("SameParameterValue") Status status) {
+    static class ProductNotFoundException extends RuntimeException {
+        ProductNotFoundException(String id) { super("product " + id + " not found"); }
+    }
+
+    void failsWith(Throwable throwable, String code, String message, Status status) {
         then(throwable).isNotNull();
         if (throwable instanceof GraphQlClientException) {
             GraphQlClientException e = (GraphQlClientException) throwable;
             then(e.getErrors()).hasSize(1);
             var error = e.getErrors().get(0);
             then(error.getMessage()).isEqualTo(message);
+            then(error.getErrorCode()).isEqualTo(code);
         } else if (throwable instanceof WebApplicationException) {
             var response = ((WebApplicationException) throwable).getResponse();
             then(response.getStatusInfo()).isEqualTo(status);
-            if (!throwable.getMessage().equals(message)) // i.e. not level=UNIT
-                then(response.readEntity(String.class)).contains("\"detail\": \"" + message + "\"");
-        } else {
+            if (!throwable.getMessage().equals(message)) { // i.e. not level=UNIT
+                var body = response.readEntity(String.class);
+                then(body).contains("\"detail\": \"" + message + "\"");
+                then(body).contains("\"type\": \"urn:problem-type:" + code + "\"");
+            }
+        } else /* level=UNIT */ {
             then(throwable.getMessage()).isEqualTo(message);
         }
     }
@@ -129,11 +137,21 @@ abstract class ProductResolverTest {
         }
 
         @Test void shouldFailToCallFailingRestService() {
+            var productId = "ry";
+            given(restService.getProduct(productId)).willThrow(new IllegalStateException("some internal error"));
+
+            var throwable = catchThrowable(() -> restService.getProduct(productId));
+
+            failsWith(throwable, IllegalStateException.class.getName(), "some internal error", INTERNAL_SERVER_ERROR);
+        }
+
+        @Test void shouldFailToCallForbiddenRestService() {
             var productId = "rx";
             given(restService.getProduct(productId)).willThrow(new ForbiddenException());
 
             var throwable = catchThrowableOfType(() -> restService.getProduct(productId), WebApplicationException.class);
 
+            // no response body, so failsWith doesn't work
             then(throwable.getResponse().getStatusInfo()).isEqualTo(FORBIDDEN);
         }
 
@@ -142,7 +160,7 @@ abstract class ProductResolverTest {
 
             var throwable = catchThrowableOfType(() -> restService.getProduct("y"), WebApplicationException.class);
 
-            failsWith(throwable, "product y not found", NOT_FOUND);
+            failsWith(throwable, NotFoundException.class.getName(), "product y not found", NOT_FOUND);
         }
     }
 
@@ -156,7 +174,7 @@ abstract class ProductResolverTest {
 
     @DisplayName("stubbing failures")
     @Nested class StubbingFailures {
-        // TODO how can I test that this throws an exception in afterEach?
+        // TODO how can I test that this throws an "unfinished stubbing" exception in afterEach?
         //  @Test void shouldFailUnfinishedStubbing() {
         //     given(products.product("x"));
         // }

@@ -13,6 +13,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response.StatusType;
 import java.lang.reflect.Method;
 import java.net.URI;
+import java.util.Optional;
 
 import static javax.ws.rs.core.Response.Status.INTERNAL_SERVER_ERROR;
 
@@ -28,7 +29,7 @@ class RestExpectation extends HttpServiceExpectation {
         var out = HttpServerResponse.builder();
         var exception = getException();
         if (exception == null) {
-            out.body(getResponse());
+            Optional.ofNullable(getResponse()).ifPresent(out::body);
         } else {
             out.status(statusOf(exception));
             out.body(ProblemDetails.of(exception));

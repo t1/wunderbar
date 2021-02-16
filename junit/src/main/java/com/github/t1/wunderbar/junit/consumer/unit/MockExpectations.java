@@ -1,6 +1,7 @@
 package com.github.t1.wunderbar.junit.consumer.unit;
 
 import com.github.t1.wunderbar.junit.Utils;
+import com.github.t1.wunderbar.junit.consumer.WunderBarExpectation;
 import com.github.t1.wunderbar.junit.consumer.WunderBarExpectations;
 import com.github.t1.wunderbar.junit.consumer.WunderbarExpectationBuilder;
 import org.mockito.Mockito;
@@ -27,5 +28,10 @@ public class MockExpectations implements WunderBarExpectations {
         WunderbarExpectationBuilder.buildingExpectation = expectation;
 
         return expectation.nullValue();
+    }
+
+    @Override public void done() {
+        expectations.forEach(WunderBarExpectation::done);
+        expectations.clear();
     }
 }

@@ -3,6 +3,7 @@ package com.github.t1.wunderbar.junit.http;
 import lombok.Builder;
 import lombok.Builder.Default;
 import lombok.Value;
+import lombok.With;
 
 import javax.ws.rs.core.MediaType;
 import java.net.URI;
@@ -15,7 +16,7 @@ import static com.github.t1.wunderbar.junit.http.HttpUtils.optional;
 import static javax.ws.rs.core.HttpHeaders.ACCEPT;
 import static javax.ws.rs.core.HttpHeaders.CONTENT_TYPE;
 
-@Value @Builder
+@Value @Builder @With
 public class HttpServerRequest {
     public static HttpServerRequest from(Properties properties, Optional<String> body) {
         var builder = HttpServerRequest.builder();

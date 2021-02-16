@@ -188,6 +188,7 @@ class ConsumerDrivenAT {
 
     @AfterBarTest void tearDown(List<HttpServerInteraction> interactions) {
         created.forEach(backdoor::delete);
+        created.clear();
     }
 
     private static final Jsonb JSONB = JsonbBuilder.create();

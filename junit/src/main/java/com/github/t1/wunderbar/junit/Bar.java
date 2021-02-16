@@ -14,7 +14,6 @@ import java.nio.file.Path;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.function.Function;
 import java.util.jar.JarOutputStream;
 import java.util.zip.ZipEntry;
 
@@ -30,14 +29,6 @@ public class Bar {
 
     @Override public String toString() {
         return "Bar[" + archiveComment + ":" + path + " : " + directory + " : " + counters + ']';
-    }
-
-    public Function<HttpServerRequest, HttpServerResponse> save(Function<HttpServerRequest, HttpServerResponse> handler) {
-        return (request) -> {
-            var response = handler.apply(request);
-            save(request, response);
-            return response;
-        };
     }
 
     private String nextPrefix() {

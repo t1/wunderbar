@@ -26,6 +26,8 @@ public class Utils {
     }
 
     public static String formatJson(String json) {
+        if (json == null || json.isBlank()) return json;
+
         var value = Json.createReader(new StringReader(json)).readValue();
 
         var writer = new StringWriter();

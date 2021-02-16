@@ -45,7 +45,7 @@ public class SystemExpectations implements WunderBarExpectations {
 
     private static URI resolve(String template, String technology) {
         var uri = URI.create(template.replace("{technology}", technology));
-        log.info("resolve system test endpoint to {}", uri);
+        log.info("system test endpoint: {}", uri);
         return uri;
     }
 

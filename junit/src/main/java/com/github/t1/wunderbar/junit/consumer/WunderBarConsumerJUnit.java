@@ -23,6 +23,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.function.Consumer;
+import java.util.regex.Pattern;
 import java.util.stream.Stream;
 import java.util.stream.Stream.Builder;
 
@@ -38,6 +39,7 @@ import static org.junit.jupiter.api.extension.ExtensionContext.Namespace.GLOBAL;
 class WunderBarConsumerJUnit implements Extension, BeforeEachCallback, AfterEachCallback {
     private static boolean initialized = false;
     private static final Map<String, Bar> BARS = new LinkedHashMap<>();
+    private static final Pattern FUNCTION = Pattern.compile("(?<prefix>.*)\\{(?<method>.*)\\(\\)}(?<suffix>.*)");
 
     private ExtensionContext context;
     private WunderBarConsumerExtension settings;
@@ -111,7 +113,7 @@ class WunderBarConsumerJUnit implements Extension, BeforeEachCallback, AfterEach
     }
 
     private void createProxy(Field field) {
-        var proxy = new Proxy(level(), bar, field.getType(), settings.endpoint());
+        var proxy = new Proxy(level(), bar, field.getType(), endpoint());
         setField(instanceFor(field), field, proxy.instance);
         this.proxies.add(proxy);
     }
@@ -122,6 +124,22 @@ class WunderBarConsumerJUnit implements Extension, BeforeEachCallback, AfterEach
         if (testName.endsWith("ST")) return SYSTEM;
         if (testName.endsWith("IT")) return INTEGRATION;
         return UNIT;
+    }
+
+    private String endpoint() {
+        var endpoint = settings.endpoint();
+        var matcher = FUNCTION.matcher(endpoint);
+        if (matcher.matches())
+            endpoint = matcher.group("prefix") + call(matcher.group("method")) + matcher.group("suffix");
+        return endpoint;
+    }
+
+    @SneakyThrows(ReflectiveOperationException.class)
+    private String call(String methodName) {
+        var instance = context.getRequiredTestInstance();
+        var method = instance.getClass().getDeclaredMethod(methodName);
+        method.setAccessible(true);
+        return method.invoke(instance).toString();
     }
 
     private String testId() {

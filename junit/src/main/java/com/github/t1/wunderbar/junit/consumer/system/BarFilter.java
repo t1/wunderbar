@@ -89,10 +89,12 @@ public class BarFilter implements ClientRequestFilter, ClientResponseFilter {
                 response.contentType(contentType);
             if (responseContext.hasEntity()) {
                 var bytes = responseContext.getEntityStream().readAllBytes();
-                responseContext.setEntityStream(new ByteArrayInputStream(bytes));
-                var body = new String(bytes);
-                if (APPLICATION_JSON_TYPE.isCompatible(contentType)) body = formatJson(body);
-                response.body(body);
+                if (bytes.length > 0) { // resteasy returns hasEntity = true, even when content-length is 0
+                    responseContext.setEntityStream(new ByteArrayInputStream(bytes));
+                    var body = new String(bytes);
+                    if (APPLICATION_JSON_TYPE.isCompatible(contentType)) body = formatJson(body);
+                    response.body(body);
+                }
             }
         }
 
