@@ -65,6 +65,10 @@
             <artifactId>smallrye-graphql-client</artifactId>
             <version>1.0.21</version>
         </dependency>
+        <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-smallrye-health</artifactId>
+        </dependency>
 
         <dependency>
             <groupId>io.quarkus</groupId>

@@ -16,6 +16,11 @@ public class JsonValueAssert {
     private final JsonValue actual;
 
     public void isEqualToIgnoringNewFields(JsonValue expected) {
+        then(actual.getValueType())
+            .describedAs("value type mismatch\n" +
+                "expected: " + expected + "\n" +
+                "actual  : " + actual)
+            .isEqualTo(expected.getValueType());
         // TODO diff json array and scalar
         var diff = Json.createDiff(expected.asJsonObject(), actual.asJsonObject()).toJsonArray();
         var nonAdd = diff.stream()

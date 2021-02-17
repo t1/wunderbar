@@ -3,7 +3,6 @@ package com.github.t1.wunderbar.junit.runner;
 import com.github.t1.wunderbar.junit.http.HttpServerInteraction;
 import com.github.t1.wunderbar.junit.http.HttpUtils;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.function.Executable;
 
 import javax.json.JsonValue;
@@ -29,7 +28,6 @@ import static java.net.http.HttpResponse.ResponseInfo;
 import static javax.ws.rs.core.HttpHeaders.CONTENT_TYPE;
 import static org.assertj.core.api.BDDSoftAssertions.thenSoftly;
 
-@Slf4j
 @RequiredArgsConstructor
 class BarExecutor implements Executable {
     private static final HttpClient HTTP = HttpClient.newBuilder()
@@ -37,25 +35,28 @@ class BarExecutor implements Executable {
         .connectTimeout(Duration.ofSeconds(1))
         .build();
 
+    private final String name;
     private final URI baseUri;
     private final HttpServerInteraction interaction;
 
     @Override public void execute() throws IOException, InterruptedException {
+        System.out.println("==================== start " + name);
         var interactions = List.of(this.interaction); // TODO before/after for all expectations in one test
-        WunderBarRunnerJUnitExtension.INSTANCE.beforeBarTestConsumers.forEach(consumer -> consumer.accept(interactions));
+        WunderBarRunnerJUnitExtension.INSTANCE.beforeDynamicTestConsumers.forEach(consumer -> consumer.accept(interactions));
 
-        log.debug("send {}", this.interaction.getRequest());
+        System.out.println(this.interaction.getRequest().toString());
 
         HttpResponse<JsonValue> actual = HTTP.send(request(), ofJson());
 
-        WunderBarRunnerJUnitExtension.INSTANCE.afterBarTestConsumers.forEach(consumer -> consumer.accept(interactions));
+        WunderBarRunnerJUnitExtension.INSTANCE.afterDynamicTestConsumers.forEach(consumer -> consumer.accept(interactions));
 
-        log.debug("received {}", actual);
+        System.out.println("received: " + actual);
         var expected = this.interaction.getResponse();
         thenSoftly(softly -> {
             softly.then(actual.statusCode()).isEqualTo(expected.getStatus().getStatusCode());
-            softly.then(contentType(actual).isCompatible(expected.getContentType()))
-                .describedAs(expected.getContentType() + " to be compatible to " + contentType(actual))
+            var actualContentType = contentType(actual);
+            softly.then(actualContentType.isCompatible(expected.getContentType()))
+                .describedAs("Content-Type: " + expected.getContentType() + " to be compatible to " + actualContentType)
                 .isTrue();
             expected.getBody().map(HttpUtils::toJson).ifPresent(expectedBody ->
                 softly.check(() -> then(actual.body()).isEqualToIgnoringNewFields(expectedBody)));

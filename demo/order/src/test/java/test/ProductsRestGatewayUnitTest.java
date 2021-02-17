@@ -21,7 +21,7 @@ import static org.assertj.core.api.BDDAssertions.then;
 import static org.mockito.BDDMockito.given;
 
 @ExtendWith(MockitoExtension.class)
-class ProductsRestGatewayMockitoTest {
+class ProductsRestGatewayUnitTest {
     @Mock ProductsRestClient products;
     @InjectMocks ProductsRestGateway gateway;
 

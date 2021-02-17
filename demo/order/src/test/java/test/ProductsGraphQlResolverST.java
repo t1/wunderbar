@@ -23,13 +23,14 @@ import static org.assertj.core.api.BDDAssertions.then;
 
 @WunderBarConsumerExtension(fileName = "target/system-wunder.bar", endpoint = "{endpoint()}")
 class ProductsGraphQlResolverST {
+    /** this server would normally be a real server running somewhere */
     private static final HttpServer SERVER = new HttpServer(ProductsGraphQlResolverST::handle);
 
     @SuppressWarnings("unused")
-    static URI endpoint() { return SERVER.baseUri(); }
+    static URI endpoint() { return SERVER.baseUri().resolve("/graphql"); }
 
     static HttpServerResponse handle(HttpServerRequest request) {
-        assert request.getUri().toString().equals("/") : "unexpected uri " + request.getUri();
+        assert request.getUri().toString().equals("/graphql") : "unexpected uri " + request.getUri();
         assert request.getBody().isPresent();
         var body = Json.createReader(new StringReader(request.getBody().get())).readObject();
         assert body.getString("query").equals("query product($id: String!) { product(id: $id) {id name} }")

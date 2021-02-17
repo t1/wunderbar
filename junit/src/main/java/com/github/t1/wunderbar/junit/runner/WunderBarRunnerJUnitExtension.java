@@ -22,16 +22,16 @@ class WunderBarRunnerJUnitExtension implements Extension, BeforeEachCallback, Af
     WunderBarRunnerExtension settings;
 
     private ExtensionContext context;
-    List<Consumer<List<HttpServerInteraction>>> beforeBarTestConsumers = new ArrayList<>();
-    List<Consumer<List<HttpServerInteraction>>> afterBarTestConsumers = new ArrayList<>();
+    List<Consumer<List<HttpServerInteraction>>> beforeDynamicTestConsumers = new ArrayList<>();
+    List<Consumer<List<HttpServerInteraction>>> afterDynamicTestConsumers = new ArrayList<>();
 
     @Override public void beforeEach(ExtensionContext context) {
         INSTANCE = this;
         this.context = context;
         this.settings = findSettings();
 
-        addAllMethodsTo(BeforeBarTest.class, beforeBarTestConsumers);
-        addAllMethodsTo(AfterBarTest.class, afterBarTestConsumers);
+        addAllMethodsTo(BeforeDynamicTest.class, beforeDynamicTestConsumers);
+        addAllMethodsTo(AfterDynamicTest.class, afterDynamicTestConsumers);
     }
 
     private WunderBarRunnerExtension findSettings() {
@@ -43,8 +43,8 @@ class WunderBarRunnerJUnitExtension implements Extension, BeforeEachCallback, Af
     }
 
     @Override public void afterEach(ExtensionContext context) {
-        afterBarTestConsumers.clear();
-        beforeBarTestConsumers.clear();
+        afterDynamicTestConsumers.clear();
+        beforeDynamicTestConsumers.clear();
         this.settings = null;
         this.context = null;
         INSTANCE = null;

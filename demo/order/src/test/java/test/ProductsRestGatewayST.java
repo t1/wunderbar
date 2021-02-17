@@ -14,6 +14,7 @@ import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Test;
 
 import javax.ws.rs.WebApplicationException;
+import javax.ws.rs.core.MediaType;
 import java.net.URI;
 
 import static javax.ws.rs.core.Response.Status.FORBIDDEN;
@@ -23,26 +24,32 @@ import static org.assertj.core.api.BDDAssertions.then;
 
 @WunderBarConsumerExtension(fileName = "target/system-wunder.bar", endpoint = "{endpoint()}")
 class ProductsRestGatewayST {
+    /** this server would normally be a real server running somewhere */
     private static final HttpServer SERVER = new HttpServer(ProductsRestGatewayST::handle);
+    private static final MediaType PROBLEM_DETAIL = MediaType.valueOf("application/problem+json;charset=utf-8");
 
     @SuppressWarnings("unused")
-    static URI endpoint() { return SERVER.baseUri(); }
+    static URI endpoint() { return SERVER.baseUri().resolve("/rest"); }
 
     static HttpServerResponse handle(HttpServerRequest request) {
         var response = HttpServerResponse.builder();
         switch (request.getUri().toString()) {
-            case "/products/existing-product-id":
+            case "/rest/products/existing-product-id":
                 response.body("{\"id\":\"existing-product-id\", \"name\":\"some-product-name\"}");
                 break;
-            case "/products/forbidden-product-id":
-                response.status(FORBIDDEN).body("{\n" +
+            case "/rest/products/forbidden-product-id":
+                response.status(FORBIDDEN).contentType(PROBLEM_DETAIL).body("{\n" +
                     "    \"detail\": \"HTTP 403 Forbidden\",\n" +
                     "    \"title\": \"ForbiddenException\",\n" +
                     "    \"type\": \"urn:problem-type:javax.ws.rs.ForbiddenException\"\n" +
                     "}\n");
                 break;
             default:
-                response.status(NOT_FOUND);
+                response.status(NOT_FOUND).contentType(PROBLEM_DETAIL).body("{\n" +
+                    "    \"detail\": \"HTTP 404 Not Found\",\n" +
+                    "    \"title\": \"NotFoundException\",\n" +
+                    "    \"type\": \"urn:problem-type:javax.ws.rs.NotFoundException\"\n" +
+                    "}\n");
         }
         return response.build();
     }

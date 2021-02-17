@@ -1,12 +1,14 @@
 package com.github.t1.wunderbar.junit.http;
 
 import lombok.experimental.UtilityClass;
+import lombok.extern.slf4j.Slf4j;
 
 import javax.json.Json;
 import javax.json.JsonValue;
 import javax.json.bind.Jsonb;
 import javax.json.bind.JsonbBuilder;
 import javax.json.bind.JsonbConfig;
+import javax.json.stream.JsonParsingException;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.Response.StatusType;
@@ -42,5 +44,11 @@ public class HttpUtils {
         return Optional.ofNullable(properties.getProperty(method, null));
     }
 
-    public static JsonValue toJson(String string) { return string.isEmpty() ? JsonValue.NULL : Json.createReader(new StringReader(string)).read(); }
+    public static JsonValue toJson(String string) {
+        try {
+            return string.isEmpty() ? JsonValue.NULL : Json.createReader(new StringReader(string)).read();
+        } catch (JsonParsingException e) {
+            return JsonValue.NULL;
+        }
+    }
 }

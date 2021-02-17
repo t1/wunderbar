@@ -36,6 +36,18 @@ class ProductsRestGatewayIT {
         then(response).usingRecursiveComparison().isEqualTo(PRODUCT);
     }
 
+    @Test void shouldGetTwoProducts() {
+        var givenProduct2 = Product.builder().id("some-product-id-2").name("some-product-name 2").build();
+        given(products.product(PRODUCT_ID)).willReturn(PRODUCT);
+        given(products.product(givenProduct2.getId())).willReturn(givenProduct2);
+
+        var response1 = gateway.product(ITEM);
+        var response2 = gateway.product(OrderItem.builder().productId(givenProduct2.getId()).build());
+
+        then(response1).usingRecursiveComparison().isEqualTo(PRODUCT);
+        then(response2).usingRecursiveComparison().isEqualTo(givenProduct2);
+    }
+
     @Test void shouldFailToGetUnknownProduct() {
         given(products.product(PRODUCT_ID)).willThrow(new NotFoundException());
 

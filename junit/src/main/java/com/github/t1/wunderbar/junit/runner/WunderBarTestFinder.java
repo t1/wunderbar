@@ -120,7 +120,7 @@ public class WunderBarTestFinder {
             throw new WunderBarException("annotate your wunderbar test with @" + WunderBarRunnerExtension.class.getName());
 
         // the indirection with null is necessary, as we can't access `this` in the `this()` constructor chain
-        this.executableFactory = (executableFactory == null) ? test -> new BarExecutor(baseUri(), interaction(test)) : executableFactory;
+        this.executableFactory = (executableFactory == null) ? test -> new BarExecutor(barFilePath + " : " + test, baseUri(), interaction(test)) : executableFactory;
         this.jarFile = new JarFile(barFilePath.toFile());
         this.root = new TestCollection(barFilePath.toUri(), Path.of(getName()));
 

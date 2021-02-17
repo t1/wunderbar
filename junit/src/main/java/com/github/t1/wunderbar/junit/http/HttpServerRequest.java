@@ -34,7 +34,7 @@ public class HttpServerRequest {
     @Default MediaType accept = APPLICATION_JSON_UTF8;
     @Default Optional<String> body = Optional.empty();
 
-    @Override public String toString() { return (headerProperties() + body.orElse("")).trim(); }
+    @Override public String toString() { return (headerProperties() + "\n" + body.orElse("")).trim(); }
 
     public String headerProperties() {
         return "" +

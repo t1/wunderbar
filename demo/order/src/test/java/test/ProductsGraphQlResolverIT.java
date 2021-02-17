@@ -28,6 +28,19 @@ class ProductsGraphQlResolverIT {
         then(resolvedProduct).usingRecursiveComparison().isEqualTo(givenProduct);
     }
 
+    @Test void shouldResolveTwoProducts() {
+        var givenProduct1 = Product.builder().id("x1").name("some-product-name 1").build();
+        var givenProduct2 = Product.builder().id("x2").name("some-product-name 2").build();
+        given(products.product(givenProduct1.getId())).willReturn(givenProduct1);
+        given(products.product(givenProduct2.getId())).willReturn(givenProduct2);
+
+        var resolvedProduct1 = resolver.product(item(givenProduct1.getId()));
+        var resolvedProduct2 = resolver.product(item(givenProduct2.getId()));
+
+        then(resolvedProduct1).usingRecursiveComparison().isEqualTo(givenProduct1);
+        then(resolvedProduct2).usingRecursiveComparison().isEqualTo(givenProduct2);
+    }
+
     @Test void shouldFailToResolveUnknownProduct() {
         given(products.product("x")).willThrow(new ProductNotFoundException("x"));
 
