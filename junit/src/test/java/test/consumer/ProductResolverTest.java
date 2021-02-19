@@ -53,7 +53,7 @@ abstract class ProductResolverTest {
         var givenProduct = Product.builder().id("x").name("some-product-name").build();
         given(products.product(givenProduct.getId())).willReturn(givenProduct);
 
-        var resolvedProduct = resolver.product(Item.builder().productId(givenProduct.getId()).build());
+        var resolvedProduct = resolver.product(new Item(givenProduct.getId()));
 
         then(resolvedProduct).usingRecursiveComparison().isEqualTo(givenProduct);
     }
@@ -83,8 +83,8 @@ abstract class ProductResolverTest {
         given(products.product(givenProductA.getId())).willReturn(givenProductA);
         given(products.product(givenProductB.getId())).willReturn(givenProductB);
 
-        var resolvedProductA = resolver.product(Item.builder().productId(givenProductA.getId()).build());
-        var resolvedProductB = resolver.product(Item.builder().productId(givenProductB.getId()).build());
+        var resolvedProductA = resolver.product(new Item(givenProductA.getId()));
+        var resolvedProductB = resolver.product(new Item(givenProductB.getId()));
 
         then(resolvedProductA).usingRecursiveComparison().isEqualTo(givenProductA);
         then(resolvedProductB).usingRecursiveComparison().isEqualTo(givenProductB);
@@ -92,9 +92,8 @@ abstract class ProductResolverTest {
 
     @Test void shouldFailToResolveUnknownProduct() {
         given(products.product("x")).willThrow(new ProductNotFoundException("x"));
-        var item = Item.builder().productId("x").build();
 
-        var throwable = catchThrowable(() -> resolver.product(item));
+        var throwable = catchThrowable(() -> resolver.product(new Item("x")));
 
         failsWith(throwable, "product-not-found", "product x not found", NOT_FOUND);
     }
@@ -164,7 +163,7 @@ abstract class ProductResolverTest {
         }
     }
 
-    @RegisterRestClient(baseUri = "dummy") @Path("/hello")
+    @RegisterRestClient(baseUri = "dummy") @Path("/products")
     public // RestEasy MP Rest Client requires the interface to be `public`
     interface RestService extends Closeable {
         @Path("/{productId}")
@@ -210,7 +209,7 @@ abstract class ProductResolverTest {
             var givenProduct = Product.builder().id("y").build();
             given(nestedProducts.product(givenProduct.getId())).willReturn(givenProduct);
 
-            var resolvedProduct = resolver.product(Item.builder().productId(givenProduct.getId()).build());
+            var resolvedProduct = resolver.product(new Item(givenProduct.getId()));
 
             then(resolvedProduct).usingRecursiveComparison().isEqualTo(givenProduct);
         }
@@ -224,7 +223,7 @@ abstract class ProductResolverTest {
             var givenProduct = Product.builder().id("z").build();
             given(products.product(givenProduct.getId())).willReturn(givenProduct);
 
-            var resolvedProduct = nestedResolver.product(Item.builder().productId(givenProduct.getId()).build());
+            var resolvedProduct = nestedResolver.product(new Item(givenProduct.getId()));
 
             then(resolvedProduct).usingRecursiveComparison().isEqualTo(givenProduct);
         }

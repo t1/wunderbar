@@ -33,6 +33,7 @@ import static com.github.t1.wunderbar.junit.consumer.Level.SYSTEM;
 import static com.github.t1.wunderbar.junit.consumer.Level.UNIT;
 import static com.github.t1.wunderbar.junit.consumer.WunderBarConsumerExtension.NONE;
 import static java.time.temporal.ChronoUnit.NANOS;
+import static java.util.stream.Collectors.toList;
 import static org.junit.jupiter.api.extension.ExtensionContext.Namespace.GLOBAL;
 
 @Slf4j
@@ -83,10 +84,11 @@ class WunderBarConsumerJUnit implements Extension, BeforeEachCallback, AfterEach
     }
 
     private Object findWunderBarTest() {
-        return context.getRequiredTestInstances().getAllInstances().stream()
+        var instances = context.getRequiredTestInstances().getAllInstances().stream()
             .filter(test -> test.getClass().isAnnotationPresent(WunderBarConsumerExtension.class))
-            .findFirst()
-            .orElseThrow(() -> new WunderBarException("annotation not found: " + WunderBarConsumerExtension.class.getName()));
+            .collect(toList());
+        if (instances.isEmpty()) throw new WunderBarException("annotation not found: " + WunderBarConsumerExtension.class.getName());
+        return instances.get(instances.size() - 1); // the innermost / closest
     }
 
     private Bar createBar(String fileName) {

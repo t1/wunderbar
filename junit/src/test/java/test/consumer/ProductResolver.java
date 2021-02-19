@@ -25,7 +25,7 @@ class ProductResolver {
 
     @GraphQlClientApi(endpoint = "dummy")
     interface Products {
-        Product product(String id);
+        Product product(@NonNull String id);
     }
 
     @Getter @Setter @ToString @NoArgsConstructor
@@ -36,8 +36,8 @@ class ProductResolver {
         String name;
     }
 
-    @Getter @Setter @ToString @NoArgsConstructor
-    @Builder(toBuilder = true) @AllArgsConstructor(access = PRIVATE)
+    @Getter @Setter @ToString
+    @Builder(toBuilder = true) @AllArgsConstructor
     static class Item {
         @Id String productId;
     }
