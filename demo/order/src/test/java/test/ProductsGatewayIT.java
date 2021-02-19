@@ -2,8 +2,8 @@ package test;
 
 import com.github.t1.wunderbar.demo.order.OrderItem;
 import com.github.t1.wunderbar.demo.order.Product;
-import com.github.t1.wunderbar.demo.order.ProductsRestGateway;
-import com.github.t1.wunderbar.demo.order.ProductsRestGateway.ProductsRestClient;
+import com.github.t1.wunderbar.demo.order.ProductsGateway;
+import com.github.t1.wunderbar.demo.order.ProductsGateway.ProductsRestClient;
 import com.github.t1.wunderbar.junit.consumer.Service;
 import com.github.t1.wunderbar.junit.consumer.SystemUnderTest;
 import com.github.t1.wunderbar.junit.consumer.WunderBarConsumerExtension;
@@ -20,9 +20,9 @@ import static org.assertj.core.api.Assertions.catchThrowableOfType;
 import static org.assertj.core.api.BDDAssertions.then;
 
 @WunderBarConsumerExtension
-class ProductsRestGatewayIT {
+class ProductsGatewayIT {
     @Service ProductsRestClient products;
-    @SystemUnderTest ProductsRestGateway gateway;
+    @SystemUnderTest ProductsGateway gateway;
 
     private static final String PRODUCT_ID = "some-product-id";
     private static final OrderItem ITEM = OrderItem.builder().productId(PRODUCT_ID).build();

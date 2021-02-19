@@ -35,7 +35,7 @@ class RunnerTest {
     List<Test> expected = new ArrayList<>();
     List<Test> executed = new ArrayList<>();
 
-    Function<Test, Executable> executableFactory = test -> () -> executed.add(test);
+    Function<Test, Executable> executionCollector = test -> () -> executed.add(test);
 
     @AfterEach void tearDown() {
         then(executed).describedAs("executed tests").containsExactlyElementsOf(expected);
@@ -44,7 +44,7 @@ class RunnerTest {
     @AfterAll static void afterAll() { httpServer.stop(); }
 
     @TestFactory DynamicNode standardTest() {
-        var bar = new BarBuilder("standard-behavior")
+        var bar = new BarTestBuilder("standard-behavior")
             .with("some-container/some-test",
                 HttpServerRequest.builder()
                     .method("POST")
@@ -63,14 +63,15 @@ class RunnerTest {
                     .build())
             .build();
 
-        expect("some-container/some-test", 1);
+        expect("some-container/some-test", 1, "some-test");
 
         return build(bar);
     }
 
     @TestFactory DynamicNode nestedTests() {
-        var bar = new BarBuilder("nesting-behavior")
+        var bar = new BarTestBuilder("nesting-behavior")
             .with("root-1")
+            .with("root-2")
             .with("root-2")
             .with("root-2")
             .with("root/flat-1")
@@ -82,46 +83,45 @@ class RunnerTest {
             .with("root-3")
             .build();
 
-        expect("root-1", 1);
-        expect("root-2", 1);
-        expect("root-2", 2);
-        expect("root/flat-1", 1);
-        expect("root/flat-2", 1);
-        expect("root/flat-3", 1);
-        expect("root/nested/nest-1", 1);
-        expect("root/deeply/nested/deep-1", 1);
-        expect("root/deeply/nested/deep-2", 1);
-        expect("root-3", 1);
+        expect("root-1", 1, "root-1");
+        expect("root-2", 3, "root-2");
+        expect("root/flat-1", 1, "flat-1");
+        expect("root/flat-2", 1, "flat-2");
+        expect("root/flat-3", 1, "flat-3");
+        expect("root/nested/nest-1", 1, "nest-1");
+        expect("root/deeply/nested/deep-1", 1, "deep-1");
+        expect("root/deeply/nested/deep-2", 1, "deep-2");
+        expect("root-3", 1, "root-3");
 
         return build(bar);
     }
 
     @TestFactory DynamicNode flatTest() {
-        var bar = new BarBuilder("nesting-behavior").with("flat").build();
+        var bar = new BarTestBuilder("nesting-behavior").with("flat").build();
 
-        expect("flat", 1);
+        expect("flat", 1, "flat");
 
         return build(bar);
     }
 
-    private DynamicNode build(Bar bar) { return findTestsIn(bar.getPath(), executableFactory); }
+    private DynamicNode build(Bar bar) { return findTestsIn(bar.getPath(), executionCollector); }
 
-    static class BarBuilder {
+    static class BarTestBuilder {
         private final Bar bar;
         private int nextTestValue = 0;
 
-        BarBuilder(String name) {
-            this.bar = new Bar(name);
+        BarTestBuilder(String archiveComment) {
+            this.bar = new Bar(archiveComment);
             bar.setPath(tmp.resolve("wunder.bar"));
         }
 
-        BarBuilder with(String directory) { return with(directory, Integer.toString(nextTestValue++)); }
+        BarTestBuilder with(String directory) { return with(directory, Integer.toString(nextTestValue++)); }
 
-        BarBuilder with(String directory, String value) {
+        BarTestBuilder with(String directory, String value) {
             return with(directory, request(value), response(value));
         }
 
-        BarBuilder with(String directory, HttpServerRequest request, HttpServerResponse response) {
+        BarTestBuilder with(String directory, HttpServerRequest request, HttpServerResponse response) {
             bar.setDirectory(directory);
             RunnerTest.request = request;
             RunnerTest.response = response;
@@ -143,7 +143,7 @@ class RunnerTest {
         return HttpServerResponse.builder().body("{\"value\":\"" + value + "\"}").build();
     }
 
-    private void expect(String path, int number) {
-        expected.add(new Test(Path.of(path).resolve(Integer.toString(number))));
+    private void expect(String path, int number, String displayName) {
+        expected.add(new Test(Path.of(path), number, displayName));
     }
 }

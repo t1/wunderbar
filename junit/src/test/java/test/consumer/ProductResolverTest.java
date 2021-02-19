@@ -174,10 +174,10 @@ abstract class ProductResolverTest {
 
     @DisplayName("stubbing failures")
     @Nested class StubbingFailures {
-        // TODO how can I test that this throws an "unfinished stubbing" exception in afterEach?
-        //  @Test void shouldFailUnfinishedStubbing() {
-        //     given(products.product("x"));
-        // }
+        // how can I test that this throws an "unfinished stubbing" exception in afterEach?
+        //x  @Test void shouldFailUnfinishedStubbing() {
+        //x     given(products.product("x"));
+        //x }
 
         @Test void shouldFailToCallGivenWithoutCallToProxyNull() {
             var throwable = catchThrowable(() -> given(null).willReturn(null));

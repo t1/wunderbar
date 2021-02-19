@@ -2,8 +2,8 @@ package test;
 
 import com.github.t1.wunderbar.demo.order.OrderItem;
 import com.github.t1.wunderbar.demo.order.Product;
-import com.github.t1.wunderbar.demo.order.ProductsGraphQlResolver;
-import com.github.t1.wunderbar.demo.order.ProductsGraphQlResolver.Products;
+import com.github.t1.wunderbar.demo.order.ProductsResolver;
+import com.github.t1.wunderbar.demo.order.ProductsResolver.Products;
 import com.github.t1.wunderbar.junit.consumer.Service;
 import com.github.t1.wunderbar.junit.consumer.SystemUnderTest;
 import com.github.t1.wunderbar.junit.consumer.WunderBarConsumerExtension;
@@ -15,9 +15,9 @@ import static org.assertj.core.api.Assertions.catchThrowableOfType;
 import static org.assertj.core.api.BDDAssertions.then;
 
 @WunderBarConsumerExtension
-class ProductsGraphQlResolverIT {
+class ProductsResolverIT {
     @Service Products products;
-    @SystemUnderTest ProductsGraphQlResolver resolver;
+    @SystemUnderTest ProductsResolver resolver;
 
     @Test void shouldResolveProduct() {
         var givenProduct = Product.builder().id("x").name("some-product-name").build();

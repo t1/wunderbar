@@ -8,7 +8,7 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import java.io.Closeable;
 
-public class ProductsRestGateway {
+public class ProductsGateway {
     @Inject ProductsRestClient products;
 
     public Product product(OrderItem item) {

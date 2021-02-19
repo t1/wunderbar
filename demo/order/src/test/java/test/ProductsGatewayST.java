@@ -2,8 +2,8 @@ package test;
 
 import com.github.t1.wunderbar.demo.order.OrderItem;
 import com.github.t1.wunderbar.demo.order.Product;
-import com.github.t1.wunderbar.demo.order.ProductsRestGateway;
-import com.github.t1.wunderbar.demo.order.ProductsRestGateway.ProductsRestClient;
+import com.github.t1.wunderbar.demo.order.ProductsGateway;
+import com.github.t1.wunderbar.demo.order.ProductsGateway.ProductsRestClient;
 import com.github.t1.wunderbar.junit.consumer.Service;
 import com.github.t1.wunderbar.junit.consumer.SystemUnderTest;
 import com.github.t1.wunderbar.junit.consumer.WunderBarConsumerExtension;
@@ -23,9 +23,9 @@ import static org.assertj.core.api.Assertions.catchThrowableOfType;
 import static org.assertj.core.api.BDDAssertions.then;
 
 @WunderBarConsumerExtension(fileName = "target/system-wunder.bar", endpoint = "{endpoint()}")
-class ProductsRestGatewayST {
+class ProductsGatewayST {
     /** this server would normally be a real server running somewhere */
-    private static final HttpServer SERVER = new HttpServer(ProductsRestGatewayST::handle);
+    private static final HttpServer SERVER = new HttpServer(ProductsGatewayST::handle);
     private static final MediaType PROBLEM_DETAIL = MediaType.valueOf("application/problem+json;charset=utf-8");
 
     @SuppressWarnings("unused")
@@ -58,7 +58,7 @@ class ProductsRestGatewayST {
 
 
     @Service ProductsRestClient products;
-    @SystemUnderTest ProductsRestGateway gateway;
+    @SystemUnderTest ProductsGateway gateway;
 
     private static OrderItem item(String productId) {
         return OrderItem.builder().productId(productId).build();

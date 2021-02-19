@@ -2,8 +2,8 @@ package test;
 
 import com.github.t1.wunderbar.demo.order.OrderItem;
 import com.github.t1.wunderbar.demo.order.Product;
-import com.github.t1.wunderbar.demo.order.ProductsRestGateway;
-import com.github.t1.wunderbar.demo.order.ProductsRestGateway.ProductsRestClient;
+import com.github.t1.wunderbar.demo.order.ProductsGateway;
+import com.github.t1.wunderbar.demo.order.ProductsGateway.ProductsRestClient;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -21,9 +21,9 @@ import static org.assertj.core.api.BDDAssertions.then;
 import static org.mockito.BDDMockito.given;
 
 @ExtendWith(MockitoExtension.class)
-class ProductsRestGatewayUnitTest {
+class ProductsGatewayUnitTest {
     @Mock ProductsRestClient products;
-    @InjectMocks ProductsRestGateway gateway;
+    @InjectMocks ProductsGateway gateway;
 
     private static final String PRODUCT_ID = "some-product-id";
     private static final OrderItem ITEM = OrderItem.builder().productId(PRODUCT_ID).build();

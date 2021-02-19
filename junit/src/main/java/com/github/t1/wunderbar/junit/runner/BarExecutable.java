@@ -1,8 +1,11 @@
 package com.github.t1.wunderbar.junit.runner;
 
 import com.github.t1.wunderbar.junit.http.HttpServerInteraction;
+import com.github.t1.wunderbar.junit.http.HttpServerRequest;
+import com.github.t1.wunderbar.junit.http.HttpServerResponse;
 import com.github.t1.wunderbar.junit.http.HttpUtils;
 import lombok.RequiredArgsConstructor;
+import org.assertj.core.api.BDDSoftAssertions;
 import org.junit.jupiter.api.function.Executable;
 
 import javax.json.JsonValue;
@@ -29,7 +32,7 @@ import static javax.ws.rs.core.HttpHeaders.CONTENT_TYPE;
 import static org.assertj.core.api.BDDSoftAssertions.thenSoftly;
 
 @RequiredArgsConstructor
-class BarExecutor implements Executable {
+class BarExecutable implements Executable {
     private static final HttpClient HTTP = HttpClient.newBuilder()
         .followRedirects(NORMAL)
         .connectTimeout(Duration.ofSeconds(1))
@@ -37,38 +40,41 @@ class BarExecutor implements Executable {
 
     private final String name;
     private final URI baseUri;
-    private final HttpServerInteraction interaction;
+    private final List<HttpServerInteraction> interactions;
 
     @Override public void execute() throws IOException, InterruptedException {
         System.out.println("==================== start " + name);
-        var interactions = List.of(this.interaction); // TODO before/after for all expectations in one test
         WunderBarRunnerJUnitExtension.INSTANCE.beforeDynamicTestConsumers.forEach(consumer -> consumer.accept(interactions));
 
-        System.out.println(this.interaction.getRequest().toString());
+        var i = 1;
+        for (var interaction : interactions) {
+            System.out.println("request " + i++ + ":\n" + interaction.getRequest());
 
-        HttpResponse<JsonValue> actual = HTTP.send(request(), ofJson());
+            HttpResponse<JsonValue> actual = HTTP.send(request(interaction.getRequest()), ofJson());
+
+            System.out.println("received: " + actual);
+            var expected = interaction.getResponse();
+            thenSoftly(softly -> checkResponse(softly, actual, expected));
+        }
 
         WunderBarRunnerJUnitExtension.INSTANCE.afterDynamicTestConsumers.forEach(consumer -> consumer.accept(interactions));
-
-        System.out.println("received: " + actual);
-        var expected = this.interaction.getResponse();
-        thenSoftly(softly -> {
-            softly.then(actual.statusCode()).isEqualTo(expected.getStatus().getStatusCode());
-            var actualContentType = contentType(actual);
-            softly.then(actualContentType.isCompatible(expected.getContentType()))
-                .describedAs("Content-Type: " + expected.getContentType() + " to be compatible to " + actualContentType)
-                .isTrue();
-            expected.getBody().map(HttpUtils::toJson).ifPresent(expectedBody ->
-                softly.check(() -> then(actual.body()).isEqualToIgnoringNewFields(expectedBody)));
-        });
     }
 
-    private HttpRequest request() {
-        var request = interaction.getRequest();
+    private HttpRequest request(HttpServerRequest request) {
         return HttpRequest.newBuilder()
             .uri(baseUri.resolve(request.getUri()))
             .method(request.getMethod(), request.getBody().map(BodyPublishers::ofString).orElse(noBody()))
             .build();
+    }
+
+    private void checkResponse(BDDSoftAssertions softly, HttpResponse<JsonValue> actual, HttpServerResponse expected) {
+        softly.then(actual.statusCode()).isEqualTo(expected.getStatus().getStatusCode());
+        var actualContentType = contentType(actual);
+        softly.then(actualContentType.isCompatible(expected.getContentType()))
+            .describedAs("Content-Type: " + expected.getContentType() + " to be compatible to " + actualContentType)
+            .isTrue();
+        expected.getBody().map(HttpUtils::toJson).ifPresent(expectedBody ->
+            softly.check(() -> then(actual.body()).isEqualToIgnoringNewFields(expectedBody)));
     }
 
     private BodyHandler<JsonValue> ofJson() {

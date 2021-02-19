@@ -25,6 +25,7 @@ import javax.ws.rs.core.Response.Status;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Pattern;
+import java.util.stream.Stream;
 
 import static com.github.t1.wunderbar.junit.runner.WunderBarTestFinder.findTestsIn;
 import static org.assertj.core.api.BDDAssertions.then;
@@ -49,12 +50,10 @@ class ConsumerDrivenAT {
     }
 
 
-    @TestFactory DynamicNode demoOrderConsumerTests() {
-        return findTestsIn("../order/target/wunder.bar");
-    }
-
-    @TestFactory DynamicNode demoOrderSystemConsumerTests() {
-        return findTestsIn("../order/target/system-wunder.bar");
+    @TestFactory Stream<DynamicNode> demoOrderConsumerTests() {
+        return Stream.of(
+            findTestsIn("../order/target/wunder.bar"),
+            findTestsIn("../order/target/system-wunder.bar"));
     }
 
 

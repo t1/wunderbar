@@ -2,8 +2,8 @@ package test;
 
 import com.github.t1.wunderbar.demo.order.OrderItem;
 import com.github.t1.wunderbar.demo.order.Product;
-import com.github.t1.wunderbar.demo.order.ProductsGraphQlResolver;
-import com.github.t1.wunderbar.demo.order.ProductsGraphQlResolver.Products;
+import com.github.t1.wunderbar.demo.order.ProductsResolver;
+import com.github.t1.wunderbar.demo.order.ProductsResolver.Products;
 import com.github.t1.wunderbar.junit.consumer.Service;
 import com.github.t1.wunderbar.junit.consumer.SystemUnderTest;
 import com.github.t1.wunderbar.junit.consumer.WunderBarConsumerExtension;
@@ -22,9 +22,9 @@ import static org.assertj.core.api.Assertions.catchThrowableOfType;
 import static org.assertj.core.api.BDDAssertions.then;
 
 @WunderBarConsumerExtension(fileName = "target/system-wunder.bar", endpoint = "{endpoint()}")
-class ProductsGraphQlResolverST {
+class ProductsResolverST {
     /** this server would normally be a real server running somewhere */
-    private static final HttpServer SERVER = new HttpServer(ProductsGraphQlResolverST::handle);
+    private static final HttpServer SERVER = new HttpServer(ProductsResolverST::handle);
 
     @SuppressWarnings("unused")
     static URI endpoint() { return SERVER.baseUri().resolve("/graphql"); }
@@ -59,7 +59,7 @@ class ProductsGraphQlResolverST {
 
 
     @Service Products products;
-    @SystemUnderTest ProductsGraphQlResolver resolver;
+    @SystemUnderTest ProductsResolver resolver;
 
     private OrderItem item(String s) { return OrderItem.builder().productId(s).build(); }
 

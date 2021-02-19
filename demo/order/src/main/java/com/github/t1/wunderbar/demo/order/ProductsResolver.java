@@ -6,7 +6,7 @@ import org.eclipse.microprofile.graphql.NonNull;
 import org.eclipse.microprofile.graphql.Source;
 
 @GraphQLApi
-public class ProductsGraphQlResolver {
+public class ProductsResolver {
     Products products;
 
     public Product product(@Source OrderItem item) {
