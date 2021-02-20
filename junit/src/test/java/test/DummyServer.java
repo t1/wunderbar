@@ -1,9 +1,9 @@
-package test.consumer;
+package test;
 
 import com.github.t1.wunderbar.junit.http.HttpServer;
 import com.github.t1.wunderbar.junit.http.HttpServerRequest;
 import com.github.t1.wunderbar.junit.http.HttpServerResponse;
-import org.junit.jupiter.api.extension.AfterAllCallback;
+import org.junit.jupiter.api.extension.AfterEachCallback;
 import org.junit.jupiter.api.extension.Extension;
 import org.junit.jupiter.api.extension.ExtensionContext;
 
@@ -16,12 +16,12 @@ import static javax.ws.rs.core.Response.Status.FORBIDDEN;
 import static javax.ws.rs.core.Response.Status.NOT_FOUND;
 
 /** this server would normally be a real server running somewhere */
-public class DummyServer implements Extension, AfterAllCallback {
+public class DummyServer implements Extension, AfterEachCallback {
     private static final MediaType PROBLEM_DETAIL = MediaType.valueOf("application/problem+json;charset=utf-8");
 
     private final HttpServer server = new HttpServer(DummyServer::handle);
 
-    public URI endpoint() { return server.baseUri(); }
+    public URI baseUri() { return server.baseUri(); }
 
     private static HttpServerResponse handle(HttpServerRequest request) {
         var isGraphQl = request.getUri().toString().equals("/graphql");
@@ -29,33 +29,35 @@ public class DummyServer implements Extension, AfterAllCallback {
     }
 
     private static HttpServerResponse handleGraphQl(HttpServerRequest request) {
-        assert request.getBody().isPresent();
+        if (request.getBody().isEmpty()) return error("validation-error", "no body in GraphQL request");
         var body = Json.createReader(new StringReader(request.getBody().get())).readObject();
-        assert body.getString("query").equals("query product($id: String!) { product(id: $id) {id name} }")
-            : "unexpected query: [" + body.getString("query") + "]";
-        var response = HttpServerResponse.builder();
+        if (!body.getString("query").equals("query product($id: String!) { product(id: $id) {id name} }"))
+            return error("unexpected-query", "unexpected query: [" + body.getString("query") + "]");
         var id = body.getJsonObject("variables").getString("id");
         switch (id) {
             case "existing-product-id":
-                response.body("{\"data\":{\"product\":{\"id\":\"" + id + "\", \"name\":\"some-product-name\"}}}");
-                break;
+                return HttpServerResponse.builder().body("{\"data\":{\"product\":{\"id\":\"" + id + "\", \"name\":\"some-product-name\"}}}").build();
             case "forbidden-product-id":
-                response.body("{\"errors\": [\n" +
-                    "{\"extensions\": {\"code\": \"product-forbidden\"},\"message\": \"product " + id + " is forbidden\"}" +
-                    "]}\n");
-                break;
+                return error("product-forbidden", "product " + id + " is forbidden");
             default:
-                response.body("{\"errors\": [\n" +
-                    "{\"extensions\": {\"code\": \"product-not-found\"},\"message\": \"product " + id + " not found\"}" +
-                    "]}\n");
-                break;
+                return error("product-not-found", "product " + id + " not found");
         }
-        return response.build();
+    }
+
+    private static HttpServerResponse error(String code, String message) {
+        return HttpServerResponse.builder()
+            .body("{\"errors\": [\n" +
+                "{\"extensions\": {\"code\": \"" + code + "\"},\"message\": \"" + message + "\"}" +
+                "]}\n")
+            .build();
     }
 
     private static HttpServerResponse handleRest(HttpServerRequest request) {
         var response = HttpServerResponse.builder();
         switch (request.getUri().toString()) {
+            case "/q/health/ready":
+                response.body("{\"status\": \"UP\"}");
+                break;
             case "/rest/products/existing-product-id":
                 response.body("{\"id\":\"existing-product-id\", \"name\":\"some-product-name\"}");
                 break;
@@ -76,5 +78,5 @@ public class DummyServer implements Extension, AfterAllCallback {
         return response.build();
     }
 
-    @Override public void afterAll(ExtensionContext context) { server.stop(); }
+    @Override public void afterEach(ExtensionContext context) { server.stop(); }
 }

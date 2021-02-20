@@ -1,4 +1,4 @@
-package com.github.t1.wunderbar.junit.quarkus;
+package test.tools;
 
 import org.eclipse.microprofile.rest.client.RestClientBuilder;
 import org.junit.jupiter.api.extension.AfterAllCallback;

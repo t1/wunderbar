@@ -27,7 +27,7 @@ public class JsonValueAssert {
             .filter(operation -> !isAdd(operation))
             .collect(toList());
         then(nonAdd.stream().map(patch -> describe(patch.asJsonObject(), expected.asJsonObject())))
-            .describedAs("json diff without `add` operations")
+            .describedAs("json diff (ignoring `add` operations)")
             .containsExactly();
     }
 

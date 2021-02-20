@@ -2,6 +2,7 @@ package com.github.t1.wunderbar.junit.runner;
 
 import com.github.t1.wunderbar.junit.WunderBarException;
 import com.github.t1.wunderbar.junit.http.HttpServerInteraction;
+import lombok.SneakyThrows;
 import org.junit.jupiter.api.extension.AfterEachCallback;
 import org.junit.jupiter.api.extension.BeforeEachCallback;
 import org.junit.jupiter.api.extension.Extension;
@@ -42,14 +43,6 @@ class WunderBarRunnerJUnitExtension implements Extension, BeforeEachCallback, Af
             .orElseThrow(() -> new WunderBarException("annotation not found: " + WunderBarRunnerExtension.class.getName()));
     }
 
-    @Override public void afterEach(ExtensionContext context) {
-        afterDynamicTestConsumers.clear();
-        beforeDynamicTestConsumers.clear();
-        this.settings = null;
-        this.context = null;
-        INSTANCE = null;
-    }
-
     private void addAllMethodsTo(Class<? extends Annotation> annotationType, List<Consumer<List<HttpServerInteraction>>> consumers) {
         for (Object instance : context.getRequiredTestInstances().getAllInstances())
             allMethods(instance)
@@ -62,5 +55,23 @@ class WunderBarRunnerJUnitExtension implements Extension, BeforeEachCallback, Af
         for (Class<?> c = instance.getClass(); c != null; c = c.getSuperclass())
             Stream.of(c.getDeclaredMethods()).forEach(builder::add);
         return builder.build();
+    }
+
+
+    @SneakyThrows(ReflectiveOperationException.class)
+    String call(String methodName) {
+        var instance = context.getRequiredTestInstance();
+        var method = instance.getClass().getDeclaredMethod(methodName);
+        method.setAccessible(true);
+        return method.invoke(instance).toString();
+    }
+
+
+    @Override public void afterEach(ExtensionContext context) {
+        afterDynamicTestConsumers.clear();
+        beforeDynamicTestConsumers.clear();
+        this.settings = null;
+        this.context = null;
+        INSTANCE = null;
     }
 }

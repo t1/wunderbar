@@ -21,7 +21,7 @@ import java.net.URI;
 import static org.assertj.core.api.Assertions.catchThrowableOfType;
 import static org.assertj.core.api.BDDAssertions.then;
 
-@WunderBarConsumerExtension(fileName = "target/system-wunder.bar", endpoint = "{endpoint()}")
+@WunderBarConsumerExtension(fileName = "target/system-wunder.jar", endpoint = "{endpoint()}")
 class ProductsResolverST {
     /** this server would normally be a real server running somewhere */
     private static final HttpServer SERVER = new HttpServer(ProductsResolverST::handle);

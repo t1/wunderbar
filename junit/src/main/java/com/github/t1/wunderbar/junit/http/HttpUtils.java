@@ -1,7 +1,6 @@
 package com.github.t1.wunderbar.junit.http;
 
 import lombok.experimental.UtilityClass;
-import lombok.extern.slf4j.Slf4j;
 
 import javax.json.Json;
 import javax.json.JsonValue;
@@ -31,8 +30,8 @@ public class HttpUtils {
         return (charsetName == null) ? ISO_8859_1 : Charset.forName(charsetName);
     }
 
-    public static MediaType mediaType(String string) {
-        return (string == null) ? null : MediaType.valueOf(string);
+    public static MediaType firstMediaType(String string) {
+        return (string == null) ? null : MediaType.valueOf(string.split(",", 2)[0]);
     }
 
     static StatusType toStatus(String string) {

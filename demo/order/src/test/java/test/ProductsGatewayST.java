@@ -22,7 +22,7 @@ import static javax.ws.rs.core.Response.Status.NOT_FOUND;
 import static org.assertj.core.api.Assertions.catchThrowableOfType;
 import static org.assertj.core.api.BDDAssertions.then;
 
-@WunderBarConsumerExtension(fileName = "target/system-wunder.bar", endpoint = "{endpoint()}")
+@WunderBarConsumerExtension(fileName = "target/system-wunder.jar", endpoint = "{endpoint()}")
 class ProductsGatewayST {
     /** this server would normally be a real server running somewhere */
     private static final HttpServer SERVER = new HttpServer(ProductsGatewayST::handle);

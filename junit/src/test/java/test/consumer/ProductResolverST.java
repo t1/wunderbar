@@ -7,6 +7,7 @@ import io.smallrye.graphql.client.typesafe.api.GraphQlClientException;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
+import test.DummyServer;
 import test.consumer.ProductResolver.Item;
 import test.consumer.ProductResolver.Product;
 import test.consumer.ProductResolver.Products;
@@ -29,7 +30,7 @@ class ProductResolverST { // not `extends ProductResolverTest`, as we must not c
     @RegisterExtension DummyServer dummyServer = new DummyServer();
 
     @SuppressWarnings("unused")
-    URI endpoint() { return dummyServer.endpoint(); }
+    URI endpoint() { return dummyServer.baseUri(); }
 
 
     @Test void shouldResolveProduct() {
@@ -62,7 +63,7 @@ class ProductResolverST { // not `extends ProductResolverTest`, as we must not c
         @Service RestService restService;
 
         @SuppressWarnings("unused")
-        URI endpoint() { return dummyServer.endpoint(); }
+        URI endpoint() { return dummyServer.baseUri(); }
 
         @Test void shouldGetProduct() {
             var response = restService.getProduct("existing-product-id");

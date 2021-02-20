@@ -37,8 +37,8 @@ public class HttpServer {
         var requestBuilder = HttpServerRequest.builder()
             .method(exchange.getRequestMethod().toString())
             .uri(URI.create(exchange.getRequestURI()))
-            .contentType(HttpUtils.mediaType(exchange.getRequestHeaders().getFirst(CONTENT_TYPE)))
-            .accept(HttpUtils.mediaType(exchange.getRequestHeaders().getFirst(ACCEPT)));
+            .contentType(HttpUtils.firstMediaType(exchange.getRequestHeaders().getFirst(CONTENT_TYPE)))
+            .accept(HttpUtils.firstMediaType(exchange.getRequestHeaders().getFirst(ACCEPT)));
         readRequestBody(exchange).ifPresent(requestBuilder::body);
         var request = requestBuilder.build();
 
@@ -55,7 +55,7 @@ public class HttpServer {
         var body = new AtomicReference<String>();
         httpServerExchange.getRequestReceiver().receiveFullString((x, value) -> body.setRelease(value),
             Charset.forName(httpServerExchange.getRequestCharset()));
-        return Optional.of(body.getAcquire());
+        return Optional.ofNullable(body.getAcquire());
     }
 
     public URI baseUri() {

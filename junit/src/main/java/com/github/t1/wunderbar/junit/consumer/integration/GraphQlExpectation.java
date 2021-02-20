@@ -16,7 +16,9 @@ class GraphQlExpectation extends HttpServiceExpectation {
     GraphQlExpectation(Bar bar, Method method, Object... args) { super(bar, method, args); }
 
     @Override protected Object service() {
-        return GraphQlClientBuilder.newBuilder().endpoint(baseUri().resolve("/graphql")).build(method.getDeclaringClass());
+        return GraphQlClientBuilder.newBuilder()
+            .endpoint(baseUri().resolve("/graphql"))
+            .build(method.getDeclaringClass());
     }
 
     @Override protected HttpServerResponse handleRequest(HttpServerRequest request) {

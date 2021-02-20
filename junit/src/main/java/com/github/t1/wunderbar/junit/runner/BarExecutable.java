@@ -8,6 +8,9 @@ import lombok.RequiredArgsConstructor;
 import org.assertj.core.api.BDDSoftAssertions;
 import org.junit.jupiter.api.function.Executable;
 
+import javax.json.Json;
+import javax.json.JsonPointer;
+import javax.json.JsonStructure;
 import javax.json.JsonValue;
 import javax.ws.rs.core.MediaType;
 import java.io.IOException;
@@ -60,6 +63,14 @@ class BarExecutable implements Executable {
         WunderBarRunnerJUnitExtension.INSTANCE.afterDynamicTestConsumers.forEach(consumer -> consumer.accept(interactions));
     }
 
+    private BodyHandler<JsonValue> ofJson() {
+        return (responseInfo) -> mapping(BodySubscribers.ofString(getCharset(responseInfo)), HttpUtils::toJson);
+    }
+
+    private Charset getCharset(ResponseInfo responseInfo) {
+        return charset(responseInfo.headers().firstValue(CONTENT_TYPE).map(MediaType::valueOf).orElse(null));
+    }
+
     private HttpRequest request(HttpServerRequest request) {
         return HttpRequest.newBuilder()
             .uri(baseUri.resolve(request.getUri()))
@@ -73,16 +84,7 @@ class BarExecutable implements Executable {
         softly.then(actualContentType.isCompatible(expected.getContentType()))
             .describedAs("Content-Type: " + expected.getContentType() + " to be compatible to " + actualContentType)
             .isTrue();
-        expected.getBody().map(HttpUtils::toJson).ifPresent(expectedBody ->
-            softly.check(() -> then(actual.body()).isEqualToIgnoringNewFields(expectedBody)));
-    }
-
-    private BodyHandler<JsonValue> ofJson() {
-        return (responseInfo) -> mapping(BodySubscribers.ofString(getCharset(responseInfo)), HttpUtils::toJson);
-    }
-
-    private Charset getCharset(ResponseInfo responseInfo) {
-        return charset(responseInfo.headers().firstValue(CONTENT_TYPE).map(MediaType::valueOf).orElse(null));
+        expected.getBody().map(HttpUtils::toJson).ifPresent(expectedBody -> checkBody(softly, actual.body(), expectedBody));
     }
 
     private MediaType contentType(HttpResponse<?> response) {
@@ -90,4 +92,18 @@ class BarExecutable implements Executable {
             .map(MediaType::valueOf)
             .orElseThrow(() -> new AssertionError("expected a " + CONTENT_TYPE + " header"));
     }
+
+    private void checkBody(BDDSoftAssertions softly, JsonValue actual, JsonValue expected) {
+        if (actual instanceof JsonStructure && expected instanceof JsonStructure)
+            checkForUnexpectedErrors(softly, (JsonStructure) actual, (JsonStructure) expected);
+        softly.check(() -> then(actual).isEqualToIgnoringNewFields(expected));
+    }
+
+    /** GraphQL: show unexpected errors in addition to the missing or only partial data */
+    private void checkForUnexpectedErrors(BDDSoftAssertions softly, JsonStructure actual, JsonStructure expected) {
+        if (ERRORS.containsValue(actual) && !ERRORS.containsValue(expected))
+            softly.then(ERRORS.getValue(actual)).as("errors").isNull();
+    }
+
+    private static final JsonPointer ERRORS = Json.createPointer("/errors");
 }

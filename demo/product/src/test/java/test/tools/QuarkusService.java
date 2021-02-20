@@ -1,4 +1,4 @@
-package com.github.t1.wunderbar.junit.quarkus;
+package test.tools;
 
 import org.junit.jupiter.api.extension.ExtendWith;
 

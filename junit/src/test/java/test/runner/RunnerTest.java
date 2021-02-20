@@ -7,6 +7,7 @@ import com.github.t1.wunderbar.junit.http.HttpServerResponse;
 import com.github.t1.wunderbar.junit.runner.WunderBarRunnerExtension;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DynamicNode;
 import org.junit.jupiter.api.TestFactory;
 import org.junit.jupiter.api.function.Executable;
@@ -31,6 +32,7 @@ class RunnerTest {
     });
 
     static @TempDir Path tmp;
+    static Path wunderBarPath;
 
     List<Test> expected = new ArrayList<>();
     List<Test> executed = new ArrayList<>();
@@ -42,6 +44,11 @@ class RunnerTest {
     }
 
     @AfterAll static void afterAll() { httpServer.stop(); }
+
+    @BeforeEach
+    void setUp() {
+        wunderBarPath = tmp.resolve("wunder.bar");
+    }
 
     @TestFactory DynamicNode standardTest() {
         var bar = new BarTestBuilder("standard-behavior")
@@ -112,7 +119,7 @@ class RunnerTest {
 
         BarTestBuilder(String archiveComment) {
             this.bar = new Bar(archiveComment);
-            bar.setPath(tmp.resolve("wunder.bar"));
+            bar.setPath(wunderBarPath);
         }
 
         BarTestBuilder with(String directory) { return with(directory, Integer.toString(nextTestValue++)); }
@@ -144,6 +151,6 @@ class RunnerTest {
     }
 
     private void expect(String path, int number, String displayName) {
-        expected.add(new Test(Path.of(path), number, displayName));
+        expected.add(new Test(Path.of(path), number, displayName, wunderBarPath.toUri()));
     }
 }

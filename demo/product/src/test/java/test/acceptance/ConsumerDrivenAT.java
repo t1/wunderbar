@@ -5,7 +5,6 @@ import com.github.t1.wunderbar.junit.consumer.integration.GraphQlError;
 import com.github.t1.wunderbar.junit.http.HttpServerInteraction;
 import com.github.t1.wunderbar.junit.http.HttpServerRequest;
 import com.github.t1.wunderbar.junit.http.HttpServerResponse;
-import com.github.t1.wunderbar.junit.quarkus.QuarkusService;
 import com.github.t1.wunderbar.junit.runner.AfterDynamicTest;
 import com.github.t1.wunderbar.junit.runner.BeforeDynamicTest;
 import com.github.t1.wunderbar.junit.runner.WunderBarRunnerExtension;
@@ -18,6 +17,7 @@ import org.eclipse.microprofile.graphql.Mutation;
 import org.eclipse.microprofile.graphql.NonNull;
 import org.junit.jupiter.api.DynamicNode;
 import org.junit.jupiter.api.TestFactory;
+import test.tools.QuarkusService;
 
 import javax.json.bind.Jsonb;
 import javax.json.bind.JsonbBuilder;
@@ -53,7 +53,7 @@ class ConsumerDrivenAT {
     @TestFactory Stream<DynamicNode> demoOrderConsumerTests() {
         return Stream.of(
             findTestsIn("../order/target/wunder.bar"),
-            findTestsIn("../order/target/system-wunder.bar"));
+            findTestsIn("../order/target/system-wunder.jar"));
     }
 
 
