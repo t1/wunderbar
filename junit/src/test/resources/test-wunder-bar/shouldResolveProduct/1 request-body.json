@@ -1,7 +1,0 @@
-{
-  "query": "query product($id: String!) { product(id: $id) {id name} }",
-  "variables": {
-    "id": "existing-product-id"
-  },
-  "operationName": "product"
-}

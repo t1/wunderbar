@@ -1,8 +1,0 @@
-{
-    "data": {
-        "product": {
-            "id": "existing-product-id",
-            "name": "some-product-name"
-        }
-    }
-}
