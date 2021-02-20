@@ -1,7 +1,7 @@
 package com.github.t1.wunderbar.junit.consumer.integration;
 
-import com.github.t1.wunderbar.junit.Bar;
 import com.github.t1.wunderbar.junit.Utils;
+import com.github.t1.wunderbar.junit.consumer.BarWriter;
 import com.github.t1.wunderbar.junit.consumer.WunderBarExpectation;
 import com.github.t1.wunderbar.junit.consumer.WunderbarExpectationBuilder;
 import com.github.t1.wunderbar.junit.http.HttpServer;
@@ -29,7 +29,7 @@ abstract class HttpServiceExpectation extends WunderBarExpectation {
     @Getter(PACKAGE) private Object response;
     @Getter(PACKAGE) private Exception exception;
 
-    HttpServiceExpectation(Bar bar, Method method, Object... args) {
+    HttpServiceExpectation(BarWriter bar, Method method, Object... args) {
         super(method, args);
         Function<HttpServerRequest, HttpServerResponse> handler = this::handleRequest;
         if (bar != null) handler = save(bar, handler);
@@ -43,7 +43,7 @@ abstract class HttpServiceExpectation extends WunderBarExpectation {
 
     abstract protected HttpServerResponse handleRequest(HttpServerRequest request);
 
-    private Function<HttpServerRequest, HttpServerResponse> save(Bar bar, Function<HttpServerRequest, HttpServerResponse> handler) {
+    private Function<HttpServerRequest, HttpServerResponse> save(BarWriter bar, Function<HttpServerRequest, HttpServerResponse> handler) {
         return request -> {
             var response = handler.apply(request);
             bar.save(request, response);

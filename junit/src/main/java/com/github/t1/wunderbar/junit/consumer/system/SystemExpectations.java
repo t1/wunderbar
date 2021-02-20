@@ -1,8 +1,8 @@
 package com.github.t1.wunderbar.junit.consumer.system;
 
-import com.github.t1.wunderbar.junit.Bar;
 import com.github.t1.wunderbar.junit.Utils;
 import com.github.t1.wunderbar.junit.WunderBarException;
+import com.github.t1.wunderbar.junit.consumer.BarWriter;
 import com.github.t1.wunderbar.junit.consumer.WunderBarExpectations;
 import io.smallrye.graphql.client.typesafe.api.GraphQlClientApi;
 import io.smallrye.graphql.client.typesafe.api.GraphQlClientBuilder;
@@ -23,7 +23,7 @@ public class SystemExpectations implements WunderBarExpectations {
     private final Object api;
     private final BarFilter filter;
 
-    public SystemExpectations(Class<?> type, String endpoint, Bar bar) {
+    public SystemExpectations(Class<?> type, String endpoint, BarWriter bar) {
         this.filter = new BarFilter(bar);
         this.api = buildApi(type, endpoint);
     }

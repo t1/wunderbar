@@ -1,6 +1,5 @@
 package com.github.t1.wunderbar.junit.consumer;
 
-import com.github.t1.wunderbar.junit.Bar;
 import com.github.t1.wunderbar.junit.WunderBarException;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
@@ -39,13 +38,13 @@ import static org.junit.jupiter.api.extension.ExtensionContext.Namespace.GLOBAL;
 @Slf4j
 class WunderBarConsumerJUnit implements Extension, BeforeEachCallback, AfterEachCallback {
     private static boolean initialized = false;
-    private static final Map<String, Bar> BARS = new LinkedHashMap<>();
+    private static final Map<String, BarWriter> BARS = new LinkedHashMap<>();
     private static final Pattern FUNCTION = Pattern.compile("(?<prefix>.*)\\{(?<method>.*)\\(\\)}(?<suffix>.*)");
 
     private ExtensionContext context;
     private WunderBarConsumerExtension settings;
     private String testId;
-    private Bar bar;
+    private BarWriter bar;
     private Instant start;
     private final List<Proxy> proxies = new ArrayList<>();
 
@@ -78,7 +77,7 @@ class WunderBarConsumerJUnit implements Extension, BeforeEachCallback, AfterEach
 
     private static void shutDown() {
         log.info("shut down");
-        BARS.values().forEach(Bar::close);
+        BARS.values().forEach(BarWriter::close);
         BARS.clear();
         initialized = false;
     }
@@ -91,13 +90,13 @@ class WunderBarConsumerJUnit implements Extension, BeforeEachCallback, AfterEach
         return instances.get(instances.size() - 1); // the innermost / closest
     }
 
-    private Bar createBar(String fileName) {
+    private BarWriter createBar(String fileName) {
         if (fileName.equals(NONE)) return null;
         var archiveComment = Path.of(System.getProperty("user.dir")).getFileName().toString();
         log.info("create bar [{}] in {}", archiveComment, fileName);
-        var bar = new Bar(archiveComment);
-        bar.setPath(Path.of(fileName));
-        return bar;
+        var writer = BarWriter.of(fileName);
+        writer.setComment(archiveComment);
+        return writer;
     }
 
     private void forEachField(Class<? extends Annotation> annotationType, Consumer<Field> action) {

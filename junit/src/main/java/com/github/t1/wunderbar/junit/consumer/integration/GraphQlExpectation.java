@@ -1,6 +1,6 @@
 package com.github.t1.wunderbar.junit.consumer.integration;
 
-import com.github.t1.wunderbar.junit.Bar;
+import com.github.t1.wunderbar.junit.consumer.BarWriter;
 import com.github.t1.wunderbar.junit.http.HttpServerRequest;
 import com.github.t1.wunderbar.junit.http.HttpServerResponse;
 import io.smallrye.graphql.client.typesafe.api.GraphQlClientBuilder;
@@ -13,7 +13,7 @@ import java.util.Map;
 import static java.util.Locale.US;
 
 class GraphQlExpectation extends HttpServiceExpectation {
-    GraphQlExpectation(Bar bar, Method method, Object... args) { super(bar, method, args); }
+    GraphQlExpectation(BarWriter bar, Method method, Object... args) { super(bar, method, args); }
 
     @Override protected Object service() {
         return GraphQlClientBuilder.newBuilder()

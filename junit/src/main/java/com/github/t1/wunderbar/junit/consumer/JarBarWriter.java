@@ -1,7 +1,5 @@
-package com.github.t1.wunderbar.junit;
+package com.github.t1.wunderbar.junit.consumer;
 
-import com.github.t1.wunderbar.junit.http.HttpServerRequest;
-import com.github.t1.wunderbar.junit.http.HttpServerResponse;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
@@ -20,37 +18,25 @@ import java.util.zip.ZipEntry;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
 @Slf4j @RequiredArgsConstructor
-public class Bar {
-    private final String archiveComment;
-    @Getter @Setter Path path;
-    @Setter private String directory;
+public class JarBarWriter extends BarWriter {
+    @Getter final Path path;
+    @Setter private String comment;
+    @Getter @Setter private String directory;
     private JarOutputStream archive;
     private final Map<String, AtomicInteger> counters = new LinkedHashMap<>();
 
     @Override public String toString() {
-        return "Bar[" + archiveComment + ":" + path + " : " + directory + " : " + counters + ']';
+        return "Bar[" + comment + ":" + path + " : " + directory + " : " + counters + ']';
     }
 
-    private String nextPrefix() {
+    @Override protected int count() {
         if (directory == null)
             throw new IllegalStateException("must set directory before calling save: " + this);
-        var counter = counters.computeIfAbsent(directory, i -> new AtomicInteger())
-            .incrementAndGet();
-        return directory + "/" + counter + " ";
-    }
-
-
-    public void save(HttpServerRequest request, HttpServerResponse response) {
-        String id = nextPrefix();
-        write(id + "request-headers.properties", request.headerProperties());
-        request.getBody().ifPresent(body -> write(id + "request-body.json", body));
-
-        write(id + "response-headers.properties", response.headerProperties());
-        response.getBody().ifPresent(body -> write(id + "response-body.json", body));
+        return counters.computeIfAbsent(directory, i -> new AtomicInteger()).getAndIncrement();
     }
 
     @SneakyThrows(IOException.class)
-    private void write(String fileName, String content) {
+    @Override protected void write(String fileName, String content) {
         var archive = archive();
         archive.putNextEntry(new ZipEntry(fileName));
         var bytes = content.getBytes(UTF_8);
@@ -66,11 +52,11 @@ public class Bar {
             Files.deleteIfExists(path);
             var outputStream = Files.newOutputStream(path);
             archive = new JarOutputStream(outputStream);
-            archive.setComment(archiveComment);
+            archive.setComment(comment);
         }
         return archive;
     }
 
-    @SneakyThrows(IOException.class)
+    @Override @SneakyThrows(IOException.class)
     public void close() { if (archive != null) archive.close(); }
 }

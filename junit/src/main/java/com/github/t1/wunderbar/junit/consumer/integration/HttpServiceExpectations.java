@@ -1,7 +1,7 @@
 package com.github.t1.wunderbar.junit.consumer.integration;
 
-import com.github.t1.wunderbar.junit.Bar;
 import com.github.t1.wunderbar.junit.WunderBarException;
+import com.github.t1.wunderbar.junit.consumer.BarWriter;
 import com.github.t1.wunderbar.junit.consumer.WunderBarExpectation;
 import com.github.t1.wunderbar.junit.consumer.WunderBarExpectations;
 import com.github.t1.wunderbar.junit.consumer.WunderbarExpectationBuilder;
@@ -13,11 +13,10 @@ import org.eclipse.microprofile.rest.client.inject.RegisterRestClient;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 @Slf4j @RequiredArgsConstructor
 public class HttpServiceExpectations implements WunderBarExpectations {
-    private final Bar bar;
+    private final BarWriter bar;
     private final List<HttpServiceExpectation> expectations = new ArrayList<>();
 
     @Override public Object invoke(Method method, Object... args) {

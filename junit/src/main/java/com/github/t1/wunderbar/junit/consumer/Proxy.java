@@ -1,6 +1,5 @@
 package com.github.t1.wunderbar.junit.consumer;
 
-import com.github.t1.wunderbar.junit.Bar;
 import com.github.t1.wunderbar.junit.consumer.integration.HttpServiceExpectations;
 import com.github.t1.wunderbar.junit.consumer.system.SystemExpectations;
 import com.github.t1.wunderbar.junit.consumer.unit.MockExpectations;
@@ -10,13 +9,13 @@ import java.lang.reflect.Method;
 
 class Proxy {
     private final Level level;
-    private final Bar bar;
+    private final BarWriter bar;
     private final Class<?> type;
     final Object instance;
     private final String endpoint;
     private final WunderBarExpectations expectations;
 
-    public Proxy(Level level, Bar bar, Class<?> type, String endpoint) {
+    public Proxy(Level level, BarWriter bar, Class<?> type, String endpoint) {
         this.level = level;
         this.bar = bar;
         this.type = type;

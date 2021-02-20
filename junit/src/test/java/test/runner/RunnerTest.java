@@ -1,6 +1,7 @@
 package test.runner;
 
-import com.github.t1.wunderbar.junit.Bar;
+import com.github.t1.wunderbar.junit.consumer.BarWriter;
+import com.github.t1.wunderbar.junit.consumer.JarBarWriter;
 import com.github.t1.wunderbar.junit.http.HttpServer;
 import com.github.t1.wunderbar.junit.http.HttpServerRequest;
 import com.github.t1.wunderbar.junit.http.HttpServerResponse;
@@ -111,15 +112,15 @@ class RunnerTest {
         return build(bar);
     }
 
-    private DynamicNode build(Bar bar) { return findTestsIn(bar.getPath(), executionCollector); }
+    private DynamicNode build(BarWriter bar) { return findTestsIn(bar.getPath(), executionCollector); }
 
     static class BarTestBuilder {
-        private final Bar bar;
+        private final BarWriter bar;
         private int nextTestValue = 0;
 
         BarTestBuilder(String archiveComment) {
-            this.bar = new Bar(archiveComment);
-            bar.setPath(wunderBarPath);
+            this.bar = new JarBarWriter(wunderBarPath);
+            this.bar.setComment( archiveComment);
         }
 
         BarTestBuilder with(String directory) { return with(directory, Integer.toString(nextTestValue++)); }
@@ -136,7 +137,7 @@ class RunnerTest {
             return this;
         }
 
-        public Bar build() {
+        public BarWriter build() {
             bar.close();
             return bar;
         }

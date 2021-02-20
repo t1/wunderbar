@@ -17,6 +17,10 @@ public @interface WunderBarConsumerExtension {
     /**
      * The path to the <code>bar</code> file to save interactions to; or {@link #NONE}, if they should <em>not</em> be saved.
      * <p>
+     * Note that you can also write to a <code>.jar</code> file, the runner accepts that and your tooling may be better.
+     * And if the file name ends with a slash (<code>/</code>), the test files will not be zipped but remain plain files;
+     * this may also be more convenient for some use cases.
+     * <p>
      * Not applicable to {@link Level#UNIT UNIT} tests.
      */
     String fileName() default "target/wunder.bar";

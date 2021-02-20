@@ -1,6 +1,6 @@
 package com.github.t1.wunderbar.junit.consumer.system;
 
-import com.github.t1.wunderbar.junit.Bar;
+import com.github.t1.wunderbar.junit.consumer.BarWriter;
 import com.github.t1.wunderbar.junit.http.HttpServerRequest;
 import com.github.t1.wunderbar.junit.http.HttpServerRequest.HttpServerRequestBuilder;
 import com.github.t1.wunderbar.junit.http.HttpServerResponse;
@@ -22,10 +22,10 @@ import static javax.ws.rs.core.MediaType.APPLICATION_JSON_TYPE;
 
 @Slf4j
 public class BarFilter implements ClientRequestFilter, ClientResponseFilter {
-    private final Bar bar;
+    private final BarWriter bar;
     private Builder builder;
 
-    public BarFilter(Bar bar) {
+    public BarFilter(BarWriter bar) {
         this.bar = bar;
     }
 

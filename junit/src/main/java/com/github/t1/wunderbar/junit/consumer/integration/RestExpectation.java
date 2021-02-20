@@ -1,6 +1,6 @@
 package com.github.t1.wunderbar.junit.consumer.integration;
 
-import com.github.t1.wunderbar.junit.Bar;
+import com.github.t1.wunderbar.junit.consumer.BarWriter;
 import com.github.t1.wunderbar.junit.http.HttpServerRequest;
 import com.github.t1.wunderbar.junit.http.HttpServerResponse;
 import lombok.Builder;
@@ -19,7 +19,7 @@ import static javax.ws.rs.core.Response.Status.INTERNAL_SERVER_ERROR;
 
 @Slf4j
 class RestExpectation extends HttpServiceExpectation {
-    RestExpectation(Bar bar, Method method, Object... args) { super(bar, method, args); }
+    RestExpectation(BarWriter bar, Method method, Object... args) { super(bar, method, args); }
 
     @Override protected Object service() {
         return RestClientBuilder.newBuilder().baseUri(baseUri().resolve("/rest")).build(method.getDeclaringClass());
