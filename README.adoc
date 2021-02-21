@@ -1,5 +1,7 @@
 = BAR :: Behaviour ARchive =
 
+image::https://github.com/t1/wunderbar/actions/workflows/maven.yml/badge.svg[link=https://github.com/t1/wunderbar/actions/workflows/maven.yml]
+
 Low ceremony https://martinfowler.com/articles/consumerDrivenContracts.html[Consumer Driven Contracts] for Java natives.
 
 Supports REST and GraphQL.
