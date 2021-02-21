@@ -141,7 +141,7 @@ abstract class ProductResolverTest {
 
             var throwable = catchThrowable(() -> restService.getProduct(productId));
 
-            failsWith(throwable, IllegalStateException.class.getName(), "some internal error", INTERNAL_SERVER_ERROR);
+            failsWith(throwable, "illegal-state", "some internal error", INTERNAL_SERVER_ERROR);
         }
 
         @Test void shouldFailToCallForbiddenRestService() {
@@ -159,7 +159,7 @@ abstract class ProductResolverTest {
 
             var throwable = catchThrowableOfType(() -> restService.getProduct("y"), WebApplicationException.class);
 
-            failsWith(throwable, NotFoundException.class.getName(), "product y not found", NOT_FOUND);
+            failsWith(throwable, "not-found", "product y not found", NOT_FOUND);
         }
     }
 
@@ -179,23 +179,23 @@ abstract class ProductResolverTest {
         //x }
 
         @Test void shouldFailToCallGivenWithoutCallToProxyNull() {
-            var throwable = catchThrowable(() -> given(null).willReturn(null));
+            var throwable = catchThrowable(() -> given(null).willThrow(new RuntimeException("unreachable")));
 
             then(throwable).hasMessage("Stubbing mismatch: call `given` exactly once on the response object of a proxy call");
         }
 
         @Test void shouldFailToCallGivenWithoutCallToProxyNonNull() {
-            var throwable = catchThrowable(() -> given(1L).willReturn(null));
+            var throwable = catchThrowable(() -> given(1L).willThrow(new RuntimeException("unreachable")));
 
             then(throwable).hasMessage("Stubbing mismatch: call `given` exactly once on the response object of a proxy call");
         }
 
         @Test void shouldFailToCallTheSameExpectedResponseBuilderTwice() {
             var givenProduct = Product.builder().id("x").build();
-            var expectedResponseBuilder = given(products.product(givenProduct.getId()));
-            expectedResponseBuilder.willReturn(givenProduct);
+            var stub = given(products.product(givenProduct.getId()));
+            stub.willReturn(givenProduct);
 
-            var throwable = catchThrowable(() -> expectedResponseBuilder.willReturn(givenProduct));
+            var throwable = catchThrowable(() -> stub.willReturn(givenProduct));
 
             then(throwable).hasMessage("Stubbing mismatch: call `given` exactly once on the response object of a proxy call");
         }
@@ -274,7 +274,7 @@ abstract class ProductResolverTest {
     }
 
     @GraphQlClientApi
-    public interface ReturnTypesService {
+    interface ReturnTypesService {
         boolean getBoolean();
 
         byte getByte();

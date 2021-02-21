@@ -3,7 +3,6 @@ package com.github.t1.wunderbar.junit.consumer.integration;
 import com.github.t1.wunderbar.junit.Utils;
 import com.github.t1.wunderbar.junit.consumer.BarWriter;
 import com.github.t1.wunderbar.junit.consumer.WunderBarExpectation;
-import com.github.t1.wunderbar.junit.consumer.WunderbarExpectationBuilder;
 import com.github.t1.wunderbar.junit.http.HttpServer;
 import com.github.t1.wunderbar.junit.http.HttpServerRequest;
 import com.github.t1.wunderbar.junit.http.HttpServerResponse;
@@ -71,13 +70,11 @@ abstract class HttpServiceExpectation extends WunderBarExpectation {
     @Override public void willReturn(Object response) {
         assertUnset("willReturn");
         this.response = response;
-        WunderbarExpectationBuilder.buildingExpectation = null;
     }
 
     @Override public void willThrow(Exception exception) {
         assertUnset("willThrow");
         this.exception = exception;
-        WunderbarExpectationBuilder.buildingExpectation = null;
     }
 
     private void assertUnset(String method) {

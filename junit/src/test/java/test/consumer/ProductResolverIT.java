@@ -38,7 +38,7 @@ class ProductResolverIT extends ProductResolverTest {
         boolean endpointCalled = false;
 
         @SuppressWarnings("unused")
-        public String testEndpoint() {
+        String testEndpoint() {
             endpointCalled = true;
             return "some-endpoint";
         }
@@ -51,6 +51,25 @@ class ProductResolverIT extends ProductResolverTest {
 
             then(resolvedProduct).usingRecursiveComparison().isEqualTo(givenProduct);
             then(endpointCalled).as("endpoint function called").isTrue();
+        }
+    }
+
+    /** These test fail with a Mockito UnfinishedStubbing exception, when running at unit test level */
+    @Nested class StubThenNull {
+        @Test void shouldFailToCallWillThrowWithNull() {
+            var stub = given(products.product("dummy"));
+
+            var throwable = catchThrowable(() -> stub.willThrow(null));
+
+            then(throwable).hasMessage("can't throw null from an expectation");
+        }
+
+        @Test void shouldFailToCallWillReturnWithNull() {
+            var stub = given(products.product("dummy"));
+
+            var throwable = catchThrowable(() -> stub.willReturn(null));
+
+            then(throwable).hasMessage("can't return null from an expectation");
         }
     }
 }

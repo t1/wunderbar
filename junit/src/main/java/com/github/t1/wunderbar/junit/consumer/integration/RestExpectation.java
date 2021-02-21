@@ -15,6 +15,7 @@ import java.lang.reflect.Method;
 import java.net.URI;
 import java.util.Optional;
 
+import static com.github.t1.wunderbar.junit.Utils.errorCode;
 import static javax.ws.rs.core.Response.Status.INTERNAL_SERVER_ERROR;
 
 @Slf4j
@@ -48,7 +49,7 @@ class RestExpectation extends HttpServiceExpectation {
     public static class ProblemDetails {
         private static ProblemDetails of(Exception exception) {
             return ProblemDetails.builder()
-                .type(URI.create("urn:problem-type:" + exception.getClass().getName()))
+                .type(URI.create("urn:problem-type:" + errorCode(exception)))
                 .title(exception.getClass().getSimpleName())
                 .detail(exception.getMessage())
                 .build();

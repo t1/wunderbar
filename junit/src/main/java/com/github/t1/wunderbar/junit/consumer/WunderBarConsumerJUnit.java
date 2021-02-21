@@ -38,7 +38,7 @@ import static org.junit.jupiter.api.extension.ExtensionContext.Namespace.GLOBAL;
 @Slf4j
 class WunderBarConsumerJUnit implements Extension, BeforeEachCallback, AfterEachCallback {
     private static boolean initialized = false;
-    private static final Map<String, BarWriter> BARS = new LinkedHashMap<>();
+    private static final Map<String, BarWriter> BAR_WRITERS = new LinkedHashMap<>();
     private static final Pattern FUNCTION = Pattern.compile("(?<prefix>.*)\\{(?<method>.*)\\(\\)}(?<suffix>.*)");
 
     private ExtensionContext context;
@@ -56,10 +56,11 @@ class WunderBarConsumerJUnit implements Extension, BeforeEachCallback, AfterEach
         this.settings = findWunderBarTest().getClass().getAnnotation(WunderBarConsumerExtension.class);
         log.info("==================== {} test: {}", level(), testId);
 
-        this.bar = BARS.computeIfAbsent(settings.fileName(), this::createBar);
+        this.bar = BAR_WRITERS.computeIfAbsent(settings.fileName(), this::createBar);
         if (bar != null) bar.setDirectory(testId);
 
         forEachField(Service.class, this::createProxy);
+        if (proxies.isEmpty()) throw new WunderBarException("you need at least one `@Service` field in your `@WunderBarConsumerExtension` test");
 
         forEachField(SystemUnderTest.class, this::initSut);
 
@@ -77,8 +78,8 @@ class WunderBarConsumerJUnit implements Extension, BeforeEachCallback, AfterEach
 
     private static void shutDown() {
         log.info("shut down");
-        BARS.values().forEach(BarWriter::close);
-        BARS.clear();
+        BAR_WRITERS.values().forEach(BarWriter::close);
+        BAR_WRITERS.clear();
         initialized = false;
     }
 
@@ -189,7 +190,7 @@ class WunderBarConsumerJUnit implements Extension, BeforeEachCallback, AfterEach
         testId = null;
     }
 
-    private long duration() { return Duration.between(start, Instant.now()).get(NANOS) / 1_000_000L; }
+    private long duration() { return (start == null) ? -1 : Duration.between(start, Instant.now()).get(NANOS) / 1_000_000L; }
 
     @SneakyThrows(ReflectiveOperationException.class)
     private static Object newInstance(Field field) {

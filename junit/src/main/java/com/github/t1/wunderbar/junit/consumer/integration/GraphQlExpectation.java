@@ -10,7 +10,7 @@ import java.lang.reflect.Method;
 import java.util.List;
 import java.util.Map;
 
-import static java.util.Locale.US;
+import static com.github.t1.wunderbar.junit.Utils.errorCode;
 
 class GraphQlExpectation extends HttpServiceExpectation {
     GraphQlExpectation(BarWriter bar, Method method, Object... args) { super(bar, method, args); }
@@ -32,7 +32,7 @@ class GraphQlExpectation extends HttpServiceExpectation {
         if (getException() != null)
             responseBuilder.errors(List.of(GraphQlError.builder()
                 .message(getException().getMessage())
-                .extension("code", errorCode())
+                .extension("code", errorCode(getException()))
                 .build()));
         return responseBuilder.build();
     }
@@ -53,12 +53,4 @@ class GraphQlExpectation extends HttpServiceExpectation {
     private String lowerFirst(String name) {
         return Character.toLowerCase(name.charAt(0)) + name.substring(1);
     }
-
-    private String errorCode() {
-        var code = camelToKebab(getException().getClass().getSimpleName());
-        if (code.endsWith("-exception")) code = code.substring(0, code.length() - 10);
-        return code;
-    }
-
-    private static String camelToKebab(String in) { return String.join("-", in.split("(?=\\p{javaUpperCase})")).toLowerCase(US); }
 }

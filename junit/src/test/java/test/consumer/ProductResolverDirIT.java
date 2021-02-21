@@ -92,6 +92,4 @@ class ProductResolverDirIT {
     private Path baseDir() {
         return Path.of(DIR).resolve(ProductResolverDirIT.class.getSimpleName());
     }
-
-    // TODO shouldWriteFileNumber10
 }

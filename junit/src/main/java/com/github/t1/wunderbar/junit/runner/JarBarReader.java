@@ -48,7 +48,7 @@ class JarBarReader extends BarReader {
         return Stream.of(new TreeEntry(path, number, displayName, uri));
     }
 
-    @Override public String getDisplayName() {
+    @Override String getDisplayName() {
         var comment = jarFile.getComment();
         var fileName = Path.of(jarFile.getName()).getFileName().toString();
         return (comment == null) ? fileName : (comment + " [" + fileName + "]");

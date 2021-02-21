@@ -23,7 +23,7 @@ class ProductResolver {
         return products.product(item.getProductId());
     }
 
-    @GraphQlClientApi(endpoint = "dummy")
+    @GraphQlClientApi(endpoint = "health")
     interface Products {
         Product product(@NonNull String id);
     }

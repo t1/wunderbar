@@ -2,6 +2,10 @@ package com.github.t1.wunderbar.junit.consumer;
 
 import static java.util.Locale.ROOT;
 
+/**
+ * The mode to run a test annotated as {@link WunderBarConsumerExtension}.
+ * The default is {@link #AUTO}, so the level is determined by the test name.
+ */
 public enum Level {
     /**
      * Automatically determine the level from the test name:<ul>
@@ -31,7 +35,7 @@ public enum Level {
 
     /**
      * Call the real service. You can use this to explore the behavior of an existing API.
-     * Building expectations with {@link WunderbarExpectationBuilder#given(Object) given} doesn't make any sense at this level
+     * Building expectations with {@link WunderbarExpectationBuilder#given given} doesn't make any sense at this level
      * and will result in premature calls to the service. This may be irritating, but we can't distinguish these calls from valid ones.
      * <p>
      * This is generally done in a test class ending with <code>ST</code>.

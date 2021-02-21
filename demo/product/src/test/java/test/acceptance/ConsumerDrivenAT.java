@@ -1,7 +1,6 @@
 package test.acceptance;
 
 import com.github.t1.wunderbar.demo.product.Product;
-import com.github.t1.wunderbar.junit.consumer.integration.GraphQlError;
 import com.github.t1.wunderbar.junit.http.HttpServerInteraction;
 import com.github.t1.wunderbar.junit.http.HttpServerRequest;
 import com.github.t1.wunderbar.junit.http.HttpServerResponse;
@@ -10,9 +9,7 @@ import com.github.t1.wunderbar.junit.runner.BeforeDynamicTest;
 import com.github.t1.wunderbar.junit.runner.WunderBarRunnerExtension;
 import io.smallrye.graphql.client.typesafe.api.GraphQlClientApi;
 import io.smallrye.graphql.client.typesafe.api.GraphQlClientBuilder;
-import lombok.Getter;
-import lombok.Setter;
-import lombok.ToString;
+import lombok.Data;
 import org.eclipse.microprofile.graphql.Mutation;
 import org.eclipse.microprofile.graphql.NonNull;
 import org.junit.jupiter.api.DynamicNode;
@@ -167,7 +164,7 @@ class ConsumerDrivenAT {
         private String code() {
             if (graphQlResponse.errors == null || graphQlResponse.errors.isEmpty()) return "";
             assert graphQlResponse.errors.size() == 1 : "expected exactly one error but got " + graphQlResponse.errors;
-            return (String) graphQlResponse.errors.get(0).getExtensions().get("code");
+            return graphQlResponse.errors.get(0).getExtensions().getCode();
         }
 
         private String forbiddenProductId() {
@@ -179,17 +176,23 @@ class ConsumerDrivenAT {
         }
     }
 
-    @Getter @Setter @ToString
-    public static class GraphQlResponse {
-        Data data;
+    public static @Data class GraphQlResponse {
+        GraphQlData data;
         List<GraphQlError> errors;
     }
 
-    @Getter @Setter @ToString
-    public static class Data {
+    public static @Data class GraphQlData {
         Product product;
     }
 
+    public static @Data class GraphQlError {
+        String message;
+        GraphQlErrorExtensions extensions;
+    }
+
+    public static @Data class GraphQlErrorExtensions {
+        String code;
+    }
 
     private static final Jsonb JSONB = JsonbBuilder.create();
     private static final String REST_PREFIX = "/rest/products/";

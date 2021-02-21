@@ -1,7 +1,6 @@
 package com.github.t1.wunderbar.junit.consumer.unit;
 
 import com.github.t1.wunderbar.junit.consumer.WunderBarExpectation;
-import com.github.t1.wunderbar.junit.consumer.WunderbarExpectationBuilder;
 import lombok.SneakyThrows;
 import org.mockito.BDDMockito;
 import org.mockito.BDDMockito.BDDMyOngoingStubbing;
@@ -29,11 +28,9 @@ class MockExpectation extends WunderBarExpectation {
 
     @Override public void willReturn(Object response) {
         mockitoStub.willReturn(response);
-        WunderbarExpectationBuilder.buildingExpectation = null;
     }
 
     @Override public void willThrow(Exception exception) {
         mockitoStub.willThrow(exception);
-        WunderbarExpectationBuilder.buildingExpectation = null;
     }
 }

@@ -21,11 +21,11 @@ import static com.github.t1.wunderbar.junit.Utils.formatJson;
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON_TYPE;
 
 @Slf4j
-public class BarFilter implements ClientRequestFilter, ClientResponseFilter {
+class BarFilter implements ClientRequestFilter, ClientResponseFilter {
     private final BarWriter bar;
     private Builder builder;
 
-    public BarFilter(BarWriter bar) {
+    BarFilter(BarWriter bar) {
         this.bar = bar;
     }
 
@@ -50,7 +50,7 @@ public class BarFilter implements ClientRequestFilter, ClientResponseFilter {
 
         private final HttpServerResponseBuilder response = HttpServerResponse.builder();
 
-        public Builder(ClientRequestContext requestContext) {
+        Builder(ClientRequestContext requestContext) {
             request
                 .method(requestContext.getMethod())
                 .uri(local(requestContext.getUri()));
@@ -71,7 +71,7 @@ public class BarFilter implements ClientRequestFilter, ClientResponseFilter {
             return URI.create("/" + schemeAndHost.relativize(uri));
         }
 
-        public HttpServerRequest buildRequest() {
+        HttpServerRequest buildRequest() {
             if (requestStringBuilder != null) {
                 var body = requestStringBuilder.toString();
                 if (APPLICATION_JSON_TYPE.isCompatible(requestMediaType)) body = formatJson(body);
@@ -98,7 +98,7 @@ public class BarFilter implements ClientRequestFilter, ClientResponseFilter {
             }
         }
 
-        public HttpServerResponse buildResponse() {
+        HttpServerResponse buildResponse() {
             return response.build();
         }
     }

@@ -11,12 +11,12 @@ import java.util.regex.Pattern;
 
 import static com.github.t1.wunderbar.junit.Utils.deleteRecursive;
 
-public class DirBarWriter extends BarWriter {
+class DirBarWriter extends BarWriter {
     @Getter private final Path path;
     @Setter private String comment;
     @Getter @Setter private String directory;
 
-    public DirBarWriter(Path path) {
+    DirBarWriter(Path path) {
         this.path = path;
         deleteRecursive(path);
     }
@@ -24,7 +24,7 @@ public class DirBarWriter extends BarWriter {
     private Path currentDir() { return path.resolve(directory); }
 
     @SneakyThrows(IOException.class)
-    @Override public int count() {
+    @Override protected int count() {
         if (directory == null)
             throw new IllegalStateException("must set directory before calling save: " + this);
         if (Files.isDirectory(currentDir()))
@@ -40,12 +40,10 @@ public class DirBarWriter extends BarWriter {
     }
 
     @SneakyThrows(IOException.class)
-    @Override public void write(String fileName, String content) {
+    @Override protected void write(String fileName, String content) {
         var filePath = path.resolve(fileName);
         assert filePath.getParent().equals(currentDir());
         Files.createDirectories(currentDir());
         Files.writeString(filePath, content);
     }
-
-    @Override public void close() {}
 }

@@ -27,7 +27,7 @@ class ProductsRestGatewayMockitoTest {
 }
 ----
 
-Instead of these annotations (and the `given` method), you can use different ones. Same concepts, same behavior, just different logs:
+Instead of these annotations (and the static `given` method import), you can use different ones. Same concepts, same (but limited) behavior, just different logs:
 
 [source,java]
 ----
@@ -46,11 +46,9 @@ class ProductsRestGatewayTest {
 }
 ----
 
-The interesting part comes, when you change the `@WunderBarConsumerExtension` annotation to `@WunderBarConsumerExtension(level = INTEGRATION)` (or simply change the test name to end with `IT`): the extension now starts a mock server exposing the behavior you just stubbed, i.e. it will reply to your REST request with the proper product. No code changes needed, and it fully tests your client annotations and (de)serialization of your POJOs.
+It starts to get interesting, when you change the `@WunderBarConsumerExtension` annotation to `@WunderBarConsumerExtension(level = INTEGRATION)` (or simply change the test name to end with `IT`): the extension now starts a mock server exposing the behavior you just stubbed, i.e. it will reply to your REST request with the proper product. No code changes needed, and it fully tests your client annotations and (de)serialization of your POJOs.
 
-What's even better: it records the requests and responses you need for your code to work, and saves it in a `wunder.bar` file (behavior archive). Give this file to your service implementer (maybe together with your other maven artefacts), so they can check if their service adheres to your requirements.
-
-If you need to implement the service, you load the tests stored in a `wunder.bar` file and run them against your service:
+What's even better: it records the requests and responses you need for your code to work, and saves it in a `wunder.bar` file (Behavior ARchive). Give this file to your service implementers, maybe by deploying it together with your other maven artefacts, so they can check if their service fulfills your requirements. To do so, they load the tests stored in a `wunder.bar` file and run them against their service:
 
 [source,java]
 ----
@@ -65,3 +63,9 @@ class ConsumerDrivenAT {
 JUnit-Jupiter calls `@BeforeEach` and `@AfterEach` methods only once before/after a `@TestFactory`, but you can use `@BeforeDynamicTest` / `@AfterDynamicTest` to set up and clean up the data you need in your service to comply with the requirements. Those methods get a `List<HttpServerInteraction> interactions` parameter to do this job.
 
 Writing your acceptance tests in this way makes testing more robust, as you don't have to agree with the consumers of your APIs on any volatile and intransparent assumptions about the test data, e.g. what ids result in what behavior.
+
+== Documentation
+
+The Documentation is in the JavaDoc, mainly of the annotations `@WunderBarConsumerExtension` and the `Level` annotation for the API consumer (client) side and `@WunderBarRunnerExtension` for the API provider (service) side.
+
+The `demo` module contains two example projects: `order` consumes an API that is implemented by `product`.

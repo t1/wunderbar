@@ -11,6 +11,9 @@ import static com.github.t1.wunderbar.junit.runner.CustomBDDAssertions.then;
 import static java.util.stream.Collectors.toList;
 import static javax.json.JsonPatch.Operation.ADD;
 
+/**
+ * AssertJ assertion on JSON values
+ */
 @RequiredArgsConstructor
 public class JsonValueAssert {
     private final JsonValue actual;

@@ -19,6 +19,8 @@ import java.util.Collection;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
+import static java.util.Locale.US;
+
 @GraphQLApi @Path("/products")
 @Slf4j @SuppressWarnings("QsUndeclaredPathMimeTypesInspection")
 public class Products {
@@ -92,8 +94,16 @@ public class Products {
                 "{\n" +
                 "    \"detail\": \"HTTP " + status + " " + Status.fromStatusCode(status) + "\",\n" +
                 "    \"title\": \"" + type.getClass().getSimpleName() + "\",\n" +
-                "    \"type\": \"urn:problem-type:" + type.getClass().getName() + "\"\n" +
+                "    \"type\": \"urn:problem-type:" + errorCode(type) + "\"\n" +
                 "}\n").build();
         }
     }
+
+    public static String errorCode(Exception exception) {
+        var code = camelToKebab(exception.getClass().getSimpleName());
+        if (code.endsWith("-exception")) code = code.substring(0, code.length() - 10);
+        return code;
+    }
+
+    private static String camelToKebab(String in) { return String.join("-", in.split("(?=\\p{javaUpperCase})")).toLowerCase(US); }
 }

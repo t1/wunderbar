@@ -1,7 +1,6 @@
 package test.runner;
 
 import com.github.t1.wunderbar.junit.consumer.BarWriter;
-import com.github.t1.wunderbar.junit.consumer.JarBarWriter;
 import com.github.t1.wunderbar.junit.http.HttpServer;
 import com.github.t1.wunderbar.junit.http.HttpServerRequest;
 import com.github.t1.wunderbar.junit.http.HttpServerResponse;
@@ -23,7 +22,7 @@ import static com.github.t1.wunderbar.junit.runner.WunderBarTestFinder.Test;
 import static com.github.t1.wunderbar.junit.runner.WunderBarTestFinder.findTestsIn;
 import static org.assertj.core.api.BDDAssertions.then;
 
-@WunderBarRunnerExtension(baseUri = "dummy")
+@WunderBarRunnerExtension(baseUri = "health")
 class RunnerTest {
     static HttpServerResponse response;
     static HttpServerRequest request;
@@ -119,8 +118,8 @@ class RunnerTest {
         private int nextTestValue = 0;
 
         BarTestBuilder(String archiveComment) {
-            this.bar = new JarBarWriter(wunderBarPath);
-            this.bar.setComment( archiveComment);
+            this.bar = BarWriter.of(wunderBarPath.toString());
+            this.bar.setComment(archiveComment);
         }
 
         BarTestBuilder with(String directory) { return with(directory, Integer.toString(nextTestValue++)); }
@@ -137,7 +136,7 @@ class RunnerTest {
             return this;
         }
 
-        public BarWriter build() {
+        BarWriter build() {
             bar.close();
             return bar;
         }

@@ -1,6 +1,7 @@
 package com.github.t1.wunderbar.junit.runner;
 
 import com.github.t1.wunderbar.junit.WunderBarException;
+import com.github.t1.wunderbar.junit.consumer.Internal;
 import com.github.t1.wunderbar.junit.http.HttpServerInteraction;
 import lombok.NonNull;
 import lombok.Value;
@@ -22,6 +23,9 @@ import static java.util.stream.Collectors.toList;
 import static org.junit.jupiter.api.DynamicContainer.dynamicContainer;
 import static org.junit.jupiter.api.DynamicTest.dynamicTest;
 
+/**
+ *
+ */
 @Slf4j
 public class WunderBarTestFinder {
     private static final Pattern FUNCTION = Pattern.compile("(?<prefix>.*)\\{(?<method>.*)\\(\\)}(?<suffix>.*)");
@@ -96,7 +100,7 @@ public class WunderBarTestFinder {
         }
     }
 
-    public static @Value class Test implements TestNode {
+    public static @Internal @Value class Test implements TestNode {
         @NonNull Path path;
         int interactionCount;
         @NonNull String displayName;

@@ -3,9 +3,10 @@ package com.github.t1.wunderbar.junit.consumer;
 import com.github.t1.wunderbar.junit.http.HttpServerRequest;
 import com.github.t1.wunderbar.junit.http.HttpServerResponse;
 
+import java.io.Closeable;
 import java.nio.file.Path;
 
-public abstract class BarWriter {
+public abstract class BarWriter implements Closeable {
     public static BarWriter of(String fileName) {
         Path path = Path.of(fileName);
         return fileName.endsWith("/") ? new DirBarWriter(path) : new JarBarWriter(path);
@@ -32,5 +33,5 @@ public abstract class BarWriter {
 
     protected abstract void write(String fileName, String content);
 
-    public abstract void close();
+    @Override public void close() {}
 }

@@ -18,7 +18,7 @@ import java.util.zip.ZipEntry;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
 @Slf4j @RequiredArgsConstructor
-public class JarBarWriter extends BarWriter {
+class JarBarWriter extends BarWriter {
     @Getter final Path path;
     @Setter private String comment;
     @Getter @Setter private String directory;

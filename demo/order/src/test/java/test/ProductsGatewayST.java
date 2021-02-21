@@ -41,14 +41,14 @@ class ProductsGatewayST {
                 response.status(FORBIDDEN).contentType(PROBLEM_DETAIL).body("{\n" +
                     "    \"detail\": \"HTTP 403 Forbidden\",\n" +
                     "    \"title\": \"ForbiddenException\",\n" +
-                    "    \"type\": \"urn:problem-type:javax.ws.rs.ForbiddenException\"\n" +
+                    "    \"type\": \"urn:problem-type:forbidden\"\n" +
                     "}\n");
                 break;
             default:
                 response.status(NOT_FOUND).contentType(PROBLEM_DETAIL).body("{\n" +
                     "    \"detail\": \"HTTP 404 Not Found\",\n" +
                     "    \"title\": \"NotFoundException\",\n" +
-                    "    \"type\": \"urn:problem-type:javax.ws.rs.NotFoundException\"\n" +
+                    "    \"type\": \"urn:problem-type:not-found\"\n" +
                     "}\n");
         }
         return response.build();

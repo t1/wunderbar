@@ -47,7 +47,17 @@ class WunderBarRunnerJUnitExtension implements Extension, BeforeEachCallback, Af
         for (Object instance : context.getRequiredTestInstances().getAllInstances())
             allMethods(instance)
                 .filter(method -> method.isAnnotationPresent(annotationType))
-                .forEach(method -> consumers.add(list -> invoke(instance, method, list)));
+                .forEach(method -> consumers.add(list -> invokeWith(instance, method, list)));
+    }
+
+    private void invokeWith(Object instance, Method method, List<HttpServerInteraction> list) {
+        var args = new Object[method.getParameterCount()];
+        for (int i = 0; i < args.length; i++) {
+            if (method.getParameters()[i].getParameterizedType().getTypeName().equals("java.util.List<" + HttpServerInteraction.class.getName() + ">"))
+                args[i] = list;
+            else throw new WunderBarException("invalid argument type for parameter " + i + " of " + method);
+        }
+        invoke(instance, method, args);
     }
 
     private Stream<Method> allMethods(Object instance) {

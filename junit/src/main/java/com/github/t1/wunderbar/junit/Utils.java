@@ -1,5 +1,6 @@
 package com.github.t1.wunderbar.junit;
 
+import com.github.t1.wunderbar.junit.consumer.Internal;
 import lombok.SneakyThrows;
 import lombok.experimental.UtilityClass;
 
@@ -15,10 +16,11 @@ import java.nio.file.Path;
 import java.util.Collections;
 import java.util.Map;
 
+import static java.util.Locale.US;
 import static java.util.stream.Collectors.toList;
 
 @UtilityClass
-public class Utils {
+public @Internal class Utils {
     @SneakyThrows(ReflectiveOperationException.class)
     public static Object invoke(Object instance, Method method, Object... args) {
         method.setAccessible(true);
@@ -57,4 +59,12 @@ public class Utils {
             });
         }
     }
+
+    public static String errorCode(Exception exception) {
+        var code = camelToKebab(exception.getClass().getSimpleName());
+        if (code.endsWith("-exception")) code = code.substring(0, code.length() - 10);
+        return code;
+    }
+
+    private static String camelToKebab(String in) { return String.join("-", in.split("(?=\\p{javaUpperCase})")).toLowerCase(US); }
 }

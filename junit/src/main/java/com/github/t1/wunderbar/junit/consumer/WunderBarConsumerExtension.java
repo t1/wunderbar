@@ -8,10 +8,22 @@ import java.lang.annotation.Retention;
 import static com.github.t1.wunderbar.junit.consumer.Level.AUTO;
 import static java.lang.annotation.RetentionPolicy.RUNTIME;
 
+/**
+ * Configures and prepares the tests for some code that consumes an API, by injecting the {@link Service} and {@link SystemUnderTest}
+ * fields. Also manages the <code>bar</code> files written.
+ * <p>
+ * When you have {@link org.junit.jupiter.api.Nested Nested} tests, the annotation closest to the test determines the configuration.
+ *
+ * @see WunderbarExpectationBuilder#given
+ */
 @Retention(RUNTIME)
 @ExtendWith(WunderBarConsumerJUnit.class)
 @Inherited
 public @interface WunderBarConsumerExtension {
+    /**
+     * The mode to run a test annotated as {@link WunderBarConsumerExtension}.
+     * The default is {@link Level#AUTO AUTO}, so the level is determined by the test name.
+     */
     Level level() default AUTO;
 
     /**
