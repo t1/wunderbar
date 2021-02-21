@@ -76,13 +76,13 @@ class ProductResolverDirIT {
             .map(path -> path.subpath(3, 5)).map(Path::toString))
             .containsExactlyInAnyOrder(
                 "shouldResolveTwoProducts/1 request-headers.properties",
-                "shouldResolveTwoProducts/2 response-headers.properties",
                 "shouldResolveTwoProducts/1 request-body.json",
                 "shouldResolveTwoProducts/1 response-headers.properties",
-                "shouldResolveTwoProducts/2 response-body.json",
-                "shouldResolveTwoProducts/2 request-body.json",
                 "shouldResolveTwoProducts/1 response-body.json",
-                "shouldResolveTwoProducts/2 request-headers.properties");
+                "shouldResolveTwoProducts/2 request-headers.properties",
+                "shouldResolveTwoProducts/2 request-body.json",
+                "shouldResolveTwoProducts/2 response-headers.properties",
+                "shouldResolveTwoProducts/2 response-body.json");
     }
 
     private File barFile(String file) {
