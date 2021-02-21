@@ -74,7 +74,7 @@ class ProductResolverDirIT {
         then(resolvedProduct2).usingRecursiveComparison().isEqualTo(givenProduct2);
         then(Files.list(baseDir().resolve("shouldResolveTwoProducts"))
             .map(path -> path.subpath(3, 5)).map(Path::toString))
-            .containsExactly(
+            .containsExactlyInAnyOrder(
                 "shouldResolveTwoProducts/1 request-headers.properties",
                 "shouldResolveTwoProducts/2 response-headers.properties",
                 "shouldResolveTwoProducts/1 request-body.json",
