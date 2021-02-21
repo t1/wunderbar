@@ -31,11 +31,27 @@ public class WunderBarTestFinder {
     private static final Pattern FUNCTION = Pattern.compile("(?<prefix>.*)\\{(?<method>.*)\\(\\)}(?<suffix>.*)");
 
 
+    /**
+     * Find all tests in that file. Usage:
+     * <code><pre>
+     * &#64;TestFactory DynamicNode consumerDrivenContractTests() {
+     *     return findTestsIn("wunder.bar");
+     * }
+     * </pre></code>
+     */
     public static DynamicNode findTestsIn(String barPath) {return findTestsIn(Path.of(barPath));}
 
+    /**
+     * Find all tests in that file. Usage:
+     * <code><pre>
+     * &#64;TestFactory DynamicNode consumerDrivenContractTests() {
+     *     return findTestsIn("wunder.bar");
+     * }
+     * </pre></code>
+     */
     public static DynamicNode findTestsIn(Path barPath) { return findTestsIn(barPath, null); }
 
-    public static DynamicNode findTestsIn(Path barPath, Function<Test, Executable> executableFactory) {
+    public static @Internal DynamicNode findTestsIn(Path barPath, Function<Test, Executable> executableFactory) {
         return new WunderBarTestFinder(barPath, executableFactory).toDynamicNode();
     }
 
