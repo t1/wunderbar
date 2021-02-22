@@ -6,7 +6,7 @@
 
     <groupId>com.github.t1</groupId>
     <artifactId>wunderbar</artifactId>
-    <version>1.0.1-SNAPSHOT</version>
+    <version>1.0.2-SNAPSHOT</version>
     <name>Behavior Archives (Parent)</name>
     <description>The easy way to Consumer Driven Contracts (https://martinfowler.com/articles/consumerDrivenContracts.html)</description>
     <packaging>pom</packaging>
@@ -46,6 +46,7 @@
     </licenses>
     <scm>
         <developerConnection>scm:git:https://github.com/t1/wunderbar</developerConnection>
+        <url>https://github.com/t1/wunderbar</url>
         <tag>HEAD</tag>
     </scm>
     <distributionManagement>

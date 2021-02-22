@@ -6,7 +6,7 @@
     <parent>
         <groupId>com.github.t1</groupId>
         <artifactId>wunderbar.demo</artifactId>
-        <version>1.0.1-SNAPSHOT</version>
+        <version>1.0.2-SNAPSHOT</version>
     </parent>
 
     <artifactId>wunderbar.demo.order</artifactId>
@@ -72,7 +72,7 @@
         <dependency>
             <groupId>com.github.t1</groupId>
             <artifactId>wunderbar.junit</artifactId>
-            <version>1.0.1-SNAPSHOT</version>
+            <version>1.0.2-SNAPSHOT</version>
             <scope>test</scope>
         </dependency>
         <dependency>
