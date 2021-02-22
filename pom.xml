@@ -21,7 +21,7 @@
         <resteasy.version>4.5.8.SP1<!-- the version used by quarkus --></resteasy.version>
         <quarkus.version>1.11.1.Final<!-- when changing this, maybe change resteasy, too --></quarkus.version>
         <lombok.version>1.18.18</lombok.version>
-        <junit.version>5.7.0</junit.version>
+        <junit.version>5.7.1</junit.version>
     </properties>
 
     <modules>
