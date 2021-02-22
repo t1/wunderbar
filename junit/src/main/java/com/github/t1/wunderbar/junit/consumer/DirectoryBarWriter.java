@@ -11,12 +11,12 @@ import java.util.regex.Pattern;
 
 import static com.github.t1.wunderbar.junit.Utils.deleteRecursive;
 
-class DirBarWriter extends BarWriter {
+class DirectoryBarWriter extends BarWriter {
     @Getter private final Path path;
     @Setter private String comment;
     @Getter @Setter private String directory;
 
-    DirBarWriter(Path path) {
+    DirectoryBarWriter(Path path) {
         this.path = path;
         deleteRecursive(path);
     }

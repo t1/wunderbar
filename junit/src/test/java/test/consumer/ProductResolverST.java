@@ -63,7 +63,7 @@ class ProductResolverST { // not `extends ProductResolverTest`, as we must not c
         @Service RestService restService;
 
         @SuppressWarnings("unused")
-        URI endpoint() { return dummyServer.baseUri(); }
+        URI endpoint() { return ProductResolverST.this.endpoint(); }
 
         @Test void shouldGetProduct() {
             var response = restService.getProduct("existing-product-id");
