@@ -33,21 +33,21 @@ public class WunderBarTestFinder {
 
     /**
      * Find all tests in that file. Usage:
-     * <code><pre>
+     * <pre><code>
      * &#64;TestFactory DynamicNode consumerDrivenContractTests() {
      *     return findTestsIn("wunder.bar");
      * }
-     * </pre></code>
+     * </code></pre>
      */
     public static DynamicNode findTestsIn(String barPath) {return findTestsIn(Path.of(barPath));}
 
     /**
      * Find all tests in that file. Usage:
-     * <code><pre>
+     * <pre><code>
      * &#64;TestFactory DynamicNode consumerDrivenContractTests() {
      *     return findTestsIn("wunder.bar");
      * }
-     * </pre></code>
+     * </code></pre>
      */
     public static DynamicNode findTestsIn(Path barPath) { return findTestsIn(barPath, null); }
 
