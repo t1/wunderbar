@@ -65,7 +65,7 @@ public @Value class MavenCoordinates {
         if (exists(getLocalRepositoryPath())) return;
         var mvn = new ProcessBuilder()
             .command("mvn", "dependency:get", "-D" + "artifact=" + getCompactString())
-            // .inheritIO() // may help with debugging
+            .inheritIO() // may help with debugging
             .start();
         var exited = mvn.waitFor(30, SECONDS);
         if (!exited || mvn.exitValue() != 0) {
