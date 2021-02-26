@@ -48,5 +48,10 @@ public @Value class MavenCoordinates {
         return out.toString();
     }
 
-    private static final Path LOCAL_REPOSITORY = Path.of(System.getProperty("user.home")).resolve(".m2/repository");
+    private static final String MAVEN_HOME = System.getProperty("MAVEN_HOME", null);
+    private static final Path LOCAL_REPOSITORY = (
+        (MAVEN_HOME == null)
+            ? Path.of(System.getProperty("user.home")).resolve(".m2")
+            : Path.of(MAVEN_HOME))
+        .resolve("repository");
 }
