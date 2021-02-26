@@ -15,7 +15,7 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 
 @Slf4j
 @RequiredArgsConstructor
-class DirectoryBarReader extends BarReader {
+class DirBarReader extends BarReader {
     private final Path rootPath;
 
     @SneakyThrows(IOException.class)
@@ -34,10 +34,9 @@ class DirectoryBarReader extends BarReader {
 
         var relativePath = rootPath.relativize(path).getParent();
         var number = Integer.parseInt(matcher.group("number"));
-        var displayName = relativePath.getFileName().toString();
         var uri = path.getParent().toUri();
 
-        return Stream.of(new TreeEntry(relativePath, number, displayName, uri));
+        return Stream.of(new TreeEntry(relativePath, number, uri));
     }
 
     @Override String getDisplayName() {

@@ -36,13 +36,13 @@ class JarBarReader extends BarReader {
             log.info("skipping unexpected file {}", name);
             return Stream.empty();
         }
+
         var path = Path.of(matcher.group("path"));
         var number = Integer.parseInt(matcher.group("number"));
-        var displayName = getDisplayName();
 
         // uri fragments within archives would be nice, but at least IntelliJ doesn't support it and navigation breaks
         // var uri = this.uri.resolve("#" + path);
-        return Stream.of(new TreeEntry(path, number, displayName, uri));
+        return Stream.of(new TreeEntry(path, number, uri));
     }
 
     @Override String getDisplayName() {

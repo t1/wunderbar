@@ -4,6 +4,7 @@ import com.github.t1.wunderbar.junit.WunderBarException;
 import com.github.t1.wunderbar.junit.http.HttpServerRequest;
 import com.github.t1.wunderbar.junit.http.HttpServerResponse;
 import com.github.t1.wunderbar.junit.runner.WunderBarTestFinder.Test;
+import lombok.NonNull;
 import lombok.SneakyThrows;
 import lombok.Value;
 
@@ -20,7 +21,7 @@ abstract class BarReader {
     @SneakyThrows(IOException.class)
     static BarReader from(Path path) {
         if (Files.isDirectory(path))
-            return new DirectoryBarReader(path);
+            return new DirBarReader(path);
         return new JarBarReader(path);
     }
 
@@ -48,7 +49,7 @@ abstract class BarReader {
     private Optional<String> responseBody(Test test, int n) { return optionalRead(test.getPath() + "/" + n + " response-body.json"); }
 
     private String read(String name) {
-        return optionalRead(name).orElseThrow(() -> new WunderBarException("bar entry " + name + " not found"));
+        return optionalRead(name).orElseThrow(() -> new WunderBarException("bar entry [" + name + "] not found"));
     }
 
     protected abstract Optional<String> optionalRead(String name);
@@ -63,11 +64,10 @@ abstract class BarReader {
 
 
     @Value static class TreeEntry {
-        Path path;
+        @NonNull Path path;
         int number;
-        String displayName;
-        URI uri;
+        @NonNull URI uri;
 
-        Test toTest() { return new Test(path, number, displayName, uri); }
+        Test toTest() { return new Test(path, number, uri); }
     }
 }

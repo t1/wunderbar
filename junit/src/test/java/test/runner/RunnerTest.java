@@ -4,6 +4,7 @@ import com.github.t1.wunderbar.junit.consumer.BarWriter;
 import com.github.t1.wunderbar.junit.http.HttpServer;
 import com.github.t1.wunderbar.junit.http.HttpServerRequest;
 import com.github.t1.wunderbar.junit.http.HttpServerResponse;
+import com.github.t1.wunderbar.junit.runner.MavenCoordinates;
 import com.github.t1.wunderbar.junit.runner.WunderBarRunnerExtension;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
@@ -25,10 +26,19 @@ import static com.github.t1.wunderbar.junit.Utils.deleteRecursive;
 import static com.github.t1.wunderbar.junit.runner.WunderBarTestFinder.Test;
 import static com.github.t1.wunderbar.junit.runner.WunderBarTestFinder.findTestsIn;
 import static com.github.t1.wunderbar.junit.runner.WunderBarTestFinder.findTestsInArtifact;
+import static java.nio.file.Files.exists;
 import static org.assertj.core.api.BDDAssertions.then;
 
 @WunderBarRunnerExtension(baseUri = "health")
 class RunnerTest {
+    private static final MavenCoordinates OLD_BAR_ARTIFACT = MavenCoordinates.builder()
+        .groupId("com.github.t1")
+        .artifactId("wunderbar.demo.order")
+        .version("1.0.2")
+        .packaging("bar")
+        .classifier("bar")
+        .build();
+
     static HttpServerResponse response;
     static HttpServerRequest request;
     static final HttpServer httpServer = new HttpServer(request1 -> {
@@ -68,7 +78,7 @@ class RunnerTest {
                         "}\n")
                     .build())
 
-            .expect("some-container/some-test", 1, "wunder.bar");
+            .expect("some-container/some-test", 1);
 
         return findTestsIn(fixture.bar.getPath(), executionCollector);
     }
@@ -87,15 +97,15 @@ class RunnerTest {
             .withTest("root/deeply/nested/deep-2")
             .withTest("root-3")
 
-            .expect("root-1", 1, "wunder.bar")
-            .expect("root-2", 3, "wunder.bar")
-            .expect("root/flat-1", 1, "wunder.bar")
-            .expect("root/flat-2", 1, "wunder.bar")
-            .expect("root/flat-3", 1, "wunder.bar")
-            .expect("root/nested/nest-1", 1, "wunder.bar")
-            .expect("root/deeply/nested/deep-1", 1, "wunder.bar")
-            .expect("root/deeply/nested/deep-2", 1, "wunder.bar")
-            .expect("root-3", 1, "wunder.bar");
+            .expect("root-1", 1)
+            .expect("root-2", 3)
+            .expect("root/flat-1", 1)
+            .expect("root/flat-2", 1)
+            .expect("root/flat-3", 1)
+            .expect("root/nested/nest-1", 1)
+            .expect("root/deeply/nested/deep-1", 1)
+            .expect("root/deeply/nested/deep-2", 1)
+            .expect("root-3", 1);
 
         return findTestsIn(fixture.bar.getPath(), executionCollector);
     }
@@ -103,7 +113,7 @@ class RunnerTest {
     @TestFactory DynamicNode flatTest() {
         var fixture = new Fixture().withTest("flat")
 
-            .expect("flat", 1, "wunder.bar");
+            .expect("flat", 1);
 
         return findTestsIn(fixture.bar.getPath(), executionCollector);
     }
@@ -122,31 +132,49 @@ class RunnerTest {
         @AfterEach
         void tearDown() { deleteRecursive(tmpDir); }
 
-        @TestFactory DynamicNode artifactTestWithSpecifiedClassifierAndType() {
+        @TestFactory DynamicNode artifactTestWithSpecifiedClassifierAndPackaging() {
             new Fixture(versionDir.resolve("wunderbar.test.artifact-1.2.3-bar.jar"))
                 .withTest("artifact-test")
 
-                .expect("artifact-test", 1, "wunderbar.test.artifact-1.2.3-bar.jar");
+                .expect("artifact-test", 1);
 
-            return findTestsInArtifact(coordinates + ":bar:jar", executionCollector);
+            return findTestsInArtifact(coordinates + ":jar:bar", executionCollector);
         }
 
-        @TestFactory DynamicNode artifactTestWithDefaultClassifierAndSpecifiedType() {
-            new Fixture(versionDir.resolve("wunderbar.test.artifact-1.2.3.jar"))
+        @TestFactory DynamicNode artifactTestWithDefaultClassifierAndSpecifiedPackaging() {
+            new Fixture(versionDir.resolve("wunderbar.test.artifact-1.2.3-bar.jar"))
                 .withTest("artifact-test")
 
-                .expect("artifact-test", 1, "wunderbar.test.artifact-1.2.3.jar");
+                .expect("artifact-test", 1);
 
             return findTestsInArtifact(coordinates + ":jar", executionCollector);
         }
 
-        @TestFactory DynamicNode artifactWithDefaultClassifierAndTypeTest() {
+        @TestFactory DynamicNode artifactWithDefaultClassifierAndPackagingTest() {
             new Fixture(versionDir.resolve("wunderbar.test.artifact-1.2.3-bar.bar"))
                 .withTest("artifact-test")
 
-                .expect("artifact-test", 1, "wunderbar.test.artifact-1.2.3-bar.bar");
+                .expect("artifact-test", 1);
 
             return findTestsInArtifact(coordinates, executionCollector);
+        }
+
+        @TestFactory DynamicNode artifactDownload() {
+            var path = OLD_BAR_ARTIFACT.getLocalRepositoryPath();
+            if (exists(path.getParent())) deleteRecursive(path.getParent());
+
+            new Fixture(path)
+                // this is the exact order in the file
+                .expect("ProductsResolverIT/shouldResolveProduct", 1)
+                .expect("ProductsResolverIT/shouldFailToResolveForbiddenProduct", 1)
+                .expect("ProductsResolverIT/shouldFailToResolveUnknownProduct", 1)
+                .expect("ProductsResolverIT/shouldResolveTwoProducts", 2)
+                .expect("ProductsGatewayIT/shouldGetTwoProducts", 2)
+                .expect("ProductsGatewayIT/shouldFailToGetUnknownProduct", 1)
+                .expect("ProductsGatewayIT/shouldFailToGetForbiddenProduct", 1)
+                .expect("ProductsGatewayIT/shouldGetProduct", 1);
+
+            return findTestsInArtifact(OLD_BAR_ARTIFACT, executionCollector);
         }
     }
 
@@ -176,13 +204,13 @@ class RunnerTest {
             return this;
         }
 
-        Fixture expect(String path, int number, String displayName) {
+        Fixture expect(String path, int count) {
             if (!closed) {
                 closed = true;
                 bar.close();
             }
 
-            expected.add(new Test(Path.of(path), number, displayName, bar.getPath().toUri()));
+            expected.add(new Test(Path.of(path), count, bar.getPath().toUri()));
 
             return this;
         }
