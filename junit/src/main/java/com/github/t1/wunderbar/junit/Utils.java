@@ -5,6 +5,7 @@ import lombok.SneakyThrows;
 import lombok.experimental.UtilityClass;
 
 import javax.json.Json;
+import javax.json.JsonValue;
 import javax.json.stream.JsonGenerator;
 import java.io.IOException;
 import java.io.StringReader;
@@ -38,6 +39,10 @@ public @Internal class Utils {
 
         var value = Json.createReader(new StringReader(json)).readValue();
 
+        return formatJson(value);
+    }
+
+    public static String formatJson(JsonValue value) {
         var writer = new StringWriter();
         Json.createWriterFactory(Map.of(JsonGenerator.PRETTY_PRINTING, true))
             .createWriter(writer)

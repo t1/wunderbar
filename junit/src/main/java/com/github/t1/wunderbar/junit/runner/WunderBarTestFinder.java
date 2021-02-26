@@ -56,6 +56,37 @@ public class WunderBarTestFinder {
     }
 
 
+    /**
+     * Find all tests in that maven artifact. Usage:
+     * <pre><code>
+     * &#64;TestFactory DynamicNode consumerDrivenContractTests() {
+     *     return findTestsInArtifact("&lt;groupId&gt;:&lt;artifactId&gt;:&lt;version&gt;[[:&lt;classifier&gt;]:&lt;type&gt;]");
+     * }
+     * </code></pre>
+     * Note that both the <code>classifier</code> and the <code>type</code> (the file extension) are optional and default to <code>bar</code>.
+     * If the <code>classifier</code> is <em>not</em> specified, but the <code>type</code> is, then only the <code>type</code> is set,
+     * while the <code>classifier</code> remains unset; so you can specify <code>groupId:artifactId:version:jar</code> without a <code>classifier</code>.
+     */
+    public static DynamicNode findTestsInArtifact(String coordinates) { return findTestsInArtifact(coordinates, null); }
+
+    public static DynamicNode findTestsInArtifact(MavenCoordinates coordinates) { return findTestsInArtifact(coordinates, null); }
+
+    public static @Internal DynamicNode findTestsInArtifact(String coordinates, Function<Test, Executable> executableFactory) {
+        var mavenCoordinates = MavenCoordinates.of(coordinates);
+        if (mavenCoordinates.getClassifier() == null) {
+            if (mavenCoordinates.getType() == null) {
+                mavenCoordinates = mavenCoordinates.withType("bar");
+                mavenCoordinates = mavenCoordinates.withClassifier("bar");
+            }
+        } else if (mavenCoordinates.getType() == null) mavenCoordinates = mavenCoordinates.withType("bar");
+        return findTestsInArtifact(mavenCoordinates, executableFactory);
+    }
+
+    public static @Internal DynamicNode findTestsInArtifact(MavenCoordinates coordinates, Function<Test, Executable> executableFactory) {
+        return new WunderBarTestFinder(coordinates.getPath(), executableFactory).toDynamicNode();
+    }
+
+
     private final Function<Test, Executable> executableFactory;
     private final BarReader bar;
     private final TestCollection root;
@@ -123,8 +154,7 @@ public class WunderBarTestFinder {
         @NonNull URI uri;
 
         @Override public String toString() {
-            return ((path.getParent() == null) ? "" : path.getParent() + " : ")
-                + displayName + " [" + interactionCount + "]: " + uri;
+            return ((path == null) ? "" : path + " : ") + displayName + " [" + interactionCount + "]: " + uri;
         }
 
         @Override public DynamicNode toDynamicNode(Function<Test, Executable> executableFactory) {
@@ -136,7 +166,7 @@ public class WunderBarTestFinder {
         if (WunderBarRunnerJUnitExtension.INSTANCE == null)
             throw new WunderBarException("annotate your wunderbar test with @" + WunderBarRunnerExtension.class.getName());
 
-        this.bar = BarReader.of(barFilePath);
+        this.bar = BarReader.from(barFilePath);
         this.root = new TestCollection(barFilePath.toUri().normalize(), Path.of(bar.getDisplayName()));
 
         // indirection with null is necessary, as we can't access `this` in the constructor chain to build the default factory

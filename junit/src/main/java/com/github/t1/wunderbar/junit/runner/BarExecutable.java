@@ -25,6 +25,7 @@ import java.nio.charset.Charset;
 import java.time.Duration;
 import java.util.List;
 
+import static com.github.t1.wunderbar.junit.Utils.formatJson;
 import static com.github.t1.wunderbar.junit.http.HttpUtils.charset;
 import static com.github.t1.wunderbar.junit.runner.CustomBDDAssertions.then;
 import static java.net.http.HttpClient.Redirect.NORMAL;
@@ -94,6 +95,7 @@ class BarExecutable implements Executable {
     }
 
     private void checkBody(BDDSoftAssertions softly, JsonValue actual, JsonValue expected) {
+        System.out.println(formatJson(actual));
         if (actual instanceof JsonStructure && expected instanceof JsonStructure)
             checkForUnexpectedErrors(softly, (JsonStructure) actual, (JsonStructure) expected);
         softly.check(() -> then(actual).isEqualToIgnoringNewFields(expected));

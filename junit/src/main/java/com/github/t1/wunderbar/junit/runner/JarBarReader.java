@@ -38,13 +38,10 @@ class JarBarReader extends BarReader {
         }
         var path = Path.of(matcher.group("path"));
         var number = Integer.parseInt(matcher.group("number"));
+        var displayName = getDisplayName();
 
-        var comment = zipEntry.getComment();
-        var fileName = path.getFileName().toString();
-        var displayName = (comment == null) ? fileName : (comment + " [" + fileName + "]");
-        // fragments within archives would be nice, but at least IntelliJ doesn't support it and navigation breaks
+        // uri fragments within archives would be nice, but at least IntelliJ doesn't support it and navigation breaks
         // var uri = this.uri.resolve("#" + path);
-
         return Stream.of(new TreeEntry(path, number, displayName, uri));
     }
 

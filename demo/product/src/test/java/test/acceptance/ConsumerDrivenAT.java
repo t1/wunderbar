@@ -19,12 +19,16 @@ import test.tools.QuarkusService;
 import javax.json.bind.Jsonb;
 import javax.json.bind.JsonbBuilder;
 import javax.ws.rs.core.Response.Status;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Pattern;
-import java.util.stream.Stream;
 
 import static com.github.t1.wunderbar.junit.runner.WunderBarTestFinder.findTestsIn;
+import static com.github.t1.wunderbar.junit.runner.WunderBarTestFinder.findTestsInArtifact;
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.assertj.core.api.BDDAssertions.then;
 import static test.acceptance.ConsumerDrivenAT.ENDPOINT;
 
@@ -47,10 +51,23 @@ class ConsumerDrivenAT {
     }
 
 
-    @TestFactory Stream<DynamicNode> demoOrderConsumerTests() {
-        return Stream.of(
-            findTestsIn("../order/target/wunder.bar"),
-            findTestsIn("../order/target/system-wunder.jar"));
+    @TestFactory DynamicNode demoOrderConsumerTests() {
+        return findTestsIn("../order/target/wunder.bar");
+    }
+
+    @TestFactory DynamicNode demoOrderConsumerSystemTests() {
+        return findTestsIn("../order/target/system-wunder.jar");
+    }
+
+    @TestFactory DynamicNode demoOrderConsumerArtifactTests() throws IOException {
+        return findTestsInArtifact("com.github.t1:wunderbar.demo.order:" + getVersion());
+    }
+
+    private String getVersion() throws IOException {
+        var pom = Files.readString(Path.of("pom.xml"), UTF_8);
+        var matcher = Pattern.compile("<version>(?<version>[^<]+)</version>").matcher(pom);
+        if (!matcher.find()) throw new RuntimeException("no version found in pom");
+        return matcher.group("version");
     }
 
 

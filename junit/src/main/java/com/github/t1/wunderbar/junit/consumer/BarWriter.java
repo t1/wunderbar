@@ -7,7 +7,7 @@ import java.io.Closeable;
 import java.nio.file.Path;
 
 public abstract class BarWriter implements Closeable {
-    public static BarWriter of(String fileName) {
+    public static BarWriter to(String fileName) {
         Path path = Path.of(fileName);
         return fileName.endsWith("/") ? new DirectoryBarWriter(path) : new JarBarWriter(path);
     }

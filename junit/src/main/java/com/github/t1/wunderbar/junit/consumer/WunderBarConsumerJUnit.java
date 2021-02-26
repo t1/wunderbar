@@ -95,7 +95,7 @@ class WunderBarConsumerJUnit implements Extension, BeforeEachCallback, AfterEach
         if (fileName.equals(NONE)) return null;
         var archiveComment = Path.of(System.getProperty("user.dir")).getFileName().toString();
         log.info("create bar [{}] in {}", archiveComment, fileName);
-        var writer = BarWriter.of(fileName);
+        var writer = BarWriter.to(fileName);
         writer.setComment(archiveComment);
         return writer;
     }

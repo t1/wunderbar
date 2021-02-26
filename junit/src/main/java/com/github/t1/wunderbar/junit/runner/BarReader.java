@@ -18,7 +18,7 @@ import java.util.stream.Stream;
 
 abstract class BarReader {
     @SneakyThrows(IOException.class)
-    static BarReader of(Path path) {
+    static BarReader from(Path path) {
         if (Files.isDirectory(path))
             return new DirectoryBarReader(path);
         return new JarBarReader(path);
