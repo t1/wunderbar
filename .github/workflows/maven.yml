@@ -14,4 +14,4 @@ jobs:
       with:
         path: ~/.m2/repository
         key: maven-${{ hashFiles('**/pom.xml') }}
-    - run: mvn --batch-mode --show-version verify
+    - run: mvn --batch-mode --show-version install
