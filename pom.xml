@@ -118,6 +118,7 @@
                         <include>*ST</include>
                         <include>*AT</include>
                     </includes>
+                    <excludedGroups>SLOW</excludedGroups>
                 </configuration>
             </plugin>
             <plugin>

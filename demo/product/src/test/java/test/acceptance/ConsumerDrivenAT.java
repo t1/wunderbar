@@ -14,6 +14,7 @@ import org.eclipse.microprofile.graphql.Mutation;
 import org.eclipse.microprofile.graphql.NonNull;
 import org.junit.jupiter.api.DynamicNode;
 import org.junit.jupiter.api.TestFactory;
+import test.Slow;
 import test.tools.QuarkusService;
 
 import javax.json.bind.Jsonb;
@@ -59,6 +60,7 @@ class ConsumerDrivenAT {
         return findTestsIn("../order/target/system-wunder.jar");
     }
 
+    @Slow
     @TestFactory DynamicNode demoOrderConsumerArtifactTests() throws IOException {
         return findTestsInArtifact("com.github.t1:wunderbar.demo.order:" + getVersion());
     }
