@@ -40,6 +40,7 @@ class ConsumerDrivenAT {
     private final Backdoor backdoor = GraphQlClientBuilder.newBuilder().endpoint(ENDPOINT + "/graphql").build(Backdoor.class);
     private final List<String> created = new ArrayList<>();
 
+    /** We use this backdoor to setup and tear down the test data */
     @GraphQlClientApi
     @SuppressWarnings("UnusedReturnValue")
     private interface Backdoor {
@@ -63,6 +64,10 @@ class ConsumerDrivenAT {
         return findTestsInArtifact("com.github.t1:wunderbar.demo.order:" + getVersion());
     }
 
+    /**
+     * Get the currently running version of the wunderbar.demo.product artifact.
+     * We assume this to be the same version as the wunderbar.demo.order artifact.
+     */
     private String getVersion() throws IOException {
         var pom = Files.readString(Path.of("pom.xml"), UTF_8);
         var matcher = Pattern.compile("<version>(?<version>[^<]+)</version>").matcher(pom);
@@ -71,10 +76,19 @@ class ConsumerDrivenAT {
     }
 
 
-    @BeforeDynamicTest void setUp(List<HttpServerInteraction> interactions) {
+    @AfterDynamicTest void removeAllTestData(List<HttpServerInteraction> interactions) {
+        created.forEach(backdoor::delete);
+        created.clear();
+    }
+
+    @BeforeDynamicTest void createTestData(List<HttpServerInteraction> interactions) {
         interactions.stream().map(this::createSetUp).forEach(Runnable::run);
     }
 
+    /**
+     * We provide a REST as well as a GraphQL service. To make our setup code simpler, we make it specific to the technology.
+     * In this case the business logic is really simple, but if you have more complex setup logic, there may be better options.
+     */
     private Runnable createSetUp(HttpServerInteraction interaction) {
         if (interaction.getRequest().getUri().getPath().equals("/graphql"))
             return new GraphQlSetUp(interaction);
@@ -82,19 +96,13 @@ class ConsumerDrivenAT {
     }
 
 
-    @AfterDynamicTest void tearDown(List<HttpServerInteraction> interactions) {
-        created.forEach(backdoor::delete);
-        created.clear();
-    }
-
-
-    private void store(Product product) {
+    private void create(Product product) {
         created.add(product.getId());
         backdoor.store(product);
     }
 
-    private void forbidProduct(String id) {
-        store(Product.builder().id(id).build());
+    private void createForbiddenProduct(String id) {
+        create(Product.builder().id(id).build());
         backdoor.forbid(id);
     }
 
@@ -112,12 +120,12 @@ class ConsumerDrivenAT {
         }
 
         @Override public void run() {
-            switch (status()) {
+            switch (expectedStatus()) {
                 case OK:
-                    store(requestedProduct());
+                    create(requestedProduct());
                     break;
                 case FORBIDDEN:
-                    forbidProduct(forbiddenProductId());
+                    createForbiddenProduct(requestedProductId());
                     break;
                 case NOT_FOUND:
                     doNothing();
@@ -127,20 +135,23 @@ class ConsumerDrivenAT {
             }
         }
 
-        private Status status() { return response.getStatus().toEnum(); }
+        private Status expectedStatus() { return response.getStatus().toEnum(); }
 
         private Product requestedProduct() {
-            return JSONB.fromJson(responseBody(), Product.class);
+            var responseBody = response.getBody()
+                .orElseThrow(() -> new RuntimeException("need a body to know how to make the service reply as expected"));
+            var product = JSONB.fromJson(responseBody, Product.class);
+            if (!product.getId().equals(requestedProductId()))
+                throw new RuntimeException("the id requested in the path doesn't match the expected response id");
+            return product;
         }
 
-        protected String responseBody() {
-            return response.getBody().orElseThrow(() -> new RuntimeException("need a body to know how to make the service reply as expected"));
-        }
-
-        private String forbiddenProductId() {
-            var path = request.getUri().getPath();
-            if (!path.startsWith(REST_PREFIX)) throw new RuntimeException("expected path to start with `" + REST_PREFIX + "` but was: " + path);
-            return path.substring(REST_PREFIX.length());
+        private String requestedProductId() {
+            var requestedPath = request.getUri().getPath();
+            var requiredPathPrefix = "/rest/products/";
+            if (!requestedPath.startsWith(requiredPathPrefix))
+                throw new RuntimeException("expected path to start with `" + requiredPathPrefix + "` but was: " + requestedPath);
+            return requestedPath.substring(requiredPathPrefix.length());
         }
     }
 
@@ -155,36 +166,35 @@ class ConsumerDrivenAT {
         private GraphQlSetUp(HttpServerInteraction interaction) {
             this.request = interaction.getRequest();
             this.response = interaction.getResponse();
-            this.graphQlResponse = JSONB.fromJson(responseBody(), GraphQlResponse.class);
-        }
-
-        protected String responseBody() {
-            return response.getBody().orElseThrow(() -> new RuntimeException("need a body to know how to make the service reply as expected"));
+            var responseBody = response.getBody()
+                .orElseThrow(() -> new RuntimeException("need a body to know how to make the service reply as expected"));
+            this.graphQlResponse = JSONB.fromJson(responseBody, GraphQlResponse.class);
         }
 
         @Override public void run() {
-            switch (code()) {
+            switch (expectedErrorCode()) {
                 case "":
-                    store(graphQlResponse.data.product);
+                    create(graphQlResponse.data.product);
                     break;
                 case "product-forbidden":
-                    forbidProduct(forbiddenProductId());
+                    createForbiddenProduct(expectedForbiddenProductId());
                     break;
                 case "product-not-found":
                     doNothing();
                     break;
                 default:
-                    throw new RuntimeException("unsupported error: " + code());
+                    throw new RuntimeException("unsupported error: " + expectedErrorCode());
             }
         }
 
-        private String code() {
+        private String expectedErrorCode() {
             if (graphQlResponse.errors == null || graphQlResponse.errors.isEmpty()) return "";
-            assert graphQlResponse.errors.size() == 1 : "expected exactly one error but got " + graphQlResponse.errors;
+            if (graphQlResponse.errors.size() != 1)
+                throw new RuntimeException("expected exactly one error but got " + graphQlResponse.errors);
             return graphQlResponse.errors.get(0).getExtensions().getCode();
         }
 
-        private String forbiddenProductId() {
+        private String expectedForbiddenProductId() {
             var message = graphQlResponse.errors.get(0).getMessage();
             var pattern = Pattern.compile("product (?<id>.+) is forbidden");
             var matcher = pattern.matcher(message);
@@ -212,5 +222,4 @@ class ConsumerDrivenAT {
     }
 
     private static final Jsonb JSONB = JsonbBuilder.create();
-    private static final String REST_PREFIX = "/rest/products/";
 }
