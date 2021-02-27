@@ -1,8 +1,4 @@
-= BAR :: Behaviour ARchive =
-
-image::https://maven-badges.herokuapp.com/maven-central/com.github.t1/wunderbar/badge.svg[https://search.maven.org/artifact/com.github.t1/wunderbar]
-
-image::https://github.com/t1/wunderbar/actions/workflows/maven.yml/badge.svg[link=https://github.com/t1/wunderbar/actions/workflows/maven.yml]
+= BAR :: Behaviour ARchive image:https://maven-badges.herokuapp.com/maven-central/com.github.t1/wunderbar/badge.svg[link=https://search.maven.org/artifact/com.github.t1/wunderbar] image:https://github.com/t1/wunderbar/actions/workflows/maven.yml/badge.svg[link=https://github.com/t1/wunderbar/actions/workflows/maven.yml]
 
 Low ceremony https://martinfowler.com/articles/consumerDrivenContracts.html[Consumer Driven Contracts] for Java natives.
 
