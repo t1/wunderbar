@@ -1,6 +1,7 @@
 package com.github.t1.wunderbar.junit.runner;
 
 import com.github.t1.wunderbar.junit.WunderBarException;
+import com.github.t1.wunderbar.junit.http.HttpServerInteraction;
 import com.github.t1.wunderbar.junit.http.HttpServerRequest;
 import com.github.t1.wunderbar.junit.http.HttpServerResponse;
 import com.github.t1.wunderbar.junit.runner.WunderBarTestFinder.Test;
@@ -13,9 +14,13 @@ import java.io.StringReader;
 import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.List;
 import java.util.Optional;
 import java.util.Properties;
+import java.util.stream.IntStream;
 import java.util.stream.Stream;
+
+import static java.util.stream.Collectors.toList;
 
 abstract class BarReader {
     @SneakyThrows(IOException.class)
@@ -35,18 +40,26 @@ abstract class BarReader {
 
     abstract String getDisplayName();
 
-    HttpServerRequest request(Test test, int n) { return HttpServerRequest.from(requestHeaders(test, n), requestBody(test, n)); }
+
+    public List<HttpServerInteraction> interactionsFor(Test test) {
+        return IntStream.rangeClosed(1, test.getInteractionCount())
+            .mapToObj(n -> new HttpServerInteraction(request(test, n), response(test, n)))
+            .collect(toList());
+    }
+
+    private HttpServerRequest request(Test test, int n) { return HttpServerRequest.from(requestHeaders(test, n), requestBody(test, n)); }
 
     private Properties requestHeaders(Test test, int n) { return properties(read(test.getPath() + "/" + n + " request-headers.properties")); }
 
     private Optional<String> requestBody(Test test, int n) { return optionalRead(test.getPath() + "/" + n + " request-body.json"); }
 
 
-    HttpServerResponse response(Test test, int n) { return HttpServerResponse.from(responseHeaders(test, n), responseBody(test, n)); }
+    private HttpServerResponse response(Test test, int n) { return HttpServerResponse.from(responseHeaders(test, n), responseBody(test, n)); }
 
     private Properties responseHeaders(Test test, int n) { return properties(read(test.getPath() + "/" + n + " response-headers.properties")); }
 
     private Optional<String> responseBody(Test test, int n) { return optionalRead(test.getPath() + "/" + n + " response-body.json"); }
+
 
     private String read(String name) {
         return optionalRead(name).orElseThrow(() -> new WunderBarException("bar entry [" + name + "] not found"));

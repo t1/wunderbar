@@ -4,6 +4,7 @@ import com.github.t1.wunderbar.junit.http.HttpServerInteraction;
 import com.github.t1.wunderbar.junit.http.HttpServerRequest;
 import com.github.t1.wunderbar.junit.http.HttpServerResponse;
 import com.github.t1.wunderbar.junit.http.HttpUtils;
+import com.github.t1.wunderbar.junit.runner.WunderBarTestFinder.Test;
 import lombok.RequiredArgsConstructor;
 import org.assertj.core.api.BDDSoftAssertions;
 import org.junit.jupiter.api.function.Executable;
@@ -36,7 +37,13 @@ import static javax.ws.rs.core.HttpHeaders.CONTENT_TYPE;
 import static org.assertj.core.api.BDDSoftAssertions.thenSoftly;
 
 @RequiredArgsConstructor
-class BarExecutable implements Executable {
+class HttpBarExecutable implements Executable {
+    public static HttpBarExecutable of(BarReader bar, Test test) {
+        var baseUri = WunderBarRunnerJUnitExtension.INSTANCE.baseUri();
+        return new HttpBarExecutable(test.toString(), baseUri, bar.interactionsFor(test));
+    }
+
+
     private static final HttpClient HTTP = HttpClient.newBuilder()
         .followRedirects(NORMAL)
         .connectTimeout(Duration.ofSeconds(1))

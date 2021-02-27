@@ -2,7 +2,6 @@ package com.github.t1.wunderbar.junit.runner;
 
 import com.github.t1.wunderbar.junit.WunderBarException;
 import com.github.t1.wunderbar.junit.consumer.Internal;
-import com.github.t1.wunderbar.junit.http.HttpServerInteraction;
 import lombok.NonNull;
 import lombok.Value;
 import lombok.extern.slf4j.Slf4j;
@@ -15,11 +14,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Function;
-import java.util.regex.Pattern;
-import java.util.stream.IntStream;
 
 import static java.util.stream.Collectors.joining;
-import static java.util.stream.Collectors.toList;
 import static org.junit.jupiter.api.DynamicContainer.dynamicContainer;
 import static org.junit.jupiter.api.DynamicTest.dynamicTest;
 
@@ -28,9 +24,6 @@ import static org.junit.jupiter.api.DynamicTest.dynamicTest;
  */
 @Slf4j
 public class WunderBarTestFinder {
-    private static final Pattern FUNCTION = Pattern.compile("(?<prefix>.*)\\{(?<method>.*)\\(\\)}(?<suffix>.*)");
-
-
     /**
      * Find all tests in that file. Usage:
      * <pre><code>
@@ -179,19 +172,10 @@ public class WunderBarTestFinder {
 
         // indirection with null is necessary, as we can't access `this` in the constructor chain to build the default factory
         this.executableFactory = (executableFactory == null)
-            ? test -> new BarExecutable(test.toString(), baseUri(), interactions(test))
+            ? test -> HttpBarExecutable.of(bar, test)
             : executableFactory;
 
         scanTests();
-    }
-
-    private URI baseUri() {
-        var extension = WunderBarRunnerJUnitExtension.INSTANCE;
-        var baseUri = extension.settings.baseUri();
-        var matcher = FUNCTION.matcher(baseUri);
-        if (matcher.matches())
-            baseUri = matcher.group("prefix") + extension.call(matcher.group("method")) + matcher.group("suffix");
-        return URI.create(baseUri);
     }
 
     private void scanTests() {
@@ -199,10 +183,4 @@ public class WunderBarTestFinder {
     }
 
     private DynamicNode toDynamicNode() { return root.toDynamicNode(executableFactory); }
-
-    private List<HttpServerInteraction> interactions(Test test) {
-        return IntStream.rangeClosed(1, test.getInteractionCount())
-            .mapToObj(n -> new HttpServerInteraction(bar.request(test, n), bar.response(test, n)))
-            .collect(toList());
-    }
 }

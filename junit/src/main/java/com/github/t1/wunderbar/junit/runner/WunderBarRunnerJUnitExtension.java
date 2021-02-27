@@ -10,9 +10,11 @@ import org.junit.jupiter.api.extension.ExtensionContext;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
+import java.util.regex.Pattern;
 import java.util.stream.Stream;
 import java.util.stream.Stream.Builder;
 
@@ -68,8 +70,16 @@ class WunderBarRunnerJUnitExtension implements Extension, BeforeEachCallback, Af
     }
 
 
+    URI baseUri() {
+        var baseUri = settings.baseUri();
+        var matcher = FUNCTION.matcher(baseUri);
+        if (matcher.matches())
+            baseUri = matcher.group("prefix") + call(matcher.group("method")) + matcher.group("suffix");
+        return URI.create(baseUri);
+    }
+
     @SneakyThrows(ReflectiveOperationException.class)
-    String call(String methodName) {
+    private String call(String methodName) {
         var instance = context.getRequiredTestInstance();
         var method = instance.getClass().getDeclaredMethod(methodName);
         method.setAccessible(true);
@@ -84,4 +94,6 @@ class WunderBarRunnerJUnitExtension implements Extension, BeforeEachCallback, Af
         this.context = null;
         INSTANCE = null;
     }
+
+    private static final Pattern FUNCTION = Pattern.compile("(?<prefix>.*)\\{(?<method>.*)\\(\\)}(?<suffix>.*)");
 }
