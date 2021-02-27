@@ -4,6 +4,7 @@ import lombok.Builder;
 import lombok.SneakyThrows;
 import lombok.Value;
 import lombok.With;
+import lombok.extern.slf4j.Slf4j;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -13,7 +14,7 @@ import java.util.Scanner;
 import static java.nio.file.Files.exists;
 import static java.util.concurrent.TimeUnit.SECONDS;
 
-@Builder @With
+@Slf4j @Builder @With
 public @Value class MavenCoordinates {
     public static MavenCoordinates of(String coordinates) {
         var split = coordinates.split(":", 5);
@@ -63,15 +64,17 @@ public @Value class MavenCoordinates {
     @SneakyThrows({IOException.class, InterruptedException.class})
     public void download() {
         if (exists(getLocalRepositoryPath())) return;
+        log.info("download maven artifact {}", getCompactString());
         var mvn = new ProcessBuilder()
             .command("mvn", "dependency:get", "-D" + "artifact=" + getCompactString())
-            .inheritIO() // may help with debugging
+            // .inheritIO() // may help with debugging
             .start();
         var exited = mvn.waitFor(30, SECONDS);
         if (!exited || mvn.exitValue() != 0) {
-            System.out.println(readAll(mvn.getInputStream()));
-            throw new RuntimeException("can't download maven dependency: " + getCompactString()
-                + " " + readAll(mvn.getErrorStream()).trim());
+            System.err.println(readAll(mvn.getInputStream()));
+            throw new RuntimeException("" +
+                (exited ? "can't download" : "timeout while downloading")
+                + " maven artifact: " + getCompactString() + " " + readAll(mvn.getErrorStream()).trim());
         }
     }
 

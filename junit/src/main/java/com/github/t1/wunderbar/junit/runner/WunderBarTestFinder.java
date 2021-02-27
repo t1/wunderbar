@@ -51,28 +51,40 @@ public class WunderBarTestFinder {
      */
     public static DynamicNode findTestsIn(Path barPath) { return findTestsIn(barPath, null); }
 
+    /** used for tests */
     public static @Internal DynamicNode findTestsIn(Path barPath, Function<Test, Executable> executableFactory) {
         return new WunderBarTestFinder(barPath, executableFactory).toDynamicNode();
     }
 
 
     /**
-     * Find all tests in that maven artifact. Usage:
-     * <pre><code>
-     * &#64;TestFactory DynamicNode consumerDrivenContractTests() {
-     *     return findTestsInArtifact("&lt;groupId&gt;:&lt;artifactId&gt;:&lt;version&gt;[:&lt;packaging&gt;[:&lt;classifier&gt;]]");
-     * }
-     * </code></pre>
+     * Find all tests in that maven artifact, downloading it from a maven repository with the <code>mvn</code> command
+     * when it's not already in the local repository. In this case, Maven has to be installed; the Maven configuration
+     * (mainly the <code>settings.xml</code>) is considered.
+     * <p>
+     * The coordinates are a String consisting of:
+     * <p>
+     * <code>&lt;groupId&gt;:&lt;artifactId&gt;:&lt;version&gt;[:&lt;packaging&gt;[:&lt;classifier&gt;]]</code>
+     * <p>
      * Note that both the <code>classifier</code> and the <code>packaging</code> (the file extension) are optional and default to <code>bar</code>.
      */
     public static DynamicNode findTestsInArtifact(String coordinates) { return findTestsInArtifact(coordinates, null); }
 
+    /**
+     * Find all tests in that maven artifact, downloading it from a maven repository with the <code>mvn</code> command
+     * when it's not already in the local repository. In this case, Maven has to be installed; the Maven configuration
+     * (mainly the <code>settings.xml</code>) is considered.
+     * <p>
+     * Note that both the <code>classifier</code> and the <code>packaging</code> (the file extension) are optional and default to <code>bar</code>.
+     */
     public static DynamicNode findTestsInArtifact(MavenCoordinates coordinates) { return findTestsInArtifact(coordinates, null); }
 
+    /** used for tests */
     public static @Internal DynamicNode findTestsInArtifact(String coordinates, Function<Test, Executable> executableFactory) {
         return findTestsInArtifact(MavenCoordinates.of(coordinates), executableFactory);
     }
 
+    /** used for tests */
     public static @Internal DynamicNode findTestsInArtifact(MavenCoordinates coordinates, Function<Test, Executable> executableFactory) {
         coordinates = withDefaults(coordinates);
         coordinates.download();

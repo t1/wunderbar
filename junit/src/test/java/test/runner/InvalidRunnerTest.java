@@ -19,7 +19,7 @@ public class InvalidRunnerTest {
     @AfterDynamicTest void afterWithInvalidArg(int x) {}
 
     @TestFactory DynamicNode dummy() {
-        if (DISABLED) return dynamicTest("dummy", () -> System.out.println("invoked"));
+        if (DISABLED) return dynamicTest("dummy", () -> {});
         return findTestsIn("src/test/resources/health");
     }
 }
