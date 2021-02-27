@@ -1,6 +1,5 @@
 package com.github.t1.wunderbar.junit.runner;
 
-import com.github.t1.wunderbar.junit.http.HttpServerInteraction;
 import com.github.t1.wunderbar.junit.http.HttpServerRequest;
 import com.github.t1.wunderbar.junit.http.HttpServerResponse;
 import com.github.t1.wunderbar.junit.http.HttpUtils;
@@ -15,16 +14,13 @@ import javax.json.JsonStructure;
 import javax.json.JsonValue;
 import javax.ws.rs.core.MediaType;
 import java.io.IOException;
-import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpRequest.BodyPublishers;
 import java.net.http.HttpResponse;
 import java.net.http.HttpResponse.BodyHandler;
 import java.net.http.HttpResponse.BodySubscribers;
-import java.nio.charset.Charset;
 import java.time.Duration;
-import java.util.List;
 
 import static com.github.t1.wunderbar.junit.Utils.formatJson;
 import static com.github.t1.wunderbar.junit.http.HttpUtils.charset;
@@ -32,34 +28,32 @@ import static com.github.t1.wunderbar.junit.runner.CustomBDDAssertions.then;
 import static java.net.http.HttpClient.Redirect.NORMAL;
 import static java.net.http.HttpRequest.BodyPublishers.noBody;
 import static java.net.http.HttpResponse.BodySubscribers.mapping;
-import static java.net.http.HttpResponse.ResponseInfo;
 import static javax.ws.rs.core.HttpHeaders.CONTENT_TYPE;
 import static org.assertj.core.api.BDDSoftAssertions.thenSoftly;
 
 @RequiredArgsConstructor
 class HttpBarExecutable implements Executable {
-    public static HttpBarExecutable of(BarReader bar, Test test) {
-        var baseUri = WunderBarRunnerJUnitExtension.INSTANCE.baseUri();
-        return new HttpBarExecutable(test.toString(), baseUri, bar.interactionsFor(test));
-    }
 
+    public static HttpBarExecutable of(BarReader bar, Test test) { return new HttpBarExecutable(bar, test); }
 
     private static final HttpClient HTTP = HttpClient.newBuilder()
         .followRedirects(NORMAL)
         .connectTimeout(Duration.ofSeconds(1))
         .build();
 
-    private final String name;
-    private final URI baseUri;
-    private final List<HttpServerInteraction> interactions;
+    private final BarReader bar;
+    private final Test test;
+
+    private final WunderBarRunnerJUnitExtension extension = WunderBarRunnerJUnitExtension.INSTANCE;
 
     @Override public void execute() throws IOException, InterruptedException {
-        System.out.println("==================== start " + name);
-        WunderBarRunnerJUnitExtension.INSTANCE.beforeDynamicTestConsumers.forEach(consumer -> consumer.accept(interactions));
+        var interactions = bar.interactionsFor(test);
 
-        var i = 1;
+        System.out.println("==================== start " + test);
+        extension.beforeDynamicTestConsumers.forEach(consumer -> consumer.accept(interactions));
+
         for (var interaction : interactions) {
-            System.out.println("request " + i++ + ":\n" + interaction.getRequest());
+            System.out.println("request " + interaction.getNumber() + ":\n" + interaction.getRequest());
 
             HttpResponse<JsonValue> actual = HTTP.send(request(interaction.getRequest()), ofJson());
 
@@ -68,20 +62,19 @@ class HttpBarExecutable implements Executable {
             thenSoftly(softly -> checkResponse(softly, actual, expected));
         }
 
-        WunderBarRunnerJUnitExtension.INSTANCE.afterDynamicTestConsumers.forEach(consumer -> consumer.accept(interactions));
+        extension.afterDynamicTestConsumers.forEach(consumer -> consumer.accept(interactions));
     }
 
     private BodyHandler<JsonValue> ofJson() {
-        return (responseInfo) -> mapping(BodySubscribers.ofString(getCharset(responseInfo)), HttpUtils::toJson);
-    }
-
-    private Charset getCharset(ResponseInfo responseInfo) {
-        return charset(responseInfo.headers().firstValue(CONTENT_TYPE).map(MediaType::valueOf).orElse(null));
+        return (responseInfo) -> {
+            var charset = charset(responseInfo.headers().firstValue(CONTENT_TYPE).map(MediaType::valueOf).orElse(null));
+            return mapping(BodySubscribers.ofString(charset), HttpUtils::toJson);
+        };
     }
 
     private HttpRequest request(HttpServerRequest request) {
         return HttpRequest.newBuilder()
-            .uri(baseUri.resolve(request.getUri()))
+            .uri(extension.baseUri().resolve(request.getUri()))
             .method(request.getMethod(), request.getBody().map(BodyPublishers::ofString).orElse(noBody()))
             .build();
     }

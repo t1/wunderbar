@@ -43,7 +43,7 @@ abstract class BarReader {
 
     public List<HttpServerInteraction> interactionsFor(Test test) {
         return IntStream.rangeClosed(1, test.getInteractionCount())
-            .mapToObj(n -> new HttpServerInteraction(request(test, n), response(test, n)))
+            .mapToObj(n -> new HttpServerInteraction(n, request(test, n), response(test, n)))
             .collect(toList());
     }
 
