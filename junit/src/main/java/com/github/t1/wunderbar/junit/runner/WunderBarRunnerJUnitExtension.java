@@ -13,6 +13,7 @@ import java.lang.reflect.Method;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
@@ -22,7 +23,7 @@ import static com.github.t1.wunderbar.junit.Utils.invoke;
 
 class WunderBarRunnerJUnitExtension implements Extension, BeforeEachCallback, AfterEachCallback {
     static WunderBarRunnerJUnitExtension INSTANCE;
-    WunderBarRunnerExtension settings;
+    WunderBarRunner settings;
 
     private ExtensionContext context;
     List<Consumer<List<HttpServerInteraction>>> beforeDynamicTestConsumers = new ArrayList<>();
@@ -37,12 +38,26 @@ class WunderBarRunnerJUnitExtension implements Extension, BeforeEachCallback, Af
         addAllMethodsTo(AfterDynamicTest.class, afterDynamicTestConsumers);
     }
 
-    private WunderBarRunnerExtension findSettings() {
+    private WunderBarRunner findSettings() {
+        return context.getRequiredTestInstances().getAllInstances().stream()
+            .filter(test -> test.getClass().isAnnotationPresent(WunderBarRunner.class))
+            .findFirst()
+            .map(instance -> instance.getClass().getAnnotation(WunderBarRunner.class))
+            .or(this::findDeprecatedSettings)
+            .orElseThrow(() -> new WunderBarException("annotation not found: " + WunderBarRunner.class.getName()));
+    }
+
+    @SuppressWarnings("removal")
+    private Optional<? extends WunderBarRunner> findDeprecatedSettings() {
         return context.getRequiredTestInstances().getAllInstances().stream()
             .filter(test -> test.getClass().isAnnotationPresent(WunderBarRunnerExtension.class))
             .findFirst()
             .map(instance -> instance.getClass().getAnnotation(WunderBarRunnerExtension.class))
-            .orElseThrow(() -> new WunderBarException("annotation not found: " + WunderBarRunnerExtension.class.getName()));
+            .map(old -> new WunderBarRunner() {
+                @Override public Class<? extends Annotation> annotationType() { return WunderBarRunnerExtension.class; }
+
+                @Override public String baseUri() { return old.baseUri(); }
+            });
     }
 
     private void addAllMethodsTo(Class<? extends Annotation> annotationType, List<Consumer<List<HttpServerInteraction>>> consumers) {

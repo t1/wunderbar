@@ -6,7 +6,7 @@ import com.github.t1.wunderbar.demo.order.ProductsResolver;
 import com.github.t1.wunderbar.demo.order.ProductsResolver.Products;
 import com.github.t1.wunderbar.junit.consumer.Service;
 import com.github.t1.wunderbar.junit.consumer.SystemUnderTest;
-import com.github.t1.wunderbar.junit.consumer.WunderBarConsumerExtension;
+import com.github.t1.wunderbar.junit.consumer.WunderBarConsumer;
 import com.github.t1.wunderbar.junit.http.HttpServer;
 import com.github.t1.wunderbar.junit.http.HttpServerRequest;
 import com.github.t1.wunderbar.junit.http.HttpServerResponse;
@@ -21,7 +21,7 @@ import java.net.URI;
 import static org.assertj.core.api.Assertions.catchThrowableOfType;
 import static org.assertj.core.api.BDDAssertions.then;
 
-@WunderBarConsumerExtension(fileName = "target/system-wunder.jar", endpoint = "{endpoint()}")
+@WunderBarConsumer(fileName = "target/system-wunder.jar", endpoint = "{endpoint()}")
 class ProductsResolverST {
     /** this server would normally be a real server running somewhere */
     private static final HttpServer SERVER = new HttpServer(ProductsResolverST::handle);

@@ -2,7 +2,7 @@ package test.consumer;
 
 import com.github.t1.wunderbar.junit.consumer.Service;
 import com.github.t1.wunderbar.junit.consumer.SystemUnderTest;
-import com.github.t1.wunderbar.junit.consumer.WunderBarConsumerExtension;
+import com.github.t1.wunderbar.junit.consumer.WunderBarConsumer;
 import org.junit.jupiter.api.Test;
 import test.consumer.ProductResolver.Item;
 import test.consumer.ProductResolver.Product;
@@ -19,7 +19,7 @@ import static org.assertj.core.api.BDDAssertions.then;
 import static org.assertj.core.api.BDDSoftAssertions.thenSoftly;
 import static test.consumer.ProductResolverDirIT.DIR;
 
-@WunderBarConsumerExtension(fileName = DIR)
+@WunderBarConsumer(fileName = DIR)
 class ProductResolverDirIT {
     static final String DIR = "target/wunder-bar/";
 

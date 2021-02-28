@@ -1,7 +1,7 @@
 package test.runner;
 
 import com.github.t1.wunderbar.junit.runner.MavenCoordinates;
-import com.github.t1.wunderbar.junit.runner.WunderBarRunnerExtension;
+import com.github.t1.wunderbar.junit.runner.WunderBarRunner;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DynamicNode;
@@ -14,7 +14,7 @@ import java.nio.file.Path;
 
 import static com.github.t1.wunderbar.junit.Utils.deleteRecursive;
 
-@WunderBarRunnerExtension(baseUri = "dummy")
+@WunderBarRunner(baseUri = "dummy")
 class FindInArtifactTest {
     @RegisterExtension static RunnerFixture fixture = new RunnerFixture();
 

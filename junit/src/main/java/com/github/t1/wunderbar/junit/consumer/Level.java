@@ -3,7 +3,7 @@ package com.github.t1.wunderbar.junit.consumer;
 import static java.util.Locale.ROOT;
 
 /**
- * The mode to run a test annotated as {@link WunderBarConsumerExtension}.
+ * The mode to run a test annotated as {@link WunderBarConsumer}.
  * The default is {@link #AUTO}, so the level is determined by the test name.
  */
 public enum Level {

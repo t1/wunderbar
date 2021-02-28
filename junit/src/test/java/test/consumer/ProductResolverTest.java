@@ -2,7 +2,7 @@ package test.consumer;
 
 import com.github.t1.wunderbar.junit.consumer.Service;
 import com.github.t1.wunderbar.junit.consumer.SystemUnderTest;
-import com.github.t1.wunderbar.junit.consumer.WunderBarConsumerExtension;
+import com.github.t1.wunderbar.junit.consumer.WunderBarConsumer;
 import io.smallrye.graphql.client.typesafe.api.GraphQlClientApi;
 import io.smallrye.graphql.client.typesafe.api.GraphQlClientException;
 import org.eclipse.microprofile.graphql.Name;
@@ -31,7 +31,7 @@ import static org.assertj.core.api.Assertions.catchThrowable;
 import static org.assertj.core.api.Assertions.catchThrowableOfType;
 import static org.assertj.core.api.BDDAssertions.then;
 
-@WunderBarConsumerExtension
+@WunderBarConsumer
 abstract class ProductResolverTest {
     @Service Products products;
     @Service NamedProducts namedProducts;

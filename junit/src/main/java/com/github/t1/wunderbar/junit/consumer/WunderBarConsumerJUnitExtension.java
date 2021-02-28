@@ -30,19 +30,19 @@ import static com.github.t1.wunderbar.junit.consumer.Level.AUTO;
 import static com.github.t1.wunderbar.junit.consumer.Level.INTEGRATION;
 import static com.github.t1.wunderbar.junit.consumer.Level.SYSTEM;
 import static com.github.t1.wunderbar.junit.consumer.Level.UNIT;
-import static com.github.t1.wunderbar.junit.consumer.WunderBarConsumerExtension.NONE;
+import static com.github.t1.wunderbar.junit.consumer.WunderBarConsumer.NONE;
 import static java.time.temporal.ChronoUnit.NANOS;
 import static java.util.stream.Collectors.toList;
 import static org.junit.jupiter.api.extension.ExtensionContext.Namespace.GLOBAL;
 
 @Slf4j
-class WunderBarConsumerJUnit implements Extension, BeforeEachCallback, AfterEachCallback {
+class WunderBarConsumerJUnitExtension implements Extension, BeforeEachCallback, AfterEachCallback {
     private static boolean initialized = false;
     private static final Map<String, BarWriter> BAR_WRITERS = new LinkedHashMap<>();
     private static final Pattern FUNCTION = Pattern.compile("(?<prefix>.*)\\{(?<method>.*)\\(\\)}(?<suffix>.*)");
 
     private ExtensionContext context;
-    private WunderBarConsumerExtension settings;
+    private WunderBarConsumer settings;
     private String testId;
     private BarWriter bar;
     private Instant start;
@@ -53,7 +53,7 @@ class WunderBarConsumerJUnit implements Extension, BeforeEachCallback, AfterEach
 
         this.context = context;
         this.testId = testId();
-        this.settings = findWunderBarTest().getClass().getAnnotation(WunderBarConsumerExtension.class);
+        this.settings = findSettings();
         log.info("==================== {} test: {}", level(), testId);
 
         this.bar = BAR_WRITERS.computeIfAbsent(settings.fileName(), this::createBar);
@@ -68,12 +68,12 @@ class WunderBarConsumerJUnit implements Extension, BeforeEachCallback, AfterEach
     }
 
     private static void init(ExtensionContext context) {
-        registerShutdownHook(WunderBarConsumerJUnit::shutDown, context);
+        registerShutdownHook(WunderBarConsumerJUnitExtension::shutDown, context);
         initialized = true;
     }
 
     private static void registerShutdownHook(CloseableResource shutDown, ExtensionContext context) {
-        context.getRoot().getStore(GLOBAL).put(WunderBarConsumerJUnit.class.getName(), shutDown);
+        context.getRoot().getStore(GLOBAL).put(WunderBarConsumerJUnitExtension.class.getName(), shutDown);
     }
 
     private static void shutDown() {
@@ -83,12 +83,36 @@ class WunderBarConsumerJUnit implements Extension, BeforeEachCallback, AfterEach
         initialized = false;
     }
 
+    @SuppressWarnings("removal")
+    private WunderBarConsumer findSettings() {
+        Class<?> testClass = findWunderBarTest().getClass();
+        if (testClass.isAnnotationPresent(WunderBarConsumer.class))
+            return testClass.getAnnotation(WunderBarConsumer.class);
+        var old = testClass.getAnnotation(WunderBarConsumerExtension.class);
+        assert old != null;
+        return new WunderBarConsumer() {
+            @Override public Class<? extends Annotation> annotationType() { return old.annotationType(); }
+
+            @Override public Level level() { return old.level(); }
+
+            @Override public String fileName() { return old.fileName(); }
+
+            @Override public String endpoint() { return old.endpoint(); }
+        };
+    }
+
     private Object findWunderBarTest() {
         var instances = context.getRequiredTestInstances().getAllInstances().stream()
-            .filter(test -> test.getClass().isAnnotationPresent(WunderBarConsumerExtension.class))
+            .filter(this::isAnnotatedAsWunderBarConsumer)
             .collect(toList());
-        if (instances.isEmpty()) throw new WunderBarException("annotation not found: " + WunderBarConsumerExtension.class.getName());
+        if (instances.isEmpty()) throw new WunderBarException("annotation not found: " + WunderBarConsumer.class.getName());
         return instances.get(instances.size() - 1); // the innermost / closest
+    }
+
+    @SuppressWarnings("removal")
+    private boolean isAnnotatedAsWunderBarConsumer(Object test) {
+        return test.getClass().isAnnotationPresent(WunderBarConsumer.class)
+            || test.getClass().isAnnotationPresent(WunderBarConsumerExtension.class);
     }
 
     private BarWriter createBar(String fileName) {

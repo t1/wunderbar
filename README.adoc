@@ -46,7 +46,7 @@ class ProductsRestGatewayTest {
 }
 ----
 
-It starts to get interesting, when you change the `@WunderBarConsumerExtension` annotation to `@WunderBarConsumerExtension(level = INTEGRATION)` (or simply change the test name to end with `IT`, short for Integration Test): the extension now starts a mock server exposing the behavior you just stubbed, i.e. it will reply to your REST request with the proper product. No code changes needed, and it fully tests your client annotations and (de)serialization of your POJOs.
+It starts to get interesting, when you change the `WunderBarConsumer` annotation to `@WunderBarConsumerExtension(level = INTEGRATION)` (or simply change the test name to end with `IT`, short for Integration Test): the extension now starts a mock server exposing the behavior you just stubbed, i.e. it will reply to your REST request with the proper product. No code changes needed, and it fully tests your client annotations and (de)serialization of your POJOs.
 
 Now comes the interesting part: it records the requests and responses you need for your code to work, and saves it in a `wunder.bar` file (Behavior ARchive). Give this file to your service implementers, maybe by deploying it together with your other maven artefacts, so they can check if their service complies to your requirements. To do so, they load the tests stored in a `wunder.bar` file and run them against their service:
 

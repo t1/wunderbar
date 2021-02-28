@@ -97,7 +97,7 @@ class RunnerFixture implements Extension, BeforeEachCallback, AfterEachCallback,
     }
 
     @Override public void afterEach(ExtensionContext context) {
-        deleteRecursive(path);
+        if (path != null) deleteRecursive(path);
         then(executed).describedAs("executed tests").containsExactlyElementsOf(expected);
     }
 

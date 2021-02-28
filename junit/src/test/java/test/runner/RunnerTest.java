@@ -2,12 +2,12 @@ package test.runner;
 
 import com.github.t1.wunderbar.junit.http.HttpServerRequest;
 import com.github.t1.wunderbar.junit.http.HttpServerResponse;
-import com.github.t1.wunderbar.junit.runner.WunderBarRunnerExtension;
+import com.github.t1.wunderbar.junit.runner.WunderBarRunner;
 import org.junit.jupiter.api.DynamicNode;
 import org.junit.jupiter.api.TestFactory;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
-@WunderBarRunnerExtension(baseUri = "dummy")
+@WunderBarRunner(baseUri = "dummy")
 class RunnerTest {
     @RegisterExtension static RunnerFixture fixture = new RunnerFixture();
 

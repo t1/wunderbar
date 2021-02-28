@@ -6,7 +6,7 @@ import com.github.t1.wunderbar.junit.http.HttpServerRequest;
 import com.github.t1.wunderbar.junit.http.HttpServerResponse;
 import com.github.t1.wunderbar.junit.runner.AfterDynamicTest;
 import com.github.t1.wunderbar.junit.runner.BeforeDynamicTest;
-import com.github.t1.wunderbar.junit.runner.WunderBarRunnerExtension;
+import com.github.t1.wunderbar.junit.runner.WunderBarRunner;
 import io.smallrye.graphql.client.typesafe.api.GraphQlClientApi;
 import io.smallrye.graphql.client.typesafe.api.GraphQlClientBuilder;
 import lombok.Data;
@@ -33,7 +33,7 @@ import static org.assertj.core.api.BDDAssertions.then;
 import static test.acceptance.ConsumerDrivenAT.ENDPOINT;
 
 @QuarkusService
-@WunderBarRunnerExtension(baseUri = ENDPOINT)
+@WunderBarRunner(baseUri = ENDPOINT)
 class ConsumerDrivenAT {
     protected static final String ENDPOINT = "http://localhost:8080";
 

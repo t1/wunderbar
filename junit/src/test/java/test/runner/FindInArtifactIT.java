@@ -1,7 +1,7 @@
 package test.runner;
 
 import com.github.t1.wunderbar.junit.runner.MavenCoordinates;
-import com.github.t1.wunderbar.junit.runner.WunderBarRunnerExtension;
+import com.github.t1.wunderbar.junit.runner.WunderBarRunner;
 import org.junit.jupiter.api.DynamicNode;
 import org.junit.jupiter.api.TestFactory;
 import org.junit.jupiter.api.extension.RegisterExtension;
@@ -10,7 +10,7 @@ import test.Slow;
 import static com.github.t1.wunderbar.junit.Utils.deleteRecursive;
 import static java.nio.file.Files.exists;
 
-@WunderBarRunnerExtension(baseUri = "dummy")
+@WunderBarRunner(baseUri = "dummy")
 class FindInArtifactIT {
     private static final MavenCoordinates MAVEN_CENTRAL_BAR_ARTIFACT = MavenCoordinates.builder()
         .groupId("com.github.t1")

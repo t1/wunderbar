@@ -165,7 +165,7 @@ public class WunderBarTestFinder {
 
     private WunderBarTestFinder(Path barFilePath, Function<Test, Executable> executableFactory) {
         if (WunderBarRunnerJUnitExtension.INSTANCE == null)
-            throw new WunderBarException("annotate your wunderbar test with @" + WunderBarRunnerExtension.class.getName());
+            throw new WunderBarException("annotate your wunderbar test with @" + WunderBarRunner.class.getName());
 
         this.bar = BarReader.from(barFilePath);
         this.root = new TestCollection(barFilePath.toUri().normalize(), Path.of(bar.getDisplayName()));
