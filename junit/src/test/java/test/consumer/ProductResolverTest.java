@@ -2,7 +2,7 @@ package test.consumer;
 
 import com.github.t1.wunderbar.junit.consumer.Service;
 import com.github.t1.wunderbar.junit.consumer.SystemUnderTest;
-import com.github.t1.wunderbar.junit.consumer.WunderBarConsumer;
+import com.github.t1.wunderbar.junit.consumer.WunderBarApiConsumer;
 import io.smallrye.graphql.client.typesafe.api.GraphQlClientApi;
 import io.smallrye.graphql.client.typesafe.api.GraphQlClientException;
 import org.eclipse.microprofile.graphql.Name;
@@ -17,6 +17,7 @@ import test.consumer.ProductResolver.Products;
 import javax.ws.rs.ForbiddenException;
 import javax.ws.rs.GET;
 import javax.ws.rs.NotFoundException;
+import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.WebApplicationException;
@@ -31,7 +32,7 @@ import static org.assertj.core.api.Assertions.catchThrowable;
 import static org.assertj.core.api.Assertions.catchThrowableOfType;
 import static org.assertj.core.api.BDDAssertions.then;
 
-@WunderBarConsumer
+@WunderBarApiConsumer
 abstract class ProductResolverTest {
     @Service Products products;
     @Service NamedProducts namedProducts;
@@ -76,18 +77,16 @@ abstract class ProductResolverTest {
         then(resolvedProduct).usingRecursiveComparison().isEqualTo(givenProduct);
     }
 
-    @DisplayName("test two calls in one test")
-    @Test void shouldResolveTwoProducts() {
-        var givenProductA = Product.builder().id("a").name("some-product-a").build();
-        var givenProductB = Product.builder().id("b").name("some-product-b").build();
-        given(products.product(givenProductA.getId())).willReturn(givenProductA);
-        given(products.product(givenProductB.getId())).willReturn(givenProductB);
+    @Test void shouldUpdateProduct() {
+        var product = Product.builder().id("p").name("some-product-name").price(15_99).build();
+        given(products.product(product.getId())).willReturn(product);
+        given(products.patch(new Product().withId(product.getId()).withPrice(12_99))).willReturn(product.withPrice(12_99));
 
-        var resolvedProductA = resolver.product(new Item(givenProductA.getId()));
-        var resolvedProductB = resolver.product(new Item(givenProductB.getId()));
+        var preCheck = resolver.product(new Item(product.getId()));
+        var resolvedProduct = resolver.productWithPriceUpdate(new Item(product.getId()), 12_99);
 
-        then(resolvedProductA).usingRecursiveComparison().isEqualTo(givenProductA);
-        then(resolvedProductB).usingRecursiveComparison().isEqualTo(givenProductB);
+        then(preCheck).usingRecursiveComparison().isEqualTo(product);
+        then(resolvedProduct).usingRecursiveComparison().isEqualTo(product.withPrice(12_99));
     }
 
     @Test void shouldFailToResolveUnknownProduct() {
@@ -126,7 +125,7 @@ abstract class ProductResolverTest {
     @Nested class Rest {
         @Service RestService restService;
 
-        @Test void shouldCallRestService() {
+        @Test void shouldGetProduct() {
             var givenProduct = Product.builder().id("r").name("some-product-name").build();
             given(restService.getProduct(givenProduct.id)).willReturn(givenProduct);
 
@@ -135,7 +134,7 @@ abstract class ProductResolverTest {
             then(response).usingRecursiveComparison().isEqualTo(givenProduct);
         }
 
-        @Test void shouldFailToCallFailingRestService() {
+        @Test void shouldFailToGetFailingProduct() {
             var productId = "ry";
             given(restService.getProduct(productId)).willThrow(new IllegalStateException("some internal error"));
 
@@ -144,7 +143,7 @@ abstract class ProductResolverTest {
             failsWith(throwable, "illegal-state", "some internal error", INTERNAL_SERVER_ERROR);
         }
 
-        @Test void shouldFailToCallForbiddenRestService() {
+        @Test void shouldFailToGetForbiddenProduct() {
             var productId = "rx";
             given(restService.getProduct(productId)).willThrow(new ForbiddenException());
 
@@ -154,12 +153,23 @@ abstract class ProductResolverTest {
             then(throwable.getResponse().getStatusInfo()).isEqualTo(FORBIDDEN);
         }
 
-        @Test void shouldFailToResolveUnknownProduct() {
+        @Test void shouldFailToGetUnknownProduct() {
             given(restService.getProduct("y")).willThrow(new NotFoundException("product y not found"));
 
             var throwable = catchThrowableOfType(() -> restService.getProduct("y"), WebApplicationException.class);
 
             failsWith(throwable, "not-found", "product y not found", NOT_FOUND);
+        }
+
+        @Test void shouldPatchProduct() {
+            var givenProduct = Product.builder().id("rp").name("some-product-name").price(15_99).build();
+            given(restService.patch("rp", new Product().withPrice(12_99))).willReturn(1);
+            given(restService.getProduct("rp")).willReturn(givenProduct.withPrice(12_99));
+
+            restService.patch("rp", new Product().withPrice(12_99));
+            var updated = restService.getProduct("rp");
+
+            then(updated).usingRecursiveComparison().isEqualTo(givenProduct.withPrice(12_99));
         }
     }
 
@@ -168,15 +178,20 @@ abstract class ProductResolverTest {
     interface RestService extends Closeable {
         @Path("/{productId}")
         @GET Product getProduct(@PathParam("productId") String productId);
+
+        @Path("/{productId}")
+        @POST
+        int patch(@PathParam("productId") String id, Product patch);
     }
 
 
     @DisplayName("stubbing failures")
     @Nested class StubbingFailures {
-        // how can I test that this throws an "unfinished stubbing" exception in afterEach?
-        //x  @Test void shouldFailUnfinishedStubbing() {
-        //x     given(products.product("x"));
-        //x }
+        //  @Test // we can't test that this throws an "unfinished stubbing" exception in afterEach
+        @SuppressWarnings("unused")
+        void shouldFailUnfinishedStubbing() {
+            given(products.product("x"));
+        }
 
         @Test void shouldFailToCallGivenWithoutCallToProxyNull() {
             var throwable = catchThrowable(() -> given(null).willThrow(new RuntimeException("unreachable")));

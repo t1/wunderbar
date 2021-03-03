@@ -1,7 +1,7 @@
 package test.consumer;
 
 import com.github.t1.wunderbar.junit.consumer.Service;
-import com.github.t1.wunderbar.junit.consumer.WunderBarConsumer;
+import com.github.t1.wunderbar.junit.consumer.WunderBarApiConsumer;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -13,7 +13,7 @@ import static com.github.t1.wunderbar.junit.consumer.WunderbarExpectationBuilder
 import static org.assertj.core.api.Assertions.catchThrowable;
 import static org.assertj.core.api.BDDAssertions.then;
 
-@WunderBarConsumer
+@WunderBarApiConsumer
 class ProductResolverIT extends ProductResolverTest {
     @Disabled("https://github.com/smallrye/smallrye-graphql/issues/624")
     @Override @Test void shouldResolveNamedProductMethod() {}
@@ -33,7 +33,7 @@ class ProductResolverIT extends ProductResolverTest {
         Object call();
     }
 
-    @WunderBarConsumer(endpoint = "{testEndpoint()}", level = INTEGRATION)
+    @WunderBarApiConsumer(endpoint = "{testEndpoint()}", level = INTEGRATION)
     @Nested class EndpointFunction {
         boolean endpointCalled = false;
 

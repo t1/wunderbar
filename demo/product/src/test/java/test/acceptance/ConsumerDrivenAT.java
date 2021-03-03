@@ -4,9 +4,9 @@ import com.github.t1.wunderbar.demo.product.Product;
 import com.github.t1.wunderbar.junit.http.HttpServerInteraction;
 import com.github.t1.wunderbar.junit.http.HttpServerRequest;
 import com.github.t1.wunderbar.junit.http.HttpServerResponse;
-import com.github.t1.wunderbar.junit.runner.AfterDynamicTest;
-import com.github.t1.wunderbar.junit.runner.BeforeDynamicTest;
-import com.github.t1.wunderbar.junit.runner.WunderBarRunner;
+import com.github.t1.wunderbar.junit.provider.AfterDynamicTest;
+import com.github.t1.wunderbar.junit.provider.BeforeInteraction;
+import com.github.t1.wunderbar.junit.provider.WunderBarApiProvider;
 import io.smallrye.graphql.client.typesafe.api.GraphQlClientApi;
 import io.smallrye.graphql.client.typesafe.api.GraphQlClientBuilder;
 import lombok.Data;
@@ -24,16 +24,17 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.regex.Pattern;
 
-import static com.github.t1.wunderbar.junit.runner.WunderBarTestFinder.findTestsIn;
-import static com.github.t1.wunderbar.junit.runner.WunderBarTestFinder.findTestsInArtifact;
+import static com.github.t1.wunderbar.junit.provider.WunderBarTestFinder.findTestsIn;
+import static com.github.t1.wunderbar.junit.provider.WunderBarTestFinder.findTestsInArtifact;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.assertj.core.api.BDDAssertions.then;
 import static test.acceptance.ConsumerDrivenAT.ENDPOINT;
 
 @QuarkusService
-@WunderBarRunner(baseUri = ENDPOINT)
+@WunderBarApiProvider(baseUri = ENDPOINT)
 class ConsumerDrivenAT {
     protected static final String ENDPOINT = "http://localhost:8080";
 
@@ -45,9 +46,8 @@ class ConsumerDrivenAT {
     @SuppressWarnings("UnusedReturnValue")
     private interface Backdoor {
         @Mutation @NonNull Product store(@NonNull Product product);
-
+        @Mutation @NonNull Product update(@NonNull Product patch);
         @Mutation @NonNull Product forbid(@NonNull String productId);
-
         @Mutation Product delete(@NonNull String productId);
     }
 
@@ -81,18 +81,18 @@ class ConsumerDrivenAT {
         created.clear();
     }
 
-    @BeforeDynamicTest void createTestData(List<HttpServerInteraction> interactions) {
-        interactions.stream().map(this::createSetUp).forEach(Runnable::run);
-    }
-
     /**
      * We provide a REST as well as a GraphQL service. To make our setup code simpler, we make it specific to the technology.
      * In this case the business logic is really simple, but if you have more complex setup logic, there may be better options.
      */
-    private Runnable createSetUp(HttpServerInteraction interaction) {
-        if (interaction.getRequest().getUri().getPath().equals("/graphql"))
-            return new GraphQlSetUp(interaction);
-        else return new RestSetUp(interaction);
+    @BeforeInteraction void createTestData(HttpServerInteraction interaction) {
+        var isGraphQL = interaction.getRequest().getUri().getPath().equals("/graphql");
+        System.out.println("create test data for " + (isGraphQL ? "graphql" : "rest") + " interaction " + interaction.getNumber() + ": "
+            + interaction.getRequest().getMethod() + " " + interaction.getRequest().getUri());
+        var setup = isGraphQL
+            ? new GraphQlSetUp(interaction)
+            : new RestSetUp(interaction);
+        setup.run();
     }
 
 
@@ -122,28 +122,35 @@ class ConsumerDrivenAT {
         @Override public void run() {
             switch (expectedStatus()) {
                 case OK:
-                    create(requestedProduct());
-                    break;
+                    switch (requestMethod()) {
+                        case "GET":
+                            create(expectedProduct());
+                            return;
+                        case "PATCH":
+                            doNothing(); // TODO check exists
+                            return;
+                        default:
+                            throw new RuntimeException("unsupported method " + requestMethod());
+                    }
                 case FORBIDDEN:
                     createForbiddenProduct(requestedProductId());
-                    break;
+                    return;
                 case NOT_FOUND:
                     doNothing();
-                    break;
+                    return;
                 default:
-                    throw new RuntimeException("unsupported status");
+                    throw new RuntimeException("unsupported status " + expectedStatus());
             }
         }
 
         private Status expectedStatus() { return response.getStatus().toEnum(); }
 
-        private Product requestedProduct() {
+        private String requestMethod() { return request.getMethod(); }
+
+        private Product expectedProduct() {
             var responseBody = response.getBody()
                 .orElseThrow(() -> new RuntimeException("need a body to know how to make the service reply as expected"));
-            var product = JSONB.fromJson(responseBody, Product.class);
-            if (!product.getId().equals(requestedProductId()))
-                throw new RuntimeException("the id requested in the path doesn't match the expected response id");
-            return product;
+            return JSONB.fromJson(responseBody, Product.class);
         }
 
         private String requestedProductId() {
@@ -172,9 +179,13 @@ class ConsumerDrivenAT {
         }
 
         @Override public void run() {
-            switch (expectedErrorCode()) {
-                case "":
+            var code = expectedErrorCode().or(this::dataName).orElseThrow();
+            switch (code) {
+                case "product":
                     create(graphQlResponse.data.product);
+                    break;
+                case "update":
+                    doNothing(); // TODO check exists
                     break;
                 case "product-forbidden":
                     createForbiddenProduct(expectedForbiddenProductId());
@@ -183,16 +194,18 @@ class ConsumerDrivenAT {
                     doNothing();
                     break;
                 default:
-                    throw new RuntimeException("unsupported error: " + expectedErrorCode());
+                    throw new RuntimeException("unsupported code: " + code);
             }
         }
 
-        private String expectedErrorCode() {
-            if (graphQlResponse.errors == null || graphQlResponse.errors.isEmpty()) return "";
+        private Optional<String> expectedErrorCode() {
+            if (graphQlResponse.errors == null || graphQlResponse.errors.isEmpty()) return Optional.empty();
             if (graphQlResponse.errors.size() != 1)
                 throw new RuntimeException("expected exactly one error but got " + graphQlResponse.errors);
-            return graphQlResponse.errors.get(0).getExtensions().getCode();
+            return Optional.of(graphQlResponse.errors.get(0).getExtensions().getCode());
         }
+
+        private Optional<String> dataName() { return Optional.of(graphQlResponse.data.product != null ? "product" : "update"); }
 
         private String expectedForbiddenProductId() {
             var message = graphQlResponse.errors.get(0).getMessage();
@@ -210,6 +223,7 @@ class ConsumerDrivenAT {
 
     public static @Data class GraphQlData {
         Product product;
+        Product update;
     }
 
     public static @Data class GraphQlError {

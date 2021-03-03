@@ -23,7 +23,7 @@ import static javax.ws.rs.core.MediaType.CHARSET_PARAMETER;
 @UtilityClass
 public class HttpUtils {
     public static final MediaType APPLICATION_JSON_UTF8 = APPLICATION_JSON_TYPE.withCharset("utf-8");
-    static final Jsonb JSONB = JsonbBuilder.create(new JsonbConfig().withFormatting(true));
+    public static final Jsonb JSONB = JsonbBuilder.create(new JsonbConfig().withFormatting(true));
 
     public static Charset charset(MediaType contentType) {
         var charsetName = (contentType == null) ? null : contentType.getParameters().get(CHARSET_PARAMETER);
@@ -34,12 +34,14 @@ public class HttpUtils {
         return (string == null) ? null : MediaType.valueOf(string.split(",", 2)[0]);
     }
 
-    static StatusType toStatus(String string) {
+    public static StatusType toStatus(String string) {
         var code = Integer.parseInt(string.split(" ", 2)[0]);
         return Status.fromStatusCode(code);
     }
 
-    static Optional<String> optional(Properties properties, String method) {
+    public static String toString(StatusType status) { return status.getStatusCode() + " " + status.getReasonPhrase(); }
+
+    public static Optional<String> optional(Properties properties, String method) {
         return Optional.ofNullable(properties.getProperty(method, null));
     }
 

@@ -1,8 +1,8 @@
 package com.github.t1.wunderbar.junit.consumer;
 
-import com.github.t1.wunderbar.junit.consumer.integration.HttpServiceExpectations;
-import com.github.t1.wunderbar.junit.consumer.system.SystemExpectations;
-import com.github.t1.wunderbar.junit.consumer.unit.MockExpectations;
+import com.github.t1.wunderbar.junit.consumer.integration.IntegrationTestExpectations;
+import com.github.t1.wunderbar.junit.consumer.system.SystemTestExpectations;
+import com.github.t1.wunderbar.junit.consumer.unit.UnitTestExpectations;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
@@ -43,11 +43,11 @@ class Proxy {
             case AUTO:
                 throw new IllegalStateException("Unreachable code: AUTO level should have been resolved already");
             case UNIT:
-                return new MockExpectations(type);
+                return new UnitTestExpectations(type);
             case INTEGRATION:
-                return new HttpServiceExpectations(bar);
+                return new IntegrationTestExpectations(bar);
             case SYSTEM:
-                return new SystemExpectations(type, endpoint, bar);
+                return new SystemTestExpectations(type, endpoint, bar);
         }
         throw new UnsupportedOperationException("unreachable");
     }

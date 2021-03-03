@@ -2,7 +2,7 @@ package test.consumer;
 
 import com.github.t1.wunderbar.junit.consumer.Service;
 import com.github.t1.wunderbar.junit.consumer.SystemUnderTest;
-import com.github.t1.wunderbar.junit.consumer.WunderBarConsumer;
+import com.github.t1.wunderbar.junit.consumer.WunderBarApiConsumer;
 import io.smallrye.graphql.client.typesafe.api.GraphQlClientException;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -21,7 +21,7 @@ import static javax.ws.rs.core.Response.Status.NOT_FOUND;
 import static org.assertj.core.api.Assertions.catchThrowableOfType;
 import static org.assertj.core.api.BDDAssertions.then;
 
-@WunderBarConsumer(endpoint = "{endpoint()}/{technology}")
+@WunderBarApiConsumer(endpoint = "{endpoint()}/{technology}")
 class ProductResolverST { // not `extends ProductResolverTest`, as we must not call the `given` methods
 
     @Service Products products;
@@ -37,7 +37,7 @@ class ProductResolverST { // not `extends ProductResolverTest`, as we must not c
         var resolvedProduct = resolver.product(new Item("existing-product-id"));
 
         then(resolvedProduct).usingRecursiveComparison().isEqualTo(
-            Product.builder().id("existing-product-id").name("some-product-name").build());
+            Product.builder().id("existing-product-id").name("some-product-name").price(15_99).build());
     }
 
     @Test void shouldFailToResolveUnknownProduct() {
@@ -69,7 +69,7 @@ class ProductResolverST { // not `extends ProductResolverTest`, as we must not c
             var response = restService.getProduct("existing-product-id");
 
             then(response).usingRecursiveComparison().isEqualTo(
-                Product.builder().id("existing-product-id").name("some-product-name").build());
+                Product.builder().id("existing-product-id").name("some-product-name").price(15_99).build());
         }
 
         @Test void shouldFailToGetUnknownProduct() {

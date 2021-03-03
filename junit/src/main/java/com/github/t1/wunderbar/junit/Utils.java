@@ -10,6 +10,7 @@ import javax.json.stream.JsonGenerator;
 import java.io.IOException;
 import java.io.StringReader;
 import java.io.StringWriter;
+import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.nio.file.Files;
@@ -72,4 +73,16 @@ public @Internal class Utils {
     }
 
     private static String camelToKebab(String in) { return String.join("-", in.split("(?=\\p{javaUpperCase})")).toLowerCase(US); }
+
+    @SneakyThrows(ReflectiveOperationException.class)
+    public static Object getField(Object instance, Field field) {
+        field.setAccessible(true);
+        return field.get(instance);
+    }
+
+    @SneakyThrows(ReflectiveOperationException.class)
+    public static void setField(Object instance, Field field, Object value) {
+        field.setAccessible(true);
+        field.set(instance, value);
+    }
 }

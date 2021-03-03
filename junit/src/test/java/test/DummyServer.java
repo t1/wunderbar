@@ -31,14 +31,16 @@ public class DummyServer implements Extension, AfterEachCallback {
     private static HttpServerResponse handleGraphQl(HttpServerRequest request) {
         if (request.getBody().isEmpty()) return error("validation-error", "no body in GraphQL request");
         var body = Json.createReader(new StringReader(request.getBody().get())).readObject();
-        if (!body.getString("query").equals("query product($id: String!) { product(id: $id) {id name} }"))
+        if (!body.getString("query").equals("query product($id: String!) { product(id: $id) {id name price} }"))
             return error("unexpected-query", "unexpected query: [" + body.getString("query") + "]");
         var id = body.getJsonObject("variables").getString("id");
         switch (id) {
             case "existing-product-id":
-                return HttpServerResponse.builder().body("{\"data\":{\"product\":{\"id\":\"" + id + "\", \"name\":\"some-product-name\"}}}").build();
+                return HttpServerResponse.builder().body("{\"data\":{\"product\":{\"id\":\"" + id + "\", \"name\":\"some-product-name\", \"price\": 1599}}}").build();
             case "forbidden-product-id":
                 return error("product-forbidden", "product " + id + " is forbidden");
+            case "unexpected-fail":
+                return error("unexpected-fail", "product " + id + " fails unexpectedly");
             default:
                 return error("product-not-found", "product " + id + " not found");
         }
@@ -59,7 +61,7 @@ public class DummyServer implements Extension, AfterEachCallback {
                 response.body("{\"status\": \"UP\"}");
                 break;
             case "/rest/products/existing-product-id":
-                response.body("{\"id\":\"existing-product-id\", \"name\":\"some-product-name\"}");
+                response.body("{\"id\":\"existing-product-id\", \"name\":\"some-product-name\", \"price\": 1599}");
                 break;
             case "/rest/products/forbidden-product-id":
                 response.status(FORBIDDEN).contentType(PROBLEM_DETAIL).body("{\n" +

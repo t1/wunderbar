@@ -13,7 +13,6 @@ import java.io.Closeable;
 import java.io.IOException;
 import java.lang.reflect.Method;
 import java.net.URI;
-import java.util.Arrays;
 import java.util.Optional;
 import java.util.function.Function;
 
@@ -34,10 +33,6 @@ abstract class HttpServiceExpectation extends WunderBarExpectation {
         if (bar != null) handler = save(bar, handler);
         handler = this.formatRequestBody(handler);
         this.server = new HttpServer(handler);
-    }
-
-    boolean matches(Method method, Object... args) {
-        return method == this.method && Arrays.deepEquals(args, this.args);
     }
 
     abstract protected HttpServerResponse handleRequest(HttpServerRequest request);

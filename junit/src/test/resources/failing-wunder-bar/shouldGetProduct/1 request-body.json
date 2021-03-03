@@ -1,0 +1,7 @@
+{
+    "query": "query product($id: String!) { product(id: $id) {id name price} }",
+    "variables": {
+        "id": "unexpected-fail"
+    },
+    "operationName": "product"
+}

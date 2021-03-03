@@ -10,6 +10,7 @@ import javax.ws.rs.BadRequestException;
 import javax.ws.rs.ForbiddenException;
 import javax.ws.rs.GET;
 import javax.ws.rs.NotFoundException;
+import javax.ws.rs.PATCH;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.WebApplicationException;
@@ -27,7 +28,8 @@ public class Products {
     private static final ConcurrentMap<String, Product> PRODUCTS = new ConcurrentHashMap<>();
     private static final ConcurrentMap<String, Product> FORBIDDEN_PRODUCTS = new ConcurrentHashMap<>();
 
-    private static final Product EXISTING_PRODUCT = Product.builder().id("existing-product-id").name("some-product-name").build();
+    /* this predefined data is required for the System Tests */
+    private static final Product EXISTING_PRODUCT = Product.builder().id("existing-product-id").name("some-product-name").price(15_99).build();
     private static final Product FORBIDDEN_PRODUCT = Product.builder().id("forbidden-product-id").name("some-product-name").build();
 
     static {
@@ -35,16 +37,14 @@ public class Products {
         FORBIDDEN_PRODUCTS.put(FORBIDDEN_PRODUCT.id, FORBIDDEN_PRODUCT);
     }
 
-    @Query
     @GET
-    public @NonNull Collection<@NonNull Product> all() {
+    @Query public @NonNull Collection<@NonNull Product> all() {
         log.info("all");
         return PRODUCTS.values();
     }
 
-    @Query
     @GET @Path("/{id}")
-    public @NonNull Product product(@NonNull @PathParam("id") String id) {
+    @Query public @NonNull Product product(@NonNull @PathParam("id") String id) {
         log.info("product({})", id);
         if (FORBIDDEN_PRODUCTS.containsKey(id)) throw new ProductForbiddenException(id);
         var product = PRODUCTS.get(id);
@@ -56,6 +56,13 @@ public class Products {
         log.info("store({})", product);
         PRODUCTS.put(product.id, product);
         return product;
+    }
+
+    @PATCH
+    @Mutation public @NonNull Product update(@NonNull Product patch) {
+        log.info("update({})", patch);
+        var existing = product(patch.id);
+        return existing.apply(patch);
     }
 
     @Mutation public @NonNull Product forbid(@NonNull String productId) {

@@ -8,10 +8,10 @@ import java.lang.annotation.Retention;
 import static com.github.t1.wunderbar.junit.consumer.Level.AUTO;
 import static java.lang.annotation.RetentionPolicy.RUNTIME;
 
-/** use {@link WunderBarConsumer} instead */
+/** use {@link WunderBarApiConsumer} instead */
 @Deprecated(since = "1.2", forRemoval = true)
 @Retention(RUNTIME)
-@ExtendWith(WunderBarConsumerJUnitExtension.class)
+@ExtendWith(WunderBarApiConsumerJUnitExtension.class)
 @Inherited
 public @interface WunderBarConsumerExtension {
     Level level() default AUTO;

@@ -6,7 +6,6 @@ import org.mockito.BDDMockito;
 import org.mockito.BDDMockito.BDDMyOngoingStubbing;
 
 import java.lang.reflect.Method;
-import java.util.Arrays;
 
 class MockExpectation extends WunderBarExpectation {
     private final BDDMyOngoingStubbing<Object> mockitoStub;
@@ -14,10 +13,6 @@ class MockExpectation extends WunderBarExpectation {
     public MockExpectation(Object mock, Method method, Object... args) {
         super(method, args);
         this.mockitoStub = buildMockitoStub(mock, method, args);
-    }
-
-    boolean matches(Method method, Object... args) {
-        return method == this.method && Arrays.deepEquals(args, this.args);
     }
 
     @SneakyThrows(ReflectiveOperationException.class)

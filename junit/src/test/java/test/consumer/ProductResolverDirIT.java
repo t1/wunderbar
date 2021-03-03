@@ -2,7 +2,7 @@ package test.consumer;
 
 import com.github.t1.wunderbar.junit.consumer.Service;
 import com.github.t1.wunderbar.junit.consumer.SystemUnderTest;
-import com.github.t1.wunderbar.junit.consumer.WunderBarConsumer;
+import com.github.t1.wunderbar.junit.consumer.WunderBarApiConsumer;
 import org.junit.jupiter.api.Test;
 import test.consumer.ProductResolver.Item;
 import test.consumer.ProductResolver.Product;
@@ -19,7 +19,7 @@ import static org.assertj.core.api.BDDAssertions.then;
 import static org.assertj.core.api.BDDSoftAssertions.thenSoftly;
 import static test.consumer.ProductResolverDirIT.DIR;
 
-@WunderBarConsumer(fileName = DIR)
+@WunderBarApiConsumer(fileName = DIR)
 class ProductResolverDirIT {
     static final String DIR = "target/wunder-bar/";
 
@@ -40,7 +40,7 @@ class ProductResolverDirIT {
                 "Content-Type: application/json;charset=utf-8\n");
             softly.then(contentOf(barFile("shouldResolveProduct/1 request-body.json"))).isEqualTo("" +
                 "{\n" +
-                "    \"query\": \"query product($id: String!) { product(id: $id) {id name} }\",\n" +
+                "    \"query\": \"query product($id: String!) { product(id: $id) {id name price} }\",\n" +
                 "    \"variables\": {\n" +
                 "        \"id\": \"x\"\n" +
                 "    },\n" +

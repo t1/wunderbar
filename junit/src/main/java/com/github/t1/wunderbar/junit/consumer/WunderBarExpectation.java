@@ -4,13 +4,23 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 
 import java.lang.reflect.Method;
+import java.util.Arrays;
 
+import static com.github.t1.wunderbar.junit.DeepEquals.deeplyEqual;
 import static lombok.AccessLevel.PROTECTED;
 
 @RequiredArgsConstructor(access = PROTECTED)
 public abstract @Internal class WunderBarExpectation {
     protected final @NonNull Method method;
     protected final @NonNull Object[] args;
+
+    @Override public String toString() {
+        return getClass().getSimpleName() + " for " + method + Arrays.toString(args);
+    }
+
+    public boolean matches(Method method, Object... args) {
+        return method.equals(this.method) && deeplyEqual(args, this.args);
+    }
 
     public final Object nullValue() { return nullValue(method.getReturnType()); }
 

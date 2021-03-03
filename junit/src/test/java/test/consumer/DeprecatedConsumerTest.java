@@ -6,8 +6,6 @@ import org.junit.jupiter.api.Test;
 import test.consumer.ProductResolver.Item;
 import test.consumer.ProductResolver.Product;
 import test.consumer.ProductResolver.Products;
-import test.consumer.ProductResolverTest.NamedProducts;
-import test.consumer.ProductResolverTest.ProductsGetter;
 
 import static com.github.t1.wunderbar.junit.consumer.Level.UNIT;
 import static com.github.t1.wunderbar.junit.consumer.WunderbarExpectationBuilder.given;
@@ -18,8 +16,6 @@ import static org.assertj.core.api.BDDAssertions.then;
     endpoint = com.github.t1.wunderbar.junit.consumer.WunderBarConsumerExtension.NONE)
 class DeprecatedConsumerTest {
     @Service Products products;
-    @Service NamedProducts namedProducts;
-    @Service ProductsGetter productsGetter;
     @SystemUnderTest ProductResolver resolver;
 
     @Test void shouldResolveProduct() {

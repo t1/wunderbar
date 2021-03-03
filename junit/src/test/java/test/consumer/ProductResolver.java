@@ -7,6 +7,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
+import lombok.With;
 import org.eclipse.microprofile.graphql.GraphQLApi;
 import org.eclipse.microprofile.graphql.Id;
 import org.eclipse.microprofile.graphql.NonNull;
@@ -23,17 +24,23 @@ class ProductResolver {
         return products.product(item.getProductId());
     }
 
+    public Product productWithPriceUpdate(Item item, int newPrice) {
+        return products.patch(new Product().withId(item.getProductId()).withPrice(newPrice));
+    }
+
     @GraphQlClientApi(endpoint = "health")
     interface Products {
         Product product(@NonNull String id);
+        Product patch(@NonNull Product patch);
     }
 
     @Getter @Setter @ToString @NoArgsConstructor
-    @Builder(toBuilder = true) @AllArgsConstructor(access = PRIVATE)
+    @Builder(toBuilder = true) @With @AllArgsConstructor(access = PRIVATE)
     public // Yasson requires the POJO to be `public`
     static class Product {
         @Id @NonNull String id;
         String name;
+        Integer price;
     }
 
     @Getter @Setter @ToString
