@@ -78,7 +78,7 @@ class ConsumerDrivenAT {
     }
 
 
-    @AfterDynamicTest void removeAllTestData(List<HttpServerInteraction> interactions) {
+    @AfterDynamicTest void removeAllTestData() {
         created.forEach(backdoor::delete);
         created.clear();
     }
