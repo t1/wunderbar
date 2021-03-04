@@ -66,6 +66,6 @@ Writing your acceptance tests in this way makes testing more robust, as you don'
 
 == Documentation
 
-The Documentation is in the JavaDoc, mainly of the annotations https://github.com/t1/wunderbar/blob/master/junit/src/main/java/com/github/t1/wunderbar/junit/consumer/WunderBarConsumerExtension.java[`@WunderBarConsumerExtension`] and the https://github.com/t1/wunderbar/blob/master/junit/src/main/java/com/github/t1/wunderbar/junit/consumer/Level.java[`Level`] annotation for the API consumer (client) side and https://github.com/t1/wunderbar/blob/master/junit/src/main/java/com/github/t1/wunderbar/junit/provider/WunderBarApiProvider.java[`@WunderBarApiProvider`] for the API provider (server) side.
+The Documentation is in the JavaDoc, mainly of the annotations https://github.com/t1/wunderbar/blob/master/junit/src/main/java/com/github/t1/wunderbar/junit/consumer/WunderBarApiConsumer.java[`@WunderBarApiConsumer`] and the https://github.com/t1/wunderbar/blob/master/junit/src/main/java/com/github/t1/wunderbar/junit/consumer/Level.java[`Level`] annotation for the API consumer (client) side and https://github.com/t1/wunderbar/blob/master/junit/src/main/java/com/github/t1/wunderbar/junit/provider/WunderBarApiProvider.java[`@WunderBarApiProvider`] for the API provider (server) side.
 
 The `demo` module contains two example projects: `order` consumes an API that is implemented by the `product` service. Both in REST and GraphQL and on all test levels.

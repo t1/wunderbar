@@ -15,6 +15,7 @@ import org.eclipse.microprofile.graphql.NonNull;
 import org.eclipse.microprofile.graphql.Query;
 import org.junit.jupiter.api.DynamicNode;
 import org.junit.jupiter.api.TestFactory;
+import org.junit.jupiter.api.condition.DisabledIfSystemProperty;
 import test.tools.QuarkusService;
 
 import javax.json.bind.Jsonb;
@@ -62,6 +63,8 @@ class ConsumerDrivenAT {
         return findTestsIn("../order/target/system-wunder.jar");
     }
 
+    @DisabledIfSystemProperty(named = "release", matches = "true",
+        disabledReason = "during maven release tests, this artifact is not installed as expected")
     @TestFactory DynamicNode demoOrderConsumerArtifactTests() throws IOException {
         return findTestsInArtifact("com.github.t1:wunderbar.demo.order:" + getVersion());
     }
