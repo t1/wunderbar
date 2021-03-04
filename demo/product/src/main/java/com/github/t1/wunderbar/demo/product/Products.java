@@ -49,12 +49,21 @@ public class Products {
         if (FORBIDDEN_PRODUCTS.containsKey(id)) throw new ProductForbiddenException(id);
         var product = PRODUCTS.get(id);
         if (product == null) throw new ProductNotFoundException(id);
+        log.info("-> {}", product);
         return product;
+    }
+
+    @Query public boolean exists(@NonNull String id) {
+        log.info("exists({})", id);
+        var exists = PRODUCTS.containsKey(id);
+        log.info("-> {}", exists);
+        return exists;
     }
 
     @Mutation public @NonNull Product store(@NonNull Product product) {
         log.info("store({})", product);
         PRODUCTS.put(product.id, product);
+        log.info("-> {}", product);
         return product;
     }
 
@@ -62,7 +71,9 @@ public class Products {
     @Mutation public @NonNull Product update(@NonNull Product patch) {
         log.info("update({})", patch);
         var existing = product(patch.id);
-        return existing.apply(patch);
+        var patched = existing.apply(patch);
+        log.info("-> {}", patched);
+        return patched;
     }
 
     @Mutation public @NonNull Product forbid(@NonNull String productId) {
@@ -70,13 +81,16 @@ public class Products {
         var product = PRODUCTS.get(productId);
         if (product == null) throw new BadRequestException("can't forbid unknown product " + productId);
         FORBIDDEN_PRODUCTS.put(productId, product);
+        log.info("-> {}", product);
         return product;
     }
 
     @Mutation public Product delete(@NonNull String productId) {
         log.info("delete({})", productId);
         FORBIDDEN_PRODUCTS.remove(productId);
-        return PRODUCTS.remove(productId);
+        var removed = PRODUCTS.remove(productId);
+        log.info("-> {}", removed);
+        return removed;
     }
 
     @SuppressWarnings("CdiInjectionPointsInspection")

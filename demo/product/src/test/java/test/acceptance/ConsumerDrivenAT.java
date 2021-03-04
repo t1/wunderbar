@@ -12,6 +12,7 @@ import io.smallrye.graphql.client.typesafe.api.GraphQlClientBuilder;
 import lombok.Data;
 import org.eclipse.microprofile.graphql.Mutation;
 import org.eclipse.microprofile.graphql.NonNull;
+import org.eclipse.microprofile.graphql.Query;
 import org.junit.jupiter.api.DynamicNode;
 import org.junit.jupiter.api.TestFactory;
 import test.tools.QuarkusService;
@@ -45,6 +46,7 @@ class ConsumerDrivenAT {
     @GraphQlClientApi
     @SuppressWarnings("UnusedReturnValue")
     private interface Backdoor {
+        @Query boolean exists(@NonNull String id);
         @Mutation @NonNull Product store(@NonNull Product product);
         @Mutation @NonNull Product update(@NonNull Product patch);
         @Mutation @NonNull Product forbid(@NonNull String productId);
@@ -106,6 +108,12 @@ class ConsumerDrivenAT {
         backdoor.forbid(id);
     }
 
+    private void checkExists(String id) {
+        then(backdoor.exists(id))
+            .describedAs("product " + id + " does not yet exist; request the _old_ state before you request an update")
+            .isTrue();
+    }
+
     private void doNothing() {}
 
 
@@ -127,7 +135,7 @@ class ConsumerDrivenAT {
                             create(expectedProduct());
                             return;
                         case "PATCH":
-                            doNothing(); // TODO check exists
+                            checkExists(expectedProduct().getId());
                             return;
                         default:
                             throw new RuntimeException("unsupported method " + requestMethod());
@@ -185,7 +193,7 @@ class ConsumerDrivenAT {
                     create(graphQlResponse.data.product);
                     break;
                 case "update":
-                    doNothing(); // TODO check exists
+                    checkExists(graphQlResponse.data.update.getId());
                     break;
                 case "product-forbidden":
                     createForbiddenProduct(expectedForbiddenProductId());
