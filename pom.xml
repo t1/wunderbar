@@ -149,6 +149,9 @@
     <profiles>
         <profile>
             <id>release</id>
+            <properties>
+                <release>true</release>
+            </properties>
             <build>
                 <plugins>
                     <!-- always run source+javadoc => see problems early & source available in local repo -->
