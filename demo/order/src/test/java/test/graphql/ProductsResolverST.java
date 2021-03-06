@@ -13,7 +13,7 @@ import com.github.t1.wunderbar.junit.http.HttpServerRequest;
 import com.github.t1.wunderbar.junit.http.HttpServerResponse;
 import io.smallrye.graphql.client.typesafe.api.GraphQlClientException;
 import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 import javax.json.Json;
@@ -31,6 +31,8 @@ class ProductsResolverST {
     private static final String SYSTEM_TEST_USER = "system-test-user";
     private static final String SYSTEM_TEST_PASSWORD = "system-test-password";
     private static final Authorization SYSTEM_TEST_CREDENTIALS = new Authorization.Basic(SYSTEM_TEST_USER, SYSTEM_TEST_PASSWORD);
+
+    static final String PRODUCTS_MP_GRAPHQL_CONFIG = Products.class.getName() + "/mp-graphql/";
 
     @SuppressWarnings("unused")
     static URI endpoint() { return SERVER.baseUri().resolve("/graphql"); }
@@ -69,14 +71,17 @@ class ProductsResolverST {
 
     private static boolean isMutation(String query) { return query.startsWith("mutation "); }
 
-    @BeforeEach
-    void setUp() {
-        var prefix = Products.class.getName() + "/mp-graphql/";
-        System.setProperty(prefix + "username", SYSTEM_TEST_USER);
-        System.setProperty(prefix + "password", SYSTEM_TEST_PASSWORD);
+    @BeforeAll
+    static void setUp() {
+        System.setProperty(PRODUCTS_MP_GRAPHQL_CONFIG + "username", SYSTEM_TEST_USER);
+        System.setProperty(PRODUCTS_MP_GRAPHQL_CONFIG + "password", SYSTEM_TEST_PASSWORD);
     }
 
-    @AfterAll static void stop() { SERVER.stop(); }
+    @AfterAll static void tearDown() {
+        SERVER.stop();
+        System.clearProperty(PRODUCTS_MP_GRAPHQL_CONFIG + "username");
+        System.clearProperty(PRODUCTS_MP_GRAPHQL_CONFIG + "password");
+    }
 
 
     @Service Products products;

@@ -1,8 +1,10 @@
 package com.github.t1.wunderbar.junit.consumer.integration;
 
 import com.github.t1.wunderbar.junit.consumer.BarWriter;
+import com.github.t1.wunderbar.junit.http.Authorization;
 import com.github.t1.wunderbar.junit.http.HttpServerRequest;
 import com.github.t1.wunderbar.junit.http.HttpServerResponse;
+import io.smallrye.graphql.client.typesafe.api.AuthorizationHeader;
 import io.smallrye.graphql.client.typesafe.api.GraphQlClientBuilder;
 import org.eclipse.microprofile.graphql.Name;
 
@@ -13,12 +15,29 @@ import java.util.Map;
 import static com.github.t1.wunderbar.junit.Utils.errorCode;
 
 class GraphQlExpectation extends HttpServiceExpectation {
-    GraphQlExpectation(BarWriter bar, Method method, Object... args) { super(bar, method, args); }
+    private final String configPrefix;
+    private Authorization.Basic old;
+
+    GraphQlExpectation(BarWriter bar, Method method, Object... args) {
+        super(bar, method, args);
+        this.configPrefix = method.getDeclaringClass().getName() + "/mp-graphql/";
+    }
 
     @Override protected Object service() {
+        if (needsAuthorizationConfig()) this.old = configureDummyAuthorization();
         return GraphQlClientBuilder.newBuilder()
             .endpoint(baseUri().resolve("/graphql"))
             .build(method.getDeclaringClass());
+    }
+
+    private boolean needsAuthorizationConfig() {
+        return method.isAnnotationPresent(AuthorizationHeader.class);
+    }
+
+    private Authorization.Basic configureDummyAuthorization() {
+        var oldUsername = System.setProperty(configPrefix + "username", "dummy-username");
+        var oldPassword = System.setProperty(configPrefix + "password", "dummy-password");
+        return new Authorization.Basic(oldUsername, oldPassword);
     }
 
     @Override protected HttpServerResponse handleRequest(HttpServerRequest request) {
@@ -52,5 +71,18 @@ class GraphQlExpectation extends HttpServiceExpectation {
 
     private String lowerFirst(String name) {
         return Character.toLowerCase(name.charAt(0)) + name.substring(1);
+    }
+
+    @Override public void done() {
+        super.done();
+        if (old != null) {
+            extracted("username", old.getUsername());
+            extracted("password", old.getPassword());
+        }
+    }
+
+    private void extracted(String name, String value) {
+        if (value == null) System.clearProperty(configPrefix + name);
+        else System.getProperty(configPrefix + name, value);
     }
 }
