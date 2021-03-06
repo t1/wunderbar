@@ -7,11 +7,13 @@ import com.github.t1.wunderbar.demo.order.ProductsResolver.Products;
 import com.github.t1.wunderbar.junit.consumer.Service;
 import com.github.t1.wunderbar.junit.consumer.SystemUnderTest;
 import com.github.t1.wunderbar.junit.consumer.WunderBarApiConsumer;
+import com.github.t1.wunderbar.junit.http.Authorization;
 import com.github.t1.wunderbar.junit.http.HttpServer;
 import com.github.t1.wunderbar.junit.http.HttpServerRequest;
 import com.github.t1.wunderbar.junit.http.HttpServerResponse;
 import io.smallrye.graphql.client.typesafe.api.GraphQlClientException;
 import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import javax.json.Json;
@@ -26,6 +28,10 @@ class ProductsResolverST {
     /** this server would normally be a real server running somewhere */
     private static final HttpServer SERVER = new HttpServer(ProductsResolverST::handle);
 
+    private static final String SYSTEM_TEST_USER = "system-test-user";
+    private static final String SYSTEM_TEST_PASSWORD = "system-test-password";
+    private static final Authorization SYSTEM_TEST_CREDENTIALS = new Authorization.Basic(SYSTEM_TEST_USER, SYSTEM_TEST_PASSWORD);
+
     @SuppressWarnings("unused")
     static URI endpoint() { return SERVER.baseUri().resolve("/graphql"); }
 
@@ -33,8 +39,13 @@ class ProductsResolverST {
         assert request.getUri().toString().equals("/graphql") : "unexpected uri " + request.getUri();
         assert request.getBody().isPresent();
         var body = Json.createReader(new StringReader(request.getBody().get())).readObject();
-        assert body.getString("query").equals("query product($id: String!) { product(id: $id) {id name description price} }")
-            : "unexpected query: [" + body.getString("query") + "]";
+        var query = body.getString("query");
+        assert query.equals("query product($id: String!) { product(id: $id) {id name description price} }")
+            : "unexpected query: [" + query + "]";
+        if (isMutation(query)) // currently not used
+            assert SYSTEM_TEST_CREDENTIALS.equals(request.getAuthorization()) : "expected mutation to be authorized with the system test credentials";
+        else assert request.getAuthorization() == null : "expected query not to be authorized";
+
         var response = HttpServerResponse.builder();
         var id = body.getJsonObject("variables").getString("id");
         switch (id) {
@@ -54,6 +65,15 @@ class ProductsResolverST {
                 break;
         }
         return response.build();
+    }
+
+    private static boolean isMutation(String query) { return query.startsWith("mutation "); }
+
+    @BeforeEach
+    void setUp() {
+        var prefix = Products.class.getName() + "/mp-graphql/";
+        System.setProperty(prefix + "username", SYSTEM_TEST_USER);
+        System.setProperty(prefix + "password", SYSTEM_TEST_PASSWORD);
     }
 
     @AfterAll static void stop() { SERVER.stop(); }

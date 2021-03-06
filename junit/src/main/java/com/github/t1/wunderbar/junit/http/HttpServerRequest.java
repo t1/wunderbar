@@ -1,5 +1,6 @@
 package com.github.t1.wunderbar.junit.http;
 
+import com.github.t1.wunderbar.junit.http.Authorization.Dummy;
 import lombok.Builder;
 import lombok.Builder.Default;
 import lombok.Value;
@@ -14,6 +15,7 @@ import static com.github.t1.wunderbar.junit.http.HttpUtils.APPLICATION_JSON_UTF8
 import static com.github.t1.wunderbar.junit.http.HttpUtils.JSONB;
 import static com.github.t1.wunderbar.junit.http.HttpUtils.optional;
 import static javax.ws.rs.core.HttpHeaders.ACCEPT;
+import static javax.ws.rs.core.HttpHeaders.AUTHORIZATION;
 import static javax.ws.rs.core.HttpHeaders.CONTENT_TYPE;
 
 @Value @Builder @With
@@ -24,12 +26,17 @@ public class HttpServerRequest {
         optional(properties, "URI").map(URI::create).ifPresent(builder::uri);
         optional(properties, ACCEPT).map(MediaType::valueOf).ifPresent(builder::accept);
         optional(properties, CONTENT_TYPE).map(MediaType::valueOf).ifPresent(builder::contentType);
+        optional(properties, AUTHORIZATION).map(Authorization::valueOf).ifPresent(value -> {
+            assert value instanceof Dummy : "expected " + AUTHORIZATION + " header to be the dummy value!";
+            builder.authorization(value);
+        });
         body.ifPresent(builder::body);
         return builder.build();
     }
 
     @Default String method = "GET";
     @Default URI uri = URI.create("/");
+    Authorization authorization;
     @Default MediaType contentType = APPLICATION_JSON_UTF8;
     @Default MediaType accept = APPLICATION_JSON_UTF8;
     @Default Optional<String> body = Optional.empty();
@@ -41,7 +48,8 @@ public class HttpServerRequest {
             "Method: " + method + "\n" +
             "URI: " + uri + "\n" +
             ((accept == null) ? "" : ACCEPT + ": " + accept + "\n") +
-            ((contentType == null) ? "" : CONTENT_TYPE + ": " + contentType + "\n");
+            ((contentType == null) ? "" : CONTENT_TYPE + ": " + contentType + "\n") +
+            ((authorization == null) ? "" : AUTHORIZATION + ": " + authorization + "\n");
     }
 
     @SuppressWarnings("unused")

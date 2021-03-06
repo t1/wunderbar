@@ -22,7 +22,7 @@ class QuarkusServiceExtension implements Extension, BeforeAllCallback, AfterAllC
     private Process service;
 
     @Override public void beforeAll(ExtensionContext context) throws Exception {
-        service = new ProcessBuilder().command("java", "-jar", "target/wunderbar.demo.product-runner.jar").inheritIO().start();
+        service = new ProcessBuilder().command("java", "-jar", "target/quarkus-app/quarkus-run.jar").inheritIO().start();
         waitUntilReady();
     }
 

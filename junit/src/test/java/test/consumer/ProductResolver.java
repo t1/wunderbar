@@ -28,7 +28,7 @@ class ProductResolver {
         return products.patch(new Product().withId(item.getProductId()).withPrice(newPrice));
     }
 
-    @GraphQlClientApi(endpoint = "health")
+    @GraphQlClientApi(endpoint = "dummy")
     interface Products {
         Product product(@NonNull String id);
         Product patch(@NonNull Product patch);

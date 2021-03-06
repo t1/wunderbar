@@ -13,6 +13,7 @@ import java.util.function.Function;
 
 import static com.github.t1.wunderbar.junit.http.HttpUtils.charset;
 import static io.undertow.util.Headers.ACCEPT;
+import static io.undertow.util.Headers.AUTHORIZATION;
 import static io.undertow.util.Headers.CONTENT_TYPE;
 
 public class HttpServer {
@@ -38,7 +39,8 @@ public class HttpServer {
             .method(exchange.getRequestMethod().toString())
             .uri(URI.create(exchange.getRequestURI()))
             .contentType(HttpUtils.firstMediaType(exchange.getRequestHeaders().getFirst(CONTENT_TYPE)))
-            .accept(HttpUtils.firstMediaType(exchange.getRequestHeaders().getFirst(ACCEPT)));
+            .accept(HttpUtils.firstMediaType(exchange.getRequestHeaders().getFirst(ACCEPT)))
+            .authorization(Authorization.valueOf(exchange.getRequestHeaders().getFirst(AUTHORIZATION)));
         readRequestBody(exchange).ifPresent(requestBuilder::body);
         var request = requestBuilder.build();
 

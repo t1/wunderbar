@@ -1,6 +1,7 @@
 package com.github.t1.wunderbar.junit.consumer.system;
 
 import com.github.t1.wunderbar.junit.consumer.BarWriter;
+import com.github.t1.wunderbar.junit.http.Authorization;
 import com.github.t1.wunderbar.junit.http.HttpServerRequest;
 import com.github.t1.wunderbar.junit.http.HttpServerRequest.HttpServerRequestBuilder;
 import com.github.t1.wunderbar.junit.http.HttpServerResponse;
@@ -18,6 +19,7 @@ import java.io.IOException;
 import java.net.URI;
 
 import static com.github.t1.wunderbar.junit.Utils.formatJson;
+import static javax.ws.rs.core.HttpHeaders.AUTHORIZATION;
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON_TYPE;
 
 @Slf4j
@@ -60,6 +62,7 @@ class BarFilter implements ClientRequestFilter, ClientResponseFilter {
             this.requestMediaType = requestContext.getMediaType();
             if (requestMediaType != null)
                 request.contentType(requestMediaType);
+            request.authorization(Authorization.valueOf(requestContext.getHeaderString(AUTHORIZATION)));
             if (requestContext.hasEntity()) {
                 requestStringBuilder = new StringBuilder();
                 requestContext.setEntityStream(new StringBuildingOutputStreamFilter(requestContext.getEntityStream(), requestStringBuilder));

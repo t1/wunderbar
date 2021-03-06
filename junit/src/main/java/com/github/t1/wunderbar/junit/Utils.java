@@ -15,9 +15,11 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Base64;
 import java.util.Collections;
 import java.util.Map;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.Locale.US;
 import static java.util.stream.Collectors.toList;
 
@@ -31,6 +33,8 @@ public @Internal class Utils {
         } catch (InvocationTargetException e) {
             if (e.getTargetException() instanceof RuntimeException)
                 throw (RuntimeException) e.getTargetException();
+            if (e.getTargetException() instanceof AssertionError)
+                throw (AssertionError) e.getTargetException();
             throw e;
         }
     }
@@ -84,5 +88,13 @@ public @Internal class Utils {
     public static void setField(Object instance, Field field, Object value) {
         field.setAccessible(true);
         field.set(instance, value);
+    }
+
+    public static String base64(String string) {
+        return Base64.getEncoder().encodeToString(string.getBytes(UTF_8));
+    }
+
+    public static String base64decode(String string) {
+        return new String(Base64.getDecoder().decode(string.getBytes(UTF_8)), UTF_8);
     }
 }

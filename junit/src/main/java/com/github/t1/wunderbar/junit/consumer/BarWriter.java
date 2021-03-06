@@ -1,5 +1,6 @@
 package com.github.t1.wunderbar.junit.consumer;
 
+import com.github.t1.wunderbar.junit.http.Authorization;
 import com.github.t1.wunderbar.junit.http.HttpServerRequest;
 import com.github.t1.wunderbar.junit.http.HttpServerResponse;
 
@@ -22,6 +23,7 @@ public abstract class BarWriter implements Closeable {
 
     public final void save(HttpServerRequest request, HttpServerResponse response) {
         String id = getDirectory() + "/" + (count() + 1) + " ";
+        if (request.getAuthorization() != null) request = request.withAuthorization(Authorization.Dummy.INSTANCE);
         write(id + "request-headers.properties", request.headerProperties());
         request.getBody().ifPresent(body -> write(id + "request-body.json", body));
 

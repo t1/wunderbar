@@ -1,6 +1,7 @@
 package test.acceptance;
 
 import com.github.t1.wunderbar.demo.product.Product;
+import com.github.t1.wunderbar.junit.http.Authorization;
 import com.github.t1.wunderbar.junit.http.HttpServerInteraction;
 import com.github.t1.wunderbar.junit.http.HttpServerRequest;
 import com.github.t1.wunderbar.junit.http.HttpServerResponse;
@@ -9,11 +10,14 @@ import com.github.t1.wunderbar.junit.provider.BeforeInteraction;
 import com.github.t1.wunderbar.junit.provider.WunderBarApiProvider;
 import io.smallrye.graphql.client.typesafe.api.GraphQlClientApi;
 import io.smallrye.graphql.client.typesafe.api.GraphQlClientBuilder;
+import io.smallrye.graphql.client.typesafe.api.GraphQlClientException;
+import io.smallrye.graphql.client.typesafe.api.Header;
 import lombok.Data;
 import org.eclipse.microprofile.graphql.Mutation;
 import org.eclipse.microprofile.graphql.NonNull;
 import org.eclipse.microprofile.graphql.Query;
 import org.junit.jupiter.api.DynamicNode;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestFactory;
 import test.tools.QuarkusService;
 
@@ -26,11 +30,13 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.function.Supplier;
 import java.util.regex.Pattern;
 
 import static com.github.t1.wunderbar.junit.provider.WunderBarTestFinder.findTestsIn;
 import static com.github.t1.wunderbar.junit.provider.WunderBarTestFinder.findTestsInArtifact;
 import static java.nio.charset.StandardCharsets.UTF_8;
+import static org.assertj.core.api.Assertions.catchThrowableOfType;
 import static org.assertj.core.api.BDDAssertions.then;
 import static test.acceptance.ConsumerDrivenAT.ENDPOINT;
 
@@ -38,13 +44,28 @@ import static test.acceptance.ConsumerDrivenAT.ENDPOINT;
 @WunderBarApiProvider(baseUri = ENDPOINT)
 class ConsumerDrivenAT {
     protected static final String ENDPOINT = "http://localhost:8080";
+    private static final String GRAPHQL_ENDPOINT = ENDPOINT + "/graphql";
 
-    private final Backdoor backdoor = GraphQlClientBuilder.newBuilder().endpoint(ENDPOINT + "/graphql").build(Backdoor.class);
+    @SuppressWarnings("SpellCheckingInspection")
+    private static final String JWT = "Bearer " +
+        "eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9" +
+        "." +
+        "eyJpc3MiOiJodHRwczovL2dpdGh1Yi5jb20vdDEiLCJ1cG4iOiJqYW5lQGRvZS5jb20iLCJncm91cHMiOlsiV3JpdGVyIl0sImlhd" +
+        "CI6MTYxNTAwMjk1NiwiZXhwIjo0NjkwODQyOTU2LCJqdGkiOiJhMWY3YzAwYS0yYWI5LTQ3MGItYWVhNi0xYjZmZWU3NDM3ZTYifQ" +
+        "." +
+        "VRYLxspQqQ_IjORNR092L2lqPg6SE3xOeMQEUVLEuOZj1YoynM-oOMw0UAGQsZlv1w11pf9XIf2okptV2FKloFkkn6cWm0K1ZeYYv" +
+        "Ud5OKaRU33AapZ2GSSKASfOkzshzw_y5G_e5-VqCXo5asspIYwSNzFy9JcA65JWhBttyepOPUx4Kmp3Eb5V9f-2rpfNGQbyHNh7rY" +
+        "BpeLrnViaaVe_3wW4QKiAX17gncNf6nLWO-pH8_qlLcaWqBNrIBauA_YqrZT4kUcyb0uFz06hSThGiJliUS2KiZratjj3YvGj8X8_" +
+        "ikqc7Tm_xldxlX_D5IHyuhNNe4sVppXDko7fQMw";
+    private static final Authorization WRITER = Authorization.valueOf(JWT);
+
+    private final Backdoor backdoor = GraphQlClientBuilder.newBuilder().endpoint(GRAPHQL_ENDPOINT).build(Backdoor.class);
     private final List<String> created = new ArrayList<>();
 
     /** We use this backdoor to setup and tear down the test data */
     @GraphQlClientApi
     @SuppressWarnings("UnusedReturnValue")
+    @Header(name = "Authorization", constant = JWT)
     private interface Backdoor {
         @Query boolean exists(@NonNull String id);
         @Mutation @NonNull Product store(@NonNull Product product);
@@ -53,6 +74,24 @@ class ConsumerDrivenAT {
         @Mutation Product delete(@NonNull String productId);
     }
 
+
+    @GraphQlClientApi
+    @SuppressWarnings("UnusedReturnValue")
+    interface UnauthorizedClientApi {
+        @Mutation @NonNull Product store(@NonNull Product product);
+    }
+
+    /** It's not the job of the client to check for auth, so we do it ourselves */
+    @Test void shouldFailToStoreWhenUnauthorized() {
+        var api = GraphQlClientBuilder.newBuilder()
+            .endpoint(GRAPHQL_ENDPOINT)
+            .build(UnauthorizedClientApi.class);
+        var product = Product.builder().id("unauthorized-product-id").build();
+
+        var throwable = catchThrowableOfType(() -> api.store(product), GraphQlClientException.class);
+
+        then(throwable.getErrors().get(0).getErrorCode()).isEqualTo("unauthorized");
+    }
 
     @TestFactory DynamicNode demoOrderConsumerTests() {
         return findTestsIn("../order/target/wunder.bar");
@@ -88,15 +127,25 @@ class ConsumerDrivenAT {
     /**
      * We provide a REST as well as a GraphQL service. To make our setup code simpler, we make it specific to the technology.
      * In this case the business logic is really simple, but if you have more complex setup logic, there may be better options.
+     *
+     * @return the request with the <code>Authorization</code> header set to the {@link #WRITER}, when necessary
      */
-    @BeforeInteraction void createTestData(HttpServerInteraction interaction) {
-        var isGraphQL = interaction.getRequest().getUri().getPath().equals("/graphql");
+    @BeforeInteraction HttpServerRequest createTestData(HttpServerInteraction interaction) {
+        var request = interaction.getRequest();
+        var isGraphQL = request.getUri().getPath().equals("/graphql");
         System.out.println("create test data for " + (isGraphQL ? "graphql" : "rest") + " interaction " + interaction.getNumber() + ": "
-            + interaction.getRequest().getMethod() + " " + interaction.getRequest().getUri());
+            + request.getMethod() + " " + request.getUri());
         var setup = isGraphQL
             ? new GraphQlSetUp(interaction)
             : new RestSetUp(interaction);
-        setup.run();
+
+        var isAuthorized = request.getAuthorization() != null;
+        boolean needsAuth = setup.get();
+        // How can you specify for an MP RestClient that one method needs authentication, but another one doesn't?
+        // With MP GraphQL Client that's trivial, e.g. with an `@AuthorizationHeader` annotation.
+        if (isGraphQL && needsAuth && !isAuthorized) throw new RuntimeException("expected request to be authorized");
+        // if (!needsAuth && isAuthorized) throw new RuntimeException("expected request NOT to be authorized");
+        return needsAuth ? request.withAuthorization(WRITER) : request;
     }
 
 
@@ -119,7 +168,7 @@ class ConsumerDrivenAT {
     private void doNothing() {}
 
 
-    private class RestSetUp implements Runnable {
+    private class RestSetUp implements Supplier<Boolean> {
         protected final HttpServerRequest request;
         protected final HttpServerResponse response;
 
@@ -129,25 +178,25 @@ class ConsumerDrivenAT {
             this.response = interaction.getResponse();
         }
 
-        @Override public void run() {
+        @Override public Boolean get() {
             switch (expectedStatus()) {
                 case OK:
                     switch (requestMethod()) {
                         case "GET":
                             create(expectedProduct());
-                            return;
+                            return false;
                         case "PATCH":
                             checkExists(expectedProduct().getId());
-                            return;
+                            return true;
                         default:
                             throw new RuntimeException("unsupported method " + requestMethod());
                     }
                 case FORBIDDEN:
                     createForbiddenProduct(requestedProductId());
-                    return;
+                    return false;
                 case NOT_FOUND:
                     doNothing();
-                    return;
+                    return false;
                 default:
                     throw new RuntimeException("unsupported status " + expectedStatus());
             }
@@ -173,7 +222,7 @@ class ConsumerDrivenAT {
     }
 
 
-    private class GraphQlSetUp implements Runnable {
+    private class GraphQlSetUp implements Supplier<Boolean> {
         protected final HttpServerRequest request;
         protected final HttpServerResponse response;
 
@@ -188,21 +237,21 @@ class ConsumerDrivenAT {
             this.graphQlResponse = JSONB.fromJson(responseBody, GraphQlResponse.class);
         }
 
-        @Override public void run() {
+        @Override public Boolean get() {
             var code = expectedErrorCode().or(this::dataName).orElseThrow();
             switch (code) {
                 case "product":
                     create(graphQlResponse.data.product);
-                    break;
+                    return false;
                 case "update":
                     checkExists(graphQlResponse.data.update.getId());
-                    break;
+                    return true;
                 case "product-forbidden":
                     createForbiddenProduct(expectedForbiddenProductId());
-                    break;
+                    return false;
                 case "product-not-found":
                     doNothing();
-                    break;
+                    return false;
                 default:
                     throw new RuntimeException("unsupported code: " + code);
             }

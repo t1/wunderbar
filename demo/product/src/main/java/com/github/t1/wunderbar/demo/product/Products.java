@@ -6,6 +6,8 @@ import org.eclipse.microprofile.graphql.Mutation;
 import org.eclipse.microprofile.graphql.NonNull;
 import org.eclipse.microprofile.graphql.Query;
 
+import javax.annotation.security.RolesAllowed;
+import javax.inject.Inject;
 import javax.ws.rs.BadRequestException;
 import javax.ws.rs.ForbiddenException;
 import javax.ws.rs.GET;
@@ -16,6 +18,7 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
+import java.security.Principal;
 import java.util.Collection;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -36,6 +39,8 @@ public class Products {
         PRODUCTS.put(EXISTING_PRODUCT.id, EXISTING_PRODUCT);
         FORBIDDEN_PRODUCTS.put(FORBIDDEN_PRODUCT.id, FORBIDDEN_PRODUCT);
     }
+
+    @Inject Principal principal;
 
     @GET
     @Query public @NonNull Collection<@NonNull Product> all() {
@@ -60,6 +65,7 @@ public class Products {
         return exists;
     }
 
+    @RolesAllowed("Writer")
     @Mutation public @NonNull Product store(@NonNull Product product) {
         log.info("store({})", product);
         PRODUCTS.put(product.id, product);
@@ -67,6 +73,7 @@ public class Products {
         return product;
     }
 
+    @RolesAllowed("Writer")
     @PATCH
     @Mutation public @NonNull Product update(@NonNull Product patch) {
         log.info("update({})", patch);
@@ -76,8 +83,9 @@ public class Products {
         return patched;
     }
 
+    @RolesAllowed("Writer")
     @Mutation public @NonNull Product forbid(@NonNull String productId) {
-        log.info("forbid({})", productId);
+        log.info("forbid({}) by {}", productId, principal.getName());
         var product = PRODUCTS.get(productId);
         if (product == null) throw new BadRequestException("can't forbid unknown product " + productId);
         FORBIDDEN_PRODUCTS.put(productId, product);
@@ -85,6 +93,7 @@ public class Products {
         return product;
     }
 
+    @RolesAllowed("Writer")
     @Mutation public Product delete(@NonNull String productId) {
         log.info("delete({})", productId);
         FORBIDDEN_PRODUCTS.remove(productId);

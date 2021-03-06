@@ -15,6 +15,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
 import java.util.stream.Stream.Builder;
@@ -26,20 +27,20 @@ class WunderBarApiProviderJUnitExtension implements Extension, BeforeEachCallbac
     WunderBarApiProvider settings;
 
     private ExtensionContext context;
-    List<Consumer<List<HttpServerInteraction>>> beforeDynamicTestConsumers = new ArrayList<>();
-    List<Consumer<HttpServerInteraction>> beforeInteractionConsumers = new ArrayList<>();
-    List<Consumer<HttpServerInteraction>> afterInteractionConsumers = new ArrayList<>();
-    List<Consumer<List<HttpServerInteraction>>> afterDynamicTestConsumers = new ArrayList<>();
+    List<Consumer<List<HttpServerInteraction>>> beforeDynamicTestMethods = new ArrayList<>();
+    List<Function<HttpServerInteraction, Object>> beforeInteractionMethods = new ArrayList<>();
+    List<Function<HttpServerInteraction, Object>> afterInteractionMethods = new ArrayList<>();
+    List<Consumer<List<HttpServerInteraction>>> afterDynamicTestMethods = new ArrayList<>();
 
     @Override public void beforeEach(ExtensionContext context) {
         INSTANCE = this;
         this.context = context;
         this.settings = findSettings();
 
-        addAllListMethodsTo(BeforeDynamicTest.class, beforeDynamicTestConsumers);
-        addAllMethodsTo(BeforeInteraction.class, beforeInteractionConsumers);
-        addAllMethodsTo(AfterInteraction.class, afterInteractionConsumers);
-        addAllListMethodsTo(AfterDynamicTest.class, afterDynamicTestConsumers);
+        addAllListMethodsTo(BeforeDynamicTest.class, beforeDynamicTestMethods);
+        addAllMethodsTo(BeforeInteraction.class, beforeInteractionMethods);
+        addAllMethodsTo(AfterInteraction.class, afterInteractionMethods);
+        addAllListMethodsTo(AfterDynamicTest.class, afterDynamicTestMethods);
     }
 
     private WunderBarApiProvider findSettings() {
@@ -64,21 +65,21 @@ class WunderBarApiProviderJUnitExtension implements Extension, BeforeEachCallbac
             });
     }
 
-    private void addAllMethodsTo(Class<? extends Annotation> annotationType, List<Consumer<HttpServerInteraction>> consumers) {
+    private void addAllMethodsTo(Class<? extends Annotation> annotationType, List<Function<HttpServerInteraction, Object>> consumers) {
         for (Object instance : context.getRequiredTestInstances().getAllInstances())
             allMethods(instance)
                 .filter(method -> method.isAnnotationPresent(annotationType))
                 .forEach(method -> consumers.add(interaction -> invokeWith(instance, method, interaction)));
     }
 
-    private void invokeWith(Object instance, Method method, HttpServerInteraction interaction) {
+    private Object invokeWith(Object instance, Method method, HttpServerInteraction interaction) {
         var args = new Object[method.getParameterCount()];
         for (int i = 0; i < args.length; i++) {
             if (method.getParameters()[i].getType().equals(HttpServerInteraction.class))
                 args[i] = interaction;
             else throw new WunderBarException("invalid argument type for parameter " + i + " of " + method);
         }
-        invoke(instance, method, args);
+        return invoke(instance, method, args);
     }
 
     private void addAllListMethodsTo(Class<? extends Annotation> annotationType, List<Consumer<List<HttpServerInteraction>>> consumers) {
@@ -124,8 +125,8 @@ class WunderBarApiProviderJUnitExtension implements Extension, BeforeEachCallbac
 
 
     @Override public void afterEach(ExtensionContext context) {
-        afterDynamicTestConsumers.clear();
-        beforeDynamicTestConsumers.clear();
+        afterDynamicTestMethods.clear();
+        beforeDynamicTestMethods.clear();
         this.settings = null;
         this.context = null;
         INSTANCE = null;

@@ -2,9 +2,21 @@ mp:
   graphql:
     showErrorMessage:
       "com.github.t1.wunderbar.demo.product.Products$BusinessException"
+  jwt:
+    verify:
+      publickey:
+        location: META-INF/resources/publicKey.pem
+      issuer: https://github.com/t1
 quarkus:
   log:
     min-level: DEBUG
     category:
       "com.github.t1":
         level: DEBUG
+      "io.quarkus.smallrye.jwt.runtime.auth.MpJwtValidator":
+        level: TRACE
+        min-level: TRACE
+resteasy:
+  role:
+    based:
+      security: true
