@@ -31,7 +31,8 @@ class GraphQlExpectation extends HttpServiceExpectation {
     }
 
     private boolean needsAuthorizationConfig() {
-        return method.isAnnotationPresent(AuthorizationHeader.class);
+        return method.isAnnotationPresent(AuthorizationHeader.class)
+            || method.getDeclaringClass().isAnnotationPresent(AuthorizationHeader.class);
     }
 
     private Authorization.Basic configureDummyAuthorization() {
@@ -76,13 +77,13 @@ class GraphQlExpectation extends HttpServiceExpectation {
     @Override public void done() {
         super.done();
         if (old != null) {
-            extracted("username", old.getUsername());
-            extracted("password", old.getPassword());
+            setSystemProperty("username", old.getUsername());
+            setSystemProperty("password", old.getPassword());
         }
     }
 
-    private void extracted(String name, String value) {
+    private void setSystemProperty(String name, String value) {
         if (value == null) System.clearProperty(configPrefix + name);
-        else System.getProperty(configPrefix + name, value);
+        else System.setProperty(configPrefix + name, value);
     }
 }

@@ -40,7 +40,7 @@ import static org.junit.jupiter.api.extension.ExtensionContext.Namespace.GLOBAL;
 @Slf4j
 class WunderBarApiConsumerJUnitExtension implements Extension, BeforeEachCallback, AfterEachCallback {
     private static boolean initialized = false;
-    private static final Map<String, BarWriter> BAR_WRITERS = new LinkedHashMap<>();
+    static final Map<String, BarWriter> BAR_WRITERS = new LinkedHashMap<>();
     private static final Pattern FUNCTION = Pattern.compile("(?<prefix>.*)\\{(?<method>.*)\\(\\)}(?<suffix>.*)");
 
     private ExtensionContext context;

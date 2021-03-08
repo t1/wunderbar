@@ -1,6 +1,6 @@
 = BAR :: Behaviour ARchive image:https://maven-badges.herokuapp.com/maven-central/com.github.t1/wunderbar/badge.svg[link=https://search.maven.org/artifact/com.github.t1/wunderbar] image:https://github.com/t1/wunderbar/actions/workflows/maven.yml/badge.svg[link=https://github.com/t1/wunderbar/actions/workflows/maven.yml]
 
-Low ceremony, code-first https://martinfowler.com/articles/consumerDrivenContracts.html[Consumer Driven Contracts] for Java natives. Supports REST and https://graphql.org[GraphQL].
+Low ceremony, code-first https://martinfowler.com/articles/consumerDrivenContracts.html[Consumer Driven Contracts] for Java natives. Supports REST (via https://github.com/eclipse/microprofile-rest-client[MicroProfile REST Client]) and https://graphql.org[GraphQL] (via https://github.com/smallrye/smallrye-graphql/tree/master/client/api[SmallRye GraphQL Client]).
 
 Just to make it clear: just because the consumer drives the contract doesn't mean that the provider is expected to comply blindly. It's only a starting point for the contract negotiation. The provider has to evolve a domain model that is consistent over all consumers: the BAR files are not a replacement for talking; they just augment it by the precision required by the machines. And starting from the API Consumer perspective is actually just a very natural way of defining an API: from the real requirements.
 
@@ -76,5 +76,7 @@ The `demo` module contains two example projects: `order` consumes an API that th
 == Credentials
 
 On the API Consumer side, the `bar` files never contain the value of a real `Authorization` header. They could contain dummy values for integration tests, but they don't add any benefit; for system tests, the interactions would even contain real credentials. So only dummy values are ever written instead.
+
+For a GraphQL client, you can use the `@AuthorizationHeader` annotation to read the configuration from an MP Config property; but you don't have to actually provide those for an integration test, as they won't be written anyway; a dummy value will be configured on the fly. OTOH, a `@Header(name = "Authorization")` works normally (but won't be written either).
 
 On the API Provider side, the acceptance test has to replace this value with real credentials, e.g. by returning a modified `HttpServerRequest` in a `@BeforeInteraction` method.
