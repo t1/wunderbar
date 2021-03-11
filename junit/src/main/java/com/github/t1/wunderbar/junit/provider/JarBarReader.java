@@ -40,8 +40,9 @@ class JarBarReader extends BarReader {
         var path = Path.of(matcher.group("path"));
         var number = Integer.parseInt(matcher.group("number"));
 
-        // uri fragments within archives would be nice, but at least IntelliJ doesn't support it and navigation breaks
-        // var uri = this.uri.resolve("#" + path);
+        // referencing the directories within archives would be nice, but at least IntelliJ doesn't support `!` nor `#`,
+        // i.e. you can't re-run selected tests any more
+        // var uri = URI.create(this.uri + "!" + path); // using URI#resolve would remove parts of the original path
         return Stream.of(new TreeEntry(path, number, uri));
     }
 
