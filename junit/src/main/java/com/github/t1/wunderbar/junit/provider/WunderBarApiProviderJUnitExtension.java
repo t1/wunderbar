@@ -2,7 +2,10 @@ package com.github.t1.wunderbar.junit.provider;
 
 import com.github.t1.wunderbar.junit.WunderBarException;
 import com.github.t1.wunderbar.junit.http.HttpServerInteraction;
+import com.github.t1.wunderbar.junit.http.HttpServerResponse;
 import lombok.SneakyThrows;
+import lombok.Value;
+import org.assertj.core.api.BDDSoftAssertions;
 import org.junit.jupiter.api.extension.AfterEachCallback;
 import org.junit.jupiter.api.extension.BeforeEachCallback;
 import org.junit.jupiter.api.extension.Extension;
@@ -30,6 +33,7 @@ class WunderBarApiProviderJUnitExtension implements Extension, BeforeEachCallbac
     List<Consumer<List<HttpServerInteraction>>> beforeDynamicTestMethods = new ArrayList<>();
     List<Function<HttpServerInteraction, Object>> beforeInteractionMethods = new ArrayList<>();
     List<Function<HttpServerInteraction, Object>> afterInteractionMethods = new ArrayList<>();
+    List<Consumer<OnInteractionErrorParams>> onInteractionErrorMethods = new ArrayList<>();
     List<Consumer<List<HttpServerInteraction>>> afterDynamicTestMethods = new ArrayList<>();
 
     @Override public void beforeEach(ExtensionContext context) {
@@ -40,7 +44,11 @@ class WunderBarApiProviderJUnitExtension implements Extension, BeforeEachCallbac
         addAllListMethodsTo(BeforeDynamicTest.class, beforeDynamicTestMethods);
         addAllMethodsTo(BeforeInteraction.class, beforeInteractionMethods);
         addAllMethodsTo(AfterInteraction.class, afterInteractionMethods);
+        addAllOnInteractionErrorMethods();
         addAllListMethodsTo(AfterDynamicTest.class, afterDynamicTestMethods);
+
+        if (onInteractionErrorMethods.isEmpty())
+            onInteractionErrorMethods.add(this::defaultOnInteractionError);
     }
 
     private WunderBarApiProvider findSettings() {
@@ -99,12 +107,36 @@ class WunderBarApiProviderJUnitExtension implements Extension, BeforeEachCallbac
         invoke(instance, method, args);
     }
 
+    private void addAllOnInteractionErrorMethods() {
+        for (Object instance : context.getRequiredTestInstances().getAllInstances())
+            allMethods(instance)
+                .filter(method -> method.isAnnotationPresent(OnInteractionError.class))
+                .forEach(method -> onInteractionErrorMethods.add(params -> invokeWith(instance, method, params)));
+    }
+
+    private void invokeWith(Object instance, Method method, OnInteractionErrorParams params) {
+        var args = new Object[method.getParameterCount()];
+        for (int i = 0; i < args.length; i++) {
+            if (method.getParameters()[i].getType().equals(HttpServerInteraction.class))
+                args[i] = params.getInteraction();
+            else if (method.getParameters()[i].getType().equals(HttpServerResponse.class))
+                args[i] = params.getActual();
+            else if (method.getParameters()[i].getType().equals(BDDSoftAssertions.class))
+                args[i] = params.getAssertions();
+            else throw new WunderBarException("invalid argument type for parameter " + i + " of " + method);
+        }
+        invoke(instance, method, args);
+    }
+
     private Stream<Method> allMethods(Object instance) {
         Builder<Method> builder = Stream.builder();
         for (Class<?> c = instance.getClass(); c != null; c = c.getSuperclass())
             Stream.of(c.getDeclaredMethods()).forEach(builder::add);
         return builder.build();
     }
+
+
+    private void defaultOnInteractionError(OnInteractionErrorParams params) { params.assertions.assertAll(); }
 
 
     URI baseUri() {
@@ -133,4 +165,10 @@ class WunderBarApiProviderJUnitExtension implements Extension, BeforeEachCallbac
     }
 
     private static final Pattern FUNCTION = Pattern.compile("(?<prefix>.*)\\{(?<method>.*)\\(\\)}(?<suffix>.*)");
+
+    static @Value class OnInteractionErrorParams {
+        HttpServerInteraction interaction;
+        HttpServerResponse actual;
+        BDDSoftAssertions assertions;
+    }
 }

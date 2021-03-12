@@ -19,6 +19,7 @@ import static com.github.t1.wunderbar.junit.consumer.WunderbarExpectationBuilder
 import static org.assertj.core.api.BDDAssertions.then;
 import static test.consumer.GraphQlAuthorizationIT.InterfaceCredentialsGenerator.INTERFACE_CREDENTIALS_BAR;
 import static test.consumer.GraphQlAuthorizationIT.InterfaceHeaderCredentialsGenerator.INTERFACE_HEADER_CREDENTIALS_BAR;
+import static test.consumer.GraphQlAuthorizationIT.InterfaceTokenHeaderCredentialsGenerator.INTERFACE_TOKEN_HEADER_CREDENTIALS_BAR;
 import static test.consumer.GraphQlAuthorizationIT.MethodCredentialsGenerator.METHOD_CREDENTIALS_BAR;
 import static test.consumer.GraphQlAuthorizationIT.NoCredentialsGenerator.NO_CREDENTIALS_BAR;
 import static test.consumer.GraphQlAuthorizationIT.ParameterHeaderCredentialsGenerator.PARAMETER_HEADER_CREDENTIALS_BAR;
@@ -32,6 +33,7 @@ public class GraphQlAuthorizationIT {
     private static final String AUTHORIZED_GRAPHQL_REQUEST = UNAUTHORIZED_GRAPHQL +
         "Authorization: Dummy authorization\n";
     private static final String DUMMY_CREDENTIALS = "Basic ZHVtbXktdXNlcm5hbWU6ZHVtbXktcGFzc3dvcmQ=";  // dummy-username:dummy-password
+    private static final String DUMMY_TOKEN = "Bearer dummy-token";
 
 
     @GraphQlClientApi
@@ -199,6 +201,30 @@ public class GraphQlAuthorizationIT {
             then(resolvedProduct).usingRecursiveComparison().isEqualTo(givenProduct);
             then(TestBackdoor.writtenBar(PARAMETER_HEADER_CREDENTIALS_BAR).resolve("GraphQlAuthorizationIT/ParameterHeaderCredentialsGenerator/" +
                 "shouldGenerateAndRestoreParameterHeaderCredentials/1 request-headers.properties")).hasContent(AUTHORIZED_GRAPHQL_REQUEST);
+        }
+    }
+
+
+    @GraphQlClientApi
+    @Header(name = "Authorization", constant = DUMMY_TOKEN)
+    interface AuthorizedInterfaceTokenHeaderProducts {
+        Product product(String id);
+    }
+
+    @WunderBarApiConsumer(level = INTEGRATION, fileName = INTERFACE_TOKEN_HEADER_CREDENTIALS_BAR)
+    @Nested class InterfaceTokenHeaderCredentialsGenerator {
+        static final String INTERFACE_TOKEN_HEADER_CREDENTIALS_BAR = "target/InterfaceTokenHeaderCredentialsGenerator-bar/";
+        @Service AuthorizedInterfaceTokenHeaderProducts products;
+
+        @Test void shouldGenerateAndRestoreInterfaceTokenHeaderCredentials() {
+            var givenProduct = Product.builder().id("am").build();
+            given(products.product(givenProduct.getId())).willReturn(givenProduct);
+
+            var resolvedProduct = products.product(givenProduct.getId());
+
+            then(resolvedProduct).usingRecursiveComparison().isEqualTo(givenProduct);
+            then(TestBackdoor.writtenBar(INTERFACE_TOKEN_HEADER_CREDENTIALS_BAR).resolve("GraphQlAuthorizationIT/InterfaceTokenHeaderCredentialsGenerator/" +
+                "shouldGenerateAndRestoreInterfaceTokenHeaderCredentials/1 request-headers.properties")).hasContent(AUTHORIZED_GRAPHQL_REQUEST);
         }
     }
 

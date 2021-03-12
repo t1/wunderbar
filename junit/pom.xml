@@ -92,14 +92,27 @@
                         <version>0.8.6</version>
                         <executions>
                             <execution>
+                                <id>prepare-agent-unit</id>
                                 <goals>
                                     <goal>prepare-agent</goal>
                                 </goals>
                             </execution>
                             <execution>
-                                <id>generate-report</id>
+                                <id>prepare-agent-it</id>
+                                <goals>
+                                    <goal>prepare-agent-integration</goal>
+                                </goals>
+                            </execution>
+                            <execution>
+                                <id>default-report</id>
                                 <goals>
                                     <goal>report</goal>
+                                </goals>
+                            </execution>
+                            <execution>
+                                <id>default-report-integration</id>
+                                <goals>
+                                    <goal>report-integration</goal>
                                 </goals>
                             </execution>
                         </executions>
