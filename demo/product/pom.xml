@@ -12,7 +12,7 @@
     <artifactId>wunderbar.demo.product</artifactId>
 
     <properties>
-        <quarkus.version>1.12.1.Final</quarkus.version>
+        <quarkus.version>1.12.2.Final</quarkus.version>
     </properties>
 
     <dependencyManagement>
