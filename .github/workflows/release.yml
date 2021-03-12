@@ -29,7 +29,10 @@ jobs:
         key: maven-${{ hashFiles('**/pom.xml') }}
 
     - name: Prepare release to Maven Central
-      run: mvn --batch-mode --no-transfer-progress release:prepare
+      run: |
+        git config user.email "snackbox@sintr.eu"
+        git config user.name "GitHub-Release-Action"
+        mvn --batch-mode --no-transfer-progress release:prepare
 
     - name: Perform release to Maven Central
       run: mvn --batch-mode --no-transfer-progress release:perform
