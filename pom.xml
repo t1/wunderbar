@@ -42,6 +42,7 @@
             <distribution>repo</distribution>
         </license>
     </licenses>
+
     <scm>
         <developerConnection>scm:git:https://github.com/t1/wunderbar</developerConnection>
         <url>https://github.com/t1/wunderbar</url>

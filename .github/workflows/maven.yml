@@ -3,15 +3,22 @@ name: Java CI
 on: [push]
 
 jobs:
-  build-full:
+  build:
     runs-on: ubuntu-latest
 
     steps:
     - uses: actions/checkout@v2
     - uses: actions/setup-java@v1
-      with: { java-version: 11 }
+      with:
+        java-version: 11
     - uses: actions/cache@v1
       with:
         path: ~/.m2/repository
         key: maven-${{ hashFiles('**/pom.xml') }}
-    - run: mvn --batch-mode --show-version --no-transfer-progress install
+
+    - run: mvn --batch-mode --show-version --no-transfer-progress -Pcoverage install
+
+    - uses: codecov/codecov-action@v1
+      with:
+        file: ./**/target/site/jacoco/jacoco.xml
+        name: codecov
