@@ -1,3 +1,4 @@
+# inspired by https://blog.codecentric.de/en/2021/02/github-actions-pipeline/
 name: Release
 
 on:
@@ -8,5 +9,53 @@ jobs:
   publish:
     runs-on: ubuntu-latest
     steps:
-    - run: |
-        echo "Release ${{github.event.milestone.title}}"
+    - run: echo "Will start a Maven Central upload for milestone ${{ github.event.milestone.title }}"
+
+    - uses: actions/checkout@v2
+
+    - name: Set up Maven Central Repository
+      uses: actions/setup-java@v1
+      with:
+        java-version: 11
+        server-id: oss.sonatype.org
+        server-username: MAVEN_USERNAME
+        server-password: MAVEN_PASSWORD
+        gpg-private-key: ${{ secrets.MAVEN_GPG_PRIVATE_KEY }}
+        gpg-passphrase: MAVEN_GPG_PASSPHRASE
+
+    - name: Prepare release to Maven Central
+      run: mvn --batch-mode release:prepare
+
+    - name: Perform release to Maven Central
+      run: mvn --batch-mode release:perform
+      env:
+        MAVEN_USERNAME: ${{ secrets.OSS_SONATYPE_USERNAME }}
+        MAVEN_PASSWORD: ${{ secrets.OSS_SONATYPE_PASSWORD }}
+        MAVEN_GPG_PASSPHRASE: ${{ secrets.MAVEN_GPG_PASSPHRASE }}
+
+    - name: Push updated poms
+      run: git push
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Create GitHub Release
+      id: create_release
+      uses: actions/create-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        tag_name: ${{ github.event.milestone.title }}
+        release_name: ${{ github.event.milestone.title }}
+        body: |
+          Grab the new version from Maven Central at https://repo1.maven.org/maven2/com/github/t1/wunderbar.junit/${{ github.event.milestone.title }}/
+          or by adding a dependency to your `pom.xml`:
+
+          ```xml
+          <dependency>
+              <groupId>com.github.t1</groupId>
+              <artifactId>wunderbar</artifactId>
+              <version>${{ github.event.milestone.title }}</version>
+          </dependency>
+          ```
+        draft: false
+        prerelease: false
