@@ -62,5 +62,9 @@ jobs:
               <version>${{ github.event.milestone.title }}</version>
           </dependency>
           ```
+
+          ### Release Notes
+
+          ${{ github.event.milestone.html_url }}
         draft: false
         prerelease: false
