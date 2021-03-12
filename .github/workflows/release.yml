@@ -1,9 +1,12 @@
-name: release-to-maven-central
+name: Release
+
 on:
-  workflow_dispatch
+  milestone:
+    types: [ closed ]
+
 jobs:
   publish:
     runs-on: ubuntu-latest
     steps:
     - run: |
-        echo "Release version"
+        echo "Release version ${github.event}"
