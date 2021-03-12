@@ -5,6 +5,7 @@ import lombok.Builder.Default;
 import lombok.Value;
 import lombok.With;
 
+import javax.json.JsonValue;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response.StatusType;
 import java.util.Optional;
@@ -16,9 +17,9 @@ import static com.github.t1.wunderbar.junit.http.HttpUtils.optional;
 import static javax.ws.rs.core.Response.Status.OK;
 
 @Value @Builder @With
-public class HttpServerResponse {
-    public static HttpServerResponse from(Properties properties, Optional<String> body) {
-        var builder = HttpServerResponse.builder();
+public class HttpResponse {
+    public static HttpResponse from(Properties properties, Optional<String> body) {
+        var builder = HttpResponse.builder();
         optional(properties, "Status").map(HttpUtils::toStatus).ifPresent(builder::status);
         optional(properties, "Content-Type").map(MediaType::valueOf).ifPresent(builder::contentType);
         body.ifPresent(builder::body);
@@ -33,18 +34,22 @@ public class HttpServerResponse {
 
     public String headerProperties() {
         return "" +
-            "Status: " + status.getStatusCode() + " " + status.getReasonPhrase() + "\n" +
+            "Status: " + getStatusString() + "\n" +
             "Content-Type: " + contentType + "\n";
     }
 
+    public String getStatusString() { return status.getStatusCode() + " " + status.getReasonPhrase(); }
+
+    public Optional<JsonValue> getJsonBody() { return body.map(HttpUtils::toJson); }
+
     @SuppressWarnings("unused")
-    public static class HttpServerResponseBuilder {
-        public HttpServerResponseBuilder body(Object body) {
+    public static class HttpResponseBuilder {
+        public HttpResponseBuilder body(Object body) {
             // JSON-B may produce a leading nl, but we want only a trailing nl
             return body(JSONB.toJson(body).trim() + "\n");
         }
 
-        public HttpServerResponseBuilder body(String body) {
+        public HttpResponseBuilder body(String body) {
             body$value = Optional.of(body);
             body$set = true;
             return this;

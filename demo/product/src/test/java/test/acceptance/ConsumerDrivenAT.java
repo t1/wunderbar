@@ -2,9 +2,9 @@ package test.acceptance;
 
 import com.github.t1.wunderbar.demo.product.Product;
 import com.github.t1.wunderbar.junit.http.Authorization;
-import com.github.t1.wunderbar.junit.http.HttpServerInteraction;
-import com.github.t1.wunderbar.junit.http.HttpServerRequest;
-import com.github.t1.wunderbar.junit.http.HttpServerResponse;
+import com.github.t1.wunderbar.junit.http.HttpInteraction;
+import com.github.t1.wunderbar.junit.http.HttpRequest;
+import com.github.t1.wunderbar.junit.http.HttpResponse;
 import com.github.t1.wunderbar.junit.provider.AfterDynamicTest;
 import com.github.t1.wunderbar.junit.provider.BeforeInteraction;
 import com.github.t1.wunderbar.junit.provider.WunderBarApiProvider;
@@ -130,7 +130,7 @@ class ConsumerDrivenAT {
      *
      * @return the request with the <code>Authorization</code> header set to the {@link #WRITER}, when necessary
      */
-    @BeforeInteraction HttpServerRequest createTestData(HttpServerInteraction interaction) {
+    @BeforeInteraction HttpRequest createTestData(HttpInteraction interaction) {
         var request = interaction.getRequest();
         var isGraphQL = request.getUri().getPath().equals("/graphql");
         System.out.println("create test data for " + (isGraphQL ? "graphql" : "rest") + " interaction " + interaction.getNumber() + ": "
@@ -169,11 +169,11 @@ class ConsumerDrivenAT {
 
 
     private class RestSetUp implements Supplier<Boolean> {
-        protected final HttpServerRequest request;
-        protected final HttpServerResponse response;
+        protected final HttpRequest request;
+        protected final HttpResponse response;
 
         @SuppressWarnings({"CdiInjectionPointsInspection", "QsPrivateBeanMembersInspection"})
-        private RestSetUp(HttpServerInteraction interaction) {
+        private RestSetUp(HttpInteraction interaction) {
             this.request = interaction.getRequest();
             this.response = interaction.getResponse();
         }
@@ -223,13 +223,13 @@ class ConsumerDrivenAT {
 
 
     private class GraphQlSetUp implements Supplier<Boolean> {
-        protected final HttpServerRequest request;
-        protected final HttpServerResponse response;
+        protected final HttpRequest request;
+        protected final HttpResponse response;
 
         private final GraphQlResponse graphQlResponse;
 
         @SuppressWarnings({"CdiInjectionPointsInspection", "QsPrivateBeanMembersInspection"})
-        private GraphQlSetUp(HttpServerInteraction interaction) {
+        private GraphQlSetUp(HttpInteraction interaction) {
             this.request = interaction.getRequest();
             this.response = interaction.getResponse();
             var responseBody = response.getBody()

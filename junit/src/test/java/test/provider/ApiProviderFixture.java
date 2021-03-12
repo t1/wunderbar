@@ -1,8 +1,8 @@
 package test.provider;
 
 import com.github.t1.wunderbar.junit.consumer.BarWriter;
-import com.github.t1.wunderbar.junit.http.HttpServerRequest;
-import com.github.t1.wunderbar.junit.http.HttpServerResponse;
+import com.github.t1.wunderbar.junit.http.HttpRequest;
+import com.github.t1.wunderbar.junit.http.HttpResponse;
 import com.github.t1.wunderbar.junit.provider.MavenCoordinates;
 import com.github.t1.wunderbar.junit.provider.WunderBarTestFinder;
 import com.github.t1.wunderbar.junit.provider.WunderBarTestFinder.Test;
@@ -61,7 +61,7 @@ class ApiProviderFixture implements Extension, BeforeEachCallback, AfterEachCall
         return withTest(directory, request(value), response(value));
     }
 
-    ApiProviderFixture withTest(String directory, HttpServerRequest request, HttpServerResponse response) {
+    ApiProviderFixture withTest(String directory, HttpRequest request, HttpResponse response) {
         if (bar == null) bar = BarWriter.to(path.toString());
 
         bar.setDirectory(directory);
@@ -79,12 +79,12 @@ class ApiProviderFixture implements Extension, BeforeEachCallback, AfterEachCall
     }
 
 
-    private static HttpServerRequest request(String value) {
-        return HttpServerRequest.builder().body("{\"value\":\"" + value + "\"}").build();
+    private static HttpRequest request(String value) {
+        return HttpRequest.builder().body("{\"value\":\"" + value + "\"}").build();
     }
 
-    private static HttpServerResponse response(String value) {
-        return HttpServerResponse.builder().body("{\"value\":\"" + value + "\"}").build();
+    private static HttpResponse response(String value) {
+        return HttpResponse.builder().body("{\"value\":\"" + value + "\"}").build();
     }
 
 

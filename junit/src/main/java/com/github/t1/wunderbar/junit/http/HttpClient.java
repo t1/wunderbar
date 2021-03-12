@@ -8,9 +8,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response.Status;
 import java.io.IOException;
 import java.net.URI;
-import java.net.http.HttpRequest;
 import java.net.http.HttpRequest.BodyPublishers;
-import java.net.http.HttpResponse;
 import java.net.http.HttpResponse.BodyHandler;
 import java.net.http.HttpResponse.BodySubscribers;
 import java.time.Duration;
@@ -41,7 +39,7 @@ public class HttpClient {
     }
 
     @SneakyThrows({IOException.class, InterruptedException.class})
-    public HttpServerResponse send(HttpServerRequest request) {
+    public HttpResponse send(HttpRequest request) {
         var httpRequest = convert(request);
 
         var httpResponse = HTTP.send(httpRequest, ofJson());
@@ -49,8 +47,8 @@ public class HttpClient {
         return convert(httpResponse);
     }
 
-    private HttpRequest convert(HttpServerRequest request) {
-        var builder = HttpRequest.newBuilder()
+    private java.net.http.HttpRequest convert(HttpRequest request) {
+        var builder = java.net.http.HttpRequest.newBuilder()
             // using URI#resolve would remove the context path of the base uri
             .uri(URI.create(baseUri + "" + request.getUri()))
             .method(request.getMethod(), request.getBody().map(BodyPublishers::ofString).orElse(noBody()))
@@ -60,16 +58,15 @@ public class HttpClient {
         return builder.build();
     }
 
-    private HttpServerResponse convert(HttpResponse<JsonValue> response) {
-        return HttpServerResponse.builder()
+    private HttpResponse convert(java.net.http.HttpResponse<?> response) {
+        return HttpResponse.builder()
             .status(Status.fromStatusCode(response.statusCode()))
             .contentType(contentType(response))
             .body(response.body())
             .build();
     }
 
-    private MediaType contentType(HttpResponse<?> response) {
+    private MediaType contentType(java.net.http.HttpResponse<?> response) {
         return response.headers().firstValue(CONTENT_TYPE).map(MediaType::valueOf).orElse(WILDCARD_TYPE);
     }
-
 }

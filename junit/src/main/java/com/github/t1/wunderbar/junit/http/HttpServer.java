@@ -17,10 +17,10 @@ import static io.undertow.util.Headers.AUTHORIZATION;
 import static io.undertow.util.Headers.CONTENT_TYPE;
 
 public class HttpServer {
-    private final Function<HttpServerRequest, HttpServerResponse> handler;
+    private final Function<HttpRequest, HttpResponse> handler;
     private final Undertow server;
 
-    public HttpServer(@NonNull Function<HttpServerRequest, HttpServerResponse> handler) {
+    public HttpServer(@NonNull Function<HttpRequest, HttpResponse> handler) {
         this.handler = handler;
         this.server = start();
     }
@@ -35,7 +35,7 @@ public class HttpServer {
     }
 
     private void aroundInvoke(HttpServerExchange exchange) {
-        var requestBuilder = HttpServerRequest.builder()
+        var requestBuilder = HttpRequest.builder()
             .method(exchange.getRequestMethod().toString())
             .uri(URI.create(exchange.getRequestURI()))
             .contentType(HttpUtils.firstMediaType(exchange.getRequestHeaders().getFirst(CONTENT_TYPE)))

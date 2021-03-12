@@ -1,9 +1,9 @@
 package com.github.t1.wunderbar.junit.provider;
 
 import com.github.t1.wunderbar.junit.WunderBarException;
-import com.github.t1.wunderbar.junit.http.HttpServerInteraction;
-import com.github.t1.wunderbar.junit.http.HttpServerRequest;
-import com.github.t1.wunderbar.junit.http.HttpServerResponse;
+import com.github.t1.wunderbar.junit.http.HttpInteraction;
+import com.github.t1.wunderbar.junit.http.HttpRequest;
+import com.github.t1.wunderbar.junit.http.HttpResponse;
 import com.github.t1.wunderbar.junit.provider.WunderBarTestFinder.Test;
 import lombok.NonNull;
 import lombok.SneakyThrows;
@@ -41,20 +41,20 @@ abstract class BarReader {
     abstract String getDisplayName();
 
 
-    public List<HttpServerInteraction> interactionsFor(Test test) {
+    public List<HttpInteraction> interactionsFor(Test test) {
         return IntStream.rangeClosed(1, test.getInteractionCount())
-            .mapToObj(n -> new HttpServerInteraction(n, request(test, n), response(test, n)))
+            .mapToObj(n -> new HttpInteraction(n, request(test, n), response(test, n)))
             .collect(toList());
     }
 
-    private HttpServerRequest request(Test test, int n) { return HttpServerRequest.from(requestHeaders(test, n), requestBody(test, n)); }
+    private HttpRequest request(Test test, int n) { return HttpRequest.from(requestHeaders(test, n), requestBody(test, n)); }
 
     private Properties requestHeaders(Test test, int n) { return properties(read(test.getPath() + "/" + n + " request-headers.properties")); }
 
     private Optional<String> requestBody(Test test, int n) { return optionalRead(test.getPath() + "/" + n + " request-body.json"); }
 
 
-    private HttpServerResponse response(Test test, int n) { return HttpServerResponse.from(responseHeaders(test, n), responseBody(test, n)); }
+    private HttpResponse response(Test test, int n) { return HttpResponse.from(responseHeaders(test, n), responseBody(test, n)); }
 
     private Properties responseHeaders(Test test, int n) { return properties(read(test.getPath() + "/" + n + " response-headers.properties")); }
 

@@ -2,10 +2,10 @@ package com.github.t1.wunderbar.junit.consumer.system;
 
 import com.github.t1.wunderbar.junit.consumer.BarWriter;
 import com.github.t1.wunderbar.junit.http.Authorization;
-import com.github.t1.wunderbar.junit.http.HttpServerRequest;
-import com.github.t1.wunderbar.junit.http.HttpServerRequest.HttpServerRequestBuilder;
-import com.github.t1.wunderbar.junit.http.HttpServerResponse;
-import com.github.t1.wunderbar.junit.http.HttpServerResponse.HttpServerResponseBuilder;
+import com.github.t1.wunderbar.junit.http.HttpRequest;
+import com.github.t1.wunderbar.junit.http.HttpRequest.HttpRequestBuilder;
+import com.github.t1.wunderbar.junit.http.HttpResponse;
+import com.github.t1.wunderbar.junit.http.HttpResponse.HttpResponseBuilder;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 
@@ -46,11 +46,11 @@ class BarFilter implements ClientRequestFilter, ClientResponseFilter {
     }
 
     private static class Builder {
-        private final HttpServerRequestBuilder request = HttpServerRequest.builder();
+        private final HttpRequestBuilder request = HttpRequest.builder();
         private StringBuilder requestStringBuilder;
         private final MediaType requestMediaType;
 
-        private final HttpServerResponseBuilder response = HttpServerResponse.builder();
+        private final HttpResponseBuilder response = HttpResponse.builder();
 
         Builder(ClientRequestContext requestContext) {
             request
@@ -74,7 +74,7 @@ class BarFilter implements ClientRequestFilter, ClientResponseFilter {
             return URI.create("/" + schemeAndHost.relativize(uri));
         }
 
-        HttpServerRequest buildRequest() {
+        HttpRequest buildRequest() {
             if (requestStringBuilder != null) {
                 var body = requestStringBuilder.toString();
                 if (APPLICATION_JSON_TYPE.isCompatible(requestMediaType)) body = formatJson(body);
@@ -101,7 +101,7 @@ class BarFilter implements ClientRequestFilter, ClientResponseFilter {
             }
         }
 
-        HttpServerResponse buildResponse() {
+        HttpResponse buildResponse() {
             return response.build();
         }
     }

@@ -1,10 +1,9 @@
 package com.github.t1.wunderbar.junit.provider;
 
 import com.github.t1.wunderbar.junit.http.HttpClient;
-import com.github.t1.wunderbar.junit.http.HttpServerInteraction;
-import com.github.t1.wunderbar.junit.http.HttpServerRequest;
-import com.github.t1.wunderbar.junit.http.HttpServerResponse;
-import com.github.t1.wunderbar.junit.http.HttpUtils;
+import com.github.t1.wunderbar.junit.http.HttpInteraction;
+import com.github.t1.wunderbar.junit.http.HttpRequest;
+import com.github.t1.wunderbar.junit.http.HttpResponse;
 import com.github.t1.wunderbar.junit.provider.WunderBarApiProviderJUnitExtension.OnInteractionErrorParams;
 import com.github.t1.wunderbar.junit.provider.WunderBarTestFinder.Test;
 import lombok.AllArgsConstructor;
@@ -45,13 +44,13 @@ class HttpBarExecutable implements Executable {
 
     @AllArgsConstructor
     private class Execution {
-        HttpServerInteraction interaction;
+        HttpInteraction interaction;
 
         public void run() {
             extension.beforeInteractionMethods.forEach(this::apply);
             System.out.println("-- request " + interaction.getNumber() + ":\n" + interaction.getRequest() + "\n");
 
-            HttpServerResponse actual = httpClient.send(interaction.getRequest());
+            HttpResponse actual = httpClient.send(interaction.getRequest());
 
             System.out.println("-- actual response " + interaction.getNumber() + ":\n" + actual + "\n");
             extension.afterInteractionMethods.forEach(consumer -> consumer.apply(interaction));
@@ -60,18 +59,17 @@ class HttpBarExecutable implements Executable {
             extension.onInteractionErrorMethods.forEach(consumer -> consumer.accept(onErrorParams));
         }
 
-        private void apply(Function<HttpServerInteraction, Object> consumer) {
+        private void apply(Function<HttpInteraction, Object> consumer) {
             var result = consumer.apply(interaction);
-            if (result instanceof HttpServerInteraction) interaction = (HttpServerInteraction) result;
-            if (result instanceof HttpServerRequest) interaction = interaction.withRequest((HttpServerRequest) result);
-            if (result instanceof HttpServerResponse) interaction = interaction.withResponse((HttpServerResponse) result);
+            if (result instanceof HttpInteraction) interaction = (HttpInteraction) result;
+            if (result instanceof HttpRequest) interaction = interaction.withRequest((HttpRequest) result);
+            if (result instanceof HttpResponse) interaction = interaction.withResponse((HttpResponse) result);
         }
 
 
-        private BDDSoftAssertions checkResponse(HttpServerResponse actual, HttpServerResponse expected) {
+        private BDDSoftAssertions checkResponse(HttpResponse actual, HttpResponse expected) {
             var softly = new BDDSoftAssertions();
-            softly.then(HttpUtils.toString(actual.getStatus())).as("status")
-                .isEqualTo(HttpUtils.toString(expected.getStatus()));
+            softly.then(actual.getStatusString()).describedAs("status").isEqualTo(expected.getStatusString());
             softly.then(actual.getContentType().isCompatible(expected.getContentType()))
                 .describedAs("Content-Type: " + expected.getContentType() + " to be compatible to " + actual.getContentType())
                 .isTrue();
@@ -79,9 +77,7 @@ class HttpBarExecutable implements Executable {
             return softly;
         }
 
-        private JsonValue body(HttpServerResponse actual) {
-            return actual.getBody().map(HttpUtils::toJson).orElse(JsonValue.NULL);
-        }
+        private JsonValue body(HttpResponse actual) { return actual.getJsonBody().orElse(JsonValue.NULL); }
 
         private void checkBody(BDDSoftAssertions softly, JsonValue actual, JsonValue expected) {
             if (actual instanceof JsonStructure && expected instanceof JsonStructure)

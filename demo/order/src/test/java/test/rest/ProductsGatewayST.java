@@ -7,9 +7,9 @@ import com.github.t1.wunderbar.demo.order.ProductsGateway.ProductsRestClient;
 import com.github.t1.wunderbar.junit.consumer.Service;
 import com.github.t1.wunderbar.junit.consumer.SystemUnderTest;
 import com.github.t1.wunderbar.junit.consumer.WunderBarApiConsumer;
+import com.github.t1.wunderbar.junit.http.HttpRequest;
+import com.github.t1.wunderbar.junit.http.HttpResponse;
 import com.github.t1.wunderbar.junit.http.HttpServer;
-import com.github.t1.wunderbar.junit.http.HttpServerRequest;
-import com.github.t1.wunderbar.junit.http.HttpServerResponse;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Test;
 
@@ -31,8 +31,8 @@ class ProductsGatewayST {
     @SuppressWarnings("unused")
     static URI endpoint() { return SERVER.baseUri().resolve("/rest"); }
 
-    static HttpServerResponse handle(HttpServerRequest request) {
-        var response = HttpServerResponse.builder();
+    static HttpResponse handle(HttpRequest request) {
+        var response = HttpResponse.builder();
         switch (request.getUri().toString()) {
             case "/rest/products/existing-product-id":
                 response.body("{\"id\":\"existing-product-id\", \"name\":\"some-product-name\"}");

@@ -3,9 +3,9 @@ package com.github.t1.wunderbar.junit.consumer.integration;
 import com.github.t1.wunderbar.junit.Utils;
 import com.github.t1.wunderbar.junit.consumer.BarWriter;
 import com.github.t1.wunderbar.junit.consumer.WunderBarExpectation;
+import com.github.t1.wunderbar.junit.http.HttpRequest;
+import com.github.t1.wunderbar.junit.http.HttpResponse;
 import com.github.t1.wunderbar.junit.http.HttpServer;
-import com.github.t1.wunderbar.junit.http.HttpServerRequest;
-import com.github.t1.wunderbar.junit.http.HttpServerResponse;
 import lombok.Getter;
 import lombok.SneakyThrows;
 
@@ -29,15 +29,15 @@ abstract class HttpServiceExpectation extends WunderBarExpectation {
 
     HttpServiceExpectation(BarWriter bar, Method method, Object... args) {
         super(method, args);
-        Function<HttpServerRequest, HttpServerResponse> handler = this::handleRequest;
+        Function<HttpRequest, HttpResponse> handler = this::handleRequest;
         if (bar != null) handler = save(bar, handler);
         handler = this.formatRequestBody(handler);
         this.server = new HttpServer(handler);
     }
 
-    abstract protected HttpServerResponse handleRequest(HttpServerRequest request);
+    abstract protected HttpResponse handleRequest(HttpRequest request);
 
-    private Function<HttpServerRequest, HttpServerResponse> save(BarWriter bar, Function<HttpServerRequest, HttpServerResponse> handler) {
+    private Function<HttpRequest, HttpResponse> save(BarWriter bar, Function<HttpRequest, HttpResponse> handler) {
         return request -> {
             var response = handler.apply(request);
             bar.save(request, response);
@@ -45,7 +45,7 @@ abstract class HttpServiceExpectation extends WunderBarExpectation {
         };
     }
 
-    private Function<HttpServerRequest, HttpServerResponse> formatRequestBody(Function<HttpServerRequest, HttpServerResponse> handler) {
+    private Function<HttpRequest, HttpResponse> formatRequestBody(Function<HttpRequest, HttpResponse> handler) {
         return request -> {
             if (request.getBody().isPresent() && APPLICATION_JSON_TYPE.isCompatible(request.getContentType()))
                 request = request.withBody(Optional.of(formatJson(request.getBody().get())));

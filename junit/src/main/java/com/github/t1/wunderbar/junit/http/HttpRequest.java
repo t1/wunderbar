@@ -19,9 +19,9 @@ import static javax.ws.rs.core.HttpHeaders.AUTHORIZATION;
 import static javax.ws.rs.core.HttpHeaders.CONTENT_TYPE;
 
 @Value @Builder @With
-public class HttpServerRequest {
-    public static HttpServerRequest from(Properties properties, Optional<String> body) {
-        var builder = HttpServerRequest.builder();
+public class HttpRequest {
+    public static HttpRequest from(Properties properties, Optional<String> body) {
+        var builder = HttpRequest.builder();
         optional(properties, "Method").ifPresent(builder::method);
         optional(properties, "URI").map(URI::create).ifPresent(builder::uri);
         optional(properties, ACCEPT).map(MediaType::valueOf).ifPresent(builder::accept);
@@ -53,13 +53,13 @@ public class HttpServerRequest {
     }
 
     @SuppressWarnings("unused")
-    public static class HttpServerRequestBuilder {
-        public HttpServerRequestBuilder body(Object body) {
+    public static class HttpRequestBuilder {
+        public HttpRequestBuilder body(Object body) {
             // JSON-B may produce a leading nl, but we want only a trailing nl
             return body(JSONB.toJson(body).trim() + "\n");
         }
 
-        public HttpServerRequestBuilder body(String body) {
+        public HttpRequestBuilder body(String body) {
             body$value = Optional.of(body);
             body$set = true;
             return this;

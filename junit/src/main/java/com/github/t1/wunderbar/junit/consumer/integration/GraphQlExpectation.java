@@ -2,8 +2,8 @@ package com.github.t1.wunderbar.junit.consumer.integration;
 
 import com.github.t1.wunderbar.junit.consumer.BarWriter;
 import com.github.t1.wunderbar.junit.http.Authorization;
-import com.github.t1.wunderbar.junit.http.HttpServerRequest;
-import com.github.t1.wunderbar.junit.http.HttpServerResponse;
+import com.github.t1.wunderbar.junit.http.HttpRequest;
+import com.github.t1.wunderbar.junit.http.HttpResponse;
 import io.smallrye.graphql.client.typesafe.api.AuthorizationHeader;
 import io.smallrye.graphql.client.typesafe.api.GraphQlClientBuilder;
 import org.eclipse.microprofile.graphql.Name;
@@ -41,8 +41,8 @@ class GraphQlExpectation extends HttpServiceExpectation {
         return new Authorization.Basic(oldUsername, oldPassword);
     }
 
-    @Override protected HttpServerResponse handleRequest(HttpServerRequest request) {
-        return HttpServerResponse.builder().body(buildResponseBody()).build();
+    @Override protected HttpResponse handleRequest(HttpRequest request) {
+        return HttpResponse.builder().body(buildResponseBody()).build();
     }
 
     private GraphQlResponseBody buildResponseBody() {

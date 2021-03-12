@@ -1,6 +1,6 @@
 package test.provider;
 
-import com.github.t1.wunderbar.junit.http.HttpServerInteraction;
+import com.github.t1.wunderbar.junit.http.HttpInteraction;
 import com.github.t1.wunderbar.junit.provider.AfterDynamicTest;
 import com.github.t1.wunderbar.junit.provider.AfterInteraction;
 import com.github.t1.wunderbar.junit.provider.BeforeDynamicTest;
@@ -34,22 +34,22 @@ class SetupTeardownAT {
 
     @BeforeDynamicTest void beforeWithoutArgs() { calledWithoutArgs.add("beforeWithoutArgsCalled"); }
 
-    @BeforeDynamicTest void beforeWithListArg(List<HttpServerInteraction> list) { calledWithArgs.add("beforeWithListArgCalled"); }
+    @BeforeDynamicTest void beforeWithListArg(List<HttpInteraction> list) { calledWithArgs.add("beforeWithListArgCalled"); }
 
 
     @BeforeInteraction void beforeInteractionWithoutArg() { calledWithoutArgs.add("beforeInteractionWithoutArgCalled"); }
 
-    @BeforeInteraction void beforeInteractionWithArg(HttpServerInteraction interaction) { calledWithArgs.add("beforeInteractionWithArgCalled"); }
+    @BeforeInteraction void beforeInteractionWithArg(HttpInteraction interaction) { calledWithArgs.add("beforeInteractionWithArgCalled"); }
 
 
     @AfterInteraction void afterInteractionWithoutArg() { calledWithoutArgs.add("afterInteractionWithoutArgCalled"); }
 
-    @AfterInteraction void afterInteractionWithArg(HttpServerInteraction interaction) { calledWithArgs.add("afterInteractionWithArgCalled"); }
+    @AfterInteraction void afterInteractionWithArg(HttpInteraction interaction) { calledWithArgs.add("afterInteractionWithArgCalled"); }
 
 
     @AfterDynamicTest void afterWithoutArgs() { calledWithoutArgs.add("afterWithoutArgsCalled"); }
 
-    @AfterDynamicTest void afterWithListArg(List<HttpServerInteraction> list) { calledWithArgs.add("afterWithListArgCalled"); }
+    @AfterDynamicTest void afterWithListArg(List<HttpInteraction> list) { calledWithArgs.add("afterWithListArgCalled"); }
 
 
     @TestFactory DynamicNode consumerTests() {

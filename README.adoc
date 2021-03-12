@@ -62,7 +62,7 @@ class ConsumerDrivenAT {
 }
 ----
 
-You'll need to set up and clean up the data in your service to match the requirements, maybe by storing and deleting them directly in a database, or by using some backdoor API in your service. You can do so in methods annotated as `@BeforeInteraction` / `@AfterInteraction`; they have the scope of a single interaction within a test and can take a single interaction as a parameter. A `@BeforeInteraction` method can also return an `HttpServerInteraction`, a `HttpServerRequest`, or a `HttpServerResponse` to modify the interaction, e.g. to replace the dummy credentials (xref:credentials[see below]) with real credentials that your service will accept.
+You'll need to set up and clean up the data in your service to match the requirements, maybe by storing and deleting them directly in a database, or by using some backdoor API in your service. You can do so in methods annotated as `@BeforeInteraction` / `@AfterInteraction`; they have the scope of a single interaction within a test and can take a single interaction as a parameter. A `@BeforeInteraction` method can also return an `HttpInteraction`, a `HttpRequest`, or a `HttpResponse` to modify the interaction, e.g. to replace the dummy credentials (xref:credentials[see below]) with real credentials that your service will accept.
 
 Writing your acceptance tests in this way makes testing more robust, as you don't have to agree with the consumers of your APIs on any volatile and intransparent assumptions about the test data, e.g. what ids result in what behavior.
 
@@ -79,4 +79,4 @@ On the API Consumer side, the `bar` files never contain the value of a real `Aut
 
 For a GraphQL client, you can use the `@AuthorizationHeader` annotation to read the configuration from an MP Config property; but you don't have to actually provide those for an integration test, as they won't be written anyway; a dummy value will be configured on the fly. OTOH, a `@Header(name = "Authorization")` works normally (but won't be written either).
 
-On the API Provider side, the acceptance test has to replace this value with real credentials, e.g. by returning a modified `HttpServerRequest` in a `@BeforeInteraction` method.
+On the API Provider side, the acceptance test has to replace this value with real credentials, e.g. by returning a modified `HttpRequest` in a `@BeforeInteraction` method.

@@ -1,8 +1,8 @@
 package com.github.t1.wunderbar.junit.consumer;
 
 import com.github.t1.wunderbar.junit.http.Authorization;
-import com.github.t1.wunderbar.junit.http.HttpServerRequest;
-import com.github.t1.wunderbar.junit.http.HttpServerResponse;
+import com.github.t1.wunderbar.junit.http.HttpRequest;
+import com.github.t1.wunderbar.junit.http.HttpResponse;
 
 import java.io.Closeable;
 import java.nio.file.Path;
@@ -21,7 +21,7 @@ public abstract class BarWriter implements Closeable {
 
     public abstract String getDirectory();
 
-    public final void save(HttpServerRequest request, HttpServerResponse response) {
+    public final void save(HttpRequest request, HttpResponse response) {
         String id = getDirectory() + "/" + (count() + 1) + " ";
         if (request.getAuthorization() != null) request = request.withAuthorization(Authorization.Dummy.INSTANCE);
         write(id + "request-headers.properties", request.headerProperties());

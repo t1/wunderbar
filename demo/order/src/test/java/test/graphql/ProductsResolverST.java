@@ -8,9 +8,9 @@ import com.github.t1.wunderbar.junit.consumer.Service;
 import com.github.t1.wunderbar.junit.consumer.SystemUnderTest;
 import com.github.t1.wunderbar.junit.consumer.WunderBarApiConsumer;
 import com.github.t1.wunderbar.junit.http.Authorization;
+import com.github.t1.wunderbar.junit.http.HttpRequest;
+import com.github.t1.wunderbar.junit.http.HttpResponse;
 import com.github.t1.wunderbar.junit.http.HttpServer;
-import com.github.t1.wunderbar.junit.http.HttpServerRequest;
-import com.github.t1.wunderbar.junit.http.HttpServerResponse;
 import io.smallrye.graphql.client.typesafe.api.GraphQlClientException;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
@@ -37,7 +37,7 @@ class ProductsResolverST {
     @SuppressWarnings("unused")
     static URI endpoint() { return SERVER.baseUri().resolve("/graphql"); }
 
-    static HttpServerResponse handle(HttpServerRequest request) {
+    static HttpResponse handle(HttpRequest request) {
         assert request.getUri().toString().equals("/graphql") : "unexpected uri " + request.getUri();
         assert request.getBody().isPresent();
         var body = Json.createReader(new StringReader(request.getBody().get())).readObject();
@@ -48,7 +48,7 @@ class ProductsResolverST {
             assert SYSTEM_TEST_CREDENTIALS.equals(request.getAuthorization()) : "expected mutation to be authorized with the system test credentials";
         else assert request.getAuthorization() == null : "expected query not to be authorized";
 
-        var response = HttpServerResponse.builder();
+        var response = HttpResponse.builder();
         var id = body.getJsonObject("variables").getString("id");
         switch (id) {
             case "existing-product-id":

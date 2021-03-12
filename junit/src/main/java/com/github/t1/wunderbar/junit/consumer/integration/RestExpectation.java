@@ -1,8 +1,8 @@
 package com.github.t1.wunderbar.junit.consumer.integration;
 
 import com.github.t1.wunderbar.junit.consumer.BarWriter;
-import com.github.t1.wunderbar.junit.http.HttpServerRequest;
-import com.github.t1.wunderbar.junit.http.HttpServerResponse;
+import com.github.t1.wunderbar.junit.http.HttpRequest;
+import com.github.t1.wunderbar.junit.http.HttpResponse;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
@@ -26,8 +26,8 @@ class RestExpectation extends HttpServiceExpectation {
         return RestClientBuilder.newBuilder().baseUri(baseUri().resolve("/rest")).build(method.getDeclaringClass());
     }
 
-    @Override protected HttpServerResponse handleRequest(HttpServerRequest request) {
-        var out = HttpServerResponse.builder();
+    @Override protected HttpResponse handleRequest(HttpRequest request) {
+        var out = HttpResponse.builder();
         var exception = getException();
         if (exception == null) {
             Optional.ofNullable(getResponse()).ifPresent(out::body);

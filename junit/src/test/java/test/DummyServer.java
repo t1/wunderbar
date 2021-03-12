@@ -1,8 +1,8 @@
 package test;
 
+import com.github.t1.wunderbar.junit.http.HttpRequest;
+import com.github.t1.wunderbar.junit.http.HttpResponse;
 import com.github.t1.wunderbar.junit.http.HttpServer;
-import com.github.t1.wunderbar.junit.http.HttpServerRequest;
-import com.github.t1.wunderbar.junit.http.HttpServerResponse;
 import org.junit.jupiter.api.extension.AfterEachCallback;
 import org.junit.jupiter.api.extension.Extension;
 import org.junit.jupiter.api.extension.ExtensionContext;
@@ -23,12 +23,12 @@ public class DummyServer implements Extension, AfterEachCallback {
 
     public URI baseUri() { return server.baseUri(); }
 
-    private static HttpServerResponse handle(HttpServerRequest request) {
+    private static HttpResponse handle(HttpRequest request) {
         var isGraphQl = request.getUri().toString().equals("/graphql");
         return isGraphQl ? handleGraphQl(request) : handleRest(request);
     }
 
-    private static HttpServerResponse handleGraphQl(HttpServerRequest request) {
+    private static HttpResponse handleGraphQl(HttpRequest request) {
         if (request.getBody().isEmpty()) return error("validation-error", "no body in GraphQL request");
         var body = Json.createReader(new StringReader(request.getBody().get())).readObject();
         if (!body.getString("query").equals("query product($id: String!) { product(id: $id) {id name price} }"))
@@ -36,7 +36,7 @@ public class DummyServer implements Extension, AfterEachCallback {
         var id = body.getJsonObject("variables").getString("id");
         switch (id) {
             case "existing-product-id":
-                return HttpServerResponse.builder().body("{\"data\":{\"product\":{\"id\":\"" + id + "\", \"name\":\"some-product-name\", \"price\": 1599}}}").build();
+                return HttpResponse.builder().body("{\"data\":{\"product\":{\"id\":\"" + id + "\", \"name\":\"some-product-name\", \"price\": 1599}}}").build();
             case "forbidden-product-id":
                 return error("product-forbidden", "product " + id + " is forbidden");
             case "unexpected-fail":
@@ -46,16 +46,16 @@ public class DummyServer implements Extension, AfterEachCallback {
         }
     }
 
-    private static HttpServerResponse error(String code, String message) {
-        return HttpServerResponse.builder()
+    private static HttpResponse error(String code, String message) {
+        return HttpResponse.builder()
             .body("{\"errors\": [\n" +
                 "{\"extensions\": {\"code\": \"" + code + "\"},\"message\": \"" + message + "\"}" +
                 "]}\n")
             .build();
     }
 
-    private static HttpServerResponse handleRest(HttpServerRequest request) {
-        var response = HttpServerResponse.builder();
+    private static HttpResponse handleRest(HttpRequest request) {
+        var response = HttpResponse.builder();
         switch (request.getUri().toString()) {
             case "/q/health/ready":
                 response.body("{\"status\": \"UP\"}");

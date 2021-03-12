@@ -21,7 +21,7 @@ import static javax.ws.rs.core.MediaType.APPLICATION_JSON_TYPE;
 import static javax.ws.rs.core.MediaType.CHARSET_PARAMETER;
 
 @UtilityClass
-public class HttpUtils {
+class HttpUtils {
     public static final MediaType APPLICATION_JSON_UTF8 = APPLICATION_JSON_TYPE.withCharset("utf-8");
     public static final Jsonb JSONB = JsonbBuilder.create(new JsonbConfig().withFormatting(true));
 
@@ -38,8 +38,6 @@ public class HttpUtils {
         var code = Integer.parseInt(string.split(" ", 2)[0]);
         return Status.fromStatusCode(code);
     }
-
-    public static String toString(StatusType status) { return status.getStatusCode() + " " + status.getReasonPhrase(); }
 
     public static Optional<String> optional(Properties properties, String method) {
         return Optional.ofNullable(properties.getProperty(method, null));
