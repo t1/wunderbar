@@ -1,9 +1,6 @@
 name: Java CI
 
-#on: [push]
-on:
-  milestone:
-    types: [ deleted ]
+on: [push]
 
 jobs:
   build:

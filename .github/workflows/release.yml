@@ -23,11 +23,16 @@ jobs:
         gpg-private-key: ${{ secrets.MAVEN_GPG_PRIVATE_KEY }}
         gpg-passphrase: MAVEN_GPG_PASSPHRASE
 
+    - uses: actions/cache@v1
+      with:
+        path: ~/.m2/repository
+        key: maven-${{ hashFiles('**/pom.xml') }}
+
     - name: Prepare release to Maven Central
-      run: mvn --batch-mode release:prepare
+      run: mvn --batch-mode --no-transfer-progress release:prepare
 
     - name: Perform release to Maven Central
-      run: mvn --batch-mode release:perform
+      run: mvn --batch-mode --no-transfer-progress release:perform
       env:
         MAVEN_USERNAME: ${{ secrets.OSS_SONATYPE_USERNAME }}
         MAVEN_PASSWORD: ${{ secrets.OSS_SONATYPE_PASSWORD }}
