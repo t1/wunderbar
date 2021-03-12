@@ -4,7 +4,7 @@
 
     <groupId>com.github.t1</groupId>
     <artifactId>wunderbar</artifactId>
-    <version>1.4-SNAPSHOT</version>
+    <version>1.3.1-SNAPSHOT</version>
     <name>Behavior Archives (Parent)</name>
     <description>The easy way to Consumer Driven Contracts (https://martinfowler.com/articles/consumerDrivenContracts.html)</description>
     <packaging>pom</packaging>
@@ -156,7 +156,7 @@
             <build>
                 <plugins>
                     <!-- always run source+javadoc => see problems early & source available in local repo -->
-                    <!-- don't run gpg everywhere, esp. not in the github action -->
+                    <!-- don't run gpg everywhere, esp. not in a GitHub Action -->
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-gpg-plugin</artifactId>
@@ -170,6 +170,13 @@
                                 </goals>
                             </execution>
                         </executions>
+                        <configuration>
+                            <!-- This is necessary for gpg to not try to use the pinentry programs in a GitHub Action -->
+                            <gpgArguments>
+                                <arg>--pinentry-mode</arg>
+                                <arg>loopback</arg>
+                            </gpgArguments>
+                        </configuration>
                     </plugin>
                 </plugins>
             </build>

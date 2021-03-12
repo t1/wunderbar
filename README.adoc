@@ -83,8 +83,6 @@ On the API Provider side, the acceptance test has to replace this value with rea
 
 == Releasing
 
-Releases are triggered by closing a milestone.
+Releases are triggered by closing a milestone. They are pushed to Maven Central and added as a release in GitHub.
 
-They are pushed to Maven Central and added as a release in GitHub.
-
-Careful: The name of the milestone must match exactly the version in the pom (except for the `-SNAPSHOT`)!
+To limit confusion, the name of the milestone should normally match the version in the `pom.xml` (except for the `-SNAPSHOT` suffix).
