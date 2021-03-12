@@ -9,4 +9,4 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - run: |
-        echo "Release version ${github.event}"
+        echo "Release version ${github.event.milestone.title}"
