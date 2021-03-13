@@ -81,7 +81,11 @@ jobs:
           }
           const result = await github.graphql(query, variables)
           console.log(result)
-          return result.data.repository.refs.edges
+          console.log(result.repository)
+          console.log(result.repository.refs)
+          console.log(result.repository.refs.edges)
+          console.log(result.repository.refs.edges[0])
+          return result.repository.refs.edges[0]
     - name: Print result
       run: |
         echo "-----"
