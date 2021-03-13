@@ -94,7 +94,7 @@ jobs:
         tag_name: ${{ steps.get-tag.outputs.result }}
         release_name: ${{ steps.get-tag.outputs.result }}
         body: |
-          Grab the new version from Maven Central at https://repo1.maven.org/maven2/com/github/t1/wunderbar.junit/${{ steps.get-tag.outputs.result }}/
+          Grab the new version from [https://repo1.maven.org/maven2/com/github/t1/wunderbar.junit/${{ steps.get-tag.outputs.result }}/](Maven Central)
           or by adding a dependency to your `pom.xml`:
 
           ```xml
@@ -105,6 +105,6 @@ jobs:
           </dependency>
           ```
 
-          ${{ github.event.milestone.html_url }}?closed=1[*Release Notes*]
+          [${{ github.event.milestone.html_url }}?closed=1](*Release Notes*)
         draft: false
         prerelease: false
