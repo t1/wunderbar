@@ -65,7 +65,6 @@ jobs:
     - uses: actions/github-script@v3
       with:
         github-token: ${{secrets.GITHUB_TOKEN}}
-        debug: true
         script: |
           const query = `{
             repository(name: "wunderbar", owner: "t1") {
@@ -87,7 +86,7 @@ jobs:
              }
             }
           }`;
-          const result = await github.graphql(query)
+          return await github.graphql(query)
         result-encoding: string
     - name: Print result
       run: echo "${{steps.set-result.outputs.result}}"
