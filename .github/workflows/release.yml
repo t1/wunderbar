@@ -13,7 +13,7 @@ on:
 
 jobs:
   maven-release:
-    if: github.event.inputs.skip-maven-release
+    if: github.event.inputs.skip-maven-release != 'true'
     runs-on: ubuntu-latest
     steps:
     - run: echo "Will start a Maven Central upload for milestone ${{ github.event.milestone.title }}"
