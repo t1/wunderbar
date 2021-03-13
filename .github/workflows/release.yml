@@ -77,15 +77,15 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
         tag_name: ${{ steps.get-latest-tag.outputs.result }}
-        release_name: ${{ steps.get-tag.outputs.result }}
+        release_name: ${{ steps.get-latest-tag.outputs.result }}
         body: |
-          Grab the new version from [Maven Central](https://repo1.maven.org/maven2/com/github/t1/wunderbar.junit/${{ steps.get-tag.outputs.result }}/) or add a dependency to your `pom.xml`:
+          Grab the new version from [Maven Central](https://repo1.maven.org/maven2/com/github/t1/wunderbar.junit/${{ steps.get-latest-tag.outputs.result }}/) or add a dependency to your `pom.xml`:
 
           ```xml
           <dependency>
               <groupId>com.github.t1</groupId>
               <artifactId>wunderbar</artifactId>
-              <version>${{ steps.get-tag.outputs.result }}</version>
+              <version>${{ steps.get-latest-tag.outputs.result }}</version>
           </dependency>
           ```
 
