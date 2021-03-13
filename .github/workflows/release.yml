@@ -65,7 +65,7 @@ jobs:
     - uses: actions/github-script@v3
       with:
         github-token: ${{secrets.GITHUB_TOKEN}}
-        # result-encoding: string
+        result-encoding: string
         script: |
           const query = `query ($owner: String!, $name: String!) {
             repository(owner: $owner, name: $name) {
@@ -78,13 +78,12 @@ jobs:
             owner: context.repo.owner,
             name: context.repo.repo
           }
-          return await github.graphql(query, variables)
+          const result = await github.graphql(query, variables)
+          return result.data.repository.refs.edges
     - name: Print result
       run: |
         echo "-----"
         echo "${{steps.set-result.outputs.result}}"
-        echo "-----"
-        echo "${{steps.set-result.outputs.result.data.repository.refs.edges}}"
         echo "-----"
 
 #    - name: Create GitHub Release
