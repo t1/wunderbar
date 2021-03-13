@@ -89,7 +89,12 @@ jobs:
           }`;
           return await github.graphql(query)
     - name: Print result
-      run: echo "${{steps.set-result.outputs.result}}"
+      run: |
+        echo "-----"
+        echo "${{steps.set-result.outputs.result}}"
+        echo "-----"
+        echo "${{steps.set-result.outputs.result.data.repository.refs.edges}}"
+        echo "-----"
 
 #    - name: Create GitHub Release
 #      id: create_release
