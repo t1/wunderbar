@@ -33,7 +33,7 @@ jobs:
         git config user.email "snackbox@sintr.eu"
         git config user.name "GitHub-Release-Action"
         mvn --batch-mode -Darguments="--no-transfer-progress" release:prepare
-        VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)
+        export VERSION $(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)
 
     - name: Perform release to Maven Central
       run: mvn --batch-mode -Darguments="--no-transfer-progress" release:perform
