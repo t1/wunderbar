@@ -82,9 +82,7 @@ jobs:
           const result = await github.graphql(query, variables)
           const tag = result.repository.refs.edges[0].node.name
           console.log(tag)
-          const x = { tag: tag, version: tag.substr(1) }
-          console.log(x)
-          return x
+          return { tag: tag, version: tag.substr(1) }
 
     - name: Create GitHub Release
       id: create_release
@@ -92,16 +90,16 @@ jobs:
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
-        tag_name: ${{ steps.get-latest-tag.outputs.result.tag }}
-        release_name: ${{ steps.get-latest-tag.outputs.result.tag }}
+        tag_name: ${{ steps.get-latest-tag.outputs.tag }}
+        release_name: ${{ steps.get-latest-tag.outputs.tag }}
         body: |
-          Download it from [Maven Central](https://repo1.maven.org/maven2/com/github/t1/wunderbar.junit/${{ steps.get-latest-tag.outputs.result.version }}/wunderbar.junit-${{ steps.get-latest-tag.outputs.result.version }}.jar) or add a dependency to your `pom.xml`:
+          Download it from [Maven Central](https://repo1.maven.org/maven2/com/github/t1/wunderbar.junit/${{ steps.get-latest-tag.outputs.version }}/wunderbar.junit-${{ steps.get-latest-tag.outputs.version }}.jar) or add a dependency to your `pom.xml`:
 
           ```xml
           <dependency>
               <groupId>com.github.t1</groupId>
               <artifactId>wunderbar</artifactId>
-              <version>${{ steps.get-latest-tag.outputs.result.version }}</version>
+              <version>${{ steps.get-latest-tag.outputs.version }}</version>
           </dependency>
           ```
 
