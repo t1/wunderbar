@@ -75,10 +75,10 @@ jobs:
             }
           }`;
           const variables = {
-            owner: 't1',
-            name: 'wunderbar'
+            owner: context.repo.owner.login,
+            name: context.repo.repo
           }
-          return await github.graphql(query)
+          return await github.graphql(query, variables)
     - name: Print result
       run: |
         echo "-----"
