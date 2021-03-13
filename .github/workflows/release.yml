@@ -53,17 +53,17 @@ jobs:
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
-        tag_name: ${{ VERSION }}
-        release_name: ${{ VERSION }}
+        tag_name: ${{ env.VERSION }}
+        release_name: ${{ env.VERSION }}
         body: |
-          Grab the new version from Maven Central at https://repo1.maven.org/maven2/com/github/t1/wunderbar.junit/${{ VERSION }}/
+          Grab the new version from Maven Central at https://repo1.maven.org/maven2/com/github/t1/wunderbar.junit/${{ env.VERSION }}/
           or by adding a dependency to your `pom.xml`:
 
           ```xml
           <dependency>
               <groupId>com.github.t1</groupId>
               <artifactId>wunderbar</artifactId>
-              <version>${{ VERSION }}</version>
+              <version>${{ env.VERSION }}</version>
           </dependency>
           ```
 
