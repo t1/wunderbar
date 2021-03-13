@@ -87,7 +87,9 @@ jobs:
             }
           }`;
           const result = await github.graphql(query)
-          console.log(result)
+        result-encoding: string
+    - name: Print result
+      run: echo "${{steps.set-result.outputs.result}}"
 
 #    - name: Create GitHub Release
 #      id: create_release
