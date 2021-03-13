@@ -6,7 +6,7 @@ on:
     types: [ closed ]
 
 jobs:
-  publish:
+  release:
     runs-on: ubuntu-latest
     steps:
     - run: echo "Will start a Maven Central upload for milestone ${{ github.event.milestone.title }}"
@@ -32,11 +32,11 @@ jobs:
       run: |
         git config user.email "snackbox@sintr.eu"
         git config user.name "GitHub-Release-Action"
-        mvn --batch-mode --no-transfer-progress release:prepare
+        mvn --batch-mode -Darguments="--no-transfer-progress" release:prepare
         VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)
 
     - name: Perform release to Maven Central
-      run: mvn --batch-mode --no-transfer-progress release:perform
+      run: mvn --batch-mode -Darguments="--no-transfer-progress" release:perform
       env:
         MAVEN_USERNAME: ${{ secrets.OSS_SONATYPE_USERNAME }}
         MAVEN_PASSWORD: ${{ secrets.OSS_SONATYPE_PASSWORD }}
