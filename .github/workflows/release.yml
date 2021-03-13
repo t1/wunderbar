@@ -6,7 +6,7 @@ on:
     types: [ closed ]
 
 jobs:
-  release:
+  maven-release:
     runs-on: ubuntu-latest
     steps:
     - run: echo "Will start a Maven Central upload for milestone ${{ github.event.milestone.title }}"
@@ -33,7 +33,6 @@ jobs:
         git config user.email "snackbox@sintr.eu"
         git config user.name "GitHub-Release-Action"
         mvn --batch-mode --no-transfer-progress release:prepare
-        VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)
 
     - name: Perform release to Maven Central
       run: mvn --batch-mode --no-transfer-progress release:perform
@@ -47,26 +46,57 @@ jobs:
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-    - name: Create GitHub Release
-      id: create_release
-      uses: actions/create-release@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  github-release:
+    needs: [ maven-release ]
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/github-script@v3
       with:
-        tag_name: ${{ env.VERSION }}
-        release_name: ${{ env.VERSION }}
-        body: |
-          Grab the new version from Maven Central at https://repo1.maven.org/maven2/com/github/t1/wunderbar.junit/${{ env.VERSION }}/
-          or by adding a dependency to your `pom.xml`:
+        github-token: ${{secrets.GITHUB_TOKEN}}
+        script: |
+          const query = `{
+            repository(name: "wunderbar", owner: "t1") {
+             refs(refPrefix: "refs/tags/", first: 1, orderBy: {field: TAG_COMMIT_DATE, direction: DESC}) {
+               edges {
+                 node {
+                   name
+                   target {
+                     ... on Tag {
+                       message
+                       tagger {
+                         name
+                         date
+                       }
+                     }
+                   }
+                 }
+               }
+             }
+            }
+          }`;
+          const result = await github.graphql(query)
+          console.log(result)
 
-          ```xml
-          <dependency>
-              <groupId>com.github.t1</groupId>
-              <artifactId>wunderbar</artifactId>
-              <version>${{ env.VERSION }}</version>
-          </dependency>
-          ```
-
-          ${{ github.event.milestone.html_url }}?closed=1[*Release Notes*]
-        draft: false
-        prerelease: false
+#    - name: Create GitHub Release
+#      id: create_release
+#      uses: actions/create-release@v1
+#      env:
+#        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+#      with:
+#        tag_name: ${{ env.VERSION }}
+#        release_name: ${{ env.VERSION }}
+#        body: |
+#          Grab the new version from Maven Central at https://repo1.maven.org/maven2/com/github/t1/wunderbar.junit/${{ env.VERSION }}/
+#          or by adding a dependency to your `pom.xml`:
+#
+#          ```xml
+#          <dependency>
+#              <groupId>com.github.t1</groupId>
+#              <artifactId>wunderbar</artifactId>
+#              <version>${{ env.VERSION }}</version>
+#          </dependency>
+#          ```
+#
+#          ${{ github.event.milestone.html_url }}?closed=1[*Release Notes*]
+#        draft: false
+#        prerelease: false
