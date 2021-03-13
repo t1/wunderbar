@@ -75,7 +75,7 @@ jobs:
             }
           }`;
           const variables = {
-            owner: context.repo.owner,
+            owner: context.repo.owner.login,
             name: context.repo.repo
           }
           return await github.graphql(query)
