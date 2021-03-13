@@ -4,9 +4,16 @@ name: Release
 on:
   milestone:
     types: [ closed ]
+  workflow_dispatch:
+    inputs:
+      skip-maven-release:
+        description: Skip maven-release
+        default: 'true'
+        required: true
 
 jobs:
   maven-release:
+    if: github.event.inputs.skip-maven-release
     runs-on: ubuntu-latest
     steps:
     - run: echo "Will start a Maven Central upload for milestone ${{ github.event.milestone.title }}"
