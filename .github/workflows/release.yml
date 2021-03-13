@@ -79,13 +79,13 @@ jobs:
         tag_name: ${{ steps.get-latest-tag.outputs.result }}
         release_name: ${{ steps.get-latest-tag.outputs.result }}
         body: |
-          Grab the new version from [Maven Central](https://repo1.maven.org/maven2/com/github/t1/wunderbar.junit/${{ steps.get-latest-tag.outputs.result }}/) or add a dependency to your `pom.xml`:
+          Download it from [Maven Central](https://repo1.maven.org/maven2/com/github/t1/wunderbar.junit/${{ steps.get-latest-tag.outputs.result.substr(1) }}/wunderbar.junit-${{ steps.get-latest-tag.outputs.result.substr(1) }}.jar) or add a dependency to your `pom.xml`:
 
           ```xml
           <dependency>
               <groupId>com.github.t1</groupId>
               <artifactId>wunderbar</artifactId>
-              <version>${{ steps.get-latest-tag.outputs.result }}</version>
+              <version>${{ steps.get-latest-tag.outputs.result.substr(1) }}</version>
           </dependency>
           ```
 
