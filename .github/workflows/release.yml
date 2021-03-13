@@ -80,7 +80,10 @@ jobs:
             name: context.repo.repo
           }
           const result = await github.graphql(query, variables)
-          return result.repository.refs.edges[0].node.name
+          console.log(result.repository.refs.edges[0].node)
+          const tag = result.repository.refs.edges[0].node.name
+          console.log(tag)
+          return tag
     - name: Print result
       run: |
         echo "-----"
