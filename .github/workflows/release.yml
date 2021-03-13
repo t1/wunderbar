@@ -32,11 +32,11 @@ jobs:
       run: |
         git config user.email "snackbox@sintr.eu"
         git config user.name "GitHub-Release-Action"
-        mvn --batch-mode -Darguments="--no-transfer-progress" release:prepare
+        mvn --batch-mode release:prepare
         export VERSION $(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)
 
     - name: Perform release to Maven Central
-      run: mvn --batch-mode -Darguments="--no-transfer-progress" release:perform
+      run: mvn --batch-mode release:perform
       env:
         MAVEN_USERNAME: ${{ secrets.OSS_SONATYPE_USERNAME }}
         MAVEN_PASSWORD: ${{ secrets.OSS_SONATYPE_PASSWORD }}
