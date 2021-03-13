@@ -67,26 +67,17 @@ jobs:
         github-token: ${{secrets.GITHUB_TOKEN}}
         # result-encoding: string
         script: |
-          const query = `{
-            repository(name: "wunderbar", owner: "t1") {
+          const query = `query ($owner: String!, $name: String!) {
+            repository(owner: $owner, name: $name) {
              refs(refPrefix: "refs/tags/", first: 1, orderBy: {field: TAG_COMMIT_DATE, direction: DESC}) {
-               edges {
-                 node {
-                   name
-                   target {
-                     ... on Tag {
-                       message
-                       tagger {
-                         name
-                         date
-                       }
-                     }
-                   }
-                 }
-               }
+               edges { node { name } }
              }
             }
           }`;
+          const variables = {
+            owner: context.repo.owner,
+            name: context.repo.repo
+          }
           return await github.graphql(query)
     - name: Print result
       run: |
