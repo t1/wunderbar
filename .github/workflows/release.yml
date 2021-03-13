@@ -66,6 +66,7 @@ jobs:
       with:
         github-token: ${{secrets.GITHUB_TOKEN}}
         result-encoding: string
+        debug: true
         script: |
           const query = `query ($owner: String!, $name: String!) {
             repository(owner: $owner, name: $name) {
