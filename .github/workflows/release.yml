@@ -65,6 +65,7 @@ jobs:
     - uses: actions/github-script@v3
       with:
         github-token: ${{secrets.GITHUB_TOKEN}}
+        debug: true
         script: |
           const query = `{
             repository(name: "wunderbar", owner: "t1") {
