@@ -84,32 +84,27 @@ jobs:
           const tag = result.repository.refs.edges[0].node.name
           console.log(tag)
           return tag
-    - name: Print result
-      run: |
-        echo "-----"
-        echo "${{steps.get-tag.outputs.result}}"
-        echo "-----"
 
-#    - name: Create GitHub Release
-#      id: create_release
-#      uses: actions/create-release@v1
-#      env:
-#        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-#      with:
-#        tag_name: ${{ env.VERSION }}
-#        release_name: ${{ env.VERSION }}
-#        body: |
-#          Grab the new version from Maven Central at https://repo1.maven.org/maven2/com/github/t1/wunderbar.junit/${{ env.VERSION }}/
-#          or by adding a dependency to your `pom.xml`:
-#
-#          ```xml
-#          <dependency>
-#              <groupId>com.github.t1</groupId>
-#              <artifactId>wunderbar</artifactId>
-#              <version>${{ env.VERSION }}</version>
-#          </dependency>
-#          ```
-#
-#          ${{ github.event.milestone.html_url }}?closed=1[*Release Notes*]
-#        draft: false
-#        prerelease: false
+    - name: Create GitHub Release
+      id: create_release
+      uses: actions/create-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        tag_name: ${{ steps.get-tag.outputs.result }}
+        release_name: ${{ steps.get-tag.outputs.result }}
+        body: |
+          Grab the new version from Maven Central at https://repo1.maven.org/maven2/com/github/t1/wunderbar.junit/${{ steps.get-tag.outputs.result }}/
+          or by adding a dependency to your `pom.xml`:
+
+          ```xml
+          <dependency>
+              <groupId>com.github.t1</groupId>
+              <artifactId>wunderbar</artifactId>
+              <version>${{ steps.get-tag.outputs.result }}</version>
+          </dependency>
+          ```
+
+          ${{ github.event.milestone.html_url }}?closed=1[*Release Notes*]
+        draft: false
+        prerelease: false
