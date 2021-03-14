@@ -92,5 +92,6 @@ jobs:
           ```
 
           [*Release Notes for Milestone ${{ github.event.milestone.title }}*](${{ github.event.milestone.html_url }}?closed=1)
+          ${{ github.event.milestone.description }}
         draft: false
         prerelease: false
