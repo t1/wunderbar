@@ -8,10 +8,10 @@ import com.github.t1.wunderbar.junit.http.HttpResponse;
 import com.github.t1.wunderbar.junit.provider.AfterDynamicTest;
 import com.github.t1.wunderbar.junit.provider.BeforeInteraction;
 import com.github.t1.wunderbar.junit.provider.WunderBarApiProvider;
-import io.smallrye.graphql.client.typesafe.api.GraphQlClientApi;
-import io.smallrye.graphql.client.typesafe.api.GraphQlClientBuilder;
-import io.smallrye.graphql.client.typesafe.api.GraphQlClientException;
+import io.smallrye.graphql.client.typesafe.api.GraphQLClientApi;
+import io.smallrye.graphql.client.typesafe.api.GraphQLClientException;
 import io.smallrye.graphql.client.typesafe.api.Header;
+import io.smallrye.graphql.client.typesafe.api.TypesafeGraphQLClientBuilder;
 import lombok.Data;
 import org.eclipse.microprofile.graphql.Mutation;
 import org.eclipse.microprofile.graphql.NonNull;
@@ -59,11 +59,11 @@ class ConsumerDrivenAT {
         "ikqc7Tm_xldxlX_D5IHyuhNNe4sVppXDko7fQMw";
     private static final Authorization WRITER = Authorization.valueOf(JWT);
 
-    private final Backdoor backdoor = GraphQlClientBuilder.newBuilder().endpoint(GRAPHQL_ENDPOINT).build(Backdoor.class);
+    private final Backdoor backdoor = TypesafeGraphQLClientBuilder.newBuilder().endpoint(GRAPHQL_ENDPOINT).build(Backdoor.class);
     private final List<String> created = new ArrayList<>();
 
     /** We use this backdoor to setup and tear down the test data */
-    @GraphQlClientApi
+    @GraphQLClientApi
     @SuppressWarnings("UnusedReturnValue")
     @Header(name = "Authorization", constant = JWT)
     private interface Backdoor {
@@ -75,7 +75,7 @@ class ConsumerDrivenAT {
     }
 
 
-    @GraphQlClientApi
+    @GraphQLClientApi
     @SuppressWarnings("UnusedReturnValue")
     interface UnauthorizedClientApi {
         @Mutation @NonNull Product store(@NonNull Product product);
@@ -83,12 +83,12 @@ class ConsumerDrivenAT {
 
     /** It's not the job of the client to check for auth, so we do it ourselves */
     @Test void shouldFailToStoreWhenUnauthorized() {
-        var api = GraphQlClientBuilder.newBuilder()
+        var api = TypesafeGraphQLClientBuilder.newBuilder()
             .endpoint(GRAPHQL_ENDPOINT)
             .build(UnauthorizedClientApi.class);
         var product = Product.builder().id("unauthorized-product-id").build();
 
-        var throwable = catchThrowableOfType(() -> api.store(product), GraphQlClientException.class);
+        var throwable = catchThrowableOfType(() -> api.store(product), GraphQLClientException.class);
 
         then(throwable.getErrors().get(0).getErrorCode()).isEqualTo("unauthorized");
     }

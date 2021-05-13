@@ -4,15 +4,14 @@ import com.github.t1.wunderbar.junit.Utils;
 import com.github.t1.wunderbar.junit.WunderBarException;
 import com.github.t1.wunderbar.junit.consumer.BarWriter;
 import com.github.t1.wunderbar.junit.consumer.WunderBarExpectations;
-import io.smallrye.graphql.client.typesafe.api.GraphQlClientApi;
-import io.smallrye.graphql.client.typesafe.api.GraphQlClientBuilder;
-import io.smallrye.graphql.client.typesafe.impl.GraphQlClientBuilderImpl;
+import io.smallrye.graphql.client.typesafe.api.GraphQLClientApi;
+import io.smallrye.graphql.client.typesafe.api.TypesafeGraphQLClientBuilder;
+import io.smallrye.graphql.client.typesafe.jaxrs.JaxRsTypesafeGraphQLClientBuilder;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.eclipse.microprofile.rest.client.RestClientBuilder;
 import org.eclipse.microprofile.rest.client.inject.RegisterRestClient;
 
-import javax.ws.rs.client.ClientBuilder;
 import java.io.Closeable;
 import java.io.IOException;
 import java.lang.reflect.Method;
@@ -29,11 +28,10 @@ public class SystemTestExpectations implements WunderBarExpectations {
     }
 
     private Object buildApi(Class<?> type, String endpointTemplate) {
-        if (type.isAnnotationPresent(GraphQlClientApi.class))
-            return ((GraphQlClientBuilderImpl) GraphQlClientBuilder.newBuilder())
-                .client(ClientBuilder.newClient()) // TODO remove after https://github.com/smallrye/smallrye-graphql/issues/634
-                .endpoint(resolve(endpointTemplate, "graphql"))
+        if (type.isAnnotationPresent(GraphQLClientApi.class))
+            return ((JaxRsTypesafeGraphQLClientBuilder) TypesafeGraphQLClientBuilder.newBuilder())
                 .register(filter)
+                .endpoint(resolve(endpointTemplate, "graphql"))
                 .build(type);
         if (type.isAnnotationPresent(RegisterRestClient.class))
             return RestClientBuilder.newBuilder()

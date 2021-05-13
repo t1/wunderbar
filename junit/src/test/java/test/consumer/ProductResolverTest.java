@@ -3,8 +3,8 @@ package test.consumer;
 import com.github.t1.wunderbar.junit.consumer.Service;
 import com.github.t1.wunderbar.junit.consumer.SystemUnderTest;
 import com.github.t1.wunderbar.junit.consumer.WunderBarApiConsumer;
-import io.smallrye.graphql.client.typesafe.api.GraphQlClientApi;
-import io.smallrye.graphql.client.typesafe.api.GraphQlClientException;
+import io.smallrye.graphql.client.typesafe.api.GraphQLClientApi;
+import io.smallrye.graphql.client.typesafe.api.GraphQLClientException;
 import org.eclipse.microprofile.graphql.Name;
 import org.eclipse.microprofile.rest.client.inject.RegisterRestClient;
 import org.junit.jupiter.api.DisplayName;
@@ -39,13 +39,13 @@ abstract class ProductResolverTest {
     @Service ProductsGetter productsGetter;
     @SystemUnderTest ProductResolver resolver;
 
-    @GraphQlClientApi
+    @GraphQLClientApi
     interface NamedProducts {
         @Name("p")
         Product productById(String id);
     }
 
-    @GraphQlClientApi
+    @GraphQLClientApi
     interface ProductsGetter {
         Product getProduct(String id);
     }
@@ -103,8 +103,8 @@ abstract class ProductResolverTest {
 
     void failsWith(Throwable throwable, String code, String message, Status status) {
         then(throwable).isNotNull();
-        if (throwable instanceof GraphQlClientException) {
-            GraphQlClientException e = (GraphQlClientException) throwable;
+        if (throwable instanceof GraphQLClientException) {
+            GraphQLClientException e = (GraphQLClientException) throwable;
             then(e.getErrors()).hasSize(1);
             var error = e.getErrors().get(0);
             then(error.getMessage()).isEqualTo(message);
@@ -288,7 +288,7 @@ abstract class ProductResolverTest {
         }
     }
 
-    @GraphQlClientApi
+    @GraphQLClientApi
     interface ReturnTypesService {
         boolean getBoolean();
 

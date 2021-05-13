@@ -11,7 +11,7 @@ import com.github.t1.wunderbar.junit.http.Authorization;
 import com.github.t1.wunderbar.junit.http.HttpRequest;
 import com.github.t1.wunderbar.junit.http.HttpResponse;
 import com.github.t1.wunderbar.junit.http.HttpServer;
-import io.smallrye.graphql.client.typesafe.api.GraphQlClientException;
+import io.smallrye.graphql.client.typesafe.api.GraphQLClientException;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -97,7 +97,7 @@ class ProductsResolverST {
     }
 
     @Test void shouldFailToResolveUnknownProduct() {
-        var throwable = catchThrowableOfType(() -> resolver.product(item("unknown-product-id")), GraphQlClientException.class);
+        var throwable = catchThrowableOfType(() -> resolver.product(item("unknown-product-id")), GraphQLClientException.class);
 
         then(throwable.getErrors()).hasSize(1);
         var error = throwable.getErrors().get(0);
@@ -106,7 +106,7 @@ class ProductsResolverST {
     }
 
     @Test void shouldFailToResolveForbiddenProduct() {
-        var throwable = catchThrowableOfType(() -> resolver.product(item("forbidden-product-id")), GraphQlClientException.class);
+        var throwable = catchThrowableOfType(() -> resolver.product(item("forbidden-product-id")), GraphQLClientException.class);
 
         then(throwable.getErrors()).hasSize(1);
         var error = throwable.getErrors().get(0);

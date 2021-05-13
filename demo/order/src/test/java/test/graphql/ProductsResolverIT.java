@@ -7,7 +7,7 @@ import com.github.t1.wunderbar.demo.order.ProductsResolver.Products;
 import com.github.t1.wunderbar.junit.consumer.Service;
 import com.github.t1.wunderbar.junit.consumer.SystemUnderTest;
 import com.github.t1.wunderbar.junit.consumer.WunderBarApiConsumer;
-import io.smallrye.graphql.client.typesafe.api.GraphQlClientException;
+import io.smallrye.graphql.client.typesafe.api.GraphQLClientException;
 import org.junit.jupiter.api.Test;
 
 import static com.github.t1.wunderbar.junit.consumer.WunderbarExpectationBuilder.given;
@@ -58,7 +58,7 @@ class ProductsResolverIT {
     @Test void shouldFailToResolveUnknownProduct() {
         given(products.product("x")).willThrow(new ProductNotFoundException("x"));
 
-        var throwable = catchThrowableOfType(() -> resolver.product(item("x")), GraphQlClientException.class);
+        var throwable = catchThrowableOfType(() -> resolver.product(item("x")), GraphQLClientException.class);
 
         then(throwable.getErrors()).hasSize(1);
         var error = throwable.getErrors().get(0);
@@ -69,7 +69,7 @@ class ProductsResolverIT {
     @Test void shouldFailToResolveForbiddenProduct() {
         given(products.product("x")).willThrow(new ProductForbiddenException("x"));
 
-        var throwable = catchThrowableOfType(() -> resolver.product(item("x")), GraphQlClientException.class);
+        var throwable = catchThrowableOfType(() -> resolver.product(item("x")), GraphQLClientException.class);
 
         then(throwable.getErrors()).hasSize(1);
         var error = throwable.getErrors().get(0);

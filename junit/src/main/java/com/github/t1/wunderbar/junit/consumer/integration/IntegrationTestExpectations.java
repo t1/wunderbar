@@ -5,7 +5,7 @@ import com.github.t1.wunderbar.junit.consumer.BarWriter;
 import com.github.t1.wunderbar.junit.consumer.WunderBarExpectation;
 import com.github.t1.wunderbar.junit.consumer.WunderBarExpectations;
 import com.github.t1.wunderbar.junit.consumer.WunderbarExpectationBuilder;
-import io.smallrye.graphql.client.typesafe.api.GraphQlClientApi;
+import io.smallrye.graphql.client.typesafe.api.GraphQLClientApi;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.eclipse.microprofile.rest.client.inject.RegisterRestClient;
@@ -33,7 +33,7 @@ public class IntegrationTestExpectations implements WunderBarExpectations {
 
     private HttpServiceExpectation createFor(Method method, Object... args) {
         var declaringClass = method.getDeclaringClass();
-        if (declaringClass.isAnnotationPresent(GraphQlClientApi.class))
+        if (declaringClass.isAnnotationPresent(GraphQLClientApi.class))
             return new GraphQlExpectation(bar, method, args);
         if (declaringClass.isAnnotationPresent(RegisterRestClient.class))
             return new RestExpectation(bar, method, args);

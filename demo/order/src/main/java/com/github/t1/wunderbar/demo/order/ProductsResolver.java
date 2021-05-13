@@ -1,7 +1,7 @@
 package com.github.t1.wunderbar.demo.order;
 
 import io.smallrye.graphql.client.typesafe.api.AuthorizationHeader;
-import io.smallrye.graphql.client.typesafe.api.GraphQlClientApi;
+import io.smallrye.graphql.client.typesafe.api.GraphQLClientApi;
 import org.eclipse.microprofile.graphql.GraphQLApi;
 import org.eclipse.microprofile.graphql.Mutation;
 import org.eclipse.microprofile.graphql.NonNull;
@@ -20,7 +20,7 @@ public class ProductsResolver {
         return products.update(patch);
     }
 
-    @GraphQlClientApi
+    @GraphQLClientApi
     public interface Products {
         Product product(@NonNull String id);
         @AuthorizationHeader

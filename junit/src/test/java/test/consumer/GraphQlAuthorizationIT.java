@@ -4,7 +4,7 @@ import com.github.t1.wunderbar.junit.consumer.Service;
 import com.github.t1.wunderbar.junit.consumer.TestBackdoor;
 import com.github.t1.wunderbar.junit.consumer.WunderBarApiConsumer;
 import io.smallrye.graphql.client.typesafe.api.AuthorizationHeader;
-import io.smallrye.graphql.client.typesafe.api.GraphQlClientApi;
+import io.smallrye.graphql.client.typesafe.api.GraphQLClientApi;
 import io.smallrye.graphql.client.typesafe.api.Header;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Nested;
@@ -36,7 +36,7 @@ public class GraphQlAuthorizationIT {
     private static final String DUMMY_TOKEN = "Bearer dummy-token";
 
 
-    @GraphQlClientApi
+    @GraphQLClientApi
     interface NonAuthorizedMethodProducts {
         Product product(String id);
     }
@@ -64,13 +64,13 @@ public class GraphQlAuthorizationIT {
         }
     }
 
-    @GraphQlClientApi
+    @GraphQLClientApi
     interface AuthorizedMethodProducts {
         @AuthorizationHeader
         Product product(String id);
     }
 
-    @GraphQlClientApi
+    @GraphQLClientApi
     interface AuthorizedMethodProducts2 {
         @AuthorizationHeader
         Product product(String id);
@@ -123,7 +123,7 @@ public class GraphQlAuthorizationIT {
         }
     }
 
-    @GraphQlClientApi
+    @GraphQLClientApi
     @AuthorizationHeader
     interface AuthorizedInterfaceProducts {
         Product product(String id);
@@ -158,7 +158,7 @@ public class GraphQlAuthorizationIT {
     }
 
 
-    @GraphQlClientApi
+    @GraphQLClientApi
     @Header(name = "Authorization", constant = DUMMY_CREDENTIALS)
     interface AuthorizedInterfaceHeaderProducts {
         Product product(String id);
@@ -182,7 +182,7 @@ public class GraphQlAuthorizationIT {
     }
 
 
-    @GraphQlClientApi
+    @GraphQLClientApi
     interface AuthorizedParameterHeaderProducts {
         Product product(@Header(name = "Authorization") String auth, String id);
     }
@@ -205,7 +205,7 @@ public class GraphQlAuthorizationIT {
     }
 
 
-    @GraphQlClientApi
+    @GraphQLClientApi
     @Header(name = "Authorization", constant = DUMMY_TOKEN)
     interface AuthorizedInterfaceTokenHeaderProducts {
         Product product(String id);

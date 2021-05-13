@@ -1,6 +1,6 @@
 package test.consumer;
 
-import io.smallrye.graphql.client.typesafe.api.GraphQlClientApi;
+import io.smallrye.graphql.client.typesafe.api.GraphQLClientApi;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -28,7 +28,7 @@ class ProductResolver {
         return products.patch(new Product().withId(item.getProductId()).withPrice(newPrice));
     }
 
-    @GraphQlClientApi(endpoint = "dummy")
+    @GraphQLClientApi(endpoint = "dummy")
     interface Products {
         Product product(@NonNull String id);
         Product patch(@NonNull Product patch);

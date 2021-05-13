@@ -5,7 +5,7 @@ import com.github.t1.wunderbar.junit.http.Authorization;
 import com.github.t1.wunderbar.junit.http.HttpRequest;
 import com.github.t1.wunderbar.junit.http.HttpResponse;
 import io.smallrye.graphql.client.typesafe.api.AuthorizationHeader;
-import io.smallrye.graphql.client.typesafe.api.GraphQlClientBuilder;
+import io.smallrye.graphql.client.typesafe.api.TypesafeGraphQLClientBuilder;
 import org.eclipse.microprofile.graphql.Name;
 
 import java.lang.reflect.Method;
@@ -25,7 +25,7 @@ class GraphQlExpectation extends HttpServiceExpectation {
 
     @Override protected Object service() {
         if (needsAuthorizationConfig()) this.old = configureDummyAuthorization();
-        return GraphQlClientBuilder.newBuilder()
+        return TypesafeGraphQLClientBuilder.newBuilder()
             .endpoint(baseUri().resolve("/graphql"))
             .build(method.getDeclaringClass());
     }
