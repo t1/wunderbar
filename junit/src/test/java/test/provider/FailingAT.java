@@ -32,11 +32,11 @@ class FailingAT {
             softly.then(errors).hasSize(2);
             softly.then(errors.get(0).getMessage()).startsWith("[errors] \n" +
                 "expected: null\n" +
-                "but was : [{\"extensions\"={\"code\"=");
+                " but was: [{\"extensions\"={\"code\"=");
             // TODO should also match     : \"unexpected-fail\"}, \"message\"=\"product unexpected-fail fails unexpectedly\"}]");
             // but sometimes it's actually: \"validation-error\"}, \"message\"=\"no body in GraphQL request\"}]");
             softly.then(errors.get(1).getMessage()).startsWith("[json diff (ignoring `add` operations)] \n" +
-                "Expecting:\n" +
+                "Expecting actual:\n" +
                 "  [\"remove /data:\n" +
                 "  expected: {\"product\":{\"id\":\"unexpected-fail\",\"description\":\"this will not be reached\"}}\n" +
                 "    actual: null\"]\n" +
