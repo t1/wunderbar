@@ -1,6 +1,7 @@
 package com.github.t1.wunderbar.junit.provider;
 
 import lombok.RequiredArgsConstructor;
+import org.assertj.core.api.GenericComparableAssert;
 
 import javax.json.Json;
 import javax.json.JsonObject;
@@ -19,7 +20,8 @@ public class JsonValueAssert {
     private final JsonValue actual;
 
     public void isEqualToIgnoringNewFields(JsonValue expected) {
-        then(actual.getValueType())
+        // then(actual.getValueType()) throws NoSuchMethodError, and I don't understand why
+        new GenericComparableAssert<>(actual.getValueType())
             .describedAs("value type mismatch\n" +
                 "expected: " + expected + "\n" +
                 "actual  : " + actual)
