@@ -19,7 +19,7 @@
 
         <smallrye-graphql.version>1.2.5</smallrye-graphql.version>
         <quarkus.version>1.13.7.Final</quarkus.version>
-        <resteasy.version>4.5.9.Final<!-- the version used by quarkus --></resteasy.version>
+        <resteasy.version>4.6.1.Final</resteasy.version>
         <lombok.version>1.18.20</lombok.version>
 
         <junit.version>5.7.2</junit.version>
