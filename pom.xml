@@ -23,7 +23,7 @@
         <lombok.version>1.18.20</lombok.version>
 
         <junit.version>5.7.2</junit.version>
-        <assertj.version>3.20.1</assertj.version>
+        <assertj.version>3.20.2</assertj.version>
     </properties>
 
     <modules>
