@@ -2,7 +2,6 @@ package test.consumer;
 
 import com.github.t1.wunderbar.junit.consumer.Service;
 import com.github.t1.wunderbar.junit.consumer.WunderBarApiConsumer;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import test.consumer.ProductResolver.Item;
@@ -15,9 +14,6 @@ import static org.assertj.core.api.BDDAssertions.then;
 
 @WunderBarApiConsumer
 class ProductResolverIT extends ProductResolverTest {
-    @Disabled("https://github.com/smallrye/smallrye-graphql/issues/624")
-    @Override @Test void shouldResolveNamedProductMethod() {}
-
     /** Only the INTEGRATION level has to recognize the technology */
     @Nested class UnrecognizableTechnologies {
         @Service UnrecognizableTechnologyService unrecognizableTechnologyService;
