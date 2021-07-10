@@ -16,6 +16,7 @@ import lombok.Data;
 import org.eclipse.microprofile.graphql.Mutation;
 import org.eclipse.microprofile.graphql.NonNull;
 import org.eclipse.microprofile.graphql.Query;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DynamicNode;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestFactory;
@@ -82,6 +83,7 @@ class ConsumerDrivenAT {
     }
 
     /** It's not the job of the client to check for auth, so we do it ourselves */
+    @Disabled("waiting for Quarkus to contain a fix for https://github.com/smallrye/smallrye-graphql/issues/906")
     @Test void shouldFailToStoreWhenUnauthorized() {
         var api = TypesafeGraphQLClientBuilder.newBuilder()
             .endpoint(GRAPHQL_ENDPOINT)
