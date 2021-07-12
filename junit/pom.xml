@@ -37,7 +37,7 @@
             <!-- we need this at runtime, or it throws strange exceptions -->
             <groupId>jakarta.servlet</groupId>
             <artifactId>jakarta.servlet-api</artifactId>
-            <version>4.0.3</version>
+            <version>5.0.0</version>
             <scope>runtime</scope>
         </dependency>
         <dependency>
