@@ -7,6 +7,7 @@ import lombok.experimental.UtilityClass;
 import javax.json.Json;
 import javax.json.JsonValue;
 import javax.json.stream.JsonGenerator;
+import javax.ws.rs.core.MediaType;
 import java.io.IOException;
 import java.io.StringReader;
 import java.io.StringWriter;
@@ -96,5 +97,24 @@ public @Internal class Utils {
 
     public static String base64decode(String string) {
         return new String(Base64.getDecoder().decode(string.getBytes(UTF_8)), UTF_8);
+    }
+
+    /**
+     * Like {@link MediaType#isCompatible(MediaType)}, but taking suffixes like <b><code>+json</code></b> into account.
+     *
+     * @see <a href="https://datatracker.ietf.org/doc/html/rfc6838#section-4.2.8">rfc-6838</a>
+     */
+    public static boolean isCompatible(MediaType left, MediaType right) {
+        if (left == null) return right == null;
+        if (right == null) return false;
+        if (left.isWildcardType() || right.isWildcardType()) return true;
+        if (!left.getType().equalsIgnoreCase(right.getType())) return false;
+        if (left.isWildcardSubtype() || right.isWildcardSubtype()) return true;
+        return getSubtypeOrSuffix(left).equalsIgnoreCase(getSubtypeOrSuffix(right));
+    }
+
+    private static String getSubtypeOrSuffix(MediaType mediaType) {
+        var subtype = mediaType.getSubtype();
+        return subtype.contains("+") ? subtype.substring(subtype.indexOf('+') + 1) : subtype;
     }
 }

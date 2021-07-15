@@ -17,6 +17,7 @@ import javax.json.JsonStructure;
 import javax.json.JsonValue;
 import java.util.function.Function;
 
+import static com.github.t1.wunderbar.junit.Utils.isCompatible;
 import static com.github.t1.wunderbar.junit.provider.CustomBDDAssertions.then;
 
 @RequiredArgsConstructor
@@ -70,8 +71,8 @@ class HttpBarExecutable implements Executable {
         private BDDSoftAssertions checkResponse(HttpResponse actual, HttpResponse expected) {
             var softly = new BDDSoftAssertions();
             softly.then(actual.getStatusString()).describedAs("status").isEqualTo(expected.getStatusString());
-            softly.then(actual.getContentType().isCompatible(expected.getContentType()))
-                .describedAs("Content-Type: " + expected.getContentType() + " to be compatible to " + actual.getContentType())
+            softly.then(isCompatible(actual.getContentType(), expected.getContentType()))
+                .describedAs("Content-Type: " + actual.getContentType() + " to be compatible to " + expected.getContentType())
                 .isTrue();
             checkBody(softly, body(actual), body(expected));
             return softly;
