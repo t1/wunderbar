@@ -28,22 +28,24 @@ public @interface WunderBarApiConsumer {
 
     /**
      * The path to the <code>bar</code> file to save interactions to; or {@link #NONE}, if they should <em>not</em> be saved.
+     * Defaults to <code>target/wunder.bar</code>.
      * <p>
      * Note that you can also write to a <code>.jar</code> file, WunderBar accepts those, too, and your tooling may be better.
      * And if the file name ends with a slash (<code>/</code>), the test files will not be zipped but remain plain files;
      * this may also be more convenient for some use cases.
      * <p>
-     * Not applicable to {@link Level#UNIT UNIT} tests.
+     * Will be ignored for {@link Level#UNIT UNIT} level tests.
      */
     String fileName() default "target/wunder.bar";
 
     /**
-     * Base uri template where a service needed for a {@link Level#SYSTEM SYSTEM} level test runs.
-     * <ol>
+     * Base uri template where the service runs that is used by a {@link Level#SYSTEM SYSTEM} level test.
+     * Will be ignored for non-{@link Level#SYSTEM SYSTEM} level tests.
+     * <ul>
      * <li>A method template variable like <code>{foo()}</code> will be replaced by the result of a call to the (maybe static) method
      *     of that name in the test class.
      * <li>The template variable <code>technology</code> will be replaced by <code>graphql</code> or <code>rest</code> respectively.
-     * </ol>
+     * </ul>
      */
     String endpoint() default "http://localhost:8080/{technology}";
 

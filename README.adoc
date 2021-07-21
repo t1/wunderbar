@@ -72,7 +72,7 @@ Writing your acceptance tests in this way makes testing more robust, as you don'
 
 == Documentation
 
-The Documentation is in the JavaDoc, mainly of the annotations https://github.com/t1/wunderbar/blob/master/junit/src/main/java/com/github/t1/wunderbar/junit/consumer/WunderBarApiConsumer.java[`@WunderBarApiConsumer`] and the https://github.com/t1/wunderbar/blob/master/junit/src/main/java/com/github/t1/wunderbar/junit/consumer/Level.java[`Level`] annotation for the API consumer (client) side and https://github.com/t1/wunderbar/blob/master/junit/src/main/java/com/github/t1/wunderbar/junit/provider/WunderBarApiProvider.java[`@WunderBarApiProvider`] for the API provider (server) side.
+The Documentation is in the JavaDoc, mainly of the annotations https://github.com/t1/wunderbar/blob/master/junit/src/main/java/com/github/t1/wunderbar/junit/consumer/WunderBarApiConsumer.java[`@WunderBarApiConsumer`] annotation and the https://github.com/t1/wunderbar/blob/master/junit/src/main/java/com/github/t1/wunderbar/junit/consumer/Level.java[`Level`] enum and the https://github.com/t1/wunderbar/blob/main/junit/src/main/java/com/github/t1/wunderbar/junit/consumer/WunderbarExpectationBuilder.java[`WunderbarExpectationBuilder`] for the API consumer (client) side and https://github.com/t1/wunderbar/blob/master/junit/src/main/java/com/github/t1/wunderbar/junit/provider/WunderBarApiProvider.java[`@WunderBarApiProvider`] for the API provider (server) side.
 
 The `demo` module contains two example projects: `order` consumes an API that the `product` service provides. Both in REST and GraphQL and on all test levels.
 
@@ -85,8 +85,23 @@ For a GraphQL client, you can use the `@AuthorizationHeader` annotation to read 
 
 On the API Provider side, the acceptance test has to replace this value with real credentials, e.g. by returning a modified `HttpRequest` in a `@BeforeInteraction` method.
 
-== Releasing
+== Ports
 
-Releases are triggered by closing a milestone. They are pushed to Maven Central and added as a release in GitHub.
+WunderBar uses random ports to distinguish the different expectations. You can find the actually used port from the URI set in the `WunderbarExpectationBuilder#whileSettingBaseUri` method, i.e.
 
-To limit confusion, the name of the milestone should normally match the version in the `pom.xml` (except for the `-SNAPSHOT` suffix).
+[source,java]
+-----
+@WunderBarApiConsumer
+class ProductResolverIT {
+    // ...
+
+    @Test void shouldSetBaseUri() {
+        var baseUri = new AtomicReference<URI>();
+        given(products.product("1"))
+            .whileSettingBaseUri(baseUri::set)
+            .willReturn(givenProduct);
+
+        then(baseUri.get().toString()).startsWith("http://localhost:");
+    }
+}
+-----

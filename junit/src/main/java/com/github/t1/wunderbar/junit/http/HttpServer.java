@@ -21,13 +21,17 @@ public class HttpServer {
     private final Undertow server;
 
     public HttpServer(@NonNull Function<HttpRequest, HttpResponse> handler) {
-        this.handler = handler;
-        this.server = start();
+        this(0, handler);
     }
 
-    private Undertow start() {
+    public HttpServer(int port, @NonNull Function<HttpRequest, HttpResponse> handler) {
+        this.handler = handler;
+        this.server = start(port);
+    }
+
+    private Undertow start(int port) {
         Undertow server = Undertow.builder()
-            .addHttpListener(0, "localhost")
+            .addHttpListener(port, LOCALHOST)
             .setHandler(this::aroundInvoke)
             .build();
         server.start();
@@ -63,10 +67,12 @@ public class HttpServer {
     public URI baseUri() {
         var listener = server.getListenerInfo().get(0);
         var address = (InetSocketAddress) listener.getAddress();
-        return URI.create(listener.getProtcol() + "://" + address.getHostString() + ":" + address.getPort());
+        return URI.create(listener.getProtcol() + "://" + LOCALHOST + ":" + address.getPort());
     }
 
     public void stop() {
         server.stop();
     }
+
+    private static final String LOCALHOST = "localhost";
 }

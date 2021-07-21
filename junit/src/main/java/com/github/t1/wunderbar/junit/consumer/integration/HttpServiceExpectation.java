@@ -31,7 +31,7 @@ abstract class HttpServiceExpectation extends WunderBarExpectation {
         super(method, args);
         Function<HttpRequest, HttpResponse> handler = this::handleRequest;
         if (bar != null) handler = save(bar, handler);
-        handler = this.formatRequestBody(handler);
+        handler = formatRequestBody(handler);
         this.server = new HttpServer(handler);
     }
 
@@ -53,7 +53,7 @@ abstract class HttpServiceExpectation extends WunderBarExpectation {
         };
     }
 
-    URI baseUri() { return server.baseUri(); }
+    @Override public URI baseUri() { return server.baseUri(); }
 
     final Object invoke() {
         if (this.service == null) this.service = service();

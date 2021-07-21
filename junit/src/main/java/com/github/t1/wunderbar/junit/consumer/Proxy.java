@@ -12,15 +12,15 @@ class Proxy {
     private final BarWriter bar;
     private final Class<?> type;
     final Object instance;
-    private final String endpoint;
+    private final String endpointTemplate;
     private final WunderBarExpectations expectations;
 
-    public Proxy(Level level, BarWriter bar, Class<?> type, String endpoint) {
+    public Proxy(Level level, BarWriter bar, Class<?> type, String endpointTemplate) {
         this.level = level;
         this.bar = bar;
         this.type = type;
         this.instance = createProxy(type);
-        this.endpoint = endpoint;
+        this.endpointTemplate = endpointTemplate;
         this.expectations = createExpectations();
     }
 
@@ -47,7 +47,7 @@ class Proxy {
             case INTEGRATION:
                 return new IntegrationTestExpectations(bar);
             case SYSTEM:
-                return new SystemTestExpectations(type, endpoint, bar);
+                return new SystemTestExpectations(type, endpointTemplate, bar);
         }
         throw new UnsupportedOperationException("unreachable");
     }

@@ -2,7 +2,9 @@ package com.github.t1.wunderbar.junit.consumer;
 
 import com.github.t1.wunderbar.junit.WunderBarException;
 
+import java.net.URI;
 import java.util.Objects;
+import java.util.function.Consumer;
 
 /** @see #given */
 public class WunderbarExpectationBuilder<T> {
@@ -14,15 +16,22 @@ public class WunderbarExpectationBuilder<T> {
      */
     public static <T> WunderbarExpectationBuilder<T> given(T dummyValue) {
         if (buildingExpectation == null || !Objects.equals(dummyValue, buildingExpectation.nullValue()))
-            throw new WunderbarExpectationBuilderException();
+            throw new StubbingMismatchException();
         return new WunderbarExpectationBuilder<>();
     }
 
     public @Internal static WunderBarExpectation buildingExpectation;
 
+    /** Calls the provided setter with the actual base URI used for this expectation. */
+    public WunderbarExpectationBuilder<T> whileSettingBaseUri(Consumer<URI> setter) {
+        if (buildingExpectation == null) throw new StubbingMismatchException();
+        setter.accept(buildingExpectation.baseUri());
+        return this;
+    }
+
     /** Specifies that the API returns this object as a response. */
     public void willReturn(T response) {
-        if (buildingExpectation == null) throw new WunderbarExpectationBuilderException();
+        if (buildingExpectation == null) throw new StubbingMismatchException();
         try {
             if (response == null) throw new WunderBarException("can't return null from an expectation");
             buildingExpectation.willReturn(response);
@@ -57,7 +66,7 @@ public class WunderbarExpectationBuilder<T> {
      * These are also important requirements for the service to implement.
      */
     public void willThrow(Exception exception) {
-        if (buildingExpectation == null) throw new WunderbarExpectationBuilderException();
+        if (buildingExpectation == null) throw new StubbingMismatchException();
         try {
             if (exception == null) throw new WunderBarException("can't throw null from an expectation");
             buildingExpectation.willThrow(exception);
@@ -66,7 +75,7 @@ public class WunderbarExpectationBuilder<T> {
         }
     }
 
-    static class WunderbarExpectationBuilderException extends WunderBarException {
-        WunderbarExpectationBuilderException() { super("Stubbing mismatch: call `given` exactly once on the response object of a proxy call"); }
+    static class StubbingMismatchException extends WunderBarException {
+        StubbingMismatchException() { super("Stubbing mismatch: call `given` exactly once on the response object of a proxy call"); }
     }
 }

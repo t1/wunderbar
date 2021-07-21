@@ -22,9 +22,9 @@ public class SystemTestExpectations implements WunderBarExpectations {
     private final Object api;
     private final BarFilter filter;
 
-    public SystemTestExpectations(Class<?> type, String endpoint, BarWriter bar) {
+    public SystemTestExpectations(Class<?> type, String endpointTemplate, BarWriter bar) {
         this.filter = new BarFilter(bar);
-        this.api = buildApi(type, endpoint);
+        this.api = buildApi(type, endpointTemplate);
     }
 
     private Object buildApi(Class<?> type, String endpointTemplate) {

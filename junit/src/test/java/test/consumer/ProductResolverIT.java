@@ -7,6 +7,9 @@ import org.junit.jupiter.api.Test;
 import test.consumer.ProductResolver.Item;
 import test.consumer.ProductResolver.Product;
 
+import java.net.URI;
+import java.util.concurrent.atomic.AtomicReference;
+
 import static com.github.t1.wunderbar.junit.consumer.Level.INTEGRATION;
 import static com.github.t1.wunderbar.junit.consumer.WunderbarExpectationBuilder.given;
 import static org.assertj.core.api.Assertions.catchThrowable;
@@ -14,6 +17,20 @@ import static org.assertj.core.api.BDDAssertions.then;
 
 @WunderBarApiConsumer
 class ProductResolverIT extends ProductResolverTest {
+    @Test void shouldSetBaseUri() {
+        var givenProduct = Product.builder().id("x").name("some-product-name").build();
+        var baseUri = new AtomicReference<URI>();
+        given(products.product(givenProduct.getId()))
+            .whileSettingBaseUri(baseUri::set)
+            .willReturn(givenProduct);
+
+        var resolvedProduct = resolver.product(Item.builder().productId(givenProduct.getId()).build());
+
+        then(resolvedProduct).usingRecursiveComparison().isEqualTo(givenProduct);
+        System.out.println("actual service uri: " + baseUri);
+        then(baseUri.get().toString()).startsWith("http://localhost:");
+    }
+
     /** Only the INTEGRATION level has to recognize the technology */
     @Nested class UnrecognizableTechnologies {
         @Service UnrecognizableTechnologyService unrecognizableTechnologyService;

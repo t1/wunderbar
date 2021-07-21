@@ -53,6 +53,7 @@ abstract class ProductResolverTest {
     @Test void shouldResolveProduct() {
         var givenProduct = Product.builder().id("x").name("some-product-name").build();
         given(products.product(givenProduct.getId())).willReturn(givenProduct);
+        given(products.product("not-actually-called")).willReturn(Product.builder().id("unreachable").build());
 
         var resolvedProduct = resolver.product(new Item(givenProduct.getId()));
 

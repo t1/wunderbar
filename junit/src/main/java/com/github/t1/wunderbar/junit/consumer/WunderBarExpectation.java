@@ -4,6 +4,7 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 
 import java.lang.reflect.Method;
+import java.net.URI;
 import java.util.Arrays;
 
 import static com.github.t1.wunderbar.junit.DeepEquals.deeplyEqual;
@@ -35,6 +36,8 @@ public abstract @Internal class WunderBarExpectation {
         if (type.equals(double.class)) return 0.0d;
         return null;
     }
+
+    public abstract URI baseUri();
 
     public abstract void willReturn(Object response);
 
