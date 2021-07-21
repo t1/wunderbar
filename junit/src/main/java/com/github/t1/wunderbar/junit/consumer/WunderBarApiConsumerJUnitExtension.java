@@ -85,22 +85,8 @@ class WunderBarApiConsumerJUnitExtension implements Extension, BeforeEachCallbac
         initialized = false;
     }
 
-    @SuppressWarnings("removal")
     private WunderBarApiConsumer findSettings() {
-        Class<?> testClass = findWunderBarTest().getClass();
-        if (testClass.isAnnotationPresent(WunderBarApiConsumer.class))
-            return testClass.getAnnotation(WunderBarApiConsumer.class);
-        var old = testClass.getAnnotation(WunderBarConsumerExtension.class);
-        assert old != null;
-        return new WunderBarApiConsumer() {
-            @Override public Class<? extends Annotation> annotationType() { return old.annotationType(); }
-
-            @Override public Level level() { return old.level(); }
-
-            @Override public String fileName() { return old.fileName(); }
-
-            @Override public String endpoint() { return old.endpoint(); }
-        };
+        return findWunderBarTest().getClass().getAnnotation(WunderBarApiConsumer.class);
     }
 
     private Object findWunderBarTest() {
@@ -111,10 +97,8 @@ class WunderBarApiConsumerJUnitExtension implements Extension, BeforeEachCallbac
         return instances.get(instances.size() - 1); // the innermost / closest
     }
 
-    @SuppressWarnings("removal")
     private boolean isAnnotatedAsWunderBarConsumer(Object test) {
-        return test.getClass().isAnnotationPresent(WunderBarApiConsumer.class)
-            || test.getClass().isAnnotationPresent(WunderBarConsumerExtension.class);
+        return test.getClass().isAnnotationPresent(WunderBarApiConsumer.class);
     }
 
     private BarWriter createBar(String fileName) {

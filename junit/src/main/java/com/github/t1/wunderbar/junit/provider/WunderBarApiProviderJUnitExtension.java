@@ -16,7 +16,6 @@ import java.lang.reflect.Method;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.regex.Pattern;
@@ -56,21 +55,7 @@ class WunderBarApiProviderJUnitExtension implements Extension, BeforeEachCallbac
             .filter(test -> test.getClass().isAnnotationPresent(WunderBarApiProvider.class))
             .findFirst()
             .map(instance -> instance.getClass().getAnnotation(WunderBarApiProvider.class))
-            .or(this::findDeprecatedSettings)
             .orElseThrow(() -> new WunderBarException("annotation not found: " + WunderBarApiProvider.class.getName()));
-    }
-
-    @SuppressWarnings("removal")
-    private Optional<? extends WunderBarApiProvider> findDeprecatedSettings() {
-        return context.getRequiredTestInstances().getAllInstances().stream()
-            .filter(test -> test.getClass().isAnnotationPresent(WunderBarRunnerExtension.class))
-            .findFirst()
-            .map(instance -> instance.getClass().getAnnotation(WunderBarRunnerExtension.class))
-            .map(old -> new WunderBarApiProvider() {
-                @Override public Class<? extends Annotation> annotationType() { return WunderBarRunnerExtension.class; }
-
-                @Override public String baseUri() { return old.baseUri(); }
-            });
     }
 
     private void addAllMethodsTo(Class<? extends Annotation> annotationType, List<Function<HttpInteraction, Object>> consumers) {
