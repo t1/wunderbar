@@ -1,10 +1,16 @@
 = BAR :: Behaviour ARchive image:https://maven-badges.herokuapp.com/maven-central/com.github.t1/wunderbar/badge.svg[link=https://search.maven.org/artifact/com.github.t1/wunderbar] image:https://github.com/t1/wunderbar/actions/workflows/maven.yml/badge.svg[link=https://github.com/t1/wunderbar/actions/workflows/maven.yml]
 
-Low ceremony, code-first https://martinfowler.com/articles/consumerDrivenContracts.html[Consumer Driven Contracts] for Java natives. Supports REST (via https://github.com/eclipse/microprofile-rest-client[MicroProfile REST Client]) and https://graphql.org[GraphQL] (via https://github.com/smallrye/smallrye-graphql/tree/master/client/api[SmallRye GraphQL Client]).
+Code-first, low ceremony https://martinfowler.com/articles/consumerDrivenContracts.html[Consumer Driven Contracts] test tool for Java natives. Supports REST (via https://github.com/eclipse/microprofile-rest-client[MicroProfile REST Client]) and https://graphql.org[GraphQL] (via https://github.com/smallrye/smallrye-graphql/tree/master/client/api[SmallRye GraphQL Client]).
 
-Just to make it clear: just because the consumer drives the contract doesn't mean that the provider is expected to comply blindly. It's only a starting point for the contract negotiation. The provider has to evolve a domain model that is consistent over all consumers: the BAR files are not a replacement for talking; they just augment it by the precision required by the machines. And starting from the API Consumer perspective is actually just a very natural way of defining an API: from the real requirements.
+Let's pick that apart:
 
-== 2 Minute Intro (REST)
+"code-first": there's a lot of debate about designing APIs schema-first (a.k.a. api-first) vs. code-first. I absolutely agree that not only for public APIs, it's very important to design APIs in a consistent and easily approachable way. I also think that it's even more important to capture the actual use-cases of real consumers of an API. It's just way too easy to design something that looks good as a schema but is clumsy to use in practice. And by lowering the bar to specify the (changes to an) API as much as possible, consumers are invited to help evolve the API in a way that is practical to them.
+
+"low ceremony": use it just like you'd use https://site.mockito.org[Mockito] to test your client code. Easily scale that from Unit to Integration Test, so you also cover all the serialization and http request/response involved. This helps clients to test their own code. As a side effect, WunderBar records the expected http interactions into a Behavior ARchive file, ready to be handed over to the API provider to verify compliance with the client requirements. For the details see below.
+
+Just to make it clear: just because the consumer drives the API contract doesn't mean that the provider is expected to comply blindly. It's only a starting point for the contract negotiation. The provider has to evolve a domain model that is consistent over all consumers: the BAR files are not a replacement for talking; they just bring it to the precision that the machines insist on. And starting from the API Consumer perspective is actually just a very natural way of defining an API: from the real requirements.
+
+== 2 Minute API Consumer Intro
 
 Say you're developing an Order system that uses data from a Product service.
 
@@ -31,7 +37,7 @@ Instead of these annotations (and the static `given` method import), you can use
 
 [source,java]
 ----
-@WunderBarConsumerExtension
+@WunderBarApiConsumer
 class ProductsRestGatewayTest {
     @Service ProductsRestClient products;
     @SystemUnderTest ProductsRestGateway gateway;
@@ -46,9 +52,11 @@ class ProductsRestGatewayTest {
 }
 ----
 
-When you change the `WunderBarApiConsumer` annotation to `@WunderBarConsumerExtension(level = INTEGRATION)` (or simply change the test name to end with `IT`, short for Integration Test): the extension now starts a mock server exposing the behavior you just stubbed, i.e. it will reply to your REST request with the proper product. No code changes needed, and it fully tests your REST or GraphQL client annotations and (de)serialization of your POJOs.
+You can change the `@WunderBarApiConsumer` annotation to `@WunderBarApiConsumer(level = INTEGRATION)` (or simply change the test name to end with `IT`, short for Integration Test): the extension now starts a mock server exposing the behavior you just stubbed, i.e. it will reply to your REST request with the proper product. No code changes needed, and it fully tests your REST or GraphQL client annotations and (de)serialization of your POJOs.
 
-This is nice, but the really interesting part is, that it records the requests and responses you need for your code to work, and saves it in a `wunder.bar` file (Behavior ARchive). Give this file to your API provider, maybe by deploying it together with your other maven artefacts, so they can check if their service complies to your requirements.
+This is nice, but as a welcome side effect, it records the requests and responses you need for your code to work, and saves it in a `wunder.bar` file (Behavior ARchive). Give this file to your API provider, maybe by deploying it together with your other maven artefacts, so they can check if their service complies to your requirements (look at the usage of the `build-helper-maven-plugin/attach-artifact` in the `demo/order` submodule).
+
+== 2 Minute API Provider Intro
 
 When you develop an API provider, you load the tests stored in a `wunder.bar` file and run them against your service:
 
@@ -62,24 +70,22 @@ class ConsumerDrivenAT {
 }
 ----
 
-== Test Data Management
+If the test data in your service matches the expectations, that's it, but managing test data is generally a more complex issue. E.g. the expected data in a BAR generated by a system test matches the data in the service at the time it ran. But test data is often changed or even deleted for various reasons: some data simply times out, other data is changed by manual as well as automated tests, etc. Coordinating this is difficult and requires communication between different teams, resulting in the tests being brittle: they sporadically break without exposing a real bug anywhere.
 
-Managing the data needed for tests is often a complex issue. BARs generated by system tests contain data that existed when it ran. If that data still exists and is in the same state, it doesn't have to be generated. But test data is often changed or even deleted for various reasons: some data simply times out, other data is changed by manual tests, etc. Coordinating this is difficult and requires communication between different teams, resulting in this kind of tests being brittle: they sporadically break without exposing a bug anywhere.
-
-Integration test never touch a real system, though, so the data they expect doesn't exist in the real (test) system. You'll need to set up and clean up the data in your service to match the requirements, maybe by storing and deleting them directly in a database, or by using some backdoor API in your service. You can do so in methods annotated as `@BeforeInteraction` / `@AfterInteraction`; they have the scope of a single interaction within a test and can take a single interaction as a parameter. A `@BeforeInteraction` method can also return an `HttpInteraction`, a `HttpRequest`, or a `HttpResponse` to modify the interaction, e.g. to replace the dummy credentials (xref:credentials[see below]) with real credentials that your service will accept, or to replace the expected id with the id of a new instance generated for this test run.
+Integration test, OTOH, never touch a real system, so the data they expect doesn't exist in the real (test) system. You'll need to set up and clean up the data in your service to match the requirements, maybe by storing and deleting them directly in a database, or by using some backdoor API in your service. You can do so in methods annotated as `@BeforeInteraction` / `@AfterInteraction`footnote:[JUnit invokes method with the standard JUnit `@Before/AfterEach` annotations only once for every test method, not for every test in the `DynamicNode`]; they have the scope of a single interaction within a test and can take a single interaction as a parameter. A `@BeforeInteraction` method can also return an `HttpInteraction`, a `HttpRequest`, or a `HttpResponse` to modify the interaction, e.g. to replace the dummy credentials (xref:credentials[see below]) with real credentials that your service will accept, or to replace the expected id with the id of a new instance generated for this test run.
 
 Writing your acceptance tests in this way makes testing more robust, as you don't have to agree with the consumers of your APIs on any volatile and intransparent assumptions about the test data, e.g. what ids result in what behavior.
 
 == Documentation
 
-The Documentation is in the JavaDoc, mainly of the annotations https://github.com/t1/wunderbar/blob/master/junit/src/main/java/com/github/t1/wunderbar/junit/consumer/WunderBarApiConsumer.java[`@WunderBarApiConsumer`] annotation and the https://github.com/t1/wunderbar/blob/master/junit/src/main/java/com/github/t1/wunderbar/junit/consumer/Level.java[`Level`] enum and the https://github.com/t1/wunderbar/blob/main/junit/src/main/java/com/github/t1/wunderbar/junit/consumer/WunderbarExpectationBuilder.java[`WunderbarExpectationBuilder`] for the API consumer (client) side and https://github.com/t1/wunderbar/blob/master/junit/src/main/java/com/github/t1/wunderbar/junit/provider/WunderBarApiProvider.java[`@WunderBarApiProvider`] for the API provider (server) side.
+The Documentation is in the JavaDoc, mainly of the annotation https://github.com/t1/wunderbar/blob/master/junit/src/main/java/com/github/t1/wunderbar/junit/consumer/WunderBarApiConsumer.java[`@WunderBarApiConsumer`], the https://github.com/t1/wunderbar/blob/master/junit/src/main/java/com/github/t1/wunderbar/junit/consumer/Level.java[`Level`] enum and the https://github.com/t1/wunderbar/blob/main/junit/src/main/java/com/github/t1/wunderbar/junit/consumer/WunderbarExpectationBuilder.java[`WunderbarExpectationBuilder`] for the API consumer (client) side and https://github.com/t1/wunderbar/blob/master/junit/src/main/java/com/github/t1/wunderbar/junit/provider/WunderBarApiProvider.java[`@WunderBarApiProvider`] for the API provider (server) side.
 
 The `demo` module contains two example projects: `order` consumes an API that the `product` service provides. Both in REST and GraphQL and on all test levels.
 
 [#credentials]
 == Credentials
 
-On the API Consumer side, the `bar` files never contain the value of a real `Authorization` header. They could contain dummy values for integration tests, but they don't add any benefit; for system tests, the interactions would even contain real credentials. So only dummy values are ever written instead.
+On the API Consumer side, the `bar` files never contain the value of a real `Authorization` header. They could contain arbitrary values for integration tests, but they don't add any benefit; for system tests, the interactions would even contain real credentials. So WunderBar only writes dummy values instead.
 
 For a GraphQL client, you can use the `@AuthorizationHeader` annotation to read the configuration from an MP Config property; but you don't have to actually provide those for an integration test, as they won't be written anyway; a dummy value will be configured on the fly. OTOH, a `@Header(name = "Authorization")` works normally (but won't be written either).
 

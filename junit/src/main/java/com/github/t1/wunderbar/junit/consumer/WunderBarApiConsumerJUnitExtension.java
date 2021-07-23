@@ -62,7 +62,7 @@ class WunderBarApiConsumerJUnitExtension implements Extension, BeforeEachCallbac
         if (bar != null) bar.setDirectory(testId);
 
         forEachField(Service.class, this::createProxy);
-        if (proxies.isEmpty()) throw new WunderBarException("you need at least one `@Service` field in your `@WunderBarConsumerExtension` test");
+        if (proxies.isEmpty()) throw new WunderBarException("you need at least one `@Service` field in your `@WunderBarApiConsumer` test");
 
         forEachField(SystemUnderTest.class, this::initSut);
 

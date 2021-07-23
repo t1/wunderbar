@@ -6,9 +6,9 @@ import test.consumer.ProductResolver.Products;
 import static com.github.t1.wunderbar.junit.consumer.WunderbarExpectationBuilder.given;
 import static org.mockito.Mockito.mock;
 
-// @WunderBarConsumerExtension
+// @WunderBarApiConsumer
 class InvalidConsumerTest {
-    // we can't check the exception thrown for the missing WunderBarConsumerExtension annotation
+    // we can't check the exception thrown for the missing WunderBarApiConsumer annotation
     // we can't check the exception thrown for the missing Service annotation
     private static final boolean DISABLED = true;
 
