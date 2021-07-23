@@ -21,6 +21,7 @@ import java.net.URI;
 public class SystemTestExpectations implements WunderBarExpectations {
     private final Object api;
     private final BarFilter filter;
+    private URI baseUri;
 
     public SystemTestExpectations(Class<?> type, String endpointTemplate, BarWriter bar) {
         this.filter = new BarFilter(bar);
@@ -28,18 +29,24 @@ public class SystemTestExpectations implements WunderBarExpectations {
     }
 
     private Object buildApi(Class<?> type, String endpointTemplate) {
-        if (type.isAnnotationPresent(GraphQLClientApi.class))
+        if (type.isAnnotationPresent(GraphQLClientApi.class)) {
+            this.baseUri = resolve(endpointTemplate, "graphql");
             return ((JaxRsTypesafeGraphQLClientBuilder) TypesafeGraphQLClientBuilder.newBuilder())
                 .register(filter)
-                .endpoint(resolve(endpointTemplate, "graphql"))
+                .endpoint(baseUri)
                 .build(type);
-        if (type.isAnnotationPresent(RegisterRestClient.class))
+        }
+        if (type.isAnnotationPresent(RegisterRestClient.class)) {
+            this.baseUri = resolve(endpointTemplate, "rest");
             return RestClientBuilder.newBuilder()
-                .baseUri(resolve(endpointTemplate, "rest"))
+                .baseUri(baseUri)
                 .register(filter)
                 .build(type);
+        }
         throw new WunderBarException("can't determine technology of API " + type.getName());
     }
+
+    @Override public URI baseUri() { return baseUri; }
 
     private static URI resolve(String template, String technology) {
         var uri = URI.create(template.replace("{technology}", technology));

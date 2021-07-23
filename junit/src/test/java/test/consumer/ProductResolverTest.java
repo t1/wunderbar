@@ -23,7 +23,10 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Response.Status;
 import java.io.Closeable;
+import java.lang.reflect.Method;
+import java.lang.reflect.Proxy;
 
+import static com.github.t1.wunderbar.junit.consumer.WunderbarExpectationBuilder.baseUri;
 import static com.github.t1.wunderbar.junit.consumer.WunderbarExpectationBuilder.given;
 import static javax.ws.rs.core.Response.Status.FORBIDDEN;
 import static javax.ws.rs.core.Response.Status.INTERNAL_SERVER_ERROR;
@@ -123,6 +126,37 @@ abstract class ProductResolverTest {
         }
     }
 
+    @Test void shouldGetBaseUri() {
+        var baseUri = baseUri(products);
+        System.out.println("actual service uri: " + baseUri);
+        then(baseUri.toString()).startsWith("http://localhost:");
+    }
+
+    @Test void shouldFailToGetBaseUriFromNonProxy() {
+        var throwable = catchThrowable(() -> baseUri(resolver));
+
+        then(throwable).isInstanceOf(IllegalArgumentException.class).hasMessage("not a proxy instance");
+    }
+
+    @Test void shouldFailToGetBaseUriFromNonServiceProxy() {
+        var nonServiceProxy = Proxy.newProxyInstance(ClassLoader.getSystemClassLoader(), new Class[]{Runnable.class},
+            (Object proxy, Method method, Object[] args) -> { throw new RuntimeException("unexpected"); });
+
+        var throwable = catchThrowable(() -> baseUri(nonServiceProxy));
+
+        then(throwable).isInstanceOf(IllegalArgumentException.class).hasMessage("not a service proxy instance");
+    }
+
+    @Test void shouldFailToGetBaseUriFromNonServiceProxy2() {
+        var nonServiceProxy = Proxy.newProxyInstance(ClassLoader.getSystemClassLoader(), new Class[]{Runnable.class}, this::dummyHandler);
+
+        var throwable = catchThrowable(() -> baseUri(nonServiceProxy));
+
+        then(throwable).isInstanceOf(IllegalArgumentException.class).hasMessage("not a service proxy instance");
+    }
+
+    private Object dummyHandler(Object o, Method method, Object[] objects) { throw new RuntimeException("unexpected"); }
+
     @Nested class Rest {
         @Service RestService restService;
 
@@ -133,6 +167,19 @@ abstract class ProductResolverTest {
             var response = restService.getProduct(givenProduct.id);
 
             then(response).usingRecursiveComparison().isEqualTo(givenProduct);
+        }
+
+        @Test void shouldGetTwoProducts() {
+            var givenProduct1 = Product.builder().id("r1").name("some-product-name1").build();
+            var givenProduct2 = Product.builder().id("r2").name("some-product-name2").build();
+            given(restService.getProduct(givenProduct1.id)).willReturn(givenProduct1);
+            given(restService.getProduct(givenProduct2.id)).willReturn(givenProduct2);
+
+            var response1 = restService.getProduct(givenProduct1.id);
+            var response2 = restService.getProduct(givenProduct2.id);
+
+            then(response1).usingRecursiveComparison().isEqualTo(givenProduct1);
+            then(response2).usingRecursiveComparison().isEqualTo(givenProduct2);
         }
 
         @Test void shouldFailToGetFailingProduct() {

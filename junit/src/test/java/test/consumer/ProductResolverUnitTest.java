@@ -1,6 +1,10 @@
 package test.consumer;
 
 import com.github.t1.wunderbar.junit.consumer.WunderBarApiConsumer;
+import org.junit.jupiter.api.Test;
+
+import static com.github.t1.wunderbar.junit.consumer.WunderbarExpectationBuilder.baseUri;
+import static org.assertj.core.api.BDDAssertions.then;
 
 /** test that the {@link WunderBarApiConsumer} with <code>level = AUTO</code> is inherited */
 class ProductResolverUnitTest extends ProductResolverTest {
@@ -9,4 +13,10 @@ class ProductResolverUnitTest extends ProductResolverTest {
      * We make this a non-test by 'removing' the <code>Test</code> annotation.
      */
     @Override void shouldUpdateProduct() {}
+
+    @Override @Test void shouldGetBaseUri() {
+        var baseUri = baseUri(products);
+
+        then(baseUri).isNull();
+    }
 }

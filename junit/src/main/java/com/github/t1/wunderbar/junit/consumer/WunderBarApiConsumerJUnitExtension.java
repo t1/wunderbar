@@ -125,7 +125,8 @@ class WunderBarApiConsumerJUnitExtension implements Extension, BeforeEachCallbac
     }
 
     private void createProxy(Field field) {
-        var proxy = new Proxy(level(), bar, field.getType(), endpoint());
+        var service = field.getAnnotation(Service.class);
+        var proxy = new Proxy(level(), bar, field.getType(), endpoint(), service.port());
         setField(instanceFor(field), field, proxy.instance);
         this.proxies.add(proxy);
     }

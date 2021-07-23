@@ -1,9 +1,9 @@
 package com.github.t1.wunderbar.junit.consumer.integration;
 
-import com.github.t1.wunderbar.junit.consumer.BarWriter;
 import com.github.t1.wunderbar.junit.http.Authorization;
 import com.github.t1.wunderbar.junit.http.HttpRequest;
 import com.github.t1.wunderbar.junit.http.HttpResponse;
+import com.github.t1.wunderbar.junit.http.HttpServer;
 import io.smallrye.graphql.client.typesafe.api.AuthorizationHeader;
 import io.smallrye.graphql.client.typesafe.api.TypesafeGraphQLClientBuilder;
 import org.eclipse.microprofile.graphql.Name;
@@ -18,8 +18,8 @@ class GraphQlExpectation extends HttpServiceExpectation {
     private final String configPrefix;
     private Authorization.Basic old;
 
-    GraphQlExpectation(BarWriter bar, Method method, Object... args) {
-        super(bar, method, args);
+    GraphQlExpectation(HttpServer server, Method method, Object... args) {
+        super(server, method, args);
         this.configPrefix = method.getDeclaringClass().getName() + "/mp-graphql/";
     }
 
@@ -32,7 +32,7 @@ class GraphQlExpectation extends HttpServiceExpectation {
 
     private boolean needsAuthorizationConfig() {
         return method.isAnnotationPresent(AuthorizationHeader.class)
-            || method.getDeclaringClass().isAnnotationPresent(AuthorizationHeader.class);
+               || method.getDeclaringClass().isAnnotationPresent(AuthorizationHeader.class);
     }
 
     private Authorization.Basic configureDummyAuthorization() {

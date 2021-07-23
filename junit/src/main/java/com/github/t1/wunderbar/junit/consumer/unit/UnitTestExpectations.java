@@ -7,6 +7,7 @@ import com.github.t1.wunderbar.junit.consumer.WunderbarExpectationBuilder;
 import org.mockito.Mockito;
 
 import java.lang.reflect.Method;
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -17,6 +18,8 @@ public class UnitTestExpectations implements WunderBarExpectations {
     public UnitTestExpectations(Class<?> type) {
         this.mock = Mockito.mock(type);
     }
+
+    @Override public URI baseUri() { return null; }
 
     @Override public Object invoke(Method method, Object... args) {
         for (var expectation : expectations)

@@ -1,7 +1,6 @@
 package com.github.t1.wunderbar.junit.consumer.integration;
 
 import com.github.t1.wunderbar.junit.Utils;
-import com.github.t1.wunderbar.junit.consumer.BarWriter;
 import com.github.t1.wunderbar.junit.consumer.WunderBarExpectation;
 import com.github.t1.wunderbar.junit.http.HttpRequest;
 import com.github.t1.wunderbar.junit.http.HttpResponse;
@@ -13,11 +12,7 @@ import java.io.Closeable;
 import java.io.IOException;
 import java.lang.reflect.Method;
 import java.net.URI;
-import java.util.Optional;
-import java.util.function.Function;
 
-import static com.github.t1.wunderbar.junit.Utils.formatJson;
-import static javax.ws.rs.core.MediaType.APPLICATION_JSON_TYPE;
 import static lombok.AccessLevel.PACKAGE;
 
 abstract class HttpServiceExpectation extends WunderBarExpectation {
@@ -27,31 +22,12 @@ abstract class HttpServiceExpectation extends WunderBarExpectation {
     @Getter(PACKAGE) private Object response;
     @Getter(PACKAGE) private Exception exception;
 
-    HttpServiceExpectation(BarWriter bar, Method method, Object... args) {
+    HttpServiceExpectation(HttpServer server, Method method, Object... args) {
         super(method, args);
-        Function<HttpRequest, HttpResponse> handler = this::handleRequest;
-        if (bar != null) handler = save(bar, handler);
-        handler = formatRequestBody(handler);
-        this.server = new HttpServer(handler);
+        this.server = server;
     }
 
     abstract protected HttpResponse handleRequest(HttpRequest request);
-
-    private Function<HttpRequest, HttpResponse> save(BarWriter bar, Function<HttpRequest, HttpResponse> handler) {
-        return request -> {
-            var response = handler.apply(request);
-            bar.save(request, response);
-            return response;
-        };
-    }
-
-    private Function<HttpRequest, HttpResponse> formatRequestBody(Function<HttpRequest, HttpResponse> handler) {
-        return request -> {
-            if (request.getBody().isPresent() && APPLICATION_JSON_TYPE.isCompatible(request.getContentType()))
-                request = request.withBody(Optional.of(formatJson(request.getBody().get())));
-            return handler.apply(request);
-        };
-    }
 
     @Override public URI baseUri() { return server.baseUri(); }
 

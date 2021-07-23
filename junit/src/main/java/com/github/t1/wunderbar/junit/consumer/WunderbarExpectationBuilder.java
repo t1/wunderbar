@@ -2,12 +2,36 @@ package com.github.t1.wunderbar.junit.consumer;
 
 import com.github.t1.wunderbar.junit.WunderBarException;
 
+import java.lang.reflect.Field;
+import java.lang.reflect.InvocationHandler;
 import java.net.URI;
 import java.util.Objects;
 import java.util.function.Consumer;
 
+import static com.github.t1.wunderbar.junit.Utils.getField;
+
 /** @see #given */
 public class WunderbarExpectationBuilder<T> {
+    /**
+     * Return the base uri of the service proxy injected, or <code>null</code> if it's a unit test.
+     *
+     * @throws IllegalArgumentException if the argument is not a service proxy instance
+     */
+    public static URI baseUri(Object proxyInstance) {
+        var invocationHandler = java.lang.reflect.Proxy.getInvocationHandler(proxyInstance);
+        return getProxy(invocationHandler).getExpectations().baseUri();
+    }
+
+    // this is an ugly hack, but I currently don't have a better idea
+    private static Proxy getProxy(InvocationHandler invocationHandler) {
+        try {
+            Field field = invocationHandler.getClass().getDeclaredField("arg$1");
+            return (Proxy) getField(invocationHandler, field);
+        } catch (NoSuchFieldException | ClassCastException e) {
+            throw new IllegalArgumentException("not a service proxy instance", e);
+        }
+    }
+
     /**
      * Starts to specify the behavior of the {@link Service} API that the test expects.
      * The parameter is the result of a call to your API interface;
@@ -22,7 +46,8 @@ public class WunderbarExpectationBuilder<T> {
 
     public @Internal static WunderBarExpectation buildingExpectation;
 
-    /** Calls the provided setter with the actual base URI used for this expectation. */
+    /** use {@link #baseUri(Object)} instead */
+    @Deprecated(forRemoval = true)
     public WunderbarExpectationBuilder<T> whileSettingBaseUri(Consumer<URI> setter) {
         if (buildingExpectation == null) throw new StubbingMismatchException();
         setter.accept(buildingExpectation.baseUri());

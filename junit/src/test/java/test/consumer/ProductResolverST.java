@@ -16,6 +16,7 @@ import test.consumer.ProductResolverTest.RestService;
 import javax.ws.rs.WebApplicationException;
 import java.net.URI;
 
+import static com.github.t1.wunderbar.junit.consumer.WunderbarExpectationBuilder.baseUri;
 import static javax.ws.rs.core.Response.Status.FORBIDDEN;
 import static javax.ws.rs.core.Response.Status.NOT_FOUND;
 import static org.assertj.core.api.Assertions.catchThrowableOfType;
@@ -56,6 +57,12 @@ class ProductResolverST { // not `extends ProductResolverTest`, as we must not c
         var error = throwable.getErrors().get(0);
         then(error.getMessage()).isEqualTo("product forbidden-product-id is forbidden");
         then(error.getErrorCode()).isEqualTo("product-forbidden");
+    }
+
+    @Test void shouldGetBaseUri() {
+        var baseUri = baseUri(products);
+        System.out.println("actual service uri: " + baseUri);
+        then(baseUri.toString()).startsWith("http://localhost:");
     }
 
     @Nested class REST {

@@ -6,31 +6,19 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import test.consumer.ProductResolver.Item;
 import test.consumer.ProductResolver.Product;
+import test.consumer.ProductResolver.Products;
 
 import java.net.URI;
 import java.util.concurrent.atomic.AtomicReference;
 
 import static com.github.t1.wunderbar.junit.consumer.Level.INTEGRATION;
+import static com.github.t1.wunderbar.junit.consumer.WunderbarExpectationBuilder.baseUri;
 import static com.github.t1.wunderbar.junit.consumer.WunderbarExpectationBuilder.given;
 import static org.assertj.core.api.Assertions.catchThrowable;
 import static org.assertj.core.api.BDDAssertions.then;
 
 @WunderBarApiConsumer
 class ProductResolverIT extends ProductResolverTest {
-    @Test void shouldSetBaseUri() {
-        var givenProduct = Product.builder().id("x").name("some-product-name").build();
-        var baseUri = new AtomicReference<URI>();
-        given(products.product(givenProduct.getId()))
-            .whileSettingBaseUri(baseUri::set)
-            .willReturn(givenProduct);
-
-        var resolvedProduct = resolver.product(Item.builder().productId(givenProduct.getId()).build());
-
-        then(resolvedProduct).usingRecursiveComparison().isEqualTo(givenProduct);
-        System.out.println("actual service uri: " + baseUri);
-        then(baseUri.get().toString()).startsWith("http://localhost:");
-    }
-
     /** Only the INTEGRATION level has to recognize the technology */
     @Nested class UnrecognizableTechnologies {
         @Service UnrecognizableTechnologyService unrecognizableTechnologyService;
@@ -44,6 +32,27 @@ class ProductResolverIT extends ProductResolverTest {
 
     interface UnrecognizableTechnologyService {
         Object call();
+    }
+
+    @WunderBarApiConsumer(level = INTEGRATION)
+    @Nested class FixedPort {
+        @Service(port = 18373) Products productsWithFixedPort;
+
+        @SuppressWarnings("removal")
+        @Test void shouldSetFixedPort() {
+            var givenProduct = Product.builder().id("x").name("some-product-name").build();
+            var baseUri = baseUri(productsWithFixedPort);
+            var deprecatedBaseUri = new AtomicReference<URI>();
+            given(productsWithFixedPort.product(givenProduct.getId()))
+                .whileSettingBaseUri(deprecatedBaseUri::set)
+                .willReturn(givenProduct);
+
+            var resolvedProduct = resolver.product(Item.builder().productId(givenProduct.getId()).build());
+
+            then(resolvedProduct).usingRecursiveComparison().isEqualTo(givenProduct);
+            then(baseUri).isEqualTo(URI.create("http://localhost:18373"));
+            then(deprecatedBaseUri.get()).isEqualTo(URI.create("http://localhost:18373"));
+        }
     }
 
     @WunderBarApiConsumer(endpoint = "{testEndpoint()}", level = INTEGRATION)

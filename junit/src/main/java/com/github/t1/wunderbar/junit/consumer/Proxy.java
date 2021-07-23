@@ -3,6 +3,7 @@ package com.github.t1.wunderbar.junit.consumer;
 import com.github.t1.wunderbar.junit.consumer.integration.IntegrationTestExpectations;
 import com.github.t1.wunderbar.junit.consumer.system.SystemTestExpectations;
 import com.github.t1.wunderbar.junit.consumer.unit.UnitTestExpectations;
+import lombok.Getter;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
@@ -13,15 +14,15 @@ class Proxy {
     private final Class<?> type;
     final Object instance;
     private final String endpointTemplate;
-    private final WunderBarExpectations expectations;
+    @Getter private final WunderBarExpectations expectations;
 
-    public Proxy(Level level, BarWriter bar, Class<?> type, String endpointTemplate) {
+    public Proxy(Level level, BarWriter bar, Class<?> type, String endpointTemplate, int port) {
         this.level = level;
         this.bar = bar;
         this.type = type;
         this.instance = createProxy(type);
         this.endpointTemplate = endpointTemplate;
-        this.expectations = createExpectations();
+        this.expectations = createExpectations(port);
     }
 
     private <T> T createProxy(Class<T> type) {
@@ -38,14 +39,14 @@ class Proxy {
         return expectations.invoke(method, args);
     }
 
-    private WunderBarExpectations createExpectations() {
+    private WunderBarExpectations createExpectations(int port) {
         switch (level) {
             case AUTO:
                 throw new IllegalStateException("Unreachable code: AUTO level should have been resolved already");
             case UNIT:
                 return new UnitTestExpectations(type);
             case INTEGRATION:
-                return new IntegrationTestExpectations(bar);
+                return new IntegrationTestExpectations(bar, port);
             case SYSTEM:
                 return new SystemTestExpectations(type, endpointTemplate, bar);
         }

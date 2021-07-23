@@ -90,24 +90,3 @@ On the API Consumer side, the `bar` files never contain the value of a real `Aut
 For a GraphQL client, you can use the `@AuthorizationHeader` annotation to read the configuration from an MP Config property; but you don't have to actually provide those for an integration test, as they won't be written anyway; a dummy value will be configured on the fly. OTOH, a `@Header(name = "Authorization")` works normally (but won't be written either).
 
 On the API Provider side, the acceptance test has to replace this value with real credentials, e.g. by returning a modified `HttpRequest` in a `@BeforeInteraction` method.
-
-== Ports
-
-WunderBar uses random ports to distinguish the different expectations. You can find the actually used port from the URI set in the `WunderbarExpectationBuilder#whileSettingBaseUri` method, i.e.
-
-[source,java]
------
-@WunderBarApiConsumer
-class ProductResolverIT {
-    // ...
-
-    @Test void shouldSetBaseUri() {
-        var baseUri = new AtomicReference<URI>();
-        given(products.product("1"))
-            .whileSettingBaseUri(baseUri::set)
-            .willReturn(givenProduct);
-
-        then(baseUri.get().toString()).startsWith("http://localhost:");
-    }
-}
------
