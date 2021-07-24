@@ -22,6 +22,7 @@ import java.util.Optional;
 import static com.github.t1.wunderbar.junit.Utils.formatJson;
 import static com.github.t1.wunderbar.junit.Utils.isCompatible;
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON_TYPE;
+import static javax.ws.rs.core.Response.Status.NOT_IMPLEMENTED;
 
 @Slf4j
 public class IntegrationTestExpectations implements WunderBarExpectations {
@@ -71,6 +72,9 @@ public class IntegrationTestExpectations implements WunderBarExpectations {
     private HttpResponse handleRequest(HttpRequest request) {
         if (request.getBody().isPresent() && isCompatible(APPLICATION_JSON_TYPE, request.getContentType()))
             request = request.withBody(Optional.of(formatJson(request.getBody().get())));
+
+        if (currentExpectation == null)
+            return HttpResponse.builder().status(NOT_IMPLEMENTED).body("no current expectation set").build();
 
         var response = currentExpectation.handleRequest(request);
 
