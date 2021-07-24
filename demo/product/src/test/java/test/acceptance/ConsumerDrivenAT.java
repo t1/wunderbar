@@ -31,7 +31,6 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.function.Supplier;
 import java.util.regex.Pattern;
 
 import static com.github.t1.wunderbar.junit.provider.WunderBarTestFinder.findTestsIn;
@@ -49,15 +48,15 @@ class ConsumerDrivenAT {
 
     @SuppressWarnings("SpellCheckingInspection")
     private static final String JWT = "Bearer " +
-        "eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9" +
-        "." +
-        "eyJpc3MiOiJodHRwczovL2dpdGh1Yi5jb20vdDEiLCJ1cG4iOiJqYW5lQGRvZS5jb20iLCJncm91cHMiOlsiV3JpdGVyIl0sImlhd" +
-        "CI6MTYxNTAwMjk1NiwiZXhwIjo0NjkwODQyOTU2LCJqdGkiOiJhMWY3YzAwYS0yYWI5LTQ3MGItYWVhNi0xYjZmZWU3NDM3ZTYifQ" +
-        "." +
-        "VRYLxspQqQ_IjORNR092L2lqPg6SE3xOeMQEUVLEuOZj1YoynM-oOMw0UAGQsZlv1w11pf9XIf2okptV2FKloFkkn6cWm0K1ZeYYv" +
-        "Ud5OKaRU33AapZ2GSSKASfOkzshzw_y5G_e5-VqCXo5asspIYwSNzFy9JcA65JWhBttyepOPUx4Kmp3Eb5V9f-2rpfNGQbyHNh7rY" +
-        "BpeLrnViaaVe_3wW4QKiAX17gncNf6nLWO-pH8_qlLcaWqBNrIBauA_YqrZT4kUcyb0uFz06hSThGiJliUS2KiZratjj3YvGj8X8_" +
-        "ikqc7Tm_xldxlX_D5IHyuhNNe4sVppXDko7fQMw";
+                                      "eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9" +
+                                      "." +
+                                      "eyJpc3MiOiJodHRwczovL2dpdGh1Yi5jb20vdDEiLCJ1cG4iOiJqYW5lQGRvZS5jb20iLCJncm91cHMiOlsiV3JpdGVyIl0sImlhd" +
+                                      "CI6MTYxNTAwMjk1NiwiZXhwIjo0NjkwODQyOTU2LCJqdGkiOiJhMWY3YzAwYS0yYWI5LTQ3MGItYWVhNi0xYjZmZWU3NDM3ZTYifQ" +
+                                      "." +
+                                      "VRYLxspQqQ_IjORNR092L2lqPg6SE3xOeMQEUVLEuOZj1YoynM-oOMw0UAGQsZlv1w11pf9XIf2okptV2FKloFkkn6cWm0K1ZeYYv" +
+                                      "Ud5OKaRU33AapZ2GSSKASfOkzshzw_y5G_e5-VqCXo5asspIYwSNzFy9JcA65JWhBttyepOPUx4Kmp3Eb5V9f-2rpfNGQbyHNh7rY" +
+                                      "BpeLrnViaaVe_3wW4QKiAX17gncNf6nLWO-pH8_qlLcaWqBNrIBauA_YqrZT4kUcyb0uFz06hSThGiJliUS2KiZratjj3YvGj8X8_" +
+                                      "ikqc7Tm_xldxlX_D5IHyuhNNe4sVppXDko7fQMw";
     private static final Authorization WRITER = Authorization.valueOf(JWT);
 
     private final Backdoor backdoor = TypesafeGraphQLClientBuilder.newBuilder().endpoint(GRAPHQL_ENDPOINT).build(Backdoor.class);
@@ -136,18 +135,17 @@ class ConsumerDrivenAT {
         var request = interaction.getRequest();
         var isGraphQL = request.getUri().getPath().equals("/graphql");
         System.out.println("create test data for " + (isGraphQL ? "graphql" : "rest") + " interaction " + interaction.getNumber() + ": "
-            + request.getMethod() + " " + request.getUri());
+                           + request.getMethod() + " " + request.getUri());
         var setup = isGraphQL
             ? new GraphQlSetUp(interaction)
             : new RestSetUp(interaction);
 
         var isAuthorized = request.getAuthorization() != null;
-        boolean needsAuth = setup.get();
         // How can you specify for an MP RestClient that one method needs authentication, but another one doesn't?
         // With MP GraphQL Client that's trivial, e.g. with an `@AuthorizationHeader` annotation.
-        if (isGraphQL && needsAuth && !isAuthorized) throw new RuntimeException("expected request to be authorized");
-        // if (!needsAuth && isAuthorized) throw new RuntimeException("expected request NOT to be authorized");
-        return needsAuth ? request.withAuthorization(WRITER) : request;
+        if (isGraphQL && setup.needsAuth() && !isAuthorized) throw new RuntimeException("expected request to be authorized");
+        if (isAuthorized && !setup.needsAuth()) throw new RuntimeException("expected request NOT to be authorized");
+        return setup.needsAuth() ? request.withAuthorization(WRITER) : request;
     }
 
 
@@ -169,36 +167,48 @@ class ConsumerDrivenAT {
 
     private void doNothing() {}
 
+    private interface SetUp {
+        boolean needsAuth();
+    }
 
-    private class RestSetUp implements Supplier<Boolean> {
-        protected final HttpRequest request;
-        protected final HttpResponse response;
+    private class RestSetUp implements SetUp {
+        private final HttpRequest request;
+        private final HttpResponse response;
+        protected boolean needsAuth;
 
         @SuppressWarnings({"CdiInjectionPointsInspection", "QsPrivateBeanMembersInspection"})
         private RestSetUp(HttpInteraction interaction) {
             this.request = interaction.getRequest();
             this.response = interaction.getResponse();
+
+            setup();
         }
 
-        @Override public Boolean get() {
+        @Override public boolean needsAuth() { return needsAuth; }
+
+        private void setup() {
             switch (expectedStatus()) {
                 case OK:
                     switch (requestMethod()) {
                         case "GET":
                             create(expectedProduct());
-                            return false;
+                            this.needsAuth = false;
+                            return;
                         case "PATCH":
                             checkExists(expectedProduct().getId());
-                            return true;
+                            this.needsAuth = true;
+                            return;
                         default:
                             throw new RuntimeException("unsupported method " + requestMethod());
                     }
                 case FORBIDDEN:
                     createForbiddenProduct(requestedProductId());
-                    return false;
+                    this.needsAuth = false;
+                    return;
                 case NOT_FOUND:
                     doNothing();
-                    return false;
+                    this.needsAuth = false;
+                    return;
                 default:
                     throw new RuntimeException("unsupported status " + expectedStatus());
             }
@@ -224,36 +234,42 @@ class ConsumerDrivenAT {
     }
 
 
-    private class GraphQlSetUp implements Supplier<Boolean> {
-        protected final HttpRequest request;
-        protected final HttpResponse response;
+    private class GraphQlSetUp implements SetUp {
+        private boolean needsAuth;
 
         private final GraphQlResponse graphQlResponse;
 
         @SuppressWarnings({"CdiInjectionPointsInspection", "QsPrivateBeanMembersInspection"})
         private GraphQlSetUp(HttpInteraction interaction) {
-            this.request = interaction.getRequest();
-            this.response = interaction.getResponse();
+            HttpResponse response = interaction.getResponse();
             var responseBody = response.getBody()
                 .orElseThrow(() -> new RuntimeException("need a body to know how to make the service reply as expected"));
             this.graphQlResponse = JSONB.fromJson(responseBody, GraphQlResponse.class);
+
+            setup();
         }
 
-        @Override public Boolean get() {
+        @Override public boolean needsAuth() { return needsAuth; }
+
+        private void setup() {
             var code = expectedErrorCode().or(this::dataName).orElseThrow();
             switch (code) {
                 case "product":
                     create(graphQlResponse.data.product);
-                    return false;
+                    this.needsAuth = false;
+                    return;
                 case "update":
                     checkExists(graphQlResponse.data.update.getId());
-                    return true;
+                    this.needsAuth = true;
+                    return;
                 case "product-forbidden":
                     createForbiddenProduct(expectedForbiddenProductId());
-                    return false;
+                    this.needsAuth = false;
+                    return;
                 case "product-not-found":
                     doNothing();
-                    return false;
+                    this.needsAuth = false;
+                    return;
                 default:
                     throw new RuntimeException("unsupported code: " + code);
             }
