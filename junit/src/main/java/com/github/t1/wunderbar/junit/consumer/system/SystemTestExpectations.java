@@ -10,8 +10,8 @@ import io.smallrye.graphql.client.typesafe.jaxrs.JaxRsTypesafeGraphQLClientBuild
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.eclipse.microprofile.rest.client.RestClientBuilder;
-import org.eclipse.microprofile.rest.client.inject.RegisterRestClient;
 
+import javax.ws.rs.Path;
 import java.io.Closeable;
 import java.io.IOException;
 import java.lang.reflect.Method;
@@ -36,7 +36,7 @@ public class SystemTestExpectations implements WunderBarExpectations {
                 .endpoint(baseUri)
                 .build(type);
         }
-        if (type.isAnnotationPresent(RegisterRestClient.class)) {
+        if (type.isAnnotationPresent(Path.class)) {
             this.baseUri = resolve(endpointTemplate, "rest");
             return RestClientBuilder.newBuilder()
                 .baseUri(baseUri)

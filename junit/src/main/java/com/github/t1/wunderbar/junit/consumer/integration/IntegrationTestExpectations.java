@@ -11,8 +11,8 @@ import com.github.t1.wunderbar.junit.http.HttpServer;
 import io.smallrye.graphql.client.typesafe.api.GraphQLClientApi;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
-import org.eclipse.microprofile.rest.client.inject.RegisterRestClient;
 
+import javax.ws.rs.Path;
 import java.lang.reflect.Method;
 import java.net.URI;
 import java.util.ArrayList;
@@ -63,7 +63,7 @@ public class IntegrationTestExpectations implements WunderBarExpectations {
         var declaringClass = method.getDeclaringClass();
         if (declaringClass.isAnnotationPresent(GraphQLClientApi.class))
             return new GraphQlExpectation(server, method, args);
-        if (declaringClass.isAnnotationPresent(RegisterRestClient.class))
+        if (declaringClass.isAnnotationPresent(Path.class))
             return new RestExpectation(server, method, args);
         throw new WunderBarException("no technology recognized on " + declaringClass);
     }

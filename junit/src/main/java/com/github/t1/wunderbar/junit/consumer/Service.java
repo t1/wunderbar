@@ -5,7 +5,8 @@ import java.lang.annotation.Retention;
 import static java.lang.annotation.RetentionPolicy.RUNTIME;
 
 /**
- * The API interface (<code>RegisterRestClient</code> or <code>GraphQlClientApi</code>)
+ * The API interface ({@link org.eclipse.microprofile.rest.client.inject.RegisterRestClient RegisterRestClient}
+ * or {@link io.smallrye.graphql.client.typesafe.api.GraphQLClientApi GraphQLClientApi})
  * a {@link WunderBarApiConsumer} test uses for indirect input and output; the mock, generally.
  */
 @Retention(RUNTIME)
