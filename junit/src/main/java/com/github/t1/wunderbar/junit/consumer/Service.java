@@ -1,5 +1,6 @@
 package com.github.t1.wunderbar.junit.consumer;
 
+import javax.enterprise.util.AnnotationLiteral;
 import java.lang.annotation.Retention;
 
 import static java.lang.annotation.RetentionPolicy.RUNTIME;
@@ -19,4 +20,14 @@ public @interface Service {
 
     /** Indicates that the http server of an integration test should run on a random, free port. */
     int RANDOM = 0;
+
+    class Literal extends AnnotationLiteral<Service> implements Service {
+        private final int port;
+
+        public Literal() { this(RANDOM); }
+
+        public Literal(int port) { this.port = port; }
+
+        @Override public int port() { return port; }
+    }
 }

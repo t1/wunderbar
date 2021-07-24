@@ -1,9 +1,9 @@
 package test.consumer;
 
 import com.github.t1.wunderbar.junit.consumer.WunderBarApiConsumer;
-import org.junit.jupiter.api.Test;
 
-import static com.github.t1.wunderbar.junit.consumer.WunderbarExpectationBuilder.baseUri;
+import java.net.URI;
+
 import static org.assertj.core.api.BDDAssertions.then;
 
 /** test that the {@link WunderBarApiConsumer} with <code>level = AUTO</code> is inherited */
@@ -14,9 +14,5 @@ class ProductResolverUnitTest extends ProductResolverTest {
      */
     @Override void shouldUpdateProduct() {}
 
-    @Override @Test void shouldGetBaseUri() {
-        var baseUri = baseUri(products);
-
-        then(baseUri).isNull();
-    }
+    @Override void verifyBaseUri(URI baseUri) { then(baseUri).isNull(); }
 }

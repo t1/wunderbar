@@ -10,27 +10,15 @@ import java.util.function.Consumer;
 
 import static com.github.t1.wunderbar.junit.Utils.getField;
 
-/** @see #given */
+/**
+ * Static methods for building expectations, etc.
+ *
+ * @see #given
+ * @see #createService(Class)
+ * @see #baseUri(Object)
+ */
 public class WunderbarExpectationBuilder<T> {
-    /**
-     * Return the base uri of the service proxy injected, or <code>null</code> if it's a unit test.
-     *
-     * @throws IllegalArgumentException if the argument is not a service proxy instance
-     */
-    public static URI baseUri(Object proxyInstance) {
-        var invocationHandler = java.lang.reflect.Proxy.getInvocationHandler(proxyInstance);
-        return getProxy(invocationHandler).getExpectations().baseUri();
-    }
-
-    // this is an ugly hack, but I currently don't have a better idea
-    private static Proxy getProxy(InvocationHandler invocationHandler) {
-        try {
-            Field field = invocationHandler.getClass().getDeclaredField("arg$1");
-            return (Proxy) getField(invocationHandler, field);
-        } catch (NoSuchFieldException | ClassCastException e) {
-            throw new IllegalArgumentException("not a service proxy instance", e);
-        }
-    }
+    private WunderbarExpectationBuilder() {}
 
     /**
      * Starts to specify the behavior of the {@link Service} API that the test expects.
@@ -102,5 +90,41 @@ public class WunderbarExpectationBuilder<T> {
 
     static class StubbingMismatchException extends WunderBarException {
         StubbingMismatchException() { super("Stubbing mismatch: call `given` exactly once on the response object of a proxy call"); }
+    }
+
+
+    /**
+     * Creates an instance of the service, which normally is done via the {@link Service @Service} annotation.
+     */
+    public static <T> T createService(Class<T> type) { return createService(type, new Service.Literal()); }
+
+    /**
+     * Creates an instance of the service, which normally is done via the {@link Service @Service} annotation.
+     */
+    public static <T> T createService(Class<T> type, Service.Literal service) {
+        var extension = WunderBarApiConsumerJUnitExtension.INSTANCE;
+        if (extension == null) throw new WunderBarException("WunderBarExtension not found");
+        return type.cast(extension.createProxy(type, service).instance);
+    }
+
+
+    /**
+     * Return the base uri of the service proxy injected, or <code>null</code> if it's a unit test.
+     *
+     * @throws IllegalArgumentException if the argument is not a service proxy instance
+     */
+    public static URI baseUri(Object proxyInstance) {
+        var invocationHandler = java.lang.reflect.Proxy.getInvocationHandler(proxyInstance);
+        return getProxy(invocationHandler).getExpectations().baseUri();
+    }
+
+    // this is an ugly hack, but I currently don't have a better idea
+    private static Proxy getProxy(InvocationHandler invocationHandler) {
+        try {
+            Field field = invocationHandler.getClass().getDeclaredField("arg$1");
+            return (Proxy) getField(invocationHandler, field);
+        } catch (NoSuchFieldException | ClassCastException e) {
+            throw new IllegalArgumentException("not a service proxy instance", e);
+        }
     }
 }

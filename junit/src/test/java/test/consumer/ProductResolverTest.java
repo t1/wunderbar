@@ -25,8 +25,10 @@ import javax.ws.rs.core.Response.Status;
 import java.io.Closeable;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
+import java.net.URI;
 
 import static com.github.t1.wunderbar.junit.consumer.WunderbarExpectationBuilder.baseUri;
+import static com.github.t1.wunderbar.junit.consumer.WunderbarExpectationBuilder.createService;
 import static com.github.t1.wunderbar.junit.consumer.WunderbarExpectationBuilder.given;
 import static javax.ws.rs.core.Response.Status.FORBIDDEN;
 import static javax.ws.rs.core.Response.Status.INTERNAL_SERVER_ERROR;
@@ -126,36 +128,51 @@ abstract class ProductResolverTest {
         }
     }
 
-    @Test void shouldGetBaseUri() {
-        var baseUri = baseUri(products);
-        System.out.println("actual service uri: " + baseUri);
-        then(baseUri.toString()).startsWith("http://localhost:");
+    void verifyBaseUri(URI baseUri) { then(baseUri.toString()).startsWith("http://localhost:"); }
+
+    @Nested class StaticMethods {
+        @Test void shouldGetBaseUri() {
+            var baseUri = baseUri(products);
+            System.out.println("actual service uri: " + baseUri);
+            verifyBaseUri(baseUri);
+        }
+
+        @Test void shouldFailToGetBaseUriFromNonProxy() {
+            var throwable = catchThrowable(() -> baseUri(resolver));
+
+            then(throwable).isInstanceOf(IllegalArgumentException.class).hasMessage("not a proxy instance");
+        }
+
+        @Test void shouldFailToGetBaseUriFromNonServiceProxy() {
+            var nonServiceProxy = Proxy.newProxyInstance(ClassLoader.getSystemClassLoader(), new Class[]{Runnable.class},
+                (Object proxy, Method method, Object[] args) -> { throw new RuntimeException("unexpected"); });
+
+            var throwable = catchThrowable(() -> baseUri(nonServiceProxy));
+
+            then(throwable).isInstanceOf(IllegalArgumentException.class).hasMessage("not a service proxy instance");
+        }
+
+        @Test void shouldFailToGetBaseUriFromNonServiceProxy2() {
+            var nonServiceProxy = Proxy.newProxyInstance(ClassLoader.getSystemClassLoader(), new Class[]{Runnable.class}, this::dummyHandler);
+
+            var throwable = catchThrowable(() -> baseUri(nonServiceProxy));
+
+            then(throwable).isInstanceOf(IllegalArgumentException.class).hasMessage("not a service proxy instance");
+        }
+
+        private Object dummyHandler(Object o, Method method, Object[] objects) { throw new RuntimeException("unexpected"); }
+
+        @Test void shouldManuallyBuildProxy() {
+            var proxy = createService(Products.class);
+            var givenProduct = Product.builder().id("proxy").name("some-product-name").build();
+            given(proxy.product(givenProduct.getId())).willReturn(givenProduct);
+            resolver.products = proxy;
+
+            var resolvedProduct = resolver.product(new Item(givenProduct.getId()));
+
+            then(resolvedProduct).usingRecursiveComparison().isEqualTo(givenProduct);
+        }
     }
-
-    @Test void shouldFailToGetBaseUriFromNonProxy() {
-        var throwable = catchThrowable(() -> baseUri(resolver));
-
-        then(throwable).isInstanceOf(IllegalArgumentException.class).hasMessage("not a proxy instance");
-    }
-
-    @Test void shouldFailToGetBaseUriFromNonServiceProxy() {
-        var nonServiceProxy = Proxy.newProxyInstance(ClassLoader.getSystemClassLoader(), new Class[]{Runnable.class},
-            (Object proxy, Method method, Object[] args) -> { throw new RuntimeException("unexpected"); });
-
-        var throwable = catchThrowable(() -> baseUri(nonServiceProxy));
-
-        then(throwable).isInstanceOf(IllegalArgumentException.class).hasMessage("not a service proxy instance");
-    }
-
-    @Test void shouldFailToGetBaseUriFromNonServiceProxy2() {
-        var nonServiceProxy = Proxy.newProxyInstance(ClassLoader.getSystemClassLoader(), new Class[]{Runnable.class}, this::dummyHandler);
-
-        var throwable = catchThrowable(() -> baseUri(nonServiceProxy));
-
-        then(throwable).isInstanceOf(IllegalArgumentException.class).hasMessage("not a service proxy instance");
-    }
-
-    private Object dummyHandler(Object o, Method method, Object[] objects) { throw new RuntimeException("unexpected"); }
 
     @Nested class Rest {
         @Service RestService restService;

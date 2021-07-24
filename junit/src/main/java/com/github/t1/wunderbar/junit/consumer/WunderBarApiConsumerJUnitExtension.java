@@ -39,6 +39,7 @@ import static org.junit.jupiter.api.extension.ExtensionContext.Namespace.GLOBAL;
 
 @Slf4j
 class WunderBarApiConsumerJUnitExtension implements Extension, BeforeEachCallback, AfterEachCallback {
+    static WunderBarApiConsumerJUnitExtension INSTANCE;
     private static boolean initialized = false;
     static final Map<String, BarWriter> BAR_WRITERS = new LinkedHashMap<>();
     private static final Pattern FUNCTION = Pattern.compile("(?<prefix>.*)\\{(?<method>.*)\\(\\)}(?<suffix>.*)");
@@ -51,6 +52,7 @@ class WunderBarApiConsumerJUnitExtension implements Extension, BeforeEachCallbac
     private final List<Proxy> proxies = new ArrayList<>();
 
     @Override public void beforeEach(ExtensionContext context) {
+        INSTANCE = this;
         if (!initialized) init(context);
 
         this.context = context;
@@ -126,9 +128,14 @@ class WunderBarApiConsumerJUnitExtension implements Extension, BeforeEachCallbac
 
     private void createProxy(Field field) {
         var service = field.getAnnotation(Service.class);
-        var proxy = new Proxy(level(), bar, field.getType(), endpoint(), service.port());
+        Proxy proxy = createProxy(field.getType(), service);
         setField(instanceFor(field), field, proxy.instance);
+    }
+
+    Proxy createProxy(Class<?> type, Service service) {
+        var proxy = new Proxy(level(), bar, type, endpoint(), service.port());
         this.proxies.add(proxy);
+        return proxy;
     }
 
     private Level level() {
@@ -199,6 +206,7 @@ class WunderBarApiConsumerJUnitExtension implements Extension, BeforeEachCallbac
         if (bar != null) bar.setDirectory(null);
         log.info("{} took {} ms", testId, duration);
         testId = null;
+        INSTANCE = null;
     }
 
     private long duration() { return (start == null) ? -1 : Duration.between(start, Instant.now()).get(NANOS) / 1_000_000L; }
