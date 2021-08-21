@@ -1,5 +1,6 @@
 package com.github.t1.wunderbar.junit.consumer.integration;
 
+import com.github.t1.wunderbar.junit.consumer.Internal;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -12,6 +13,7 @@ import java.util.Map;
 
 import static lombok.AccessLevel.PRIVATE;
 
+@Internal
 @ToString @Getter @Setter @NoArgsConstructor
 @Builder @AllArgsConstructor(access = PRIVATE)
 public class GraphQlError {

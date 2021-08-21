@@ -89,21 +89,21 @@ public class WunderbarExpectationBuilder<T> {
     }
 
     static class StubbingMismatchException extends WunderBarException {
-        StubbingMismatchException() { super("Stubbing mismatch: call `given` exactly once on the response object of a proxy call"); }
+        StubbingMismatchException() {super("Stubbing mismatch: call `given` exactly once on the response object of a proxy call");}
     }
 
 
     /**
      * Creates an instance of the service, which normally is done via the {@link Service @Service} annotation.
      */
-    public static <T> T createService(Class<T> type) { return createService(type, new Service.Literal()); }
+    public static <T> T createService(Class<T> type) {return createService(type, new Service.Literal());}
 
     /**
      * Creates an instance of the service, which normally is done via the {@link Service @Service} annotation.
      */
     public static <T> T createService(Class<T> type, Service.Literal service) {
         var extension = WunderBarApiConsumerJUnitExtension.INSTANCE;
-        if (extension == null) throw new WunderBarException("WunderBarExtension not found");
+        if (extension == null) throw new WunderBarException(WunderBarApiConsumer.class.getSimpleName() + " not found");
         return type.cast(extension.createProxy(type, service).instance);
     }
 

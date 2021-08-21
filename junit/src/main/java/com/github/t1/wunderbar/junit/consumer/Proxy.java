@@ -25,6 +25,10 @@ class Proxy {
         this.expectations = createExpectations(port);
     }
 
+    @Override public String toString() {
+        return "Proxy(" + level + ":" + type.getSimpleName() + ":" + expectations.baseUri() + ")";
+    }
+
     private <T> T createProxy(Class<T> type) {
         return type.cast(java.lang.reflect.Proxy.newProxyInstance(getClassLoader(), new Class[]{type}, this::proxyInvoked));
     }
@@ -36,6 +40,8 @@ class Proxy {
 
     private Object proxyInvoked(@SuppressWarnings("unused") Object proxy, Method method, Object... args) {
         if (args == null) args = new Object[0];
+        if (method.getName().equals("toString") && method.getParameterCount() == 0)
+            return this.toString();
         return expectations.invoke(method, args);
     }
 
@@ -57,5 +63,5 @@ class Proxy {
         return field.getType().isAssignableFrom(type);
     }
 
-    void done() { expectations.done(); }
+    void done() {expectations.done();}
 }

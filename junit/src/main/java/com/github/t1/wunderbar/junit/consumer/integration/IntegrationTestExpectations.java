@@ -2,6 +2,7 @@ package com.github.t1.wunderbar.junit.consumer.integration;
 
 import com.github.t1.wunderbar.junit.WunderBarException;
 import com.github.t1.wunderbar.junit.consumer.BarWriter;
+import com.github.t1.wunderbar.junit.consumer.Internal;
 import com.github.t1.wunderbar.junit.consumer.WunderBarExpectation;
 import com.github.t1.wunderbar.junit.consumer.WunderBarExpectations;
 import com.github.t1.wunderbar.junit.consumer.WunderbarExpectationBuilder;
@@ -24,7 +25,7 @@ import static com.github.t1.wunderbar.junit.Utils.isCompatible;
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON_TYPE;
 import static javax.ws.rs.core.Response.Status.NOT_IMPLEMENTED;
 
-@Slf4j
+@Slf4j @Internal
 public class IntegrationTestExpectations implements WunderBarExpectations {
     private final BarWriter bar;
 

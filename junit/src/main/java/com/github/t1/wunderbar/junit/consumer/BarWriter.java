@@ -13,6 +13,8 @@ public abstract class BarWriter implements Closeable {
         return fileName.endsWith("/") ? new DirectoryBarWriter(path) : new JarBarWriter(path);
     }
 
+    @Override public String toString() {return getClass().getSimpleName()+":"+getPath();}
+
     public abstract Path getPath();
 
     public abstract void setComment(String directory);
