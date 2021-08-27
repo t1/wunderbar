@@ -16,7 +16,6 @@ import lombok.Data;
 import org.eclipse.microprofile.graphql.Mutation;
 import org.eclipse.microprofile.graphql.NonNull;
 import org.eclipse.microprofile.graphql.Query;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DynamicNode;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestFactory;
@@ -33,11 +32,11 @@ import java.util.List;
 import java.util.Optional;
 import java.util.regex.Pattern;
 
+import static com.github.t1.wunderbar.junit.provider.CustomBDDAssertions.then;
 import static com.github.t1.wunderbar.junit.provider.WunderBarTestFinder.findTestsIn;
 import static com.github.t1.wunderbar.junit.provider.WunderBarTestFinder.findTestsInArtifact;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.assertj.core.api.Assertions.catchThrowableOfType;
-import static org.assertj.core.api.BDDAssertions.then;
 import static test.acceptance.ConsumerDrivenAT.ENDPOINT;
 
 @QuarkusService
@@ -82,7 +81,6 @@ class ConsumerDrivenAT {
     }
 
     /** It's not the job of the client to check for auth, so we do it ourselves */
-    @Disabled("waiting for Quarkus to contain a fix for https://github.com/smallrye/smallrye-graphql/issues/906")
     @Test void shouldFailToStoreWhenUnauthorized() {
         var api = TypesafeGraphQLClientBuilder.newBuilder()
             .endpoint(GRAPHQL_ENDPOINT)
@@ -184,7 +182,7 @@ class ConsumerDrivenAT {
             setup();
         }
 
-        @Override public boolean needsAuth() { return needsAuth; }
+        @Override public boolean needsAuth() {return needsAuth;}
 
         private void setup() {
             switch (expectedStatus()) {
@@ -214,9 +212,9 @@ class ConsumerDrivenAT {
             }
         }
 
-        private Status expectedStatus() { return response.getStatus().toEnum(); }
+        private Status expectedStatus() {return response.getStatus().toEnum();}
 
-        private String requestMethod() { return request.getMethod(); }
+        private String requestMethod() {return request.getMethod();}
 
         private Product expectedProduct() {
             var responseBody = response.getBody()
@@ -249,7 +247,7 @@ class ConsumerDrivenAT {
             setup();
         }
 
-        @Override public boolean needsAuth() { return needsAuth; }
+        @Override public boolean needsAuth() {return needsAuth;}
 
         private void setup() {
             var code = expectedErrorCode().or(this::dataName).orElseThrow();
@@ -282,7 +280,7 @@ class ConsumerDrivenAT {
             return Optional.of(graphQlResponse.errors.get(0).getExtensions().getCode());
         }
 
-        private Optional<String> dataName() { return Optional.of(graphQlResponse.data.product != null ? "product" : "update"); }
+        private Optional<String> dataName() {return Optional.of(graphQlResponse.data.product != null ? "product" : "update");}
 
         private String expectedForbiddenProductId() {
             var message = graphQlResponse.errors.get(0).getMessage();
