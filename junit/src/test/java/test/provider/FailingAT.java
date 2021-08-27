@@ -10,6 +10,7 @@ import test.DummyServer;
 
 import java.net.URI;
 
+import static com.github.t1.wunderbar.junit.provider.CustomBDDAssertions.then;
 import static com.github.t1.wunderbar.junit.provider.WunderBarTestFinder.findTestsIn;
 import static org.assertj.core.api.BDDSoftAssertions.thenSoftly;
 
@@ -35,15 +36,8 @@ class FailingAT {
                 " but was: [{\"extensions\"={\"code\"=");
             // TODO should also match     : \"unexpected-fail\"}, \"message\"=\"product unexpected-fail fails unexpectedly\"}]");
             // but sometimes it's actually: \"validation-error\"}, \"message\"=\"no body in GraphQL request\"}]");
-            softly.then(errors.get(1).getMessage()).startsWith("[json diff (ignoring `add` operations)] \n" +
-                "Expecting actual:\n" +
-                "  [\"remove /data:\n" +
-                "  expected: {\"product\":{\"id\":\"unexpected-fail\",\"description\":\"this will not be reached\"}}\n" +
-                "    actual: null\"]\n" +
-                "to contain exactly (and in same order):\n" +
-                "  []\n" +
-                "but some elements were not expected:\n" +
-                "  [\"remove /data:\n" +
+            then(errors.get(1).getMessage()).startsWith("[json diff (ignoring `add` operations)] \n" +
+                "Expecting empty but was: [\"remove /data:\n" +
                 "  expected: {\"product\":{\"id\":\"unexpected-fail\",\"description\":\"this will not be reached\"}}\n" +
                 "    actual: null\"]");
         });

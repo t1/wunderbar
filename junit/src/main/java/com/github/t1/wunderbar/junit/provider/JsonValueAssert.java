@@ -1,7 +1,6 @@
 package com.github.t1.wunderbar.junit.provider;
 
 import lombok.RequiredArgsConstructor;
-import org.assertj.core.api.GenericComparableAssert;
 
 import javax.json.Json;
 import javax.json.JsonObject;
@@ -20,31 +19,31 @@ public class JsonValueAssert {
     private final JsonValue actual;
 
     public void isEqualToIgnoringNewFields(JsonValue expected) {
-        // then(actual.getValueType()) throws NoSuchMethodError, and I don't understand why
-        new GenericComparableAssert<>(actual.getValueType())
+        then(actual.getValueType())
             .describedAs("value type mismatch\n" +
-                "expected: " + expected + "\n" +
-                "actual  : " + actual)
+                         "expected: " + expected + "\n" +
+                         "actual  : " + actual)
             .isEqualTo(expected.getValueType());
         // TODO diff json array and scalar
         var diff = Json.createDiff(expected.asJsonObject(), actual.asJsonObject()).toJsonArray();
-        var nonAdd = diff.stream()
-            .filter(operation -> !isAdd(operation))
+        var nonAddDescriptions = diff.stream()
+            .filter(this::isNonAdd)
+            .map(patch -> describe(patch.asJsonObject(), expected.asJsonObject()))
             .collect(toList());
-        then(nonAdd.stream().map(patch -> describe(patch.asJsonObject(), expected.asJsonObject())))
+        then(nonAddDescriptions)
             .describedAs("json diff (ignoring `add` operations)")
-            .containsExactly();
+            .isEmpty();
+    }
+
+    private boolean isNonAdd(JsonValue jsonValue) {
+        return !jsonValue.asJsonObject().getString("op").equals(ADD.operationName());
     }
 
     private String describe(JsonObject patch, JsonStructure expectedRoot) {
         var path = patch.getString("path");
         var pointer = Json.createPointer(path);
         return patch.getString("op") + " " + path + ":\n" +
-            "  expected: " + pointer.getValue(expectedRoot) + "\n" +
-            "    actual: " + patch.get("value");
-    }
-
-    private boolean isAdd(JsonValue jsonValue) {
-        return jsonValue.asJsonObject().getString("op").equals(ADD.operationName());
+               "  expected: " + pointer.getValue(expectedRoot) + "\n" +
+               "    actual: " + patch.get("value");
     }
 }
