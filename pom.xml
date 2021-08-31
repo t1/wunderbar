@@ -18,7 +18,7 @@
         <project.reporting.outputEncoding>utf-8</project.reporting.outputEncoding>
 
         <smallrye-graphql.version>1.2.8</smallrye-graphql.version>
-        <quarkus.version>2.2.0.Final</quarkus.version>
+        <quarkus.version>2.2.1.Final</quarkus.version>
         <resteasy.version>4.6.1.Final<!-- the version used by quarkus --></resteasy.version>
         <lombok.version>1.18.20</lombok.version>
 
