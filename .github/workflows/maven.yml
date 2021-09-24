@@ -19,8 +19,3 @@ jobs:
         key: maven-${{ hashFiles('**/pom.xml') }}
 
     - run: mvn --batch-mode --show-version --no-transfer-progress -Pcoverage install
-
-    - uses: codecov/codecov-action@v1
-      with:
-        file: ./**/target/site/jacoco/jacoco.xml
-        name: codecov
