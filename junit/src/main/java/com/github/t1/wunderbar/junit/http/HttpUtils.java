@@ -21,29 +21,31 @@ import static javax.ws.rs.core.MediaType.APPLICATION_JSON_TYPE;
 import static javax.ws.rs.core.MediaType.CHARSET_PARAMETER;
 
 @UtilityClass
-class HttpUtils {
+public class HttpUtils {
+    /** <code>application/json;charset=utf-8</code> */
     public static final MediaType APPLICATION_JSON_UTF8 = APPLICATION_JSON_TYPE.withCharset("utf-8");
-    public static final Jsonb JSONB = JsonbBuilder.create(new JsonbConfig().withFormatting(true));
 
-    public static Charset charset(MediaType contentType) {
+    static final Jsonb JSONB = JsonbBuilder.create(new JsonbConfig().withFormatting(true));
+
+    static Charset charset(MediaType contentType) {
         var charsetName = (contentType == null) ? null : contentType.getParameters().get(CHARSET_PARAMETER);
         return (charsetName == null) ? ISO_8859_1 : Charset.forName(charsetName);
     }
 
-    public static MediaType firstMediaType(String string) {
+    static MediaType firstMediaType(String string) {
         return (string == null) ? null : MediaType.valueOf(string.split(",", 2)[0]);
     }
 
-    public static StatusType toStatus(String string) {
+    static StatusType toStatus(String string) {
         var code = Integer.parseInt(string.split(" ", 2)[0]);
         return Status.fromStatusCode(code);
     }
 
-    public static Optional<String> optional(Properties properties, String method) {
+    static Optional<String> optional(Properties properties, String method) {
         return Optional.ofNullable(properties.getProperty(method, null));
     }
 
-    public static JsonValue toJson(String string) {
+    static JsonValue toJson(String string) {
         try {
             return string.isEmpty() ? JsonValue.NULL : Json.createReader(new StringReader(string)).read();
         } catch (JsonParsingException e) {

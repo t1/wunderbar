@@ -4,9 +4,8 @@ import com.github.t1.wunderbar.junit.Utils;
 import com.github.t1.wunderbar.junit.WunderBarException;
 import com.github.t1.wunderbar.junit.consumer.BarWriter;
 import com.github.t1.wunderbar.junit.consumer.WunderBarExpectations;
+import com.github.t1.wunderbar.junit.consumer.system.graphql.jaxrs.client.JaxRsTypesafeGraphQLClientBuilder;
 import io.smallrye.graphql.client.typesafe.api.GraphQLClientApi;
-import io.smallrye.graphql.client.typesafe.api.TypesafeGraphQLClientBuilder;
-import io.smallrye.graphql.client.typesafe.jaxrs.JaxRsTypesafeGraphQLClientBuilder;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.eclipse.microprofile.rest.client.RestClientBuilder;
@@ -31,7 +30,7 @@ public class SystemTestExpectations implements WunderBarExpectations {
     private Object buildApi(Class<?> type, String endpointTemplate) {
         if (type.isAnnotationPresent(GraphQLClientApi.class)) {
             this.baseUri = resolve(endpointTemplate, "graphql");
-            return ((JaxRsTypesafeGraphQLClientBuilder) TypesafeGraphQLClientBuilder.newBuilder())
+            return new JaxRsTypesafeGraphQLClientBuilder()
                 .register(filter)
                 .endpoint(baseUri)
                 .build(type);
@@ -46,7 +45,7 @@ public class SystemTestExpectations implements WunderBarExpectations {
         throw new WunderBarException("can't determine technology of API " + type.getName());
     }
 
-    @Override public URI baseUri() { return baseUri; }
+    @Override public URI baseUri() {return baseUri;}
 
     private static URI resolve(String template, String technology) {
         var uri = URI.create(template.replace("{technology}", technology));

@@ -14,6 +14,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 
 import static com.github.t1.wunderbar.junit.consumer.WunderbarExpectationBuilder.given;
+import static com.github.t1.wunderbar.junit.http.HttpUtils.APPLICATION_JSON_UTF8;
 import static org.assertj.core.api.Assertions.contentOf;
 import static org.assertj.core.api.BDDAssertions.then;
 import static org.assertj.core.api.BDDSoftAssertions.thenSoftly;
@@ -34,11 +35,12 @@ class ProductResolverDirIT {
 
         then(resolvedProduct).usingRecursiveComparison().isEqualTo(givenProduct);
         thenSoftly(softly -> {
-            softly.then(contentOf(barFile("shouldResolveProduct/1 request-headers.properties"))).isEqualTo("" +
+            softly.then(contentOf(barFile("shouldResolveProduct/1 request-headers.properties"))).isEqualTo(
                 "Method: POST\n" +
                 "URI: /graphql\n" +
-                "Content-Type: application/json;charset=utf-8\n");
-            softly.then(contentOf(barFile("shouldResolveProduct/1 request-body.json"))).isEqualTo("" +
+                "Accept: " + APPLICATION_JSON_UTF8 + "\n" +
+                "Content-Type: " + APPLICATION_JSON_UTF8 + "\n");
+            softly.then(contentOf(barFile("shouldResolveProduct/1 request-body.json"))).isEqualTo(
                 "{\n" +
                 "    \"query\": \"query product($id: String!) { product(id: $id) {id name price} }\",\n" +
                 "    \"variables\": {\n" +
@@ -46,10 +48,10 @@ class ProductResolverDirIT {
                 "    },\n" +
                 "    \"operationName\": \"product\"\n" +
                 "}\n");
-            softly.then(contentOf(barFile("shouldResolveProduct/1 response-headers.properties"))).isEqualTo("" +
+            softly.then(contentOf(barFile("shouldResolveProduct/1 response-headers.properties"))).isEqualTo(
                 "Status: 200 OK\n" +
                 "Content-Type: application/json;charset=utf-8\n");
-            softly.then(contentOf(barFile("shouldResolveProduct/1 response-body.json"))).isEqualTo("" +
+            softly.then(contentOf(barFile("shouldResolveProduct/1 response-body.json"))).isEqualTo(
                 "{\n" +
                 "    \"data\": {\n" +
                 "        \"product\": {\n" +

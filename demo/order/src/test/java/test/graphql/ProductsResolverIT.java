@@ -7,7 +7,7 @@ import com.github.t1.wunderbar.demo.order.ProductsResolver.Products;
 import com.github.t1.wunderbar.junit.consumer.Service;
 import com.github.t1.wunderbar.junit.consumer.SystemUnderTest;
 import com.github.t1.wunderbar.junit.consumer.WunderBarApiConsumer;
-import io.smallrye.graphql.client.typesafe.api.GraphQLClientException;
+import io.smallrye.graphql.client.GraphQLClientException;
 import org.junit.jupiter.api.Test;
 
 import static com.github.t1.wunderbar.junit.consumer.WunderbarExpectationBuilder.given;
@@ -63,7 +63,7 @@ class ProductsResolverIT {
         then(throwable.getErrors()).hasSize(1);
         var error = throwable.getErrors().get(0);
         then(error.getMessage()).isEqualTo("product x not found");
-        then(error.getErrorCode()).isEqualTo("product-not-found");
+        then(error.getExtensions().get("code")).isEqualTo("product-not-found"); // TODO simplify after #1224 is merged
     }
 
     @Test void shouldFailToResolveForbiddenProduct() {
@@ -74,7 +74,7 @@ class ProductsResolverIT {
         then(throwable.getErrors()).hasSize(1);
         var error = throwable.getErrors().get(0);
         then(error.getMessage()).isEqualTo("product x is forbidden");
-        then(error.getErrorCode()).isEqualTo("product-forbidden");
+        then(error.getExtensions().get("code")).isEqualTo("product-forbidden"); // TODO simplify after #1224 is merged
     }
 
     private OrderItem item(String x) {
@@ -82,10 +82,10 @@ class ProductsResolverIT {
     }
 
     private static class ProductNotFoundException extends RuntimeException {
-        public ProductNotFoundException(String id) { super("product " + id + " not found"); }
+        public ProductNotFoundException(String id) {super("product " + id + " not found");}
     }
 
     private static class ProductForbiddenException extends RuntimeException {
-        public ProductForbiddenException(String id) { super("product " + id + " is forbidden"); }
+        public ProductForbiddenException(String id) {super("product " + id + " is forbidden");}
     }
 }
