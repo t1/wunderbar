@@ -11,7 +11,7 @@ import com.github.t1.wunderbar.junit.http.Authorization;
 import com.github.t1.wunderbar.junit.http.HttpRequest;
 import com.github.t1.wunderbar.junit.http.HttpResponse;
 import com.github.t1.wunderbar.junit.http.HttpServer;
-import io.smallrye.graphql.client.typesafe.api.GraphQLClientException;
+import io.smallrye.graphql.client.GraphQLClientException;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -35,7 +35,7 @@ class ProductsResolverST {
     static final String PRODUCTS_MP_GRAPHQL_CONFIG = Products.class.getName() + "/mp-graphql/";
 
     @SuppressWarnings("unused")
-    static URI endpoint() { return SERVER.baseUri().resolve("/graphql"); }
+    static URI endpoint() {return SERVER.baseUri().resolve("/graphql");}
 
     static HttpResponse handle(HttpRequest request) {
         assert request.getUri().toString().equals("/graphql") : "unexpected uri " + request.getUri();
@@ -53,32 +53,34 @@ class ProductsResolverST {
         switch (id) {
             case "existing-product-id":
                 response.body("{\"data\":{\"product\":{\"id\":\"" + id + "\", \"name\":\"some-product-name\", " +
-                    "\"description\":null, \"price\":1599}}}");
+                              "\"description\":null, \"price\":1599}}}");
                 break;
             case "forbidden-product-id":
                 response.body("{\"errors\": [\n" +
-                    "{\"extensions\": {\"code\": \"product-forbidden\"},\"message\": \"product " + id + " is forbidden\"}" +
-                    "]}\n");
+                              "{\"extensions\": {\"code\": \"product-forbidden\"},\"message\": \"product " + id + " is forbidden\"}" +
+                              "]}\n");
                 break;
             default:
                 response.body("{\"errors\": [\n" +
-                    "{\"extensions\": {\"code\": \"product-not-found\"},\"message\": \"product " + id + " not found\"}" +
-                    "]}\n");
+                              "{\"extensions\": {\"code\": \"product-not-found\"},\"message\": \"product " + id + " not found\"}" +
+                              "]}\n");
                 break;
         }
         return response.build();
     }
 
-    private static boolean isMutation(String query) { return query.startsWith("mutation "); }
+    private static boolean isMutation(String query) {return query.startsWith("mutation ");}
 
     @BeforeAll
     static void setUp() {
+        System.setProperty(PRODUCTS_MP_GRAPHQL_CONFIG + "url", "dummy"); // TODO remove this after #1222 is merged
         System.setProperty(PRODUCTS_MP_GRAPHQL_CONFIG + "username", SYSTEM_TEST_USER);
         System.setProperty(PRODUCTS_MP_GRAPHQL_CONFIG + "password", SYSTEM_TEST_PASSWORD);
     }
 
     @AfterAll static void tearDown() {
         SERVER.stop();
+        System.clearProperty(PRODUCTS_MP_GRAPHQL_CONFIG + "url"); // TODO remove this after #1222 is merged
         System.clearProperty(PRODUCTS_MP_GRAPHQL_CONFIG + "username");
         System.clearProperty(PRODUCTS_MP_GRAPHQL_CONFIG + "password");
     }
@@ -87,7 +89,7 @@ class ProductsResolverST {
     @Service Products products;
     @SystemUnderTest ProductsResolver resolver;
 
-    private OrderItem item(String s) { return OrderItem.builder().productId(s).build(); }
+    private OrderItem item(String s) {return OrderItem.builder().productId(s).build();}
 
     @Test void shouldResolveProduct() {
         var resolvedProduct = resolver.product(item("existing-product-id"));
@@ -102,7 +104,7 @@ class ProductsResolverST {
         then(throwable.getErrors()).hasSize(1);
         var error = throwable.getErrors().get(0);
         then(error.getMessage()).isEqualTo("product unknown-product-id not found");
-        then(error.getErrorCode()).isEqualTo("product-not-found");
+        then(error.getExtensions().get("code")).isEqualTo("product-not-found"); // TODO simplify after #1224 is merged
     }
 
     @Test void shouldFailToResolveForbiddenProduct() {
@@ -111,6 +113,6 @@ class ProductsResolverST {
         then(throwable.getErrors()).hasSize(1);
         var error = throwable.getErrors().get(0);
         then(error.getMessage()).isEqualTo("product forbidden-product-id is forbidden");
-        then(error.getErrorCode()).isEqualTo("product-forbidden");
+        then(error.getExtensions().get("code")).isEqualTo("product-forbidden"); // TODO simplify after #1224 is merged
     }
 }

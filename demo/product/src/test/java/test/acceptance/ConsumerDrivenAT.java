@@ -8,8 +8,8 @@ import com.github.t1.wunderbar.junit.http.HttpResponse;
 import com.github.t1.wunderbar.junit.provider.AfterDynamicTest;
 import com.github.t1.wunderbar.junit.provider.BeforeInteraction;
 import com.github.t1.wunderbar.junit.provider.WunderBarApiProvider;
+import io.smallrye.graphql.client.GraphQLClientException;
 import io.smallrye.graphql.client.typesafe.api.GraphQLClientApi;
-import io.smallrye.graphql.client.typesafe.api.GraphQLClientException;
 import io.smallrye.graphql.client.typesafe.api.Header;
 import io.smallrye.graphql.client.typesafe.api.TypesafeGraphQLClientBuilder;
 import lombok.Data;
@@ -89,7 +89,8 @@ class ConsumerDrivenAT {
 
         var throwable = catchThrowableOfType(() -> api.store(product), GraphQLClientException.class);
 
-        then(throwable.getErrors().get(0).getErrorCode()).isEqualTo("unauthorized");
+        // TODO simplify after #1224 is merged
+        then(throwable.getErrors().get(0).getExtensions().get("code")).isEqualTo("unauthorized");
     }
 
     @TestFactory DynamicNode demoOrderConsumerTests() {

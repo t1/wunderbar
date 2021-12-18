@@ -16,6 +16,7 @@ import java.util.List;
 
 import static com.github.t1.wunderbar.junit.consumer.Level.INTEGRATION;
 import static com.github.t1.wunderbar.junit.consumer.WunderbarExpectationBuilder.given;
+import static com.github.t1.wunderbar.junit.http.HttpUtils.APPLICATION_JSON_UTF8;
 import static org.assertj.core.api.BDDAssertions.then;
 import static test.consumer.GraphQlAuthorizationIT.InterfaceCredentialsGenerator.INTERFACE_CREDENTIALS_BAR;
 import static test.consumer.GraphQlAuthorizationIT.InterfaceHeaderCredentialsGenerator.INTERFACE_HEADER_CREDENTIALS_BAR;
@@ -26,11 +27,13 @@ import static test.consumer.GraphQlAuthorizationIT.ParameterHeaderCredentialsGen
 
 public class GraphQlAuthorizationIT {
     private static final List<Runnable> AFTER_ALL_CHECKS = new ArrayList<>();
-    private static final String UNAUTHORIZED_GRAPHQL = "" +
+    private static final String UNAUTHORIZED_GRAPHQL =
         "Method: POST\n" +
         "URI: /graphql\n" +
-        "Content-Type: application/json;charset=utf-8\n";
-    private static final String AUTHORIZED_GRAPHQL_REQUEST = UNAUTHORIZED_GRAPHQL +
+        "Accept: " + APPLICATION_JSON_UTF8 + "\n" +
+        "Content-Type: " + APPLICATION_JSON_UTF8 + "\n";
+    private static final String AUTHORIZED_GRAPHQL_REQUEST =
+        UNAUTHORIZED_GRAPHQL +
         "Authorization: Dummy authorization\n";
     private static final String DUMMY_CREDENTIALS = "Basic ZHVtbXktdXNlcm5hbWU6ZHVtbXktcGFzc3dvcmQ=";  // dummy-username:dummy-password
     private static final String DUMMY_TOKEN = "Bearer dummy-token";
@@ -58,7 +61,7 @@ public class GraphQlAuthorizationIT {
 
             then(resolvedProduct).usingRecursiveComparison().isEqualTo(givenProduct);
             then(TestBackdoor.writtenBar(NO_CREDENTIALS_BAR).resolve("GraphQlAuthorizationIT/NoCredentialsGenerator/" +
-                "shouldGenerateAndRestoreCredentials/1 request-headers.properties")).hasContent(UNAUTHORIZED_GRAPHQL);
+                                                                     "shouldGenerateAndRestoreCredentials/1 request-headers.properties")).hasContent(UNAUTHORIZED_GRAPHQL);
             then(System.getProperty(propName + "username")).isEqualTo("original-username"); // not changed
             then(System.getProperty(propName + "password")).isEqualTo("original-password"); // not changed
         }
@@ -93,7 +96,7 @@ public class GraphQlAuthorizationIT {
 
             then(resolvedProduct).usingRecursiveComparison().isEqualTo(givenProduct);
             then(TestBackdoor.writtenBar(METHOD_CREDENTIALS_BAR).resolve("GraphQlAuthorizationIT/MethodCredentialsGenerator/" +
-                "shouldGenerateAndRestoreCredentials/1 request-headers.properties")).hasContent(AUTHORIZED_GRAPHQL_REQUEST);
+                                                                         "shouldGenerateAndRestoreCredentials/1 request-headers.properties")).hasContent(AUTHORIZED_GRAPHQL_REQUEST);
             then(System.getProperty(propName + "username")).isEqualTo("dummy-username");
             then(System.getProperty(propName + "password")).isEqualTo("dummy-password");
             AFTER_ALL_CHECKS.add(() -> {
@@ -111,7 +114,7 @@ public class GraphQlAuthorizationIT {
 
             then(resolvedProduct).usingRecursiveComparison().isEqualTo(givenProduct);
             then(TestBackdoor.writtenBar(METHOD_CREDENTIALS_BAR).resolve("GraphQlAuthorizationIT/MethodCredentialsGenerator/" +
-                "shouldGenerateAndRestoreNullCredentials/1 request-headers.properties")).hasContent(AUTHORIZED_GRAPHQL_REQUEST);
+                                                                         "shouldGenerateAndRestoreNullCredentials/1 request-headers.properties")).hasContent(AUTHORIZED_GRAPHQL_REQUEST);
             then(System.getProperty(propName + "username")).isEqualTo("dummy-username");
             then(System.getProperty(propName + "password")).isEqualTo("dummy-password");
             AFTER_ALL_CHECKS.add(() -> {
@@ -145,7 +148,7 @@ public class GraphQlAuthorizationIT {
 
             then(resolvedProduct).usingRecursiveComparison().isEqualTo(givenProduct);
             then(TestBackdoor.writtenBar(INTERFACE_CREDENTIALS_BAR).resolve("GraphQlAuthorizationIT/InterfaceCredentialsGenerator/" +
-                "shouldGenerateAndRestoreInterfaceCredentials/1 request-headers.properties")).hasContent(AUTHORIZED_GRAPHQL_REQUEST);
+                                                                            "shouldGenerateAndRestoreInterfaceCredentials/1 request-headers.properties")).hasContent(AUTHORIZED_GRAPHQL_REQUEST);
             then(System.getProperty(propName + "username")).isEqualTo("dummy-username");
             then(System.getProperty(propName + "password")).isEqualTo("dummy-password");
             AFTER_ALL_CHECKS.add(() -> {
@@ -177,7 +180,7 @@ public class GraphQlAuthorizationIT {
 
             then(resolvedProduct).usingRecursiveComparison().isEqualTo(givenProduct);
             then(TestBackdoor.writtenBar(INTERFACE_HEADER_CREDENTIALS_BAR).resolve("GraphQlAuthorizationIT/InterfaceHeaderCredentialsGenerator/" +
-                "shouldGenerateAndRestoreInterfaceHeaderCredentials/1 request-headers.properties")).hasContent(AUTHORIZED_GRAPHQL_REQUEST);
+                                                                                   "shouldGenerateAndRestoreInterfaceHeaderCredentials/1 request-headers.properties")).hasContent(AUTHORIZED_GRAPHQL_REQUEST);
         }
     }
 
@@ -200,7 +203,7 @@ public class GraphQlAuthorizationIT {
 
             then(resolvedProduct).usingRecursiveComparison().isEqualTo(givenProduct);
             then(TestBackdoor.writtenBar(PARAMETER_HEADER_CREDENTIALS_BAR).resolve("GraphQlAuthorizationIT/ParameterHeaderCredentialsGenerator/" +
-                "shouldGenerateAndRestoreParameterHeaderCredentials/1 request-headers.properties")).hasContent(AUTHORIZED_GRAPHQL_REQUEST);
+                                                                                   "shouldGenerateAndRestoreParameterHeaderCredentials/1 request-headers.properties")).hasContent(AUTHORIZED_GRAPHQL_REQUEST);
         }
     }
 
@@ -223,8 +226,11 @@ public class GraphQlAuthorizationIT {
             var resolvedProduct = products.product(givenProduct.getId());
 
             then(resolvedProduct).usingRecursiveComparison().isEqualTo(givenProduct);
-            then(TestBackdoor.writtenBar(INTERFACE_TOKEN_HEADER_CREDENTIALS_BAR).resolve("GraphQlAuthorizationIT/InterfaceTokenHeaderCredentialsGenerator/" +
-                "shouldGenerateAndRestoreInterfaceTokenHeaderCredentials/1 request-headers.properties")).hasContent(AUTHORIZED_GRAPHQL_REQUEST);
+            then(TestBackdoor
+                .writtenBar(INTERFACE_TOKEN_HEADER_CREDENTIALS_BAR)
+                .resolve("GraphQlAuthorizationIT/InterfaceTokenHeaderCredentialsGenerator/" +
+                         "shouldGenerateAndRestoreInterfaceTokenHeaderCredentials/1 request-headers.properties"))
+                .hasContent(AUTHORIZED_GRAPHQL_REQUEST);
         }
     }
 

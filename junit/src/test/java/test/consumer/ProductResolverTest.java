@@ -3,8 +3,8 @@ package test.consumer;
 import com.github.t1.wunderbar.junit.consumer.Service;
 import com.github.t1.wunderbar.junit.consumer.SystemUnderTest;
 import com.github.t1.wunderbar.junit.consumer.WunderBarApiConsumer;
+import io.smallrye.graphql.client.GraphQLClientException;
 import io.smallrye.graphql.client.typesafe.api.GraphQLClientApi;
-import io.smallrye.graphql.client.typesafe.api.GraphQLClientException;
 import org.eclipse.microprofile.graphql.Name;
 import org.eclipse.microprofile.rest.client.inject.RegisterRestClient;
 import org.junit.jupiter.api.DisplayName;
@@ -104,7 +104,7 @@ abstract class ProductResolverTest {
     }
 
     static class ProductNotFoundException extends RuntimeException {
-        ProductNotFoundException(String id) { super("product " + id + " not found"); }
+        ProductNotFoundException(String id) {super("product " + id + " not found");}
     }
 
     void failsWith(Throwable throwable, String code, String message, Status status) {
@@ -114,7 +114,7 @@ abstract class ProductResolverTest {
             then(e.getErrors()).hasSize(1);
             var error = e.getErrors().get(0);
             then(error.getMessage()).isEqualTo(message);
-            then(error.getErrorCode()).isEqualTo(code);
+            then(error.getExtensions().get("code")).isEqualTo(code); // TODO simplify after #1224 is merged
         } else if (throwable instanceof WebApplicationException) {
             var response = ((WebApplicationException) throwable).getResponse();
             then(response.getStatusInfo()).isEqualTo(status);
@@ -128,7 +128,7 @@ abstract class ProductResolverTest {
         }
     }
 
-    void verifyBaseUri(URI baseUri) { then(baseUri.toString()).startsWith("http://localhost:"); }
+    void verifyBaseUri(URI baseUri) {then(baseUri.toString()).startsWith("http://localhost:");}
 
     @Nested class StaticMethods {
         @Test void shouldGetBaseUri() {
@@ -145,7 +145,7 @@ abstract class ProductResolverTest {
 
         @Test void shouldFailToGetBaseUriFromNonServiceProxy() {
             var nonServiceProxy = Proxy.newProxyInstance(ClassLoader.getSystemClassLoader(), new Class[]{Runnable.class},
-                (Object proxy, Method method, Object[] args) -> { throw new RuntimeException("unexpected"); });
+                (Object proxy, Method method, Object[] args) -> {throw new RuntimeException("unexpected");});
 
             var throwable = catchThrowable(() -> baseUri(nonServiceProxy));
 
@@ -160,7 +160,7 @@ abstract class ProductResolverTest {
             then(throwable).isInstanceOf(IllegalArgumentException.class).hasMessage("not a service proxy instance");
         }
 
-        private Object dummyHandler(Object o, Method method, Object[] objects) { throw new RuntimeException("unexpected"); }
+        private Object dummyHandler(Object o, Method method, Object[] objects) {throw new RuntimeException("unexpected");}
 
         @Test void shouldManuallyBuildProxy() {
             var proxy = createService(Products.class);

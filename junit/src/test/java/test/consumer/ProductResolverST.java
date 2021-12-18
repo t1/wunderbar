@@ -3,7 +3,7 @@ package test.consumer;
 import com.github.t1.wunderbar.junit.consumer.Service;
 import com.github.t1.wunderbar.junit.consumer.SystemUnderTest;
 import com.github.t1.wunderbar.junit.consumer.WunderBarApiConsumer;
-import io.smallrye.graphql.client.typesafe.api.GraphQLClientException;
+import io.smallrye.graphql.client.GraphQLClientException;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
@@ -31,7 +31,7 @@ class ProductResolverST { // not `extends ProductResolverTest`, as we must not c
     @RegisterExtension DummyServer dummyServer = new DummyServer();
 
     @SuppressWarnings("unused")
-    URI endpoint() { return dummyServer.baseUri(); }
+    URI endpoint() {return dummyServer.baseUri();}
 
 
     @Test void shouldResolveProduct() {
@@ -47,7 +47,7 @@ class ProductResolverST { // not `extends ProductResolverTest`, as we must not c
         then(throwable.getErrors()).hasSize(1);
         var error = throwable.getErrors().get(0);
         then(error.getMessage()).isEqualTo("product unknown-product-id not found");
-        then(error.getErrorCode()).isEqualTo("product-not-found");
+        then(error.getExtensions().get("code")).isEqualTo("product-not-found"); // TODO simplify after #1224 is merged
     }
 
     @Test void shouldFailToResolveForbiddenProduct() {
@@ -56,7 +56,7 @@ class ProductResolverST { // not `extends ProductResolverTest`, as we must not c
         then(throwable.getErrors()).hasSize(1);
         var error = throwable.getErrors().get(0);
         then(error.getMessage()).isEqualTo("product forbidden-product-id is forbidden");
-        then(error.getErrorCode()).isEqualTo("product-forbidden");
+        then(error.getExtensions().get("code")).isEqualTo("product-forbidden"); // TODO simplify after #1224 is merged
     }
 
     @Test void shouldGetBaseUri() {
@@ -70,7 +70,7 @@ class ProductResolverST { // not `extends ProductResolverTest`, as we must not c
         @Service RestService restService;
 
         @SuppressWarnings("unused")
-        URI endpoint() { return ProductResolverST.this.endpoint(); }
+        URI endpoint() {return ProductResolverST.this.endpoint();}
 
         @Test void shouldGetProduct() {
             var response = restService.getProduct("existing-product-id");
