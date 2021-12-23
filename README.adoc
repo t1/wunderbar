@@ -90,3 +90,31 @@ On the API Consumer side, the `bar` files never contain the value of a real `Aut
 For a GraphQL client, you can use the `@AuthorizationHeader` annotation to read the configuration from an MP Config property; but you don't have to actually provide those for an integration test, as they won't be written anyway; a dummy value will be configured on the fly. OTOH, a `@Header(name = "Authorization")` works normally (but won't be written either).
 
 On the API Provider side, the acceptance test has to replace this value with real credentials, e.g. by returning a modified `HttpRequest` in a `@BeforeInteraction` method.
+
+== Integration with Weld JUnit
+
+Using the `@SystemUnderTest` annotation performs only a very limited form of dependency injection. For more complex dependency requirements, it may be appropriate to use, e.g., `weld-junit5` as a fully blown CDI testing environment. To do so, do the following steps:
+
+1. add a `test` scope dependency on `org.jboss.weld:weld-junit5`,
+2. annotate your test class with `@EnableWeld` _after_ the `@WunderBarApiConsumer` annotation,
+3. instead of `@SystemUnderTest`, use the CDI `@Inject` annotation, and
+4. build a `WeldInitiator` with your classes and for the services, add a mock bean with a _delayed_ producer of the WunderBar-mocked service field.
+
+This sums up like this:
+
+[source,java]
+----
+@WunderBarApiConsumer
+@EnableWeld
+class ProductsResolverWeldIT {
+    @Service Products products;
+    @Inject ProductsResolver resolver;
+
+    @WeldSetup
+    public WeldInitiator weld = WeldInitiator.from(ProductsResolver.class, Products.class)
+        .addBeans(MockBean.builder().types(Products.class).create(ctx -> products).build())
+        .build();
+}
+----
+
+For a complete example, take a look at the `ProductsResolverWeldIT` class in the order demo project.

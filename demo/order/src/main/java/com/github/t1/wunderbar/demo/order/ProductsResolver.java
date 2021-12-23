@@ -7,8 +7,11 @@ import org.eclipse.microprofile.graphql.Mutation;
 import org.eclipse.microprofile.graphql.NonNull;
 import org.eclipse.microprofile.graphql.Source;
 
+import javax.inject.Inject;
+
 @GraphQLApi
 public class ProductsResolver {
+    @Inject
     Products products;
 
     public Product product(@Source OrderItem item) {
