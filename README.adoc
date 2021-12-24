@@ -4,7 +4,7 @@ Code-first, low ceremony https://martinfowler.com/articles/consumerDrivenContrac
 
 Let's pick that apart:
 
-"code-first": there's a lot of debate about designing APIs schema-first (a.k.a. api-first) vs. code-first. I absolutely agree that not only for public APIs, it's very important to design APIs in a consistent and easily approachable way. I also think that it's even more important to capture the actual use-cases of real consumers of an API. It's just way too easy to design something that looks good as a schema but is clumsy to use in practice. And by lowering the bar to specify the (changes to an) API as much as possible, consumers are invited to help evolve the API in a way that is practical to them.
+"code-first": there's a lot of debate about designing APIs schema-first (a.k.a. api-first) vs. code-first. I absolutely agree that not only for public APIs, it's very important to design APIs in a consistent and easily approachable way. I even think that it's actually more important to capture the real use-cases of real consumers of an API. It's just way too easy to design something that looks good as a schema but is clumsy to use in practice. And by lowering the bar to specify the (changes to an) API as much as possible, consumers are invited to help evolve the API in a way that is practical to them.
 
 "low ceremony": use it just like you'd use https://site.mockito.org[Mockito] to test your client code. Easily scale that from Unit to Integration Test, so you also cover all the serialization and http request/response involved. This helps clients to test their own code. As a side effect, WunderBar records the expected http interactions into a Behavior ARchive file, ready to be handed over to the API provider to verify compliance with the client requirements. For the details see below.
 
@@ -78,7 +78,7 @@ Writing your acceptance tests in this way makes testing more robust, as you don'
 
 == Documentation
 
-The Documentation is in the JavaDoc, mainly of the annotation https://github.com/t1/wunderbar/blob/master/junit/src/main/java/com/github/t1/wunderbar/junit/consumer/WunderBarApiConsumer.java[`@WunderBarApiConsumer`], the https://github.com/t1/wunderbar/blob/master/junit/src/main/java/com/github/t1/wunderbar/junit/consumer/Level.java[`Level`] enum and the https://github.com/t1/wunderbar/blob/main/junit/src/main/java/com/github/t1/wunderbar/junit/consumer/WunderbarExpectationBuilder.java[`WunderbarExpectationBuilder`] for the API consumer (client) side and https://github.com/t1/wunderbar/blob/master/junit/src/main/java/com/github/t1/wunderbar/junit/provider/WunderBarApiProvider.java[`@WunderBarApiProvider`] for the API provider (server) side.
+The full documentation is in the JavaDoc, mainly of the annotation https://github.com/t1/wunderbar/blob/master/junit/src/main/java/com/github/t1/wunderbar/junit/consumer/WunderBarApiConsumer.java[`@WunderBarApiConsumer`], the https://github.com/t1/wunderbar/blob/master/junit/src/main/java/com/github/t1/wunderbar/junit/consumer/Level.java[`Level`] enum and the https://github.com/t1/wunderbar/blob/main/junit/src/main/java/com/github/t1/wunderbar/junit/consumer/WunderbarExpectationBuilder.java[`WunderbarExpectationBuilder`] for the API consumer (client) side and https://github.com/t1/wunderbar/blob/master/junit/src/main/java/com/github/t1/wunderbar/junit/provider/WunderBarApiProvider.java[`@WunderBarApiProvider`] for the API provider (server) side.
 
 The `demo` module contains two example projects: `order` consumes an API that the `product` service provides. Both in REST and GraphQL and on all test levels.
 
@@ -91,14 +91,14 @@ For a GraphQL client, you can use the `@AuthorizationHeader` annotation to read 
 
 On the API Provider side, the acceptance test has to replace this value with real credentials, e.g. by returning a modified `HttpRequest` in a `@BeforeInteraction` method.
 
-== Integration with Weld JUnit
+== Full Dependency Injection
 
-Using the `@SystemUnderTest` annotation performs only a very limited form of dependency injection. For more complex dependency requirements, it may be appropriate to use, e.g., `weld-junit5` as a fully blown CDI testing environment. To do so, do the following steps:
+Using the `@SystemUnderTest` annotation performs only a very limited form of dependency injection. For more complex dependency requirements, it may be appropriate to use, e.g., https://github.com/weld/weld-junit/blob/master/junit5/README.md[`weld-junit5`] as a fully blown CDI testing environment. To do so, do the following steps:
 
 1. add a `test` scope dependency on `org.jboss.weld:weld-junit5`,
 2. annotate your test class with `@EnableWeld` _after_ the `@WunderBarApiConsumer` annotation,
 3. instead of `@SystemUnderTest`, use the CDI `@Inject` annotation, and
-4. build a `WeldInitiator` with your classes and for the services, add a mock bean with a _delayed_ producer of the WunderBar-mocked service field.
+4. build a `WeldInitiator` with your classes, and for the services, add a mock bean with a _delayed_ producer of the WunderBar-mocked service field.
 
 This sums up like this:
 
