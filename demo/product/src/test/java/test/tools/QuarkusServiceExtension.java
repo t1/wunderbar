@@ -1,5 +1,6 @@
 package test.tools;
 
+import lombok.extern.slf4j.Slf4j;
 import org.eclipse.microprofile.rest.client.RestClientBuilder;
 import org.junit.jupiter.api.extension.AfterAllCallback;
 import org.junit.jupiter.api.extension.BeforeAllCallback;
@@ -8,16 +9,18 @@ import org.junit.jupiter.api.extension.ExtensionContext;
 
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
+import javax.ws.rs.Produces;
 import javax.ws.rs.core.Response;
-import javax.ws.rs.core.Response.Status.Family;
 import java.net.URI;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.concurrent.TimeoutException;
 
-import static javax.ws.rs.core.Response.Status.Family.OTHER;
+import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
 import static javax.ws.rs.core.Response.Status.Family.SUCCESSFUL;
 
+/** @see QuarkusService */
+@Slf4j
 class QuarkusServiceExtension implements Extension, BeforeAllCallback, AfterAllCallback {
     private Process service;
 
@@ -26,25 +29,28 @@ class QuarkusServiceExtension implements Extension, BeforeAllCallback, AfterAllC
         waitUntilReady();
     }
 
+    // TODO there must be a better way to wait for the readiness than a busy-waiting loop
     private void waitUntilReady() throws TimeoutException {
         var healthClient = RestClientBuilder.newBuilder()
             .baseUri(URI.create("http://localhost:8080"))
             .build(HealthClient.class);
         var start = Instant.now();
-        Family family;
+        Response response;
         do {
-            Response status;
             try {
-                status = healthClient.ready();
-                family = status.getStatusInfo().getFamily();
+                response = healthClient.ready();
             } catch (Exception e) {
-                family = OTHER;
-                continue;
+                response = Response.status(399).build();
             }
-            if (Duration.between(start, Instant.now()).getSeconds() > 10)
-                throw new TimeoutException("still getting " + status.getStatus() + ": "
-                    + status.readEntity(String.class).replaceAll("\n", " "));
-        } while (!family.equals(SUCCESSFUL));
+            if (response.getStatusInfo().getFamily().equals(SUCCESSFUL)) return;
+            log.debug("busy-wait. {}", info(response));
+        } while (Duration.between(start, Instant.now()).getSeconds() < 10);
+        throw new TimeoutException("while waiting for readiness. Last got: " + info(response));
+    }
+
+    private String info(Response response) {
+        return response.getStatusInfo().getFamily() + "/" + response.getStatus() + "/" + response.getStatusInfo().getReasonPhrase()
+               + ((response.hasEntity() ? ": " + response.readEntity(String.class) : ""));
     }
 
     @Override public void afterAll(ExtensionContext context) {
@@ -53,6 +59,7 @@ class QuarkusServiceExtension implements Extension, BeforeAllCallback, AfterAllC
 
     @Path("/q/health")
     public interface HealthClient {
+        @Produces(APPLICATION_JSON)
         @GET @Path("/ready") Response ready();
     }
 }
