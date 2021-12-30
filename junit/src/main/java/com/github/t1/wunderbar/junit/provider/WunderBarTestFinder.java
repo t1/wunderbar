@@ -20,7 +20,9 @@ import static org.junit.jupiter.api.DynamicContainer.dynamicContainer;
 import static org.junit.jupiter.api.DynamicTest.dynamicTest;
 
 /**
+ * Static methods to find <code>*.bar</code> files.
  *
+ * @see WunderBarApiProvider
  */
 @Slf4j
 public class WunderBarTestFinder {
