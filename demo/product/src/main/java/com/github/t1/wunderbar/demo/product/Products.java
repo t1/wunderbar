@@ -120,7 +120,7 @@ public class Products {
 
         private static Response response(WebApplicationException type) {
             var status = type.getResponse().getStatus();
-            return Response.status(status).type("application/problem+json").entity("" +
+            return Response.status(status).type("application/problem+json").entity(
                 "{\n" +
                 "    \"detail\": \"HTTP " + status + " " + Status.fromStatusCode(status) + "\",\n" +
                 "    \"title\": \"" + type.getClass().getSimpleName() + "\",\n" +

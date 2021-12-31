@@ -17,11 +17,13 @@ import java.time.Instant;
 import java.util.concurrent.TimeoutException;
 
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
+import static javax.ws.rs.core.MediaType.TEXT_PLAIN_TYPE;
 import static javax.ws.rs.core.Response.Status.Family.SUCCESSFUL;
 
 /** @see QuarkusService */
 @Slf4j
-class QuarkusServiceExtension implements Extension, BeforeAllCallback, AfterAllCallback {
+public class QuarkusServiceExtension implements Extension, BeforeAllCallback, AfterAllCallback {
+    public static final String ENDPOINT = "http://localhost:8081";
     private Process service;
 
     @Override public void beforeAll(ExtensionContext context) throws Exception {
@@ -32,7 +34,7 @@ class QuarkusServiceExtension implements Extension, BeforeAllCallback, AfterAllC
     // TODO there must be a better way to wait for the readiness than a busy-waiting loop
     private void waitUntilReady() throws TimeoutException {
         var healthClient = RestClientBuilder.newBuilder()
-            .baseUri(URI.create("http://localhost:8080"))
+            .baseUri(URI.create(ENDPOINT))
             .build(HealthClient.class);
         var start = Instant.now();
         Response response;
@@ -40,7 +42,7 @@ class QuarkusServiceExtension implements Extension, BeforeAllCallback, AfterAllC
             try {
                 response = healthClient.ready();
             } catch (Exception e) {
-                response = Response.status(399).build();
+                response = Response.status(399).type(TEXT_PLAIN_TYPE).entity(e.toString()).build();
             }
             if (response.getStatusInfo().getFamily().equals(SUCCESSFUL)) return;
             log.debug("busy-wait. {}", info(response));

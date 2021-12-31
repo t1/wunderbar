@@ -37,25 +37,25 @@ import static com.github.t1.wunderbar.junit.provider.WunderBarTestFinder.findTes
 import static com.github.t1.wunderbar.junit.provider.WunderBarTestFinder.findTestsInArtifact;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.assertj.core.api.Assertions.catchThrowableOfType;
-import static test.acceptance.ConsumerDrivenAT.ENDPOINT;
+import static test.tools.QuarkusServiceExtension.ENDPOINT;
 
 @QuarkusService
 @WunderBarApiProvider(baseUri = ENDPOINT)
 class ConsumerDrivenAT {
-    protected static final String ENDPOINT = "http://localhost:8080";
     private static final String GRAPHQL_ENDPOINT = ENDPOINT + "/graphql";
 
     @SuppressWarnings("SpellCheckingInspection")
-    private static final String JWT = "Bearer " +
-                                      "eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9" +
-                                      "." +
-                                      "eyJpc3MiOiJodHRwczovL2dpdGh1Yi5jb20vdDEiLCJ1cG4iOiJqYW5lQGRvZS5jb20iLCJncm91cHMiOlsiV3JpdGVyIl0sImlhd" +
-                                      "CI6MTYxNTAwMjk1NiwiZXhwIjo0NjkwODQyOTU2LCJqdGkiOiJhMWY3YzAwYS0yYWI5LTQ3MGItYWVhNi0xYjZmZWU3NDM3ZTYifQ" +
-                                      "." +
-                                      "VRYLxspQqQ_IjORNR092L2lqPg6SE3xOeMQEUVLEuOZj1YoynM-oOMw0UAGQsZlv1w11pf9XIf2okptV2FKloFkkn6cWm0K1ZeYYv" +
-                                      "Ud5OKaRU33AapZ2GSSKASfOkzshzw_y5G_e5-VqCXo5asspIYwSNzFy9JcA65JWhBttyepOPUx4Kmp3Eb5V9f-2rpfNGQbyHNh7rY" +
-                                      "BpeLrnViaaVe_3wW4QKiAX17gncNf6nLWO-pH8_qlLcaWqBNrIBauA_YqrZT4kUcyb0uFz06hSThGiJliUS2KiZratjj3YvGj8X8_" +
-                                      "ikqc7Tm_xldxlX_D5IHyuhNNe4sVppXDko7fQMw";
+    private static final String JWT =
+        "Bearer " +
+        "eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9" +
+        "." +
+        "eyJpc3MiOiJodHRwczovL2dpdGh1Yi5jb20vdDEiLCJ1cG4iOiJqYW5lQGRvZS5jb20iLCJncm91cHMiOlsiV3JpdGVyIl0sImlhd" +
+        "CI6MTYxNTAwMjk1NiwiZXhwIjo0NjkwODQyOTU2LCJqdGkiOiJhMWY3YzAwYS0yYWI5LTQ3MGItYWVhNi0xYjZmZWU3NDM3ZTYifQ" +
+        "." +
+        "VRYLxspQqQ_IjORNR092L2lqPg6SE3xOeMQEUVLEuOZj1YoynM-oOMw0UAGQsZlv1w11pf9XIf2okptV2FKloFkkn6cWm0K1ZeYYv" +
+        "Ud5OKaRU33AapZ2GSSKASfOkzshzw_y5G_e5-VqCXo5asspIYwSNzFy9JcA65JWhBttyepOPUx4Kmp3Eb5V9f-2rpfNGQbyHNh7rY" +
+        "BpeLrnViaaVe_3wW4QKiAX17gncNf6nLWO-pH8_qlLcaWqBNrIBauA_YqrZT4kUcyb0uFz06hSThGiJliUS2KiZratjj3YvGj8X8_" +
+        "ikqc7Tm_xldxlX_D5IHyuhNNe4sVppXDko7fQMw";
     private static final Authorization WRITER = Authorization.valueOf(JWT);
 
     private final Backdoor backdoor = TypesafeGraphQLClientBuilder.newBuilder().endpoint(GRAPHQL_ENDPOINT).build(Backdoor.class);
@@ -175,7 +175,7 @@ class ConsumerDrivenAT {
         private final HttpResponse response;
         protected boolean needsAuth;
 
-        @SuppressWarnings({"CdiInjectionPointsInspection", "QsPrivateBeanMembersInspection"})
+        @SuppressWarnings("CdiInjectionPointsInspection")
         private RestSetUp(HttpInteraction interaction) {
             this.request = interaction.getRequest();
             this.response = interaction.getResponse();
@@ -238,7 +238,7 @@ class ConsumerDrivenAT {
 
         private final GraphQlResponse graphQlResponse;
 
-        @SuppressWarnings({"CdiInjectionPointsInspection", "QsPrivateBeanMembersInspection"})
+        @SuppressWarnings("CdiInjectionPointsInspection")
         private GraphQlSetUp(HttpInteraction interaction) {
             HttpResponse response = interaction.getResponse();
             var responseBody = response.getBody()
