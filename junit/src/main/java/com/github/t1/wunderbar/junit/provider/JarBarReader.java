@@ -57,8 +57,8 @@ class JarBarReader extends BarReader {
     protected Optional<String> optionalRead(String name) {
         var entry = jarFile.getEntry(name);
         if (entry == null) return Optional.empty();
-        try (var inputStream = jarFile.getInputStream(entry)) {
-            return Optional.of(new Scanner(inputStream, UTF_8).useDelimiter("\\Z").next());
+        try (var scanner = new Scanner(jarFile.getInputStream(entry), UTF_8)) {
+            return Optional.of(scanner.useDelimiter("\\Z").next());
         }
     }
 
