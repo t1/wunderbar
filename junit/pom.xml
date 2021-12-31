@@ -12,13 +12,6 @@
 
     <dependencies>
         <dependency>
-            <groupId>org.projectlombok</groupId>
-            <artifactId>lombok</artifactId>
-            <version>${lombok.version}</version>
-            <scope>provided</scope>
-        </dependency>
-
-        <dependency>
             <groupId>io.smallrye</groupId>
             <artifactId>smallrye-graphql-client-implementation-vertx</artifactId>
             <version>${smallrye-graphql.version}</version>
