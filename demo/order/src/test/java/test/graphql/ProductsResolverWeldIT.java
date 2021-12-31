@@ -26,7 +26,7 @@ class ProductsResolverWeldIT {
     @Inject ProductsResolver resolver;
 
     @WeldSetup
-    public WeldInitiator weld = WeldInitiator.from(ProductsResolver.class, Products.class)
+    WeldInitiator weld = WeldInitiator.from(ProductsResolver.class, Products.class)
         .addBeans(MockBean.builder().types(Products.class).create(ctx -> products).build())
         .build();
 
@@ -93,10 +93,10 @@ class ProductsResolverWeldIT {
     }
 
     private static class ProductNotFoundException extends RuntimeException {
-        public ProductNotFoundException(String id) {super("product " + id + " not found");}
+        public ProductNotFoundException(String id) { super("product " + id + " not found"); }
     }
 
     private static class ProductForbiddenException extends RuntimeException {
-        public ProductForbiddenException(String id) {super("product " + id + " is forbidden");}
+        public ProductForbiddenException(String id) { super("product " + id + " is forbidden"); }
     }
 }
