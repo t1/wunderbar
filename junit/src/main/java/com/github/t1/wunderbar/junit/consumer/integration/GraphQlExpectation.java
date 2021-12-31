@@ -5,6 +5,7 @@ import com.github.t1.wunderbar.junit.http.HttpRequest;
 import com.github.t1.wunderbar.junit.http.HttpResponse;
 import com.github.t1.wunderbar.junit.http.HttpServer;
 import io.smallrye.graphql.client.typesafe.api.AuthorizationHeader;
+import io.smallrye.graphql.client.typesafe.api.GraphQLClientApi;
 import io.smallrye.graphql.client.typesafe.api.TypesafeGraphQLClientBuilder;
 import org.eclipse.microprofile.graphql.Name;
 
@@ -15,18 +16,25 @@ import java.util.Map;
 import static com.github.t1.wunderbar.junit.Utils.errorCode;
 
 class GraphQlExpectation extends HttpServiceExpectation {
-    private final String configPrefix;
-    private Authorization.Basic old;
+    private final String configKey;
+    private Authorization.Basic oldAuth;
 
     GraphQlExpectation(HttpServer server, Method method, Object... args) {
         super(server, method, args);
-        this.configPrefix = method.getDeclaringClass().getName() + "/mp-graphql/";
+        this.configKey = configKey(method);
+    }
+
+    private String configKey(Method method) {
+        var declaringClass = method.getDeclaringClass();
+        var graphQLClientApi = declaringClass.getAnnotation(GraphQLClientApi.class);
+        return graphQLClientApi.configKey().isEmpty() ? declaringClass.getName() : graphQLClientApi.configKey();
     }
 
     @Override protected Object service() {
-        if (needsAuthorizationConfig()) this.old = configureDummyAuthorization();
+        if (needsAuthorizationConfig()) this.oldAuth = configureDummyAuthorization();
         return TypesafeGraphQLClientBuilder.newBuilder()
-            .endpoint(baseUri().resolve("/graphql"))
+            .endpoint(baseUri() + "/graphql")
+            .configKey(configKey)
             .build(method.getDeclaringClass());
     }
 
@@ -36,8 +44,8 @@ class GraphQlExpectation extends HttpServiceExpectation {
     }
 
     private Authorization.Basic configureDummyAuthorization() {
-        var oldUsername = System.setProperty(configPrefix + "username", "dummy-username");
-        var oldPassword = System.setProperty(configPrefix + "password", "dummy-password");
+        var oldUsername = setConfig("username", "dummy-username");
+        var oldPassword = setConfig("password", "dummy-password");
         return new Authorization.Basic(oldUsername, oldPassword);
     }
 
@@ -76,14 +84,15 @@ class GraphQlExpectation extends HttpServiceExpectation {
 
     @Override public void done() {
         super.done();
-        if (old != null) {
-            setSystemProperty("username", old.getUsername());
-            setSystemProperty("password", old.getPassword());
+        if (oldAuth != null) {
+            setConfig("username", oldAuth.getUsername());
+            setConfig("password", oldAuth.getPassword());
         }
     }
 
-    private void setSystemProperty(String name, String value) {
-        if (value == null) System.clearProperty(configPrefix + name);
-        else System.setProperty(configPrefix + name, value);
+    private String setConfig(String name, String value) {
+        return (value == null)
+            ? System.clearProperty(configKey + "/mp-graphql/" + name)
+            : System.setProperty(configKey + "/mp-graphql/" + name, value);
     }
 }

@@ -2,6 +2,7 @@ package test.consumer;
 
 import com.github.t1.wunderbar.junit.consumer.Service;
 import com.github.t1.wunderbar.junit.consumer.WunderBarApiConsumer;
+import io.smallrye.graphql.client.typesafe.api.GraphQLClientApi;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import test.consumer.ProductResolver.Item;
@@ -16,6 +17,8 @@ import static com.github.t1.wunderbar.junit.consumer.WunderbarExpectationBuilder
 import static com.github.t1.wunderbar.junit.consumer.WunderbarExpectationBuilder.given;
 import static org.assertj.core.api.Assertions.catchThrowable;
 import static org.assertj.core.api.BDDAssertions.then;
+import static test.consumer.ProductResolverIT.WithConfigKeyGenerator.TEST_CONFIG_KEY;
+import static test.consumer.ProductResolverIT.WithConfigKeyGenerator.WITH_CONFIG_KEY_BAR;
 
 @WunderBarApiConsumer
 class ProductResolverIT extends ProductResolverTest {
@@ -92,6 +95,35 @@ class ProductResolverIT extends ProductResolverTest {
             var throwable = catchThrowable(() -> stub.willReturn(null));
 
             then(throwable).hasMessage("can't return null from an expectation");
+        }
+    }
+
+    @GraphQLClientApi(configKey = TEST_CONFIG_KEY)
+    interface ProductsWithConfigKey {
+        Product product(String id);
+    }
+
+    @WunderBarApiConsumer(level = INTEGRATION, fileName = WITH_CONFIG_KEY_BAR)
+    @Nested class WithConfigKeyGenerator {
+        static final String TEST_CONFIG_KEY = "test-config-key";
+        static final String WITH_CONFIG_KEY_BAR = "target/WithConfigKeyGenerator-bar/";
+
+        @Service ProductsWithConfigKey productsWithConfigKey;
+
+        @Test void shouldGetWithConfigKey() {
+            var propName = TEST_CONFIG_KEY + "/mp-graphql/";
+            System.setProperty(propName + "url", "original-url");
+            System.setProperty(propName + "username", "original-username");
+            System.setProperty(propName + "password", "original-password");
+            var givenProduct = Product.builder().id("nam").build();
+            given(productsWithConfigKey.product(givenProduct.getId())).willReturn(givenProduct);
+
+            var resolvedProduct = productsWithConfigKey.product(givenProduct.getId());
+
+            then(resolvedProduct).usingRecursiveComparison().isEqualTo(givenProduct);
+            then(System.getProperty(propName + "url")).isEqualTo("original-url");
+            then(System.getProperty(propName + "username")).isEqualTo("original-username");
+            then(System.getProperty(propName + "password")).isEqualTo("original-password");
         }
     }
 }

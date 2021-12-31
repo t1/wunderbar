@@ -23,7 +23,7 @@ public class ProductsResolver {
         return products.update(patch);
     }
 
-    @GraphQLClientApi
+    @GraphQLClientApi(configKey = "products")
     public interface Products {
         Product product(@NonNull String id);
         @AuthorizationHeader
