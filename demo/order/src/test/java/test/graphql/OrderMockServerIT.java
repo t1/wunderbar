@@ -11,6 +11,7 @@ import lombok.experimental.SuperBuilder;
 import org.eclipse.microprofile.graphql.NonNull;
 import org.eclipse.microprofile.graphql.Query;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.Network;
@@ -23,6 +24,7 @@ import java.util.List;
 import static org.assertj.core.api.BDDAssertions.then;
 import static org.testcontainers.containers.Network.newNetwork;
 
+@Disabled("WIP") // TODO develop and use mock server
 @Testcontainers
 class OrderMockServerIT {
     static final Network NETWORK = newNetwork();
