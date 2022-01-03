@@ -27,7 +27,7 @@ import static org.testcontainers.containers.Network.newNetwork;
 class OrderMockServerIT {
     static final Network NETWORK = newNetwork();
 
-    @Container static JeeContainer ORDERS = new WildflyContainer("rdohna/wildfly", null)
+    @Container static JeeContainer ORDERS = new WildflyContainer()//"rdohna/wildfly", null)
         .withNetwork(NETWORK)
         .withDeployment("target/order.war");
 
