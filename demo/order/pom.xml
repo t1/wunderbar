@@ -54,15 +54,13 @@
         </dependency>
         <dependency>
             <groupId>io.smallrye</groupId>
-            <artifactId>smallrye-graphql-api</artifactId>
+            <artifactId>smallrye-graphql-servlet</artifactId>
             <version>${smallrye-graphql.version}</version>
-            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>io.smallrye</groupId>
             <artifactId>smallrye-graphql-client-implementation-vertx</artifactId>
             <version>${smallrye-graphql.version}</version>
-            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
@@ -99,6 +97,12 @@
             <groupId>org.jboss.weld</groupId>
             <artifactId>weld-junit5</artifactId>
             <version>2.0.2.Final</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.github.t1</groupId>
+            <artifactId>jee-testcontainers</artifactId>
+            <version>1.5.7-SNAPSHOT</version>
             <scope>test</scope>
         </dependency>
     </dependencies>

@@ -1,7 +1,7 @@
 <configuration>
     <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
         <encoder>
-            <pattern>%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>
+            <pattern>%d{HH:mm:ss.SSS} [%thread] %-5level %logger - %msg%n</pattern>
         </encoder>
     </appender>
 
@@ -12,4 +12,6 @@
     <logger name="org.xnio.nio" level="INFO"/>
     <logger name="io.netty" level="INFO"/>
     <logger name="org.jboss.weld.Bootstrap" level="INFO"/>
+    <logger name="com.github.dockerjava.zerodep.shaded.org.apache.hc.client5.http" level="INFO"/>
+    <logger name="org.testcontainers.containers.output.WaitingConsumer" level="INFO"/>
 </configuration>
