@@ -26,6 +26,14 @@
 
     <dependencies>
         <dependency>
+            <groupId>com.github.t1</groupId>
+            <artifactId>wunderbar.demo.order</artifactId>
+            <version>${project.version}</version>
+            <type>war</type>
+            <scope>test</scope><!-- just make sure `order` is built first -->
+        </dependency>
+
+        <dependency>
             <groupId>io.quarkus</groupId>
             <artifactId>quarkus-resteasy-jsonb</artifactId>
         </dependency>

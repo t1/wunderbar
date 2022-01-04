@@ -28,6 +28,7 @@
 
     <modules>
         <module>junit</module>
+        <module>mock</module>
         <module>demo</module>
     </modules>
 

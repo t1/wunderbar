@@ -11,11 +11,9 @@ import lombok.experimental.SuperBuilder;
 import org.eclipse.microprofile.graphql.NonNull;
 import org.eclipse.microprofile.graphql.Query;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.Network;
-import org.testcontainers.containers.wait.strategy.HttpWaitStrategy;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
@@ -24,21 +22,19 @@ import java.util.List;
 import static org.assertj.core.api.BDDAssertions.then;
 import static org.testcontainers.containers.Network.newNetwork;
 
-@Disabled("WIP") // TODO develop and use mock server
 @Testcontainers
 class OrderMockServerIT {
     static final Network NETWORK = newNetwork();
 
-    @Container static JeeContainer ORDERS = new WildflyContainer()//"rdohna/wildfly", null)
+    @Container static JeeContainer ORDERS = new WildflyContainer("rdohna/wildfly", null)
         .withNetwork(NETWORK)
         .withDeployment("target/order.war");
 
     @SuppressWarnings("rawtypes")
-    @Container static GenericContainer PRODUCTS = new GenericContainer("rdohna/wunderbar.demo.product")
+    @Container static GenericContainer PRODUCTS = new WildflyContainer("rdohna/wildfly", null)
         .withNetwork(NETWORK)
         .withNetworkAliases("products")
-        .withExposedPorts(8081)
-        .waitingFor(new HttpWaitStrategy().forPort(8081).forPath("/q/health/ready"));
+        .withDeployment("../../mock/target/wunderbar-mock-server.war");
 
     interface Api {
         Order order(@NonNull String id);
