@@ -1,6 +1,7 @@
 package com.github.t1.wunderbar.junit.consumer;
 
 import com.github.t1.wunderbar.junit.WunderBarException;
+import io.smallrye.graphql.client.typesafe.api.GraphQLClientApi;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.extension.AfterEachCallback;
@@ -12,6 +13,7 @@ import org.junit.jupiter.api.extension.ExtensionContext.Store.CloseableResource;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
+import java.net.URI;
 import java.nio.file.Path;
 import java.time.Duration;
 import java.time.Instant;
@@ -22,6 +24,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
 import java.util.stream.Stream.Builder;
@@ -32,8 +35,12 @@ import static com.github.t1.wunderbar.junit.consumer.Level.AUTO;
 import static com.github.t1.wunderbar.junit.consumer.Level.INTEGRATION;
 import static com.github.t1.wunderbar.junit.consumer.Level.SYSTEM;
 import static com.github.t1.wunderbar.junit.consumer.Level.UNIT;
+import static com.github.t1.wunderbar.junit.consumer.Service.DEFAULT_ENDPOINT;
+import static com.github.t1.wunderbar.junit.consumer.Technology.GRAPHQL;
+import static com.github.t1.wunderbar.junit.consumer.Technology.REST;
 import static com.github.t1.wunderbar.junit.consumer.WunderBarApiConsumer.NONE;
 import static java.time.temporal.ChronoUnit.NANOS;
+import static java.util.Locale.ROOT;
 import static java.util.stream.Collectors.toList;
 import static org.junit.jupiter.api.extension.ExtensionContext.Namespace.GLOBAL;
 
@@ -42,7 +49,9 @@ class WunderBarApiConsumerJUnitExtension implements Extension, BeforeEachCallbac
     static WunderBarApiConsumerJUnitExtension INSTANCE;
     private static boolean initialized = false;
     static final Map<String, BarWriter> BAR_WRITERS = new LinkedHashMap<>();
-    private static final Pattern FUNCTION = Pattern.compile("(?<prefix>.*)\\{(?<method>.*)\\(\\)}(?<suffix>.*)");
+    private static final Pattern FUNCTION = Pattern.compile("(?<prefix>.*)\\{(?<match>.*)\\(\\)}(?<suffix>.*)");
+    private static final Pattern PORT = Pattern.compile("(?<prefix>.*)\\{(?<match>port)}(?<suffix>.*)");
+    private static final Pattern TECHNOLOGY = Pattern.compile("(?<prefix>.*)\\{(?<match>technology)}(?<suffix>.*)");
 
     private ExtensionContext context;
     private WunderBarApiConsumer settings;
@@ -131,9 +140,16 @@ class WunderBarApiConsumerJUnitExtension implements Extension, BeforeEachCallbac
     }
 
     Proxy createProxy(Class<?> type, Service service) {
-        var proxy = new Proxy(level(), bar, type, endpoint(), service.port());
+        var technology = technology(type);
+        var proxy = new Proxy(level(), bar, type, endpoint(service, technology), technology);
         this.proxies.add(proxy);
         return proxy;
+    }
+
+    private Technology technology(Class<?> type) {
+        if (type.isAnnotationPresent(GraphQLClientApi.class)) return GRAPHQL;
+        if (type.isAnnotationPresent(javax.ws.rs.Path.class)) return REST;
+        throw new WunderBarException("no technology recognized on " + type);
     }
 
     private Level level() {
@@ -144,16 +160,25 @@ class WunderBarApiConsumerJUnitExtension implements Extension, BeforeEachCallbac
         return UNIT;
     }
 
-    private String endpoint() {
-        var endpoint = settings.endpoint();
-        var matcher = FUNCTION.matcher(endpoint);
+    @SuppressWarnings({"deprecated", "removal"})
+    private URI endpoint(Service service, Technology technology) {
+        var endpoint = service.endpoint();
+        if (DEFAULT_ENDPOINT.equals(endpoint)) endpoint = settings.endpoint();
+        endpoint = replace(endpoint, FUNCTION, this::functionCall);
+        endpoint = replace(endpoint, PORT, __ -> Integer.toString(service.port()));
+        endpoint = replace(endpoint, TECHNOLOGY, __ -> technology.name().toLowerCase(ROOT));
+        return URI.create(endpoint);
+    }
+
+    private String replace(String endpoint, Pattern pattern, Function<String, String> function) {
+        var matcher = pattern.matcher(endpoint);
         if (matcher.matches())
-            endpoint = matcher.group("prefix") + call(matcher.group("method")) + matcher.group("suffix");
+            endpoint = matcher.group("prefix") + function.apply(matcher.group("match")) + matcher.group("suffix");
         return endpoint;
     }
 
     @SneakyThrows(ReflectiveOperationException.class)
-    private String call(String methodName) {
+    private String functionCall(String methodName) {
         var instance = context.getRequiredTestInstance();
         var method = instance.getClass().getDeclaredMethod(methodName);
         method.setAccessible(true);

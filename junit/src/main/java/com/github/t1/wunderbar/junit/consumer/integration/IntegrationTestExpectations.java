@@ -28,16 +28,15 @@ import static javax.ws.rs.core.Response.Status.NOT_IMPLEMENTED;
 @Slf4j @Internal
 public class IntegrationTestExpectations implements WunderBarExpectations {
     private final BarWriter bar;
-
-    @Getter private final HttpServer server;
     private final List<HttpServiceExpectation> expectations;
+    @Getter private final HttpServer server;
 
     private HttpServiceExpectation currentExpectation;
 
-    public IntegrationTestExpectations(BarWriter bar, int port) {
+    public IntegrationTestExpectations(BarWriter bar, URI endpoint) {
         this.bar = bar;
         this.expectations = new ArrayList<>();
-        this.server = new HttpServer(port, this::handleRequest);
+        this.server = new HttpServer(endpoint.getPort(), this::handleRequest);
     }
 
     @Override public URI baseUri() {return server.baseUri();}

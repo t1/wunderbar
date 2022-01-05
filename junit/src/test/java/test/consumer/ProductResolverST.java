@@ -22,23 +22,27 @@ import static javax.ws.rs.core.Response.Status.NOT_FOUND;
 import static org.assertj.core.api.Assertions.catchThrowableOfType;
 import static org.assertj.core.api.BDDAssertions.then;
 
-@WunderBarApiConsumer(endpoint = "{endpoint()}/{technology}")
+@WunderBarApiConsumer
 class ProductResolverST { // not `extends ProductResolverTest`, as we must not call the `given` methods
-
-    @Service Products products;
+    @Service(endpoint = "{endpoint()}/{technology}") Products products;
     @SystemUnderTest ProductResolver resolver;
 
     @RegisterExtension DummyServer dummyServer = new DummyServer();
 
-    @SuppressWarnings("unused")
-    URI endpoint() {return dummyServer.baseUri();}
+    boolean endpointCalled = false;
 
+    @SuppressWarnings("unused")
+    URI endpoint() {
+        endpointCalled = true;
+        return dummyServer.baseUri();
+    }
 
     @Test void shouldResolveProduct() {
         var resolvedProduct = resolver.product(new Item("existing-product-id"));
 
         then(resolvedProduct).usingRecursiveComparison().isEqualTo(
             Product.builder().id("existing-product-id").name("some-product-name").price(15_99).build());
+        then(endpointCalled).as("endpoint function called").isTrue();
     }
 
     @Test void shouldFailToResolveUnknownProduct() {
@@ -67,7 +71,7 @@ class ProductResolverST { // not `extends ProductResolverTest`, as we must not c
 
     @Nested class REST {
         // don't bother with a SystemUnderTest here again
-        @Service RestService restService;
+        @Service(endpoint = "{endpoint()}/{technology}") RestService restService;
 
         @SuppressWarnings("unused")
         URI endpoint() {return ProductResolverST.this.endpoint();}
@@ -77,6 +81,7 @@ class ProductResolverST { // not `extends ProductResolverTest`, as we must not c
 
             then(response).usingRecursiveComparison().isEqualTo(
                 Product.builder().id("existing-product-id").name("some-product-name").price(15_99).build());
+            then(endpointCalled).as("endpoint function called").isTrue();
         }
 
         @Test void shouldFailToGetUnknownProduct() {

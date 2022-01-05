@@ -22,14 +22,11 @@ import static javax.ws.rs.core.Response.Status.NOT_FOUND;
 import static org.assertj.core.api.Assertions.catchThrowableOfType;
 import static org.assertj.core.api.BDDAssertions.then;
 
-@WunderBarApiConsumer(fileName = "target/system-wunder.jar", endpoint = "{endpoint()}")
+@WunderBarApiConsumer(fileName = "target/system-wunder.jar")
 class ProductsGatewayST {
     /** this server would normally be a real server running somewhere */
     private static final HttpServer SERVER = new HttpServer(ProductsGatewayST::handle);
     private static final MediaType PROBLEM_DETAIL = MediaType.valueOf("application/problem+json;charset=utf-8");
-
-    @SuppressWarnings("unused")
-    static URI endpoint() { return SERVER.baseUri().resolve("/rest"); }
 
     static HttpResponse handle(HttpRequest request) {
         var response = HttpResponse.builder();
@@ -38,14 +35,16 @@ class ProductsGatewayST {
                 response.body("{\"id\":\"existing-product-id\", \"name\":\"some-product-name\"}");
                 break;
             case "/rest/products/forbidden-product-id":
-                response.status(FORBIDDEN).contentType(PROBLEM_DETAIL).body("{\n" +
+                response.status(FORBIDDEN).contentType(PROBLEM_DETAIL).body(
+                    "{\n" +
                     "    \"detail\": \"HTTP 403 Forbidden\",\n" +
                     "    \"title\": \"ForbiddenException\",\n" +
                     "    \"type\": \"urn:problem-type:forbidden\"\n" +
                     "}\n");
                 break;
             default:
-                response.status(NOT_FOUND).contentType(PROBLEM_DETAIL).body("{\n" +
+                response.status(NOT_FOUND).contentType(PROBLEM_DETAIL).body(
+                    "{\n" +
                     "    \"detail\": \"HTTP 404 Not Found\",\n" +
                     "    \"title\": \"NotFoundException\",\n" +
                     "    \"type\": \"urn:problem-type:not-found\"\n" +
@@ -54,11 +53,14 @@ class ProductsGatewayST {
         return response.build();
     }
 
-    @AfterAll static void stop() { SERVER.stop(); }
+    @AfterAll static void stop() {SERVER.stop();}
 
 
-    @Service ProductsRestClient products;
+    @Service(endpoint = "{endpoint()}") ProductsRestClient products;
     @SystemUnderTest ProductsGateway gateway;
+
+    @SuppressWarnings("unused")
+    static URI endpoint() {return SERVER.baseUri().resolve("/rest");}
 
     private static OrderItem item(String productId) {
         return OrderItem.builder().productId(productId).build();

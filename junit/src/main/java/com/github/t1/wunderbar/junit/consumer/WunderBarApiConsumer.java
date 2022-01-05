@@ -39,15 +39,10 @@ public @interface WunderBarApiConsumer {
     String fileName() default "target/wunder.bar";
 
     /**
-     * Base uri template where the service runs that is used by a {@link Level#SYSTEM SYSTEM} level test.
-     * Will be ignored for non-{@link Level#SYSTEM SYSTEM} level tests.
-     * <ul>
-     * <li>A method template variable like <code>{foo()}</code> will be replaced by the result of a call to the (maybe static) method
-     *     of that name in the test class.
-     * <li>The template variable <code>technology</code> will be replaced by <code>graphql</code> or <code>rest</code> respectively.
-     * </ul>
+     * @deprecated use {@link Service#endpoint()} instead
      */
-    String endpoint() default "http://localhost:8080/{technology}";
+    @Deprecated(forRemoval = true)
+    String endpoint() default Service.DEFAULT_ENDPOINT;
 
     /** Indicates that <em>no</em> <code>bar</code> file should be written. */
     String NONE = "";

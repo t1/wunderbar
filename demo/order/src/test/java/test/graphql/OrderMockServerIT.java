@@ -24,7 +24,7 @@ import static org.assertj.core.api.BDDAssertions.then;
 import static org.testcontainers.containers.Network.newNetwork;
 
 @Testcontainers
-@WunderBarApiConsumer(level = SYSTEM, endpoint = "{productsEndpoint()}")
+@WunderBarApiConsumer(level = SYSTEM)
 class OrderMockServerIT {
     static final Network NETWORK = newNetwork();
 
@@ -87,7 +87,8 @@ class OrderMockServerIT {
             .name("some-product-name")
             .price(1599)
             .build();
-        // given(createService(Products.class).product(PRODUCT_ID)).willReturn(givenProduct);
+        // var products = createService(Products.class, Service.DEFAULT.withEndpoint("{productsEndpoint()}"));
+        // given(products.product(PRODUCT_ID)).willReturn(givenProduct);
 
         var order = api.order("1");
 

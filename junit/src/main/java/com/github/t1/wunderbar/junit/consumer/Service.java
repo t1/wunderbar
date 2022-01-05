@@ -1,5 +1,10 @@
 package com.github.t1.wunderbar.junit.consumer;
 
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
+import lombok.With;
+import lombok.experimental.Accessors;
+
 import javax.enterprise.util.AnnotationLiteral;
 import java.lang.annotation.Retention;
 
@@ -15,21 +20,34 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
 @Retention(RUNTIME)
 public @interface Service {
     /**
-     * Port number of the mock http server starting for {@link Level#INTEGRATION INTEGRATION} level test.
-     * Will be ignored for non-{@link Level#INTEGRATION INTEGRATION} level tests.
+     * Base uri template where the service runs. Defaults to <code>{@value DEFAULT_ENDPOINT}</code>.
+     * <p>
+     * Supported template expressions:
+     * <ul>
+     * <li>A method template variable like <code>{foo()}</code> will be replaced by the result of a call to the (maybe static) method
+     *     of that name in the test class.
+     * <li>The <code>{port}</code> will be replaced by the {@link #port()} property, i.e. by default <code>RANDOM</code>.
+     * <li>The template variable <code>technology</code> will be replaced by <code>graphql</code> or <code>rest</code> respectively.
+     * </ul>
+     */
+    String endpoint() default DEFAULT_ENDPOINT;
+
+    String DEFAULT_ENDPOINT = "http://localhost:{port}/{technology}";
+
+    /**
+     * Port number of the service. Defaults to <code>RANDOM</code> (zero), i.e. a random, unused port.
+     * Will be ignored for {@link Level#UNIT UNIT} level tests.
      */
     int port() default RANDOM;
 
     /** Indicates that the http server of an integration test should run on a random, free port. */
     int RANDOM = 0;
 
+    @Getter @Accessors(fluent = true) @With @RequiredArgsConstructor
     class Literal extends AnnotationLiteral<Service> implements Service {
         private final int port;
-
-        public Literal() {this(RANDOM);}
-
-        public Literal(int port) {this.port = port;}
-
-        @Override public int port() {return port;}
+        private final String endpoint;
     }
+
+    Service.Literal DEFAULT = new Service.Literal(RANDOM, DEFAULT_ENDPOINT);
 }

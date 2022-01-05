@@ -96,7 +96,7 @@ public class WunderbarExpectationBuilder<T> {
     /**
      * Creates an instance of the service, which normally is done via the {@link Service @Service} annotation.
      */
-    public static <T> T createService(Class<T> type) {return createService(type, new Service.Literal());}
+    public static <T> T createService(Class<T> type) {return createService(type, Service.DEFAULT);}
 
     /**
      * Creates an instance of the service, which normally is done via the {@link Service @Service} annotation.

@@ -44,7 +44,7 @@ public enum Level {
      * 2) Call an already installed <code>wunderbar-mock-server</code>.
      * How you do this and how you configure your service to call the mock-server is out of the scope of WunderBar.
      * <p>
-     * Use the {@link WunderBarApiConsumer#endpoint()} to configure where the service or mock-service run.
+     * Use the {@link Service#endpoint()} to configure where the service or mock-service run.
      * <p>
      * This level is chosen automatically if a test class ends with <code>ST</code>.
      */

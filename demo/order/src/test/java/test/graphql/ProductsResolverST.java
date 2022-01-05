@@ -23,7 +23,7 @@ import java.net.URI;
 import static org.assertj.core.api.Assertions.catchThrowableOfType;
 import static org.assertj.core.api.BDDAssertions.then;
 
-@WunderBarApiConsumer(fileName = "target/system-wunder.jar", endpoint = "{endpoint()}")
+@WunderBarApiConsumer(fileName = "target/system-wunder.jar")
 class ProductsResolverST {
     /** this server would normally be a real server running somewhere */
     private static final HttpServer SERVER = new HttpServer(ProductsResolverST::handle);
@@ -33,9 +33,6 @@ class ProductsResolverST {
     private static final Authorization SYSTEM_TEST_CREDENTIALS = new Authorization.Basic(SYSTEM_TEST_USER, SYSTEM_TEST_PASSWORD);
 
     static final String PRODUCTS_MP_GRAPHQL_CONFIG = Products.class.getName() + "/mp-graphql/";
-
-    @SuppressWarnings("unused")
-    static URI endpoint() {return SERVER.baseUri().resolve("/graphql");}
 
     static HttpResponse handle(HttpRequest request) {
         assert request.getUri().toString().equals("/graphql") : "unexpected uri " + request.getUri();
@@ -86,8 +83,11 @@ class ProductsResolverST {
     }
 
 
-    @Service Products products;
+    @Service(endpoint = "{endpoint()}") Products products;
     @SystemUnderTest ProductsResolver resolver;
+
+    @SuppressWarnings("unused")
+    static URI endpoint() {return SERVER.baseUri().resolve("/graphql");}
 
     private OrderItem item(String s) {return OrderItem.builder().productId(s).build();}
 

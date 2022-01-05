@@ -7,22 +7,25 @@ import lombok.Getter;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.net.URI;
 
 class Proxy {
     private final Level level;
     private final BarWriter bar;
     private final Class<?> type;
+    private final URI endpoint;
+    private final Technology technology;
     final Object instance;
-    private final String endpointTemplate;
     @Getter private final WunderBarExpectations expectations;
 
-    public Proxy(Level level, BarWriter bar, Class<?> type, String endpointTemplate, int port) {
+    public Proxy(Level level, BarWriter bar, Class<?> type, URI endpoint, Technology technology) {
         this.level = level;
         this.bar = bar;
         this.type = type;
+        this.endpoint = endpoint;
+        this.technology = technology;
         this.instance = createProxy(type);
-        this.endpointTemplate = endpointTemplate;
-        this.expectations = createExpectations(port);
+        this.expectations = createExpectations();
     }
 
     @Override public String toString() {
@@ -45,16 +48,16 @@ class Proxy {
         return expectations.invoke(method, args);
     }
 
-    private WunderBarExpectations createExpectations(int port) {
+    private WunderBarExpectations createExpectations() {
         switch (level) {
             case AUTO:
                 throw new IllegalStateException("Unreachable code: AUTO level should have been resolved already");
             case UNIT:
                 return new UnitTestExpectations(type);
             case INTEGRATION:
-                return new IntegrationTestExpectations(bar, port);
+                return new IntegrationTestExpectations(bar, endpoint);
             case SYSTEM:
-                return new SystemTestExpectations(type, endpointTemplate, bar);
+                return new SystemTestExpectations(type, endpoint, bar, technology);
         }
         throw new UnsupportedOperationException("unreachable");
     }

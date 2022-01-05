@@ -55,6 +55,20 @@ abstract class ProductResolverTest {
         Product getProduct(String id);
     }
 
+    @Nested class UnrecognizableTechnologies {
+        @Test void shouldFailToRecognizeTechnology() {
+            var throwable = catchThrowable(() -> createService(UnrecognizableTechnologyService.class));
+
+            then(throwable).hasMessage("no technology recognized on " + UnrecognizableTechnologyService.class);
+        }
+    }
+
+    interface UnrecognizableTechnologyService {
+        @SuppressWarnings("unused")
+        Object call();
+    }
+
+
     @Test void shouldResolveProduct() {
         var givenProduct = Product.builder().id("x").name("some-product-name").build();
         given(products.product(givenProduct.getId())).willReturn(givenProduct);

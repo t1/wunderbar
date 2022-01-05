@@ -22,21 +22,6 @@ import static test.consumer.ProductResolverIT.WithConfigKeyGenerator.WITH_CONFIG
 
 @WunderBarApiConsumer
 class ProductResolverIT extends ProductResolverTest {
-    /** Only the INTEGRATION level has to recognize the technology */
-    @Nested class UnrecognizableTechnologies {
-        @Service UnrecognizableTechnologyService unrecognizableTechnologyService;
-
-        @Test void shouldFailToRecognizeTechnology() {
-            var throwable = catchThrowable(() -> given(unrecognizableTechnologyService.call()).willReturn(null));
-
-            then(throwable).hasMessage("no technology recognized on " + UnrecognizableTechnologyService.class);
-        }
-    }
-
-    interface UnrecognizableTechnologyService {
-        Object call();
-    }
-
     @WunderBarApiConsumer(level = INTEGRATION)
     @Nested class FixedPort {
         @Service(port = 18373) Products productsWithFixedPort;
@@ -55,27 +40,6 @@ class ProductResolverIT extends ProductResolverTest {
             then(resolvedProduct).usingRecursiveComparison().isEqualTo(givenProduct);
             then(baseUri).isEqualTo(URI.create("http://localhost:18373"));
             then(deprecatedBaseUri.get()).isEqualTo(URI.create("http://localhost:18373"));
-        }
-    }
-
-    @WunderBarApiConsumer(endpoint = "{testEndpoint()}", level = INTEGRATION)
-    @Nested class EndpointFunction {
-        boolean endpointCalled = false;
-
-        @SuppressWarnings("unused")
-        String testEndpoint() {
-            endpointCalled = true;
-            return "some-endpoint";
-        }
-
-        @Test void shouldResolveProductFromFunctionEndpoint() {
-            var givenProduct = Product.builder().id("x").name("some-product-name").build();
-            given(products.product(givenProduct.getId())).willReturn(givenProduct);
-
-            var resolvedProduct = resolver.product(Item.builder().productId(givenProduct.getId()).build());
-
-            then(resolvedProduct).usingRecursiveComparison().isEqualTo(givenProduct);
-            then(endpointCalled).as("endpoint function called").isTrue();
         }
     }
 
