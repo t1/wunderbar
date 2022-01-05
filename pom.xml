@@ -4,7 +4,7 @@
 
     <groupId>com.github.t1</groupId>
     <artifactId>wunderbar</artifactId>
-    <version>2.1.5-SNAPSHOT</version>
+    <version>2.2.0-SNAPSHOT</version>
     <name>Behavior Archives (Parent)</name>
     <description>The easy way to Consumer Driven Contracts (https://martinfowler.com/articles/consumerDrivenContracts.html)</description>
     <packaging>pom</packaging>

@@ -64,8 +64,6 @@ class WunderBarApiConsumerJUnitExtension implements Extension, BeforeEachCallbac
         if (bar != null) bar.setDirectory(testId);
 
         forEachField(Service.class, this::createProxy);
-        if (proxies.isEmpty()) throw new WunderBarException("you need at least one `@Service` field in your `@WunderBarApiConsumer` test");
-
         forEachField(SystemUnderTest.class, this::initSut);
 
         start = Instant.now();
@@ -159,7 +157,9 @@ class WunderBarApiConsumerJUnitExtension implements Extension, BeforeEachCallbac
         var instance = context.getRequiredTestInstance();
         var method = instance.getClass().getDeclaredMethod(methodName);
         method.setAccessible(true);
-        return method.invoke(instance).toString();
+        var result = method.invoke(instance);
+        if (result == null) throw new NullPointerException("endpoint method '" + methodName + "' returned null");
+        return result.toString();
     }
 
     private String testId() {
@@ -209,7 +209,7 @@ class WunderBarApiConsumerJUnitExtension implements Extension, BeforeEachCallbac
         INSTANCE = null;
     }
 
-    private long duration() { return (start == null) ? -1 : Duration.between(start, Instant.now()).get(NANOS) / 1_000_000L; }
+    private long duration() {return (start == null) ? -1 : Duration.between(start, Instant.now()).get(NANOS) / 1_000_000L;}
 
     @SneakyThrows(ReflectiveOperationException.class)
     private static Object newInstance(Field field) {

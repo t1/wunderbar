@@ -34,13 +34,21 @@ public enum Level {
     INTEGRATION,
 
     /**
-     * Call the real service. You can use this to explore the behavior of an existing API.
-     * Building expectations with {@link WunderbarExpectationBuilder#given given} doesn't make any sense at this level
-     * and will result in premature calls to the service. This may be irritating, but we can't distinguish these calls from valid ones.
+     * There are two options:
      * <p>
-     * This is generally done in a test class ending with <code>ST</code>.
+     * 1) Call a real service, so you can explore the behavior of an existing API.
+     * Building expectations with {@link WunderbarExpectationBuilder#given given} doesn't make any sense in this case
+     * and will result in premature calls to the service.
+     * This may be irritating, but we can't distinguish these calls from valid ones.
+     * <p>
+     * 2) Call an already installed <code>wunderbar-mock-server</code>.
+     * How you do this and how you configure your service to call the mock-server is out of the scope of WunderBar.
+     * <p>
+     * Use the {@link WunderBarApiConsumer#endpoint()} to configure where the service or mock-service run.
+     * <p>
+     * This level is chosen automatically if a test class ends with <code>ST</code>.
      */
     SYSTEM;
 
-    @Override public String toString() { return name().toLowerCase(ROOT); }
+    @Override public String toString() {return name().toLowerCase(ROOT);}
 }
