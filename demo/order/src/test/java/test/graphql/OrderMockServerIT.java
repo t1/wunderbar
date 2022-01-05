@@ -26,12 +26,12 @@ import static org.testcontainers.containers.Network.newNetwork;
 class OrderMockServerIT {
     static final Network NETWORK = newNetwork();
 
-    @Container static JeeContainer ORDERS = new WildflyContainer("rdohna/wildfly", null)
+    @Container static JeeContainer ORDERS = new WildflyContainer()//"rdohna/wildfly", null)
         .withNetwork(NETWORK)
         .withDeployment("target/order.war");
 
     @SuppressWarnings("rawtypes")
-    @Container static GenericContainer PRODUCTS = new WildflyContainer("rdohna/wildfly", null)
+    @Container static GenericContainer PRODUCTS = new WildflyContainer()//"rdohna/wildfly", null)
         .withNetwork(NETWORK)
         .withNetworkAliases("products")
         .withDeployment("../../mock/target/wunderbar-mock-server.war");
