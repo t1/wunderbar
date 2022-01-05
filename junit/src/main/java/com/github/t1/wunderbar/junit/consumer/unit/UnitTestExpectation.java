@@ -8,10 +8,10 @@ import org.mockito.BDDMockito.BDDMyOngoingStubbing;
 import java.lang.reflect.Method;
 import java.net.URI;
 
-class MockExpectation extends WunderBarExpectation {
+class UnitTestExpectation extends WunderBarExpectation {
     private final BDDMyOngoingStubbing<Object> mockitoStub;
 
-    public MockExpectation(Object mock, Method method, Object... args) {
+    public UnitTestExpectation(Object mock, Method method, Object... args) {
         super(method, args);
         this.mockitoStub = buildMockitoStub(mock, method, args);
     }
@@ -22,7 +22,7 @@ class MockExpectation extends WunderBarExpectation {
         return BDDMockito.given(method.invoke(mock, args));
     }
 
-    @Override public URI baseUri() { return null; }
+    @Override public URI baseUri() {return null;}
 
     @Override public void willReturn(Object response) {
         mockitoStub.willReturn(response);

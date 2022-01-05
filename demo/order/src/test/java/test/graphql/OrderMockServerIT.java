@@ -2,6 +2,7 @@ package test.graphql;
 
 import com.github.t1.testcontainers.jee.JeeContainer;
 import com.github.t1.testcontainers.jee.WildflyContainer;
+import com.github.t1.wunderbar.junit.consumer.WunderBarApiConsumer;
 import io.smallrye.graphql.client.typesafe.api.GraphQLClientApi;
 import io.smallrye.graphql.client.typesafe.api.TypesafeGraphQLClientBuilder;
 import lombok.Data;
@@ -12,29 +13,34 @@ import org.eclipse.microprofile.graphql.NonNull;
 import org.eclipse.microprofile.graphql.Query;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.Network;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
 import java.util.List;
 
+import static com.github.t1.wunderbar.junit.consumer.Level.SYSTEM;
 import static org.assertj.core.api.BDDAssertions.then;
 import static org.testcontainers.containers.Network.newNetwork;
 
 @Testcontainers
+@WunderBarApiConsumer(level = SYSTEM, endpoint = "{productsEndpoint()}")
 class OrderMockServerIT {
     static final Network NETWORK = newNetwork();
 
-    @Container static JeeContainer ORDERS = new WildflyContainer()//"rdohna/wildfly", null)
+    @Container static JeeContainer ORDERS = new WildflyContainer("rdohna/wildfly", null)
         .withNetwork(NETWORK)
         .withDeployment("target/order.war");
 
-    @SuppressWarnings("rawtypes")
-    @Container static GenericContainer PRODUCTS = new WildflyContainer()//"rdohna/wildfly", null)
+    @Container static JeeContainer PRODUCTS = new WildflyContainer("rdohna/wildfly", null)
         .withNetwork(NETWORK)
         .withNetworkAliases("products")
         .withDeployment("../../mock/target/wunderbar-mock-server.war");
+
+    @SuppressWarnings("unused")
+    static String productsEndpoint() {
+        return "http://localhost:" + PRODUCTS.getMappedPort(8080) + "/wunderbar-mock-server/graphql";
+    }
 
     interface Api {
         Order order(@NonNull String id);
@@ -62,12 +68,11 @@ class OrderMockServerIT {
         Integer price;
     }
 
-    @GraphQLClientApi(configKey = "products")
+    @GraphQLClientApi
     public interface Products {
         @Query Product product(@NonNull String id);
     }
 
-    // Products products;
     Api api;
 
     @BeforeEach
@@ -82,7 +87,7 @@ class OrderMockServerIT {
             .name("some-product-name")
             .price(1599)
             .build();
-        // given(products.product(PRODUCT_ID)).willReturn(givenProduct);
+        // given(createService(Products.class).product(PRODUCT_ID)).willReturn(givenProduct);
 
         var order = api.order("1");
 
