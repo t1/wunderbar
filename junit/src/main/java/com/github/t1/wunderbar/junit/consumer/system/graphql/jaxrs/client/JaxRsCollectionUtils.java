@@ -14,9 +14,7 @@ import static java.util.Collections.singleton;
 import static java.util.stream.Collector.Characteristics.IDENTITY_FINISH;
 
 public final class JaxRsCollectionUtils {
-    private JaxRsCollectionUtils() {
-        throw new UnsupportedOperationException("This is a utility class and cannot be instantiated");
-    }
+    private JaxRsCollectionUtils() {}
 
     public static <K, V> Collector<Entry<K, V>, MultivaluedMap<K, V>, MultivaluedMap<K, V>> toMultivaluedMap() {
         return new Collector<>() {

@@ -1,19 +1,17 @@
 package com.github.t1.wunderbar.junit.consumer.integration;
 
-import com.github.t1.wunderbar.junit.WunderBarException;
 import com.github.t1.wunderbar.junit.consumer.BarWriter;
 import com.github.t1.wunderbar.junit.consumer.Internal;
+import com.github.t1.wunderbar.junit.consumer.Technology;
 import com.github.t1.wunderbar.junit.consumer.WunderBarExpectation;
 import com.github.t1.wunderbar.junit.consumer.WunderBarExpectations;
 import com.github.t1.wunderbar.junit.consumer.WunderbarExpectationBuilder;
 import com.github.t1.wunderbar.junit.http.HttpRequest;
 import com.github.t1.wunderbar.junit.http.HttpResponse;
 import com.github.t1.wunderbar.junit.http.HttpServer;
-import io.smallrye.graphql.client.typesafe.api.GraphQLClientApi;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 
-import javax.ws.rs.Path;
 import java.lang.reflect.Method;
 import java.net.URI;
 import java.util.ArrayList;
@@ -25,18 +23,19 @@ import static com.github.t1.wunderbar.junit.Utils.isCompatible;
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON_TYPE;
 import static javax.ws.rs.core.Response.Status.NOT_IMPLEMENTED;
 
-@Slf4j @Internal
-public class IntegrationTestExpectations implements WunderBarExpectations {
+@Slf4j
+public @Internal class IntegrationTestExpectations implements WunderBarExpectations {
     private final BarWriter bar;
-    private final List<HttpServiceExpectation> expectations;
+    private final Technology technology;
+    private final List<HttpServiceExpectation> expectations = new ArrayList<>();
     @Getter private final HttpServer server;
 
     private HttpServiceExpectation currentExpectation;
 
-    public IntegrationTestExpectations(BarWriter bar, URI endpoint) {
-        this.bar = bar;
-        this.expectations = new ArrayList<>();
+    public IntegrationTestExpectations(URI endpoint, Technology technology, BarWriter bar) {
         this.server = new HttpServer(endpoint.getPort(), this::handleRequest);
+        this.technology = technology;
+        this.bar = bar;
     }
 
     @Override public URI baseUri() {return server.baseUri();}
@@ -61,12 +60,13 @@ public class IntegrationTestExpectations implements WunderBarExpectations {
     }
 
     private HttpServiceExpectation createFor(Method method, Object... args) {
-        var declaringClass = method.getDeclaringClass();
-        if (declaringClass.isAnnotationPresent(GraphQLClientApi.class))
-            return new GraphQlExpectation(server, method, args);
-        if (declaringClass.isAnnotationPresent(Path.class))
-            return new RestExpectation(server, method, args);
-        throw new WunderBarException("no technology recognized on " + declaringClass);
+        switch (technology) {
+            case GRAPHQL:
+                return new GraphQlExpectation(server, method, args);
+            case REST:
+                return new RestExpectation(server, method, args);
+        }
+        throw new UnsupportedOperationException("unreachable");
     }
 
     private HttpResponse handleRequest(HttpRequest request) {

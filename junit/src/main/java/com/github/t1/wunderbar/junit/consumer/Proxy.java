@@ -15,7 +15,7 @@ class Proxy {
     private final Class<?> type;
     private final URI endpoint;
     private final Technology technology;
-    final Object instance;
+    private final Object proxy;
     @Getter private final WunderBarExpectations expectations;
 
     public Proxy(Level level, BarWriter bar, Class<?> type, URI endpoint, Technology technology) {
@@ -24,7 +24,7 @@ class Proxy {
         this.type = type;
         this.endpoint = endpoint;
         this.technology = technology;
-        this.instance = createProxy(type);
+        this.proxy = createProxy(type);
         this.expectations = createExpectations();
     }
 
@@ -55,9 +55,9 @@ class Proxy {
             case UNIT:
                 return new UnitTestExpectations(type);
             case INTEGRATION:
-                return new IntegrationTestExpectations(bar, endpoint);
+                return new IntegrationTestExpectations(endpoint, technology, bar);
             case SYSTEM:
-                return new SystemTestExpectations(type, endpoint, bar, technology);
+                return new SystemTestExpectations(type, endpoint, technology, bar);
         }
         throw new UnsupportedOperationException("unreachable");
     }
@@ -65,6 +65,10 @@ class Proxy {
     public boolean isAssignableTo(Field field) {
         return field.getType().isAssignableFrom(type);
     }
+
+    Object getStubbingProxy() {return expectations.asStubbingProxy(proxy);}
+
+    Object getSutProxy() {return expectations.asSutProxy(proxy);}
 
     void done() {expectations.done();}
 }

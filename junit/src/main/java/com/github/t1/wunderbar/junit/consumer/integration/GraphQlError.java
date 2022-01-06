@@ -13,10 +13,9 @@ import java.util.Map;
 
 import static lombok.AccessLevel.PRIVATE;
 
-@Internal
 @ToString @Getter @Setter @NoArgsConstructor
 @Builder @AllArgsConstructor(access = PRIVATE)
-public class GraphQlError {
+public @Internal class GraphQlError {
     String message;
     @Singular Map<String, Object> extensions;
 }

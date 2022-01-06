@@ -25,7 +25,8 @@ class ProductResolver {
     }
 
     public Product productWithPriceUpdate(Item item, int newPrice) {
-        return products.patch(new Product().withId(item.getProductId()).withPrice(newPrice));
+        var patch = new Product().withId(item.getProductId()).withPrice(newPrice);
+        return products.patch(patch);
     }
 
     @GraphQLClientApi(endpoint = "dummy")

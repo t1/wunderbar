@@ -36,9 +36,11 @@ import static javax.ws.rs.core.Response.Status.NOT_FOUND;
 import static org.assertj.core.api.Assertions.catchThrowable;
 import static org.assertj.core.api.Assertions.catchThrowableOfType;
 import static org.assertj.core.api.BDDAssertions.then;
+import static test.consumer.TestData.someProduct;
 
 @WunderBarApiConsumer
 abstract class ProductResolverTest {
+
     @Service Products products;
     @Service NamedProducts namedProducts;
     @Service ProductsGetter productsGetter;
@@ -68,37 +70,34 @@ abstract class ProductResolverTest {
         Object call();
     }
 
+    Product product = someProduct();
 
     @Test void shouldResolveProduct() {
-        var givenProduct = Product.builder().id("x").name("some-product-name").build();
-        given(products.product(givenProduct.getId())).willReturn(givenProduct);
+        given(products.product(product.getId())).willReturn(product);
         given(products.product("not-actually-called")).willReturn(Product.builder().id("unreachable").build());
 
-        var resolvedProduct = resolver.product(new Item(givenProduct.getId()));
+        var resolvedProduct = resolver.product(new Item(product.getId()));
 
-        then(resolvedProduct).usingRecursiveComparison().isEqualTo(givenProduct);
+        then(resolvedProduct).usingRecursiveComparison().isEqualTo(product);
     }
 
     @Test void shouldResolveNamedProductMethod() {
-        var givenProduct = Product.builder().id("x").name("some-product-name").build();
-        given(namedProducts.productById(givenProduct.getId())).willReturn(givenProduct);
+        given(namedProducts.productById(product.getId())).willReturn(product);
 
-        var resolvedProduct = namedProducts.productById(givenProduct.getId());
+        var resolvedProduct = namedProducts.productById(product.getId());
 
-        then(resolvedProduct).usingRecursiveComparison().isEqualTo(givenProduct);
+        then(resolvedProduct).usingRecursiveComparison().isEqualTo(product);
     }
 
     @Test void shouldResolveProductGetter() {
-        var givenProduct = Product.builder().id("x").name("some-product-name").build();
-        given(productsGetter.getProduct(givenProduct.getId())).willReturn(givenProduct);
+        given(productsGetter.getProduct(product.getId())).willReturn(product);
 
-        var resolvedProduct = productsGetter.getProduct(givenProduct.getId());
+        var resolvedProduct = productsGetter.getProduct(product.getId());
 
-        then(resolvedProduct).usingRecursiveComparison().isEqualTo(givenProduct);
+        then(resolvedProduct).usingRecursiveComparison().isEqualTo(product);
     }
 
     @Test void shouldUpdateProduct() {
-        var product = Product.builder().id("p").name("some-product-name").price(15_99).build();
         given(products.product(product.getId())).willReturn(product);
         given(products.patch(new Product().withId(product.getId()).withPrice(12_99))).willReturn(product.withPrice(12_99));
 

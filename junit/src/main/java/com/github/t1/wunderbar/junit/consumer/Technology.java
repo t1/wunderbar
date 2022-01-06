@@ -1,7 +1,6 @@
 package com.github.t1.wunderbar.junit.consumer;
 
-@Internal
-public enum Technology {
+public @Internal enum Technology {
     GRAPHQL,
     REST
 }

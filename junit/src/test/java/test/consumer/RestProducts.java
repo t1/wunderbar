@@ -1,6 +1,8 @@
-package com.github.t1.wunderbar.demo.order;
+package test.consumer;
 
 import org.eclipse.microprofile.rest.client.inject.RegisterRestClient;
+import test.consumer.ProductResolver.Item;
+import test.consumer.ProductResolver.Product;
 
 import javax.inject.Inject;
 import javax.ws.rs.GET;
@@ -9,14 +11,14 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import java.io.Closeable;
 
-public class ProductsGateway {
+public class RestProducts {
     @Inject ProductsRestClient products;
 
-    public Product product(OrderItem item) {
+    public Product product(Item item) {
         return products.product(item.getProductId());
     }
 
-    public Product productWithPriceUpdate(OrderItem item, int newPrice) {
+    public Product productWithPriceUpdate(Item item, int newPrice) {
         var patch = new Product().withId(item.getProductId()).withPrice(newPrice);
         return products.patch(patch);
     }

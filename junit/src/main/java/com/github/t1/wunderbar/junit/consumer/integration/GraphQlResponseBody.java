@@ -8,9 +8,8 @@ import lombok.ToString;
 import java.util.List;
 import java.util.Map;
 
-@Internal
 @ToString @Getter @Builder
-public class GraphQlResponseBody {
+public @Internal class GraphQlResponseBody {
     Map<String, Object> data;
     List<GraphQlError> errors;
 }

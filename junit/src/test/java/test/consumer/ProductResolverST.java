@@ -11,7 +11,7 @@ import test.DummyServer;
 import test.consumer.ProductResolver.Item;
 import test.consumer.ProductResolver.Product;
 import test.consumer.ProductResolver.Products;
-import test.consumer.ProductResolverTest.RestService;
+import test.consumer.RestProducts.ProductsRestClient;
 
 import javax.ws.rs.WebApplicationException;
 import java.net.URI;
@@ -23,7 +23,7 @@ import static org.assertj.core.api.Assertions.catchThrowableOfType;
 import static org.assertj.core.api.BDDAssertions.then;
 
 @WunderBarApiConsumer
-class ProductResolverST { // not `extends ProductResolverTest`, as we must not call the `given` methods
+class ProductResolverST { // TODO extends ProductResolverTest {
     @Service(endpoint = "{endpoint()}/{technology}") Products products;
     @SystemUnderTest ProductResolver resolver;
 
@@ -38,10 +38,13 @@ class ProductResolverST { // not `extends ProductResolverTest`, as we must not c
     }
 
     @Test void shouldResolveProduct() {
-        var resolvedProduct = resolver.product(new Item("existing-product-id"));
+        var product = Product.builder().id("existing-product-id").name("some-product-name").price(15_99).build();
+        // given(products.product(product.getId())).willReturn(product);
+        // given(products.product("not-actually-called")).willReturn(Product.builder().id("unreachable").build());
 
-        then(resolvedProduct).usingRecursiveComparison().isEqualTo(
-            Product.builder().id("existing-product-id").name("some-product-name").price(15_99).build());
+        var resolvedProduct = resolver.product(new Item(product.getId()));
+
+        then(resolvedProduct).usingRecursiveComparison().isEqualTo(product);
         then(endpointCalled).as("endpoint function called").isTrue();
     }
 
@@ -70,30 +73,35 @@ class ProductResolverST { // not `extends ProductResolverTest`, as we must not c
     }
 
     @Nested class REST {
-        // don't bother with a SystemUnderTest here again
-        @Service(endpoint = "{endpoint()}/{technology}") RestService restService;
+        @Service(endpoint = "{endpoint()}/{technology}") ProductsRestClient restProducts;
+        @SystemUnderTest RestProducts restResolver;
 
         @SuppressWarnings("unused")
         URI endpoint() {return ProductResolverST.this.endpoint();}
 
         @Test void shouldGetProduct() {
-            var response = restService.getProduct("existing-product-id");
+            var givenProduct = Product.builder().id("existing-product-id").name("some-product-name").price(15_99).build();
 
-            then(response).usingRecursiveComparison().isEqualTo(
-                Product.builder().id("existing-product-id").name("some-product-name").price(15_99).build());
+            var response = resolveProduct(givenProduct.getId());
+
+            then(response).usingRecursiveComparison().isEqualTo(givenProduct);
             then(endpointCalled).as("endpoint function called").isTrue();
         }
 
         @Test void shouldFailToGetUnknownProduct() {
-            var throwable = catchThrowableOfType(() -> restService.getProduct("unknown-product-id"), WebApplicationException.class);
+            var throwable = catchThrowableOfType(() -> resolveProduct("unknown-product-id"), WebApplicationException.class);
 
             then(throwable.getResponse().getStatusInfo()).isEqualTo(NOT_FOUND);
         }
 
         @Test void shouldFailToGetForbiddenProduct() {
-            var throwable = catchThrowableOfType(() -> restService.getProduct("forbidden-product-id"), WebApplicationException.class);
+            var throwable = catchThrowableOfType(() -> resolveProduct("forbidden-product-id"), WebApplicationException.class);
 
             then(throwable.getResponse().getStatusInfo()).isEqualTo(FORBIDDEN);
+        }
+
+        private Product resolveProduct(String productId) {
+            return restResolver.product(new Item(productId));
         }
     }
 }

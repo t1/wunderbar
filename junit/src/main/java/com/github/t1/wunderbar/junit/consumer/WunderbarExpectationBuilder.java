@@ -104,7 +104,7 @@ public class WunderbarExpectationBuilder<T> {
     public static <T> T createService(Class<T> type, Service.Literal service) {
         var extension = WunderBarApiConsumerJUnitExtension.INSTANCE;
         if (extension == null) throw new WunderBarException(WunderBarApiConsumer.class.getSimpleName() + " not found");
-        return type.cast(extension.createProxy(type, service).instance);
+        return type.cast(extension.createProxy(type, service).getStubbingProxy());
     }
 
 

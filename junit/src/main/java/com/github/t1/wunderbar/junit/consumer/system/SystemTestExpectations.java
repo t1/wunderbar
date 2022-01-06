@@ -1,6 +1,6 @@
 package com.github.t1.wunderbar.junit.consumer.system;
 
-import com.github.t1.wunderbar.junit.Utils;
+import com.github.t1.wunderbar.junit.WunderBarException;
 import com.github.t1.wunderbar.junit.consumer.BarWriter;
 import com.github.t1.wunderbar.junit.consumer.Technology;
 import com.github.t1.wunderbar.junit.consumer.WunderBarExpectations;
@@ -20,7 +20,7 @@ public class SystemTestExpectations implements WunderBarExpectations {
     private final BarFilter filter;
     private final URI baseUri;
 
-    public SystemTestExpectations(Class<?> type, URI endpoint, BarWriter bar, Technology technology) {
+    public SystemTestExpectations(Class<?> type, URI endpoint, Technology technology, BarWriter bar) {
         this.filter = new BarFilter(bar);
         this.baseUri = endpoint;
         this.api = buildApi(type, endpoint, technology);
@@ -40,13 +40,15 @@ public class SystemTestExpectations implements WunderBarExpectations {
                     .register(filter)
                     .build(type);
         }
-        throw new UnsupportedOperationException("unknown technology " + technology + " of API " + type.getName());
+        throw new UnsupportedOperationException("unreachable");
     }
 
     @Override public URI baseUri() {return baseUri;}
 
+    @Override public Object asSutProxy(Object proxy) {return api;}
+
     @Override public Object invoke(Method method, Object... args) {
-        return Utils.invoke(api, method, args);
+        throw new WunderBarException("can't stub system tests");
     }
 
     @SneakyThrows(IOException.class)

@@ -136,7 +136,7 @@ class WunderBarApiConsumerJUnitExtension implements Extension, BeforeEachCallbac
     private void createProxy(Field field) {
         var service = field.getAnnotation(Service.class);
         Proxy proxy = createProxy(field.getType(), service);
-        setField(instanceFor(field), field, proxy.instance);
+        setField(instanceFor(field), field, proxy.getStubbingProxy());
     }
 
     Proxy createProxy(Class<?> type, Service service) {
@@ -209,13 +209,13 @@ class WunderBarApiConsumerJUnitExtension implements Extension, BeforeEachCallbac
     private void injectProxiesIntoSut(Object systemUnderTest) {
         Stream.of(systemUnderTest.getClass().getDeclaredFields())
             .filter(Objects::nonNull)
-            .forEach(targetField -> injectProxy(systemUnderTest, targetField));
+            .forEach(targetField -> injectProxyInfoSut(systemUnderTest, targetField));
     }
 
-    private void injectProxy(Object instance, Field field) {
+    private void injectProxyInfoSut(Object instance, Field field) {
         proxies.stream()
             .filter(proxy -> proxy.isAssignableTo(field))
-            .forEach(proxy -> setField(instance, field, proxy.instance));
+            .forEach(proxy -> setField(instance, field, proxy.getSutProxy()));
     }
 
 
