@@ -143,9 +143,10 @@ class JaxRsTypesafeGraphQLClientProxy {
             .post(entity(request, APPLICATION_JSON_UTF8));
         StatusType status = response.getStatusInfo();
         if (status.getFamily() != SUCCESSFUL)
-            throw new IllegalStateException("expected successful status code but got " +
-                                            status.getStatusCode() + " " + status.getReasonPhrase() + ":\n" +
-                                            response.readEntity(String.class));
+            throw new IllegalStateException(
+                "expected successful status code but got " +
+                status.getStatusCode() + " " + status.getReasonPhrase() + ":\n" +
+                response.readEntity(String.class));
         return response.readEntity(String.class);
     }
 }

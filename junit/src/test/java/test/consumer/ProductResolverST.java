@@ -17,6 +17,7 @@ import javax.ws.rs.WebApplicationException;
 import java.net.URI;
 
 import static com.github.t1.wunderbar.junit.consumer.WunderbarExpectationBuilder.baseUri;
+import static com.github.t1.wunderbar.junit.consumer.WunderbarExpectationBuilder.given;
 import static javax.ws.rs.core.Response.Status.FORBIDDEN;
 import static javax.ws.rs.core.Response.Status.NOT_FOUND;
 import static org.assertj.core.api.Assertions.catchThrowableOfType;
@@ -37,10 +38,11 @@ class ProductResolverST { // TODO extends ProductResolverTest {
         return dummyServer.baseUri();
     }
 
+    Product product = Product.builder().id("existing-product-id").name("some-product-name").price(15_99).build();
+
     @Test void shouldResolveProduct() {
-        var product = Product.builder().id("existing-product-id").name("some-product-name").price(15_99).build();
-        // given(products.product(product.getId())).willReturn(product);
-        // given(products.product("not-actually-called")).willReturn(Product.builder().id("unreachable").build());
+        given(products.product(product.getId())).willReturn(product);
+        given(products.product("not-actually-called")).willReturn(Product.builder().id("unreachable").build());
 
         var resolvedProduct = resolver.product(new Item(product.getId()));
 

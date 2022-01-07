@@ -79,6 +79,12 @@
             <version>2.0</version>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>com.github.t1</groupId>
+            <artifactId>wunderbar.mock.server</artifactId>
+            <version>${project.version}</version>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 
     <profiles>

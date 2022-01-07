@@ -2,6 +2,7 @@ package test.graphql;
 
 import com.github.t1.testcontainers.jee.JeeContainer;
 import com.github.t1.testcontainers.jee.WildflyContainer;
+import com.github.t1.wunderbar.junit.consumer.Service;
 import com.github.t1.wunderbar.junit.consumer.WunderBarApiConsumer;
 import io.smallrye.graphql.client.typesafe.api.GraphQLClientApi;
 import io.smallrye.graphql.client.typesafe.api.TypesafeGraphQLClientBuilder;
@@ -20,6 +21,8 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 import java.util.List;
 
 import static com.github.t1.wunderbar.junit.consumer.Level.SYSTEM;
+import static com.github.t1.wunderbar.junit.consumer.WunderbarExpectationBuilder.createService;
+import static com.github.t1.wunderbar.junit.consumer.WunderbarExpectationBuilder.given;
 import static org.assertj.core.api.BDDAssertions.then;
 import static org.testcontainers.containers.Network.newNetwork;
 
@@ -87,8 +90,8 @@ class OrderMockServerIT {
             .name("some-product-name")
             .price(1599)
             .build();
-        // var products = createService(Products.class, Service.DEFAULT.withEndpoint("{productsEndpoint()}"));
-        // given(products.product(PRODUCT_ID)).willReturn(givenProduct);
+        var products = createService(Products.class, Service.DEFAULT.withEndpoint("{productsEndpoint()}"));
+        given(products.product(PRODUCT_ID)).willReturn(givenProduct);
 
         var order = api.order("1");
 

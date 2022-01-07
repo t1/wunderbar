@@ -7,6 +7,7 @@ import lombok.experimental.UtilityClass;
 import javax.json.Json;
 import javax.json.JsonValue;
 import javax.json.stream.JsonGenerator;
+import javax.json.stream.JsonParsingException;
 import javax.ws.rs.core.MediaType;
 import java.io.IOException;
 import java.io.StringReader;
@@ -43,9 +44,18 @@ public @Internal class Utils {
     public static String formatJson(String json) {
         if (json == null || json.isBlank()) return json;
 
-        var value = Json.createReader(new StringReader(json)).readValue();
+        var value = readJson(json);
 
         return formatJson(value);
+    }
+
+    private static JsonValue readJson(String json) {
+        try {
+            return Json.createReader(new StringReader(json)).readValue();
+        } catch (JsonParsingException e) {
+            var offset = (int) e.getLocation().getStreamOffset();
+            throw new RuntimeException("can't parse json:\n" + json.substring(0, offset) + "👉" + json.substring(offset), e);
+        }
     }
 
     public static String formatJson(JsonValue value) {
@@ -77,7 +87,7 @@ public @Internal class Utils {
         return code;
     }
 
-    private static String camelToKebab(String in) { return String.join("-", in.split("(?=\\p{javaUpperCase})")).toLowerCase(US); }
+    private static String camelToKebab(String in) {return String.join("-", in.split("(?=\\p{javaUpperCase})")).toLowerCase(US);}
 
     @SneakyThrows(ReflectiveOperationException.class)
     public static Object getField(Object instance, Field field) {

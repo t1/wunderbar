@@ -1,9 +1,10 @@
 package com.github.t1.wunderbar.junit.consumer.system;
 
-import com.github.t1.wunderbar.junit.WunderBarException;
 import com.github.t1.wunderbar.junit.consumer.BarWriter;
 import com.github.t1.wunderbar.junit.consumer.Technology;
+import com.github.t1.wunderbar.junit.consumer.WunderBarExpectation;
 import com.github.t1.wunderbar.junit.consumer.WunderBarExpectations;
+import com.github.t1.wunderbar.junit.consumer.WunderbarExpectationBuilder;
 import com.github.t1.wunderbar.junit.consumer.system.graphql.jaxrs.client.JaxRsTypesafeGraphQLClientBuilder;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
@@ -48,7 +49,22 @@ public class SystemTestExpectations implements WunderBarExpectations {
     @Override public Object asSutProxy(Object proxy) {return api;}
 
     @Override public Object invoke(Method method, Object... args) {
-        throw new WunderBarException("can't stub system tests");
+        var expectation = createFor(method, args);
+        WunderbarExpectationBuilder.buildingExpectation = expectation;
+
+        return expectation.nullValue();
+    }
+
+    private WunderBarExpectation createFor(Method method, Object... args) {
+        return new WunderBarExpectation(method, args) {
+            @Override public URI baseUri() {return baseUri;}
+
+            @Override public void willReturn(Object response) {
+            }
+
+            @Override public void willThrow(Exception exception) {
+            }
+        };
     }
 
     @SneakyThrows(IOException.class)
