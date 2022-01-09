@@ -10,6 +10,7 @@ import com.github.t1.wunderbar.mock.RequestMatcher;
 import com.github.t1.wunderbar.mock.ResponseSupplier;
 import io.smallrye.graphql.client.typesafe.api.GraphQLClientApi;
 import io.smallrye.graphql.client.typesafe.api.TypesafeGraphQLClientBuilder;
+import lombok.Data;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.eclipse.microprofile.graphql.Mutation;
@@ -78,7 +79,10 @@ public class SystemTestExpectations implements WunderBarExpectations {
             }
 
             @Override public void willThrow(Exception exception) {
-                mock.addWunderBarExpectation(matcher(), response(exception));
+                var result = mock.addWunderBarExpectation(matcher(), response(exception));
+                if (!"ok".equals(result.getStatus())) {
+                    throw new IllegalStateException("expected status=ok, but got " + result);
+                }
             }
         };
     }
@@ -98,6 +102,11 @@ public class SystemTestExpectations implements WunderBarExpectations {
 
     @GraphQLClientApi
     private interface WunderBarMockServerApi {
-        @Mutation String addWunderBarExpectation(@NonNull RequestMatcher matcher, @NonNull ResponseSupplier responseSupplier);
+        @Mutation WunderBarStubbingResult addWunderBarExpectation(@NonNull RequestMatcher matcher, @NonNull ResponseSupplier responseSupplier);
+    }
+
+    @Data
+    private static class WunderBarStubbingResult {
+        String status;
     }
 }

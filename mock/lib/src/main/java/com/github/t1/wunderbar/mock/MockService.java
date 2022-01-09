@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import javax.json.Json;
 import javax.json.JsonArray;
 import javax.json.JsonObject;
+import javax.json.JsonObjectBuilder;
 import javax.json.JsonValue;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -30,7 +31,7 @@ public class MockService {
     static {
         EXPECTATIONS.put(graphQlRequest().query(
                     "mutation addWunderBarExpectation\\(\\$matcher: RequestMatcherInput!, \\$responseSupplier: ResponseSupplierInput!\\) " +
-                    "\\{ addWunderBarExpectation\\(matcher: \\$matcher, responseSupplier: \\$responseSupplier\\) }")
+                    "\\{ addWunderBarExpectation\\(matcher: \\$matcher, responseSupplier: \\$responseSupplier\\) \\{status} }")
                 .build(),
             MockService::addExpectation);
         EXPECTATIONS.put(productQuery("existing-product-id"),
@@ -74,7 +75,7 @@ public class MockService {
         var supplier = supplier(variables.getJsonObject("responseSupplier"));
         log.debug("    supplier: {}", supplier);
         EXPECTATIONS.put(matcher, supplier);
-        graphQL().with(builder -> builder.add("status", "ok")).build().apply(request, requestBody, response);
+        graphQL().with(MockService::expectationResponse).build().apply(request, requestBody, response);
     }
 
     private static RequestMatcher matcher(JsonObject json) {
@@ -100,6 +101,12 @@ public class MockService {
         return variables.stream()
             .map(JsonValue::asJsonObject)
             .collect(toMap(o -> o.getString("key"), o -> o.getString("value")));
+    }
+
+    private static void expectationResponse(JsonObjectBuilder builder) {
+        builder.add("data", Json.createObjectBuilder()
+            .add("addWunderBarExpectation", Json.createObjectBuilder()
+                .add("status", "ok")));
     }
 
     private static RequestMatcher restMatcher(JsonObject json) {
