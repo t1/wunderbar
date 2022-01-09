@@ -20,7 +20,12 @@ public class GraphQLBodyMatcher implements Predicate<JsonValue> {
 
     public static class GraphQLBodyMatcherBuilder {
         public RequestMatcher build() {
-            return new RequestMatcher("POST", ".*/graphql", "application/.*json.*", internalBuild());
+            return RequestMatcher.builder()
+                .method("POST")
+                .path(".*/graphql")
+                .contentType("application/.*json.*")
+                .bodyMatcher(internalBuild())
+                .build();
         }
     }
 

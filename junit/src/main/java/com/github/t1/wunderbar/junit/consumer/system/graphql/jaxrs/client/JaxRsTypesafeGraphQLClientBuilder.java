@@ -43,6 +43,10 @@ public class JaxRsTypesafeGraphQLClientBuilder implements TypesafeGraphQLClientB
         return this;
     }
 
+    @Override public TypesafeGraphQLClientBuilder header(String s, String s1) {
+        throw new UnsupportedOperationException();
+    }
+
     public TypesafeGraphQLClientBuilder register(Object component) {
         client().register(component);
         return this;
