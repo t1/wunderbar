@@ -10,6 +10,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestFactory;
 import org.junit.jupiter.api.condition.DisabledIfSystemProperty;
 import org.junit.jupiter.api.extension.RegisterExtension;
+import test.NonCI;
 import test.Slow;
 
 import java.io.IOException;
@@ -98,8 +99,7 @@ class FindInArtifactTest {
             "version=1.2.3, packaging=jar, classifier=bar)");
     }
 
-    @Slow
-    @DisabledIfSystemProperty(named = "CI", matches = ".*")
+    @Slow @NonCI
     @Test void shouldFailToDownloadMissingCoordinates() {
         var missingCoordinates = COORDINATES.withVersion("0.0.0");
 

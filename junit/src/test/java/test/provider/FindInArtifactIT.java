@@ -5,6 +5,7 @@ import com.github.t1.wunderbar.junit.provider.WunderBarApiProvider;
 import org.junit.jupiter.api.DynamicNode;
 import org.junit.jupiter.api.TestFactory;
 import org.junit.jupiter.api.extension.RegisterExtension;
+import test.NonCI;
 import test.Slow;
 
 import static com.github.t1.wunderbar.junit.Utils.deleteRecursive;
@@ -20,7 +21,7 @@ class FindInArtifactIT {
 
     @RegisterExtension static ApiProviderFixture fixture = new ApiProviderFixture();
 
-    @Slow
+    @Slow @NonCI
     @TestFactory DynamicNode artifactDownload() {
         var parent = MAVEN_CENTRAL_BAR_ARTIFACT.getLocalRepositoryPath().getParent();
         if (exists(parent)) deleteRecursive(parent);

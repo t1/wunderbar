@@ -12,7 +12,7 @@ import java.nio.file.Path;
 import java.util.Scanner;
 
 import static java.nio.file.Files.exists;
-import static java.util.concurrent.TimeUnit.MINUTES;
+import static java.util.concurrent.TimeUnit.SECONDS;
 
 @Slf4j @Builder @With
 public @Value class MavenCoordinates {
@@ -69,7 +69,7 @@ public @Value class MavenCoordinates {
             .command("mvn", "dependency:get", "-D" + "artifact=" + getCompactString())
             // .inheritIO() // may help with debugging
             .start();
-        var exited = mvn.waitFor(5, MINUTES);
+        var exited = mvn.waitFor(30, SECONDS);
         if (!exited || mvn.exitValue() != 0) {
             System.err.println(readAll(mvn.getInputStream()));
             throw new RuntimeException(("" +
