@@ -4,6 +4,7 @@ import com.github.t1.wunderbar.junit.provider.MavenCoordinates;
 import com.github.t1.wunderbar.junit.provider.WunderBarApiProvider;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DynamicNode;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestFactory;
@@ -38,7 +39,7 @@ class FindInArtifactTest {
 
     @AfterEach
     void tearDown() {
-        System.out.println("rear down. rm " + tmpDir);
+        System.out.println("tear down. rm " + tmpDir);
         deleteRecursive(tmpDir);
     }
 
@@ -109,6 +110,7 @@ class FindInArtifactTest {
     }
 
     @Slow
+    @Disabled
     @Test void shouldFailToDownloadMissingCoordinates() {
         System.out.println("run shouldFailToDownloadMissingCoordinates");
         var missingCoordinates = COORDINATES.withVersion("0.0.0");
