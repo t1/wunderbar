@@ -69,7 +69,7 @@ public @Value class MavenCoordinates {
             .command("mvn", "dependency:get", "-D" + "artifact=" + getCompactString())
             // .inheritIO() // may help with debugging
             .start();
-        var exited = mvn.waitFor(30, SECONDS);
+        var exited = mvn.waitFor(60, SECONDS);
         if (!exited || mvn.exitValue() != 0) {
             System.err.println(readAll(mvn.getInputStream()));
             throw new RuntimeException(("" +
