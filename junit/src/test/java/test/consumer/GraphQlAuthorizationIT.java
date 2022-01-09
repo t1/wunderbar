@@ -11,6 +11,7 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import test.consumer.ProductResolver.Product;
 
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -18,25 +19,24 @@ import static com.github.t1.wunderbar.junit.consumer.Level.INTEGRATION;
 import static com.github.t1.wunderbar.junit.consumer.WunderbarExpectationBuilder.given;
 import static com.github.t1.wunderbar.junit.http.HttpUtils.APPLICATION_JSON_UTF8;
 import static org.assertj.core.api.BDDAssertions.then;
-import static test.consumer.GraphQlAuthorizationIT.InterfaceCredentialsGenerator.INTERFACE_CREDENTIALS_BAR;
-import static test.consumer.GraphQlAuthorizationIT.InterfaceHeaderCredentialsGenerator.INTERFACE_HEADER_CREDENTIALS_BAR;
-import static test.consumer.GraphQlAuthorizationIT.InterfaceTokenHeaderCredentialsGenerator.INTERFACE_TOKEN_HEADER_CREDENTIALS_BAR;
-import static test.consumer.GraphQlAuthorizationIT.MethodCredentialsGenerator.METHOD_CREDENTIALS_BAR;
-import static test.consumer.GraphQlAuthorizationIT.NoCredentialsGenerator.NO_CREDENTIALS_BAR;
-import static test.consumer.GraphQlAuthorizationIT.ParameterHeaderCredentialsGenerator.PARAMETER_HEADER_CREDENTIALS_BAR;
 
 public class GraphQlAuthorizationIT {
     private static final List<Runnable> AFTER_ALL_CHECKS = new ArrayList<>();
-    private static final String UNAUTHORIZED_GRAPHQL =
+    private static final String UNAUTHORIZED_GRAPHQL_REQUEST_HEADERS =
         "Method: POST\n" +
         "URI: /graphql\n" +
         "Accept: " + APPLICATION_JSON_UTF8 + "\n" +
         "Content-Type: " + APPLICATION_JSON_UTF8 + "\n";
-    private static final String AUTHORIZED_GRAPHQL_REQUEST =
-        UNAUTHORIZED_GRAPHQL +
+    private static final String AUTHORIZED_GRAPHQL_REQUEST_HEADERS =
+        UNAUTHORIZED_GRAPHQL_REQUEST_HEADERS +
         "Authorization: Dummy authorization\n";
     private static final String DUMMY_CREDENTIALS = "Basic ZHVtbXktdXNlcm5hbWU6ZHVtbXktcGFzc3dvcmQ=";  // dummy-username:dummy-password
     private static final String DUMMY_TOKEN = "Bearer dummy-token";
+
+
+    @AfterAll static void afterAll() {
+        AFTER_ALL_CHECKS.forEach(Runnable::run);
+    }
 
 
     @GraphQLClientApi
@@ -44,14 +44,35 @@ public class GraphQlAuthorizationIT {
         Product product(String id);
     }
 
-    @WunderBarApiConsumer(level = INTEGRATION, fileName = NO_CREDENTIALS_BAR)
+    @WunderBarApiConsumer(level = INTEGRATION, fileName = "target/NoCredentialsGenerator-bar/")
     @Nested class NoCredentialsGenerator {
-        static final String NO_CREDENTIALS_BAR = "target/NoCredentialsGenerator-bar/";
-
         @Service NonAuthorizedMethodProducts nonAuthorizedMethodProducts;
 
-        @Test void shouldGenerateAndRestoreCredentials() {
-            var propName = NonAuthorizedMethodProducts.class.getName() + "/mp-graphql/";
+        @Test void shouldCallWithoutCredentials() {
+            var givenProduct = Product.builder().id("nam").build();
+            given(nonAuthorizedMethodProducts.product(givenProduct.getId())).willReturn(givenProduct);
+
+            var resolvedProduct = nonAuthorizedMethodProducts.product(givenProduct.getId());
+
+            then(resolvedProduct).usingRecursiveComparison().isEqualTo(givenProduct);
+            then(writtenHeader("shouldCallWithoutCredentials", "NoCredentialsGenerator"))
+                .hasContent(UNAUTHORIZED_GRAPHQL_REQUEST_HEADERS);
+        }
+
+    }
+
+
+    @GraphQLClientApi
+    interface NonAuthorizedMethodProducts2 {
+        Product product(String id);
+    }
+
+    @WunderBarApiConsumer(level = INTEGRATION, fileName = "target/SystemPropertyCredentialsGenerator-bar/")
+    @Nested class SystemPropertyCredentialsGenerator {
+        @Service NonAuthorizedMethodProducts2 nonAuthorizedMethodProducts;
+
+        @Test void shouldGenerateAndRestoreCredentialsProperties() {
+            var propName = NonAuthorizedMethodProducts2.class.getName() + "/mp-graphql/";
             System.setProperty(propName + "username", "original-username");
             System.setProperty(propName + "password", "original-password");
             var givenProduct = Product.builder().id("nam").build();
@@ -60,8 +81,8 @@ public class GraphQlAuthorizationIT {
             var resolvedProduct = nonAuthorizedMethodProducts.product(givenProduct.getId());
 
             then(resolvedProduct).usingRecursiveComparison().isEqualTo(givenProduct);
-            then(TestBackdoor.writtenBar(NO_CREDENTIALS_BAR).resolve("GraphQlAuthorizationIT/NoCredentialsGenerator/" +
-                                                                     "shouldGenerateAndRestoreCredentials/1 request-headers.properties")).hasContent(UNAUTHORIZED_GRAPHQL);
+            then(writtenHeader("shouldGenerateAndRestoreCredentialsProperties", "SystemPropertyCredentialsGenerator"))
+                .hasContent(AUTHORIZED_GRAPHQL_REQUEST_HEADERS);
             then(System.getProperty(propName + "username")).isEqualTo("original-username"); // not changed
             then(System.getProperty(propName + "password")).isEqualTo("original-password"); // not changed
         }
@@ -79,9 +100,8 @@ public class GraphQlAuthorizationIT {
         Product product(String id);
     }
 
-    @WunderBarApiConsumer(level = INTEGRATION, fileName = METHOD_CREDENTIALS_BAR)
+    @WunderBarApiConsumer(level = INTEGRATION, fileName = "target/MethodCredentialsGenerator-bar/")
     @Nested class MethodCredentialsGenerator {
-        static final String METHOD_CREDENTIALS_BAR = "target/MethodCredentialsGenerator-bar/";
         @Service AuthorizedMethodProducts authorizedMethodProducts;
         @Service AuthorizedMethodProducts2 authorizedMethodProducts2;
 
@@ -95,13 +115,15 @@ public class GraphQlAuthorizationIT {
             var resolvedProduct = authorizedMethodProducts.product(givenProduct.getId());
 
             then(resolvedProduct).usingRecursiveComparison().isEqualTo(givenProduct);
-            then(TestBackdoor.writtenBar(METHOD_CREDENTIALS_BAR).resolve("GraphQlAuthorizationIT/MethodCredentialsGenerator/" +
-                                                                         "shouldGenerateAndRestoreCredentials/1 request-headers.properties")).hasContent(AUTHORIZED_GRAPHQL_REQUEST);
+            then(writtenHeader("shouldGenerateAndRestoreCredentials", "MethodCredentialsGenerator"))
+                .hasContent(AUTHORIZED_GRAPHQL_REQUEST_HEADERS);
             then(System.getProperty(propName + "username")).isEqualTo("dummy-username");
             then(System.getProperty(propName + "password")).isEqualTo("dummy-password");
             AFTER_ALL_CHECKS.add(() -> {
-                then(System.getProperty(propName + "username")).describedAs("shouldGenerateAndRestoreCredentials").isEqualTo("original-username");
-                then(System.getProperty(propName + "password")).describedAs("shouldGenerateAndRestoreCredentials").isEqualTo("original-password");
+                then(System.getProperty(propName + "username")).describedAs("shouldGenerateAndRestoreCredentials")
+                    .isEqualTo("original-username");
+                then(System.getProperty(propName + "password")).describedAs("shouldGenerateAndRestoreCredentials")
+                    .isEqualTo("original-password");
             });
         }
 
@@ -113,8 +135,8 @@ public class GraphQlAuthorizationIT {
             var resolvedProduct = authorizedMethodProducts2.product(givenProduct.getId());
 
             then(resolvedProduct).usingRecursiveComparison().isEqualTo(givenProduct);
-            then(TestBackdoor.writtenBar(METHOD_CREDENTIALS_BAR).resolve("GraphQlAuthorizationIT/MethodCredentialsGenerator/" +
-                                                                         "shouldGenerateAndRestoreNullCredentials/1 request-headers.properties")).hasContent(AUTHORIZED_GRAPHQL_REQUEST);
+            then(writtenHeader("shouldGenerateAndRestoreNullCredentials", "MethodCredentialsGenerator"))
+                .hasContent(AUTHORIZED_GRAPHQL_REQUEST_HEADERS);
             then(System.getProperty(propName + "username")).isEqualTo("dummy-username");
             then(System.getProperty(propName + "password")).isEqualTo("dummy-password");
             AFTER_ALL_CHECKS.add(() -> {
@@ -132,9 +154,8 @@ public class GraphQlAuthorizationIT {
         Product product(String id);
     }
 
-    @WunderBarApiConsumer(level = INTEGRATION, fileName = INTERFACE_CREDENTIALS_BAR)
+    @WunderBarApiConsumer(level = INTEGRATION, fileName = "target/InterfaceCredentialsGenerator-bar/")
     @Nested class InterfaceCredentialsGenerator {
-        static final String INTERFACE_CREDENTIALS_BAR = "target/InterfaceCredentialsGenerator-bar/";
         @Service AuthorizedInterfaceProducts authorizedInterfaceProducts;
 
         @Test void shouldGenerateAndRestoreInterfaceCredentials() {
@@ -147,8 +168,8 @@ public class GraphQlAuthorizationIT {
             var resolvedProduct = authorizedInterfaceProducts.product(givenProduct.getId());
 
             then(resolvedProduct).usingRecursiveComparison().isEqualTo(givenProduct);
-            then(TestBackdoor.writtenBar(INTERFACE_CREDENTIALS_BAR).resolve("GraphQlAuthorizationIT/InterfaceCredentialsGenerator/" +
-                                                                            "shouldGenerateAndRestoreInterfaceCredentials/1 request-headers.properties")).hasContent(AUTHORIZED_GRAPHQL_REQUEST);
+            then(writtenHeader("shouldGenerateAndRestoreInterfaceCredentials", "InterfaceCredentialsGenerator"))
+                .hasContent(AUTHORIZED_GRAPHQL_REQUEST_HEADERS);
             then(System.getProperty(propName + "username")).isEqualTo("dummy-username");
             then(System.getProperty(propName + "password")).isEqualTo("dummy-password");
             AFTER_ALL_CHECKS.add(() -> {
@@ -167,9 +188,8 @@ public class GraphQlAuthorizationIT {
         Product product(String id);
     }
 
-    @WunderBarApiConsumer(level = INTEGRATION, fileName = INTERFACE_HEADER_CREDENTIALS_BAR)
+    @WunderBarApiConsumer(level = INTEGRATION, fileName = "target/InterfaceHeaderCredentialsGenerator-bar/")
     @Nested class InterfaceHeaderCredentialsGenerator {
-        static final String INTERFACE_HEADER_CREDENTIALS_BAR = "target/InterfaceHeaderCredentialsGenerator-bar/";
         @Service AuthorizedInterfaceHeaderProducts products;
 
         @Test void shouldGenerateAndRestoreInterfaceHeaderCredentials() {
@@ -179,8 +199,8 @@ public class GraphQlAuthorizationIT {
             var resolvedProduct = products.product(givenProduct.getId());
 
             then(resolvedProduct).usingRecursiveComparison().isEqualTo(givenProduct);
-            then(TestBackdoor.writtenBar(INTERFACE_HEADER_CREDENTIALS_BAR).resolve("GraphQlAuthorizationIT/InterfaceHeaderCredentialsGenerator/" +
-                                                                                   "shouldGenerateAndRestoreInterfaceHeaderCredentials/1 request-headers.properties")).hasContent(AUTHORIZED_GRAPHQL_REQUEST);
+            then(writtenHeader("shouldGenerateAndRestoreInterfaceHeaderCredentials","InterfaceHeaderCredentialsGenerator"))
+                .hasContent(AUTHORIZED_GRAPHQL_REQUEST_HEADERS);
         }
     }
 
@@ -190,9 +210,8 @@ public class GraphQlAuthorizationIT {
         Product product(@Header(name = "Authorization") String auth, String id);
     }
 
-    @WunderBarApiConsumer(level = INTEGRATION, fileName = PARAMETER_HEADER_CREDENTIALS_BAR)
+    @WunderBarApiConsumer(level = INTEGRATION, fileName = "target/ParameterHeaderCredentialsGenerator-bar/")
     @Nested class ParameterHeaderCredentialsGenerator {
-        static final String PARAMETER_HEADER_CREDENTIALS_BAR = "target/ParameterHeaderCredentialsGenerator-bar/";
         @Service AuthorizedParameterHeaderProducts products;
 
         @Test void shouldGenerateAndRestoreParameterHeaderCredentials() {
@@ -202,8 +221,8 @@ public class GraphQlAuthorizationIT {
             var resolvedProduct = products.product(DUMMY_CREDENTIALS, givenProduct.getId());
 
             then(resolvedProduct).usingRecursiveComparison().isEqualTo(givenProduct);
-            then(TestBackdoor.writtenBar(PARAMETER_HEADER_CREDENTIALS_BAR).resolve("GraphQlAuthorizationIT/ParameterHeaderCredentialsGenerator/" +
-                                                                                   "shouldGenerateAndRestoreParameterHeaderCredentials/1 request-headers.properties")).hasContent(AUTHORIZED_GRAPHQL_REQUEST);
+            then(writtenHeader("shouldGenerateAndRestoreParameterHeaderCredentials","ParameterHeaderCredentialsGenerator"))
+                .hasContent(AUTHORIZED_GRAPHQL_REQUEST_HEADERS);
         }
     }
 
@@ -214,9 +233,8 @@ public class GraphQlAuthorizationIT {
         Product product(String id);
     }
 
-    @WunderBarApiConsumer(level = INTEGRATION, fileName = INTERFACE_TOKEN_HEADER_CREDENTIALS_BAR)
+    @WunderBarApiConsumer(level = INTEGRATION, fileName = "target/InterfaceTokenHeaderCredentialsGenerator-bar/")
     @Nested class InterfaceTokenHeaderCredentialsGenerator {
-        static final String INTERFACE_TOKEN_HEADER_CREDENTIALS_BAR = "target/InterfaceTokenHeaderCredentialsGenerator-bar/";
         @Service AuthorizedInterfaceTokenHeaderProducts products;
 
         @Test void shouldGenerateAndRestoreInterfaceTokenHeaderCredentials() {
@@ -226,15 +244,14 @@ public class GraphQlAuthorizationIT {
             var resolvedProduct = products.product(givenProduct.getId());
 
             then(resolvedProduct).usingRecursiveComparison().isEqualTo(givenProduct);
-            then(TestBackdoor
-                .writtenBar(INTERFACE_TOKEN_HEADER_CREDENTIALS_BAR)
-                .resolve("GraphQlAuthorizationIT/InterfaceTokenHeaderCredentialsGenerator/" +
-                         "shouldGenerateAndRestoreInterfaceTokenHeaderCredentials/1 request-headers.properties"))
-                .hasContent(AUTHORIZED_GRAPHQL_REQUEST);
+            then(writtenHeader("shouldGenerateAndRestoreInterfaceTokenHeaderCredentials", "InterfaceTokenHeaderCredentialsGenerator"))
+                .hasContent(AUTHORIZED_GRAPHQL_REQUEST_HEADERS);
         }
     }
 
-    @AfterAll static void afterAll() {
-        AFTER_ALL_CHECKS.forEach(Runnable::run);
+    private Path writtenHeader(String methodName, String nestedClassName) {
+        return TestBackdoor.writtenBar("target/" + nestedClassName + "-bar/").resolve(
+            "GraphQlAuthorizationIT/" + nestedClassName + "/" +
+            methodName + "/1 request-headers.properties");
     }
 }
