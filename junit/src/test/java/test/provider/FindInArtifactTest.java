@@ -15,6 +15,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 
 import static com.github.t1.wunderbar.junit.Utils.deleteRecursive;
+import static java.nio.file.Files.createDirectories;
 import static org.assertj.core.api.Assertions.catchThrowable;
 import static org.assertj.core.api.BDDAssertions.then;
 
@@ -30,7 +31,8 @@ class FindInArtifactTest {
     @BeforeEach void setUp() throws IOException {
         tmpDir = Path.of(System.getProperty("user.home")).resolve(".m2/repository/com/github/t1/wunderbar.test.artifact");
         versionDir = tmpDir.resolve("1.2.3");
-        Files.createDirectories(versionDir);
+        deleteRecursive(tmpDir);
+        createDirectories(versionDir);
     }
 
     @AfterEach

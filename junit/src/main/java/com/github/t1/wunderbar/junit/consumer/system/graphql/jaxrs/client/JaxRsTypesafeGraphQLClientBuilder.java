@@ -13,7 +13,6 @@ import java.lang.reflect.Proxy;
 import java.net.URI;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
-import java.util.List;
 
 public class JaxRsTypesafeGraphQLClientBuilder implements TypesafeGraphQLClientBuilder {
     private String configKey = null;
@@ -59,7 +58,7 @@ public class JaxRsTypesafeGraphQLClientBuilder implements TypesafeGraphQLClientB
         }
 
         GraphQLClientsConfiguration configs = GraphQLClientsConfiguration.getInstance();
-        configs.addTypesafeClientApis(List.of(apiClass));
+        configs.initTypesafeClientApi(apiClass);
         GraphQLClientConfiguration persistentConfig = configs.getClient(configKey);
         if (persistentConfig != null) applyConfig(persistentConfig);
 
