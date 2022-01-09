@@ -4,7 +4,7 @@ import com.github.t1.wunderbar.junit.http.HttpRequest;
 import com.github.t1.wunderbar.junit.http.HttpResponse;
 import com.github.t1.wunderbar.junit.http.HttpResponse.HttpResponseBuilder;
 import com.github.t1.wunderbar.junit.http.HttpServer;
-import com.github.t1.wunderbar.mock.MockServlet;
+import com.github.t1.wunderbar.mock.MockService;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import org.junit.jupiter.api.extension.AfterEachCallback;
@@ -15,7 +15,6 @@ import javax.servlet.AsyncContext;
 import javax.servlet.DispatcherType;
 import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletContext;
-import javax.servlet.ServletException;
 import javax.servlet.ServletInputStream;
 import javax.servlet.ServletOutputStream;
 import javax.servlet.ServletRequest;
@@ -46,11 +45,11 @@ public class DummyServer implements Extension, AfterEachCallback {
 
     public URI baseUri() {return server.baseUri();}
 
-    @SneakyThrows({IOException.class, ServletException.class})
+    @SneakyThrows(IOException.class)
     private static HttpResponse handle(HttpRequest request) {
         var httpServletRequest = new DummyHttpServletRequest(request);
-        DummyHttpServletResponse response = new DummyHttpServletResponse();
-        new MockServlet().service(httpServletRequest, response);
+        var response = new DummyHttpServletResponse();
+        new MockService().service(httpServletRequest, response);
         return response.toResponse();
     }
 
@@ -110,7 +109,7 @@ public class DummyServer implements Extension, AfterEachCallback {
 
         @Override public boolean isRequestedSessionIdFromURL() {throw new UnsupportedOperationException();}
 
-        @Override public boolean isRequestedSessionIdFromUrl() {throw new UnsupportedOperationException();}
+        @Deprecated @Override public boolean isRequestedSessionIdFromUrl() {throw new UnsupportedOperationException();}
 
         @Override public boolean authenticate(HttpServletResponse response) {throw new UnsupportedOperationException();}
 
@@ -148,7 +147,7 @@ public class DummyServer implements Extension, AfterEachCallback {
 
         @Override public Map<String, String[]> getParameterMap() {throw new UnsupportedOperationException();}
 
-        @Override public String getProtocol() {throw new UnsupportedOperationException();}
+        @Override public String getProtocol() {return "HTTP/1.1";}
 
         @Override public String getScheme() {throw new UnsupportedOperationException();}
 
@@ -174,7 +173,7 @@ public class DummyServer implements Extension, AfterEachCallback {
 
         @Override public RequestDispatcher getRequestDispatcher(String path) {throw new UnsupportedOperationException();}
 
-        @Override public String getRealPath(String path) {throw new UnsupportedOperationException();}
+        @Deprecated @Override public String getRealPath(String path) {throw new UnsupportedOperationException();}
 
         @Override public int getRemotePort() {throw new UnsupportedOperationException();}
 
@@ -211,11 +210,11 @@ public class DummyServer implements Extension, AfterEachCallback {
 
         @Override public String encodeRedirectURL(String url) {throw new UnsupportedOperationException();}
 
-        @Override public String encodeUrl(String url) {throw new UnsupportedOperationException();}
+        @Deprecated @Override public String encodeUrl(String url) {throw new UnsupportedOperationException();}
 
-        @Override public String encodeRedirectUrl(String url) {throw new UnsupportedOperationException();}
+        @Deprecated @Override public String encodeRedirectUrl(String url) {throw new UnsupportedOperationException();}
 
-        @Override public void sendError(int sc, String msg) {throw new UnsupportedOperationException();}
+        @Override public void sendError(int sc, String msg) {response.status(Status.fromStatusCode(sc)).body(msg);}
 
         @Override public void sendError(int sc) {throw new UnsupportedOperationException();}
 
@@ -235,7 +234,7 @@ public class DummyServer implements Extension, AfterEachCallback {
 
         @Override public void setStatus(int sc) {response.status(Status.fromStatusCode(sc));}
 
-        @Override public void setStatus(int sc, String sm) {throw new UnsupportedOperationException();}
+        @Deprecated @Override public void setStatus(int sc, String sm) {throw new UnsupportedOperationException();}
 
         @Override public int getStatus() {throw new UnsupportedOperationException();}
 

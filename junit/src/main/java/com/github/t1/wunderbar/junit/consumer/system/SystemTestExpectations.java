@@ -6,8 +6,14 @@ import com.github.t1.wunderbar.junit.consumer.WunderBarExpectation;
 import com.github.t1.wunderbar.junit.consumer.WunderBarExpectations;
 import com.github.t1.wunderbar.junit.consumer.WunderbarExpectationBuilder;
 import com.github.t1.wunderbar.junit.consumer.system.graphql.jaxrs.client.JaxRsTypesafeGraphQLClientBuilder;
+import com.github.t1.wunderbar.mock.RequestMatcher;
+import com.github.t1.wunderbar.mock.ResponseSupplier;
+import io.smallrye.graphql.client.typesafe.api.GraphQLClientApi;
+import io.smallrye.graphql.client.typesafe.api.TypesafeGraphQLClientBuilder;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
+import org.eclipse.microprofile.graphql.Mutation;
+import org.eclipse.microprofile.graphql.NonNull;
 import org.eclipse.microprofile.rest.client.RestClientBuilder;
 
 import java.io.Closeable;
@@ -15,20 +21,29 @@ import java.io.IOException;
 import java.lang.reflect.Method;
 import java.net.URI;
 
+import static com.github.t1.wunderbar.mock.GraphQLResponseSupplier.graphQlError;
+import static com.github.t1.wunderbar.mock.MockUtils.productQuery;
+
 @Slf4j
 public class SystemTestExpectations implements WunderBarExpectations {
-    private final Object api;
-    private final BarFilter filter;
+    private final Class<?> type;
     private final URI baseUri;
+    private final Technology technology;
+    private final BarFilter filter;
+    private final Object api;
+    private final WunderBarMockServerApi mock;
 
-    public SystemTestExpectations(Class<?> type, URI endpoint, Technology technology, BarWriter bar) {
+    public SystemTestExpectations(Class<?> type, URI baseUri, Technology technology, BarWriter bar) {
+        this.type = type;
+        this.baseUri = baseUri;
+        this.technology = technology;
         this.filter = new BarFilter(bar);
-        this.baseUri = endpoint;
-        this.api = buildApi(type, endpoint, technology);
+        this.api = buildApi();
+        this.mock = TypesafeGraphQLClientBuilder.newBuilder().endpoint(baseUri).build(WunderBarMockServerApi.class);
     }
 
-    private Object buildApi(Class<?> type, URI endpoint, Technology technology) {
-        log.info("system test endpoint: {}", endpoint);
+    private Object buildApi() {
+        log.info("system test endpoint: {}", baseUri);
         switch (technology) {
             case GRAPHQL:
                 return new JaxRsTypesafeGraphQLClientBuilder()
@@ -63,12 +78,26 @@ public class SystemTestExpectations implements WunderBarExpectations {
             }
 
             @Override public void willThrow(Exception exception) {
+                mock.addWunderBarExpectation(matcher(), response(exception));
             }
         };
+    }
+
+    private RequestMatcher matcher() {
+        return productQuery("forbidden-product-id");
+    }
+
+    private ResponseSupplier response(Exception exception) {
+        return graphQlError("product-forbidden", "product forbidden-product-id is forbidden");
     }
 
     @SneakyThrows(IOException.class)
     @Override public void done() {
         if (api instanceof Closeable) ((Closeable) api).close();
+    }
+
+    @GraphQLClientApi
+    private interface WunderBarMockServerApi {
+        @Mutation String addWunderBarExpectation(@NonNull RequestMatcher matcher, @NonNull ResponseSupplier responseSupplier);
     }
 }

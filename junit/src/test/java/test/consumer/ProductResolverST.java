@@ -4,6 +4,7 @@ import com.github.t1.wunderbar.junit.consumer.Service;
 import com.github.t1.wunderbar.junit.consumer.SystemUnderTest;
 import com.github.t1.wunderbar.junit.consumer.WunderBarApiConsumer;
 import io.smallrye.graphql.client.GraphQLClientException;
+import io.smallrye.graphql.client.impl.GraphQLErrorImpl;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
@@ -15,6 +16,8 @@ import test.consumer.RestProducts.ProductsRestClient;
 
 import javax.ws.rs.WebApplicationException;
 import java.net.URI;
+import java.util.List;
+import java.util.Map;
 
 import static com.github.t1.wunderbar.junit.consumer.WunderbarExpectationBuilder.baseUri;
 import static com.github.t1.wunderbar.junit.consumer.WunderbarExpectationBuilder.given;
@@ -60,6 +63,9 @@ class ProductResolverST { // TODO extends ProductResolverTest {
     }
 
     @Test void shouldFailToResolveForbiddenProduct() {
+        given(products.product("forbidden-product-id")).willThrow(new GraphQLClientException("product forbidden-product-id is forbidden",
+            List.of(new GraphQLErrorImpl("product forbidden-product-id is forbidden", null, null, Map.of("code", "product-forbidden"), null))));
+
         var throwable = catchThrowableOfType(() -> resolver.product(new Item("forbidden-product-id")), GraphQLClientException.class);
 
         then(throwable.getErrors()).hasSize(1);

@@ -17,17 +17,20 @@ import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.Network;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
+import test.Slow;
 
 import java.util.List;
 
 import static com.github.t1.wunderbar.junit.consumer.Level.SYSTEM;
+import static com.github.t1.wunderbar.junit.consumer.WunderBarApiConsumer.NONE;
 import static com.github.t1.wunderbar.junit.consumer.WunderbarExpectationBuilder.createService;
 import static com.github.t1.wunderbar.junit.consumer.WunderbarExpectationBuilder.given;
 import static org.assertj.core.api.BDDAssertions.then;
 import static org.testcontainers.containers.Network.newNetwork;
 
+@Slow
 @Testcontainers
-@WunderBarApiConsumer(level = SYSTEM)
+@WunderBarApiConsumer(level = SYSTEM, fileName = NONE)
 class OrderMockServerIT {
     static final Network NETWORK = newNetwork();
 
@@ -38,7 +41,7 @@ class OrderMockServerIT {
     @Container static JeeContainer PRODUCTS = new WildflyContainer("rdohna/wildfly", "25.0.1.Final-jdk11")
         .withNetwork(NETWORK)
         .withNetworkAliases("products")
-        .withDeployment("../../mock/target/wunderbar-mock-server.war");
+        .withDeployment("../../mock/war/target/wunderbar-mock-server.war");
 
     @SuppressWarnings("unused")
     static String productsEndpoint() {

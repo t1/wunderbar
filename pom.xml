@@ -17,9 +17,10 @@
         <project.build.sourceEncoding>utf-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>utf-8</project.reporting.outputEncoding>
 
+        <microprofile.version>4.0.1</microprofile.version>
         <smallrye-graphql.version>1.4.0</smallrye-graphql.version>
-        <quarkus.version>2.6.1.Final</quarkus.version>
         <resteasy.version>4.7.4.Final</resteasy.version>
+        <quarkus.version>2.6.1.Final</quarkus.version>
 
         <junit.version>5.8.2</junit.version>
         <assertj.version>3.22.0</assertj.version>

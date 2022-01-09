@@ -12,6 +12,12 @@
 
     <dependencies>
         <dependency>
+            <groupId>com.github.t1</groupId>
+            <artifactId>wunderbar.mock.server.lib</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+
+        <dependency>
             <groupId>io.smallrye</groupId>
             <artifactId>smallrye-graphql-client-implementation-vertx</artifactId>
             <version>${smallrye-graphql.version}</version>
@@ -77,12 +83,6 @@
             <groupId>javax.enterprise</groupId>
             <artifactId>cdi-api</artifactId>
             <version>2.0</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>com.github.t1</groupId>
-            <artifactId>wunderbar.mock.server</artifactId>
-            <version>${project.version}</version>
             <scope>test</scope>
         </dependency>
     </dependencies>
