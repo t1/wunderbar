@@ -87,6 +87,7 @@ class OrderMockServerIT {
         this.api = TypesafeGraphQLClientBuilder.newBuilder().endpoint(graphQlEndpoint).build(Api.class);
     }
 
+    @Slow
     @Test void shouldGetOrder() {
         Product givenProduct = Product.builder()
             .id(PRODUCT_ID)

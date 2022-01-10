@@ -8,6 +8,8 @@ import com.github.t1.wunderbar.junit.consumer.WunderbarExpectationBuilder;
 import com.github.t1.wunderbar.junit.consumer.system.graphql.jaxrs.client.JaxRsTypesafeGraphQLClientBuilder;
 import com.github.t1.wunderbar.mock.RequestMatcher;
 import com.github.t1.wunderbar.mock.ResponseSupplier;
+import io.smallrye.graphql.client.impl.typesafe.QueryBuilder;
+import io.smallrye.graphql.client.impl.typesafe.reflection.MethodInvocation;
 import io.smallrye.graphql.client.typesafe.api.GraphQLClientApi;
 import io.smallrye.graphql.client.typesafe.api.TypesafeGraphQLClientBuilder;
 import lombok.Data;
@@ -21,9 +23,12 @@ import java.io.Closeable;
 import java.io.IOException;
 import java.lang.reflect.Method;
 import java.net.URI;
+import java.util.ArrayList;
+import java.util.List;
 
+import static com.github.t1.wunderbar.junit.Utils.errorCode;
+import static com.github.t1.wunderbar.mock.GraphQLBodyMatcher.graphQlRequest;
 import static com.github.t1.wunderbar.mock.GraphQLResponseSupplier.graphQlError;
-import static com.github.t1.wunderbar.mock.MockUtils.productQuery;
 
 @Slf4j
 public class SystemTestExpectations implements WunderBarExpectations {
@@ -33,6 +38,7 @@ public class SystemTestExpectations implements WunderBarExpectations {
     private final BarFilter filter;
     private final Object api;
     private final WunderBarMockServerApi mock;
+    private final List<Integer> createdExpectationIds = new ArrayList<>();
 
     public SystemTestExpectations(Class<?> type, URI baseUri, Technology technology, BarWriter bar) {
         this.type = type;
@@ -79,34 +85,39 @@ public class SystemTestExpectations implements WunderBarExpectations {
             }
 
             @Override public void willThrow(Exception exception) {
-                var result = mock.addWunderBarExpectation(matcher(), response(exception));
-                if (!"ok".equals(result.getStatus())) {
-                    throw new IllegalStateException("expected status=ok, but got " + result);
-                }
+                var result = mock.addWunderBarExpectation(matcher(method, args), response(exception));
+                if (!"ok".equals(result.getStatus())) throw new IllegalStateException("expected status=ok, but got " + result);
+                createdExpectationIds.add(result.getId());
             }
         };
     }
 
-    private RequestMatcher matcher() {
-        return productQuery("forbidden-product-id");
+    private RequestMatcher matcher(Method method, Object... args) {
+        return graphQlRequest()
+            .query(new QueryBuilder(MethodInvocation.of(method, args)).build())
+            .variable("id", args[0])
+            .build();
     }
 
     private ResponseSupplier response(Exception exception) {
-        return graphQlError("product-forbidden", "product forbidden-product-id is forbidden");
+        return graphQlError(errorCode(exception), exception.getMessage());
     }
 
     @SneakyThrows(IOException.class)
     @Override public void done() {
+        while (!createdExpectationIds.isEmpty()) mock.removeWunderBarExpectation(createdExpectationIds.remove(0));
         if (api instanceof Closeable) ((Closeable) api).close();
     }
 
     @GraphQLClientApi
     private interface WunderBarMockServerApi {
         @Mutation WunderBarStubbingResult addWunderBarExpectation(@NonNull RequestMatcher matcher, @NonNull ResponseSupplier responseSupplier);
+        @SuppressWarnings("UnusedReturnValue") @Mutation String removeWunderBarExpectation(int id);
     }
 
     @Data
     private static class WunderBarStubbingResult {
+        int id;
         String status;
     }
 }

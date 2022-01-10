@@ -7,7 +7,7 @@ import com.github.t1.wunderbar.junit.http.HttpServer;
 import com.github.t1.wunderbar.mock.MockService;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
-import org.junit.jupiter.api.extension.AfterEachCallback;
+import org.junit.jupiter.api.extension.AfterAllCallback;
 import org.junit.jupiter.api.extension.Extension;
 import org.junit.jupiter.api.extension.ExtensionContext;
 
@@ -40,10 +40,10 @@ import java.util.Locale;
 import java.util.Map;
 
 /** this server would normally be a real server running somewhere */
-public class DummyServer implements Extension, AfterEachCallback {
-    private final HttpServer server = new HttpServer(DummyServer::handle);
+public class DummyServer implements Extension, AfterAllCallback {
+    private static final HttpServer SERVER = new HttpServer(DummyServer::handle);
 
-    public URI baseUri() {return server.baseUri();}
+    public URI baseUri() {return SERVER.baseUri();}
 
     @SneakyThrows(IOException.class)
     private static HttpResponse handle(HttpRequest request) {
@@ -53,7 +53,7 @@ public class DummyServer implements Extension, AfterEachCallback {
         return response.toResponse();
     }
 
-    @Override public void afterEach(ExtensionContext context) {server.stop();}
+    @Override public void afterAll(ExtensionContext context) {SERVER.stop();}
 
     @RequiredArgsConstructor
     private static class DummyHttpServletRequest implements HttpServletRequest {

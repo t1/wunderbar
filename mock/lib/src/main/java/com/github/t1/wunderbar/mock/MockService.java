@@ -1,5 +1,6 @@
 package com.github.t1.wunderbar.mock;
 
+import com.github.t1.wunderbar.mock.GraphQLBodyMatcher.GraphQLBodyMatcherBuilder;
 import lombok.extern.slf4j.Slf4j;
 
 import javax.json.Json;
@@ -10,9 +11,9 @@ import javax.json.JsonValue;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.util.LinkedHashMap;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 
 import static com.github.t1.wunderbar.mock.GraphQLBodyMatcher.graphQlRequest;
 import static com.github.t1.wunderbar.mock.GraphQLResponseSupplier.graphQL;
@@ -21,50 +22,62 @@ import static com.github.t1.wunderbar.mock.MockUtils.productQuery;
 import static com.github.t1.wunderbar.mock.RequestMatcher.json;
 import static com.github.t1.wunderbar.mock.RestErrorSupplier.restError;
 import static com.github.t1.wunderbar.mock.RestResponseSupplier.restResponse;
+import static com.github.t1.wunderbar.mock.WunderBarMockExpectation.exp;
 import static java.util.stream.Collectors.joining;
 import static java.util.stream.Collectors.toMap;
 
 @Slf4j
 public class MockService {
-    static final Map<RequestMatcher, ResponseSupplier> EXPECTATIONS = new LinkedHashMap<>();
+    static final List<WunderBarMockExpectation> EXPECTATIONS = new ArrayList<>();
 
     static {
-        EXPECTATIONS.put(graphQlRequest().query(
-                    "mutation addWunderBarExpectation\\(\\$matcher: RequestMatcherInput!, \\$responseSupplier: ResponseSupplierInput!\\) " +
-                    "\\{ addWunderBarExpectation\\(matcher: \\$matcher, responseSupplier: \\$responseSupplier\\) \\{status} }")
-                .build(),
+        addExpectation(graphQlRequest().queryPattern(
+                "mutation addWunderBarExpectation\\(\\$matcher: RequestMatcherInput!, \\$responseSupplier: ResponseSupplierInput!\\) " +
+                "\\{ addWunderBarExpectation\\(matcher: \\$matcher, responseSupplier: \\$responseSupplier\\) \\{id status} }"),
             MockService::addExpectation);
-        EXPECTATIONS.put(productQuery("existing-product-id"),
+        addExpectation(graphQlRequest().queryPattern(
+                "mutation removeWunderBarExpectation\\(\\$id: Int!\\) \\{ removeWunderBarExpectation\\(id: \\$id\\) }"),
+            MockService::removeExpectation);
+        addExpectation(productQuery("existing-product-id"),
             graphQL().add("data", Json.createObjectBuilder()
                 .add("product", Json.createObjectBuilder()
                     .add("id", "existing-product-id")
                     .add("name", "some-product-name")
                     .add("price", 1599)
                 )).build());
-        EXPECTATIONS.put(productQuery("unknown-product-id"),
+        addExpectation(productQuery("unknown-product-id"),
             graphQlError("product-not-found", "product unknown-product-id not found"));
-        EXPECTATIONS.put(productQuery("unexpected-fail")
+        addExpectation(productQuery("unexpected-fail")
             , graphQlError("unexpected-fail", "product unexpected-fail fails unexpectedly"));
-        EXPECTATIONS.put(graphQlRequest().emptyBody(true).build(),
-            graphQlError("validation-error", "no body in GraphQL request"));
+        addExpectation(graphQlRequest().emptyBody(true), graphQlError("validation-error", "no body in GraphQL request"));
 
-        EXPECTATIONS.put(RequestMatcher.builder().path("/rest/products/existing-product-id").build(), restResponse().body(Json.createObjectBuilder()
+        addExpectation(RequestMatcher.builder().path("/rest/products/existing-product-id").build(), restResponse().body(Json.createObjectBuilder()
             .add("id", "existing-product-id")
             .add("name", "some-product-name")
             .add("price", 1599)
             .build()
         ));
-        EXPECTATIONS.put(RequestMatcher.builder().path("/rest/products/forbidden-product-id").build(), restError().status(403)
+        addExpectation(RequestMatcher.builder().path("/rest/products/forbidden-product-id").build(), restError().status(403)
             .detail("HTTP 403 Forbidden")
             .title("ForbiddenException")
             .type("urn:problem-type:javax.ws.rs.ForbiddenException")
         );
-        EXPECTATIONS.put(RequestMatcher.builder().path("/rest/products/unknown-product-id").build(), restError().status(404)
+        addExpectation(RequestMatcher.builder().path("/rest/products/unknown-product-id").build(), restError().status(404)
             .detail("HTTP 404 Not Found")
             .title("NotFoundException")
             .type("urn:problem-type:javax.ws.rs.NotFoundException")
         );
-        EXPECTATIONS.put(RequestMatcher.builder().path("/q/health/ready").build(), restResponse().add("status", "UP"));
+        addExpectation(RequestMatcher.builder().path("/q/health/ready").build(), restResponse().add("status", "UP"));
+    }
+
+    private static void addExpectation(GraphQLBodyMatcherBuilder matcherBuilder, ResponseSupplier responseSupplier) {
+        addExpectation(matcherBuilder.build(), responseSupplier);
+    }
+
+    private static WunderBarMockExpectation addExpectation(RequestMatcher queryMatcher, ResponseSupplier responseSupplier) {
+        var expectation = exp(queryMatcher, responseSupplier);
+        EXPECTATIONS.add(expectation);
+        return expectation;
     }
 
     private static void addExpectation(HttpServletRequest request, String requestBody, HttpServletResponse response) {
@@ -74,13 +87,14 @@ public class MockService {
         log.debug("    matcher: {}", matcher);
         var supplier = supplier(variables.getJsonObject("responseSupplier"));
         log.debug("    supplier: {}", supplier);
-        EXPECTATIONS.put(matcher, supplier);
-        graphQL().with(MockService::expectationResponse).build().apply(request, requestBody, response);
+        var expectation = addExpectation(matcher, supplier);
+        graphQL().with(builder -> expectationResponse(builder, expectation)).build()
+            .apply(request, requestBody, response);
     }
 
     private static RequestMatcher matcher(JsonObject json) {
         var bodyMatcher = json.getJsonObject("bodyMatcher");
-        if (hasField(bodyMatcher, "query")) return graphQlMatcher(bodyMatcher);
+        if (hasField(bodyMatcher, "queryPattern") || hasField(bodyMatcher, "query")) return graphQlMatcher(bodyMatcher);
         if (hasField(json, "path")) return restMatcher(json);
         throw new IllegalArgumentException("need either `query` or `path`, but got " + json);
     }
@@ -92,7 +106,8 @@ public class MockService {
     private static RequestMatcher graphQlMatcher(JsonObject json) {
         return graphQlRequest()
             .emptyBody(json.getBoolean("emptyBody"))
-            .query(json.getString("query"))
+            .queryPattern(json.getString("queryPattern", null))
+            .query(json.getString("query", null))
             .variables(variables(json.getJsonArray("variables")))
             .build();
     }
@@ -103,10 +118,11 @@ public class MockService {
             .collect(toMap(o -> o.getString("key"), o -> o.getString("value")));
     }
 
-    private static void expectationResponse(JsonObjectBuilder builder) {
+    private static void expectationResponse(JsonObjectBuilder builder, WunderBarMockExpectation expectation) {
         builder.add("data", Json.createObjectBuilder()
             .add("addWunderBarExpectation", Json.createObjectBuilder()
-                .add("status", "ok")));
+                .add("status", "ok")
+                .add("id", expectation.getId())));
     }
 
     private static RequestMatcher restMatcher(JsonObject json) {
@@ -117,21 +133,35 @@ public class MockService {
         return new GraphQLResponseSupplier(json.getString("body"));
     }
 
+    private static void removeExpectation(HttpServletRequest request, String requestBody, HttpServletResponse response) {
+        var variables = json(requestBody).asJsonObject().getJsonObject("variables");
+        log.debug("remove expectation: {}", variables);
+        var id = variables.getInt("id");
+        var expectation = EXPECTATIONS.stream().filter(e -> e.getId() == id)
+            .findFirst().orElseThrow(() -> new IllegalStateException("can't remove expectation " + id + ": not found."));
+        graphQL().with(MockService::removeResponse).build().apply(request, requestBody, response);
+    }
+
+    private static void removeResponse(JsonObjectBuilder builder) {
+        builder.add("data", Json.createObjectBuilder()
+            .add("removeWunderBarExpectation", "ok"));
+    }
+
     public void service(HttpServletRequest request, HttpServletResponse response) throws IOException {
         log.info("received {}:{}", request.getMethod(), request.getRequestURI());
         var body = request.getReader().lines().collect(joining()).trim();
         log.debug("received body:\n{}", body); // TODO trace
-        var match = EXPECTATIONS.entrySet().stream()
-            .peek(entry -> log.debug("match {}", entry.getKey())) // TODO trace
-            .filter(entry -> entry.getKey().matches(request, body))
-            .peek(entry -> log.debug("matched!")) // TODO trace
+        var match = EXPECTATIONS.stream()
+            .peek(expectation -> log.debug("match {}", expectation.getRequestMatcher())) // TODO trace
+            .filter(expectation -> expectation.getRequestMatcher().matches(request, body))
+            .peek(expectation -> log.debug("matched!")) // TODO trace
             .findFirst().orElseGet(MockService::noMatch);
-        match.getValue().apply(request, body, response);
+        match.getResponseSupplier().apply(request, body, response);
     }
 
-    private static Entry<RequestMatcher, ResponseSupplier> noMatch() {
+    private static WunderBarMockExpectation noMatch() {
         var message = "no matching expectation found";
         log.debug(message);
-        return Map.entry(RequestMatcher.builder().build(), restError().detail(message));
+        return exp(RequestMatcher.builder().build(), restError().detail(message));
     }
 }

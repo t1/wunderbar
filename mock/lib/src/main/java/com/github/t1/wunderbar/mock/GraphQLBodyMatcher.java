@@ -16,6 +16,7 @@ public class GraphQLBodyMatcher implements Predicate<JsonValue> {
 
     boolean emptyBody;
     String query;
+    String queryPattern;
     @Singular Map<String, Object> variables;
 
     public static class GraphQLBodyMatcherBuilder {
@@ -41,7 +42,10 @@ public class GraphQLBodyMatcher implements Predicate<JsonValue> {
     }
 
     private boolean matchQuery(JsonObject jsonObject) {
-        return jsonObject.getString("query").matches(query);
+        var actual = jsonObject.getString("query");
+        if (query != null) return actual.equals(query);
+        if (queryPattern != null) return actual.matches(queryPattern);
+        throw new IllegalStateException("neither query nor queryPattern is set");
     }
 
     private boolean matchVariables(JsonObject jsonObject) {
