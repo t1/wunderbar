@@ -20,7 +20,7 @@
         <microprofile.version>4.0.1</microprofile.version>
         <smallrye-graphql.version>1.4.1</smallrye-graphql.version>
         <resteasy.version>4.7.4.Final</resteasy.version>
-        <quarkus.version>2.6.1.Final</quarkus.version>
+        <quarkus.version>2.6.2.Final</quarkus.version>
 
         <junit.version>5.8.2</junit.version>
         <assertj.version>3.22.0</assertj.version>
