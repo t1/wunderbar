@@ -34,6 +34,7 @@ public class MockService {
         addExpectation(graphQlRequest().queryPattern(
                 "mutation removeWunderBarExpectation\\(\\$id: Int!\\) \\{ removeWunderBarExpectation\\(id: \\$id\\) }"),
             MockService::removeExpectation);
+
         addExpectation(productQuery("existing-product-id"),
             graphQL().add("data", Json.createObjectBuilder()
                 .add("product", Json.createObjectBuilder()
@@ -41,8 +42,6 @@ public class MockService {
                     .add("name", "some-product-name")
                     .add("price", 1599)
                 )).build());
-        addExpectation(productQuery("unknown-product-id"),
-            graphQlError("product-not-found", "product unknown-product-id not found"));
         addExpectation(productQuery("unexpected-fail")
             , graphQlError("unexpected-fail", "product unexpected-fail fails unexpectedly"));
         addExpectation(graphQlRequest(), graphQlError("validation-error", "no body in GraphQL request"));

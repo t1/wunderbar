@@ -29,14 +29,14 @@ public class GraphQLRequestBuilder {
 
     private final MethodInvocation method;
 
-    public String build() {
+    public JsonObject build() {
         JsonObjectBuilder request = Json.createObjectBuilder();
         String query = query();
         log.debug("request graphql: {}", query);
         request.add("query", query);
         request.add("variables", variables());
         request.add("operationName", method.getName());
-        String requestString = request.build().toString();
+        JsonObject requestString = request.build();
         log.debug("full graphql request: {}", requestString);
         return requestString;
     }

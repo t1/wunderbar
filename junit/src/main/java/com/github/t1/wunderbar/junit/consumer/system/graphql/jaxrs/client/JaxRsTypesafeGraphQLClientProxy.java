@@ -33,7 +33,7 @@ class JaxRsTypesafeGraphQLClientProxy {
         MultivaluedMap<String, Object> headers = new HeaderBuilder(api, method,
             configuration != null ? configuration.getHeaders() : Collections.emptyMap())
             .build();
-        String request = new GraphQLRequestBuilder(method).build();
+        String request = new GraphQLRequestBuilder(method).build().toString();
 
         String response = post(request, headers);
         log.debugf("response graphql: %s", response);

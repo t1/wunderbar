@@ -116,10 +116,6 @@ abstract class ProductResolverTest {
         failsWith(throwable, "product-not-found", "product x not found", NOT_FOUND);
     }
 
-    static class ProductNotFoundException extends RuntimeException {
-        ProductNotFoundException(String id) {super("product " + id + " not found");}
-    }
-
     void failsWith(Throwable throwable, String code, String message, Status status) {
         then(throwable).isNotNull();
         if (throwable instanceof GraphQLClientException) {

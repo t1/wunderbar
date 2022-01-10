@@ -51,6 +51,8 @@ class ProductResolverST { // TODO extends ProductResolverTest {
     }
 
     @Test void shouldFailToResolveUnknownProduct() {
+        given(products.product("unknown-product-id")).willThrow(new ProductNotFoundException("unknown-product-id"));
+
         var throwable = catchThrowableOfType(() -> resolver.product(new Item("unknown-product-id")), GraphQLClientException.class);
 
         then(throwable.getErrors()).hasSize(1);
@@ -107,9 +109,5 @@ class ProductResolverST { // TODO extends ProductResolverTest {
         private Product resolveProduct(String productId) {
             return restResolver.product(new Item(productId));
         }
-    }
-
-    private static class ProductForbiddenException extends RuntimeException {
-        public ProductForbiddenException(String id) {super("product " + id + " is forbidden");}
     }
 }
