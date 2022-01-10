@@ -1,23 +1,19 @@
 package com.github.t1.wunderbar.mock;
 
 import lombok.Builder;
-import lombok.Singular;
 import lombok.Value;
 
 import javax.json.JsonObject;
 import javax.json.JsonValue;
-import javax.json.JsonValue.ValueType;
-import java.util.Map;
 import java.util.function.Predicate;
 
 @Value @Builder(buildMethodName = "internalBuild")
 public class GraphQLBodyMatcher implements Predicate<JsonValue> {
     public static GraphQLBodyMatcher.GraphQLBodyMatcherBuilder graphQlRequest() {return GraphQLBodyMatcher.builder();}
 
-    boolean emptyBody;
     String query;
     String queryPattern;
-    @Singular Map<String, Object> variables;
+    JsonObject variables;
 
     public static class GraphQLBodyMatcherBuilder {
         public RequestMatcher build() {
@@ -33,8 +29,14 @@ public class GraphQLBodyMatcher implements Predicate<JsonValue> {
     @Override public boolean test(JsonValue jsonValue) {return matchBody(jsonValue);}
 
     private boolean matchBody(JsonValue jsonValue) {
-        if (emptyBody) return jsonValue == JsonValue.NULL;
-        return jsonValue.getValueType() == ValueType.OBJECT && matchBody(jsonValue.asJsonObject());
+        switch (jsonValue.getValueType()) {
+            case NULL:
+                return queryPattern == null && query == null;
+            case OBJECT:
+                return matchBody(jsonValue.asJsonObject());
+            default:
+                throw new IllegalArgumentException("unexpected json body type: " + jsonValue.getValueType());
+        }
     }
 
     private boolean matchBody(JsonObject jsonObject) {
@@ -45,15 +47,12 @@ public class GraphQLBodyMatcher implements Predicate<JsonValue> {
         var actual = jsonObject.getString("query");
         if (query != null) return actual.equals(query);
         if (queryPattern != null) return actual.matches(queryPattern);
-        throw new IllegalStateException("neither query nor queryPattern is set");
+        return actual == null || actual.isBlank();
     }
 
     private boolean matchVariables(JsonObject jsonObject) {
-        return variables == null || variables.entrySet().stream()
-            .allMatch(entry -> matchVariable(jsonObject.getJsonObject("variables"), entry.getKey(), entry.getValue()));
-    }
-
-    private boolean matchVariable(JsonObject jsonObject, String key, Object value) {
-        return jsonObject.getString(key).equals(value);
+        if (variables == null) return true;
+        var actualVariables = jsonObject.getJsonObject("variables");
+        return this.variables.equals(actualVariables);
     }
 }

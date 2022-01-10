@@ -4,16 +4,13 @@ import com.github.t1.wunderbar.mock.GraphQLBodyMatcher.GraphQLBodyMatcherBuilder
 import lombok.extern.slf4j.Slf4j;
 
 import javax.json.Json;
-import javax.json.JsonArray;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
-import javax.json.JsonValue;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 import static com.github.t1.wunderbar.mock.GraphQLBodyMatcher.graphQlRequest;
 import static com.github.t1.wunderbar.mock.GraphQLResponseSupplier.graphQL;
@@ -24,7 +21,6 @@ import static com.github.t1.wunderbar.mock.RestErrorSupplier.restError;
 import static com.github.t1.wunderbar.mock.RestResponseSupplier.restResponse;
 import static com.github.t1.wunderbar.mock.WunderBarMockExpectation.exp;
 import static java.util.stream.Collectors.joining;
-import static java.util.stream.Collectors.toMap;
 
 @Slf4j
 public class MockService {
@@ -49,7 +45,7 @@ public class MockService {
             graphQlError("product-not-found", "product unknown-product-id not found"));
         addExpectation(productQuery("unexpected-fail")
             , graphQlError("unexpected-fail", "product unexpected-fail fails unexpectedly"));
-        addExpectation(graphQlRequest().emptyBody(true), graphQlError("validation-error", "no body in GraphQL request"));
+        addExpectation(graphQlRequest(), graphQlError("validation-error", "no body in GraphQL request"));
 
         addExpectation(RequestMatcher.builder().path("/rest/products/existing-product-id").build(), restResponse().body(Json.createObjectBuilder()
             .add("id", "existing-product-id")
@@ -105,17 +101,10 @@ public class MockService {
 
     private static RequestMatcher graphQlMatcher(JsonObject json) {
         return graphQlRequest()
-            .emptyBody(json.getBoolean("emptyBody"))
             .queryPattern(json.getString("queryPattern", null))
             .query(json.getString("query", null))
-            .variables(variables(json.getJsonArray("variables")))
+            .variables(json.getJsonObject("variables"))
             .build();
-    }
-
-    private static Map<String, Object> variables(JsonArray variables) {
-        return variables.stream()
-            .map(JsonValue::asJsonObject)
-            .collect(toMap(o -> o.getString("key"), o -> o.getString("value")));
     }
 
     private static void expectationResponse(JsonObjectBuilder builder, WunderBarMockExpectation expectation) {

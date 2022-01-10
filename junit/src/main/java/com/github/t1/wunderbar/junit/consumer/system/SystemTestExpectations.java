@@ -5,13 +5,12 @@ import com.github.t1.wunderbar.junit.consumer.Technology;
 import com.github.t1.wunderbar.junit.consumer.WunderBarExpectation;
 import com.github.t1.wunderbar.junit.consumer.WunderBarExpectations;
 import com.github.t1.wunderbar.junit.consumer.WunderbarExpectationBuilder;
+import com.github.t1.wunderbar.junit.consumer.system.graphql.jaxrs.client.GraphQLRequestBuilder;
 import com.github.t1.wunderbar.junit.consumer.system.graphql.jaxrs.client.JaxRsTypesafeGraphQLClientBuilder;
 import com.github.t1.wunderbar.mock.RequestMatcher;
 import com.github.t1.wunderbar.mock.ResponseSupplier;
-import io.smallrye.graphql.client.impl.typesafe.QueryBuilder;
 import io.smallrye.graphql.client.impl.typesafe.reflection.MethodInvocation;
 import io.smallrye.graphql.client.typesafe.api.GraphQLClientApi;
-import io.smallrye.graphql.client.typesafe.api.TypesafeGraphQLClientBuilder;
 import lombok.Data;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
@@ -46,7 +45,7 @@ public class SystemTestExpectations implements WunderBarExpectations {
         this.technology = technology;
         this.filter = new BarFilter(bar);
         this.api = buildApi();
-        this.mock = TypesafeGraphQLClientBuilder.newBuilder().endpoint(baseUri).build(WunderBarMockServerApi.class);
+        this.mock = new JaxRsTypesafeGraphQLClientBuilder().endpoint(baseUri).build(WunderBarMockServerApi.class);
     }
 
     private Object buildApi() {
@@ -93,9 +92,10 @@ public class SystemTestExpectations implements WunderBarExpectations {
     }
 
     private RequestMatcher matcher(Method method, Object... args) {
+        var requestBuilder = new GraphQLRequestBuilder(MethodInvocation.of(method, args));
         return graphQlRequest()
-            .query(new QueryBuilder(MethodInvocation.of(method, args)).build())
-            .variable("id", args[0])
+            .query(requestBuilder.query())
+            .variables(requestBuilder.variables())
             .build();
     }
 

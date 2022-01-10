@@ -10,7 +10,6 @@ import lombok.extern.slf4j.Slf4j;
 import javax.json.Json;
 import javax.json.JsonArray;
 import javax.json.JsonArrayBuilder;
-import javax.json.JsonBuilderFactory;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
 import javax.json.JsonValue;
@@ -26,32 +25,37 @@ import java.util.stream.Stream;
 @Slf4j
 @RequiredArgsConstructor
 public class GraphQLRequestBuilder {
-    private static final JsonBuilderFactory jsonObjectFactory = Json.createBuilderFactory(null);
-    private static final Map<String, String> queryCache = new HashMap<>();
+    private static final Map<String, String> QUERY_CACHE = new HashMap<>();
 
     private final MethodInvocation method;
 
     public String build() {
-        JsonObjectBuilder request = jsonObjectFactory.createObjectBuilder();
-        String query = queryCache.computeIfAbsent(method.getKey(), key -> new QueryBuilder(method).build());
-        request.add("query", query);
-        request.add("variables", variables(method));
-        request.add("operationName", method.getName());
+        JsonObjectBuilder request = Json.createObjectBuilder();
+        String query = query();
         log.debug("request graphql: {}", query);
+        request.add("query", query);
+        request.add("variables", variables());
+        request.add("operationName", method.getName());
         String requestString = request.build().toString();
         log.debug("full graphql request: {}", requestString);
         return requestString;
     }
 
-    private JsonObjectBuilder variables(MethodInvocation method) {
+    public String query() {
+        return QUERY_CACHE.computeIfAbsent(method.getKey(), key -> new QueryBuilder(method).build());
+    }
+
+    public JsonObject variables() {
         JsonObjectBuilder builder = Json.createObjectBuilder();
         method.valueParameters().forEach(parameter -> builder.add(parameter.getRawName(), value(parameter.getValue())));
-        return builder;
+        return builder.build();
     }
 
     private JsonValue value(Object value) {
         if (value == null)
             return JsonValue.NULL;
+        if (value instanceof JsonValue)
+            return (JsonValue) value;
         TypeInfo type = TypeInfo.of(value.getClass());
         if (type.isScalar())
             return scalarValue(value);
