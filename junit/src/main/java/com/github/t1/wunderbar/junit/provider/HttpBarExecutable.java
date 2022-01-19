@@ -17,13 +17,13 @@ import javax.json.JsonStructure;
 import javax.json.JsonValue;
 import java.util.function.Function;
 
-import static com.github.t1.wunderbar.junit.Utils.isCompatible;
+import static com.github.t1.wunderbar.common.Utils.isCompatible;
 import static com.github.t1.wunderbar.junit.provider.CustomBDDAssertions.then;
 
 @RequiredArgsConstructor
 class HttpBarExecutable implements Executable {
 
-    public static HttpBarExecutable of(BarReader bar, Test test) { return new HttpBarExecutable(bar, test); }
+    public static HttpBarExecutable of(BarReader bar, Test test) {return new HttpBarExecutable(bar, test);}
 
     private final BarReader bar;
     private final Test test;
@@ -78,7 +78,7 @@ class HttpBarExecutable implements Executable {
             return softly;
         }
 
-        private JsonValue body(HttpResponse actual) { return actual.getJsonBody().orElse(JsonValue.NULL); }
+        private JsonValue body(HttpResponse actual) {return actual.getJsonBody().orElse(JsonValue.NULL);}
 
         private void checkBody(BDDSoftAssertions softly, JsonValue actual, JsonValue expected) {
             if (actual instanceof JsonStructure && expected instanceof JsonStructure)

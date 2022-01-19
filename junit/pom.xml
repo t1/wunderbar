@@ -4,7 +4,7 @@
 
     <parent>
         <groupId>com.github.t1</groupId>
-        <artifactId>wunderbar</artifactId>
+        <artifactId>wunderbar.parent</artifactId>
         <version>2.2.0-SNAPSHOT</version>
     </parent>
 
@@ -13,7 +13,7 @@
     <dependencies>
         <dependency>
             <groupId>com.github.t1</groupId>
-            <artifactId>wunderbar.mock.server.lib</artifactId>
+            <artifactId>wunderbar.lib</artifactId>
             <version>${project.version}</version>
         </dependency>
 
@@ -47,12 +47,8 @@
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-api</artifactId>
-            <version>1.7.33</version>
-        </dependency>
-        <dependency>
-            <groupId>io.undertow</groupId>
-            <artifactId>undertow-core</artifactId>
-            <version>2.2.14.Final</version>
+            <version>${slf4j.version}</version>
+            <scope>provided</scope>
         </dependency>
 
         <dependency>

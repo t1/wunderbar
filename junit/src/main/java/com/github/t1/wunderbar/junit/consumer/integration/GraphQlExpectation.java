@@ -13,7 +13,7 @@ import java.lang.reflect.Method;
 import java.util.List;
 import java.util.Map;
 
-import static com.github.t1.wunderbar.junit.Utils.errorCode;
+import static com.github.t1.wunderbar.common.Utils.errorCode;
 
 class GraphQlExpectation extends HttpServiceExpectation {
     private final String configKey;
@@ -49,7 +49,7 @@ class GraphQlExpectation extends HttpServiceExpectation {
         return new Authorization.Basic(oldUsername, oldPassword);
     }
 
-    @Override protected HttpResponse handleRequest(HttpRequest request) {
+    @Override public HttpResponse handleRequest(HttpRequest request) {
         return HttpResponse.builder().body(buildResponseBody()).build();
     }
 

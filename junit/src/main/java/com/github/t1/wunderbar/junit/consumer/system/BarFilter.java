@@ -18,7 +18,7 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.net.URI;
 
-import static com.github.t1.wunderbar.junit.Utils.formatJson;
+import static com.github.t1.wunderbar.common.Utils.formatJson;
 import static javax.ws.rs.core.HttpHeaders.AUTHORIZATION;
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON_TYPE;
 
@@ -31,7 +31,7 @@ class BarFilter implements ClientRequestFilter, ClientResponseFilter {
         this.bar = bar;
     }
 
-    @Override public String toString() { return "BarFilter for " + bar; }
+    @Override public String toString() {return "BarFilter for " + bar;}
 
     @Override public void filter(ClientRequestContext requestContext) {
         if (bar == null) return;

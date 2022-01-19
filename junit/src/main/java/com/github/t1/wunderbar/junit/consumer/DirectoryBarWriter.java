@@ -9,7 +9,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.regex.Pattern;
 
-import static com.github.t1.wunderbar.junit.Utils.deleteRecursive;
+import static com.github.t1.wunderbar.common.Utils.deleteRecursive;
 
 class DirectoryBarWriter extends BarWriter {
     @Getter private final Path path;
@@ -21,7 +21,7 @@ class DirectoryBarWriter extends BarWriter {
         deleteRecursive(path);
     }
 
-    private Path currentDir() { return path.resolve(directory); }
+    private Path currentDir() {return path.resolve(directory);}
 
     @SneakyThrows(IOException.class)
     @Override protected int count() {

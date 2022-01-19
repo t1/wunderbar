@@ -1,6 +1,6 @@
 package com.github.t1.wunderbar.junit.consumer.integration;
 
-import com.github.t1.wunderbar.junit.consumer.Internal;
+import com.github.t1.wunderbar.common.Internal;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;

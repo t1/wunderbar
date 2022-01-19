@@ -1,6 +1,8 @@
 package com.github.t1.wunderbar.junit.consumer.integration;
 
-import com.github.t1.wunderbar.junit.Utils;
+import com.github.t1.wunderbar.common.Internal;
+import com.github.t1.wunderbar.common.Utils;
+import com.github.t1.wunderbar.junit.consumer.Technology;
 import com.github.t1.wunderbar.junit.consumer.WunderBarExpectation;
 import com.github.t1.wunderbar.junit.http.HttpRequest;
 import com.github.t1.wunderbar.junit.http.HttpResponse;
@@ -15,9 +17,20 @@ import java.net.URI;
 
 import static lombok.AccessLevel.PACKAGE;
 
-abstract class HttpServiceExpectation extends WunderBarExpectation {
+public abstract @Internal class HttpServiceExpectation extends WunderBarExpectation {
+    public static HttpServiceExpectation of(Technology technology, HttpServer server, Method method, Object... args) {
+        switch (technology) {
+            case GRAPHQL:
+                return new GraphQlExpectation(server, method, args);
+            case REST:
+                return new RestExpectation(server, method, args);
+        }
+        throw new UnsupportedOperationException("unreachable");
+    }
+
     private final HttpServer server;
     private Object service;
+    private Runnable afterStubbing = () -> {};
 
     @Getter(PACKAGE) private Object response;
     @Getter(PACKAGE) private Exception exception;
@@ -27,11 +40,16 @@ abstract class HttpServiceExpectation extends WunderBarExpectation {
         this.server = server;
     }
 
-    abstract protected HttpResponse handleRequest(HttpRequest request);
+    public HttpServiceExpectation afterStubbing(Runnable afterStubbing) {
+        this.afterStubbing = afterStubbing;
+        return this;
+    }
 
-    @Override public URI baseUri() { return server.baseUri(); }
+    public abstract HttpResponse handleRequest(HttpRequest request);
 
-    final Object invoke() {
+    @Override public URI baseUri() {return server.baseUri();}
+
+    public final Object invoke() {
         if (this.service == null) this.service = service();
         return Utils.invoke(service, method, args);
     }
@@ -41,11 +59,13 @@ abstract class HttpServiceExpectation extends WunderBarExpectation {
     @Override public void willReturn(Object response) {
         assertUnset("willReturn");
         this.response = response;
+        afterStubbing.run();
     }
 
     @Override public void willThrow(Exception exception) {
         assertUnset("willThrow");
         this.exception = exception;
+        afterStubbing.run();
     }
 
     private void assertUnset(String method) {

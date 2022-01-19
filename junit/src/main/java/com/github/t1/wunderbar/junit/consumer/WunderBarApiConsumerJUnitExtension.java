@@ -29,8 +29,8 @@ import java.util.regex.Pattern;
 import java.util.stream.Stream;
 import java.util.stream.Stream.Builder;
 
-import static com.github.t1.wunderbar.junit.Utils.getField;
-import static com.github.t1.wunderbar.junit.Utils.setField;
+import static com.github.t1.wunderbar.common.Utils.getField;
+import static com.github.t1.wunderbar.common.Utils.setField;
 import static com.github.t1.wunderbar.junit.consumer.Level.AUTO;
 import static com.github.t1.wunderbar.junit.consumer.Level.INTEGRATION;
 import static com.github.t1.wunderbar.junit.consumer.Level.SYSTEM;
@@ -209,10 +209,10 @@ class WunderBarApiConsumerJUnitExtension implements Extension, BeforeEachCallbac
     private void injectProxiesIntoSut(Object systemUnderTest) {
         Stream.of(systemUnderTest.getClass().getDeclaredFields())
             .filter(Objects::nonNull)
-            .forEach(targetField -> injectProxyInfoSut(systemUnderTest, targetField));
+            .forEach(targetField -> injectProxyIntoSut(systemUnderTest, targetField));
     }
 
-    private void injectProxyInfoSut(Object instance, Field field) {
+    private void injectProxyIntoSut(Object instance, Field field) {
         proxies.stream()
             .filter(proxy -> proxy.isAssignableTo(field))
             .forEach(proxy -> setField(instance, field, proxy.getSutProxy()));

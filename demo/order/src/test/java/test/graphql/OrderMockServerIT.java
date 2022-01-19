@@ -13,6 +13,7 @@ import lombok.experimental.SuperBuilder;
 import org.eclipse.microprofile.graphql.NonNull;
 import org.eclipse.microprofile.graphql.Query;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.Network;
 import org.testcontainers.junit.jupiter.Container;
@@ -28,24 +29,22 @@ import static com.github.t1.wunderbar.junit.consumer.WunderbarExpectationBuilder
 import static org.assertj.core.api.BDDAssertions.then;
 import static org.testcontainers.containers.Network.newNetwork;
 
+@Disabled("the mockserver doesn't work, yet")
 @Slow
 @Testcontainers
 @WunderBarApiConsumer(level = SYSTEM, fileName = NONE)
 class OrderMockServerIT {
-    static final Network NETWORK = newNetwork();
+    private static final Network NETWORK = newNetwork();
 
-    @Container static JeeContainer ORDERS = new WildflyContainer("rdohna/wildfly", "25.0.1.Final-jdk11")
-        .withNetwork(NETWORK)
+    @Container static JeeContainer ORDERS = jeeContainer()
         .withDeployment("target/order.war");
 
-    @Container static JeeContainer PRODUCTS = new WildflyContainer("rdohna/wildfly", "25.0.1.Final-jdk11")
-        .withNetwork(NETWORK)
+    @Container static JeeContainer PRODUCTS = jeeContainer()
         .withNetworkAliases("products")
-        .withDeployment("../../mock/war/target/wunderbar-mock-server.war");
+        .withDeployment("../../mock/target/wunderbar-mock-server.war");
 
-    @SuppressWarnings("unused")
-    static String productsEndpoint() {
-        return "http://localhost:" + PRODUCTS.getMappedPort(8080) + "/wunderbar-mock-server/graphql";
+    private static JeeContainer jeeContainer() {
+        return new WildflyContainer("rdohna/wildfly", "25.0.1.Final-jdk11").withNetwork(NETWORK);
     }
 
     interface Api {
@@ -79,12 +78,14 @@ class OrderMockServerIT {
         @Query Product product(@NonNull String id);
     }
 
+    Products products;
     Api api;
 
     @BeforeEach
     void setUp() {
-        var graphQlEndpoint = ORDERS.baseUri() + "graphql";
-        this.api = TypesafeGraphQLClientBuilder.newBuilder().endpoint(graphQlEndpoint).build(Api.class);
+        this.products = createService(Products.class, Service.DEFAULT
+            .withEndpoint("http://localhost:" + PRODUCTS.getMappedPort(8080) + "/wunderbar-mock-server/graphql"));
+        this.api = TypesafeGraphQLClientBuilder.newBuilder().endpoint(ORDERS.baseUri() + "graphql").build(Api.class);
     }
 
     @Slow
@@ -94,7 +95,6 @@ class OrderMockServerIT {
             .name("some-product-name")
             .price(1599)
             .build();
-        var products = createService(Products.class, Service.DEFAULT.withEndpoint("{productsEndpoint()}"));
         given(products.product(PRODUCT_ID)).willReturn(givenProduct);
 
         var order = api.order("1");

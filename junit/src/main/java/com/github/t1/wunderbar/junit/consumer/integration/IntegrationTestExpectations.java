@@ -1,7 +1,7 @@
 package com.github.t1.wunderbar.junit.consumer.integration;
 
+import com.github.t1.wunderbar.common.Internal;
 import com.github.t1.wunderbar.junit.consumer.BarWriter;
-import com.github.t1.wunderbar.junit.consumer.Internal;
 import com.github.t1.wunderbar.junit.consumer.Technology;
 import com.github.t1.wunderbar.junit.consumer.WunderBarExpectation;
 import com.github.t1.wunderbar.junit.consumer.WunderBarExpectations;
@@ -18,8 +18,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-import static com.github.t1.wunderbar.junit.Utils.formatJson;
-import static com.github.t1.wunderbar.junit.Utils.isCompatible;
+import static com.github.t1.wunderbar.common.Utils.formatJson;
+import static com.github.t1.wunderbar.common.Utils.isCompatible;
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON_TYPE;
 import static javax.ws.rs.core.Response.Status.NOT_IMPLEMENTED;
 
@@ -52,21 +52,11 @@ public @Internal class IntegrationTestExpectations implements WunderBarExpectati
             }
         }
 
-        var expectation = createFor(method, args);
+        var expectation = HttpServiceExpectation.of(technology, server, method, args);
         expectations.add(expectation);
         WunderbarExpectationBuilder.buildingExpectation = expectation;
 
         return expectation.nullValue();
-    }
-
-    private HttpServiceExpectation createFor(Method method, Object... args) {
-        switch (technology) {
-            case GRAPHQL:
-                return new GraphQlExpectation(server, method, args);
-            case REST:
-                return new RestExpectation(server, method, args);
-        }
-        throw new UnsupportedOperationException("unreachable");
     }
 
     private HttpResponse handleRequest(HttpRequest request) {

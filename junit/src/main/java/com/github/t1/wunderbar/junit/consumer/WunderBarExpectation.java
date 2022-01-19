@@ -1,5 +1,6 @@
 package com.github.t1.wunderbar.junit.consumer;
 
+import com.github.t1.wunderbar.common.Internal;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 
@@ -7,7 +8,7 @@ import java.lang.reflect.Method;
 import java.net.URI;
 import java.util.Arrays;
 
-import static com.github.t1.wunderbar.junit.DeepEquals.deeplyEqual;
+import static com.github.t1.wunderbar.common.DeepEquals.deeplyEqual;
 import static lombok.AccessLevel.PROTECTED;
 
 @RequiredArgsConstructor(access = PROTECTED)
@@ -23,7 +24,7 @@ public abstract @Internal class WunderBarExpectation {
         return method.equals(this.method) && deeplyEqual(args, this.args);
     }
 
-    public final Object nullValue() { return nullValue(method.getReturnType()); }
+    public final Object nullValue() {return nullValue(method.getReturnType());}
 
     private Object nullValue(Class<?> type) {
         if (type.equals(boolean.class)) return false;

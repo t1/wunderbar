@@ -57,7 +57,7 @@ class Proxy {
             case INTEGRATION:
                 return new IntegrationTestExpectations(endpoint, technology, bar);
             case SYSTEM:
-                return new SystemTestExpectations(type, endpoint, technology, bar);
+                return new SystemTestExpectations(technology, type, endpoint, bar);
         }
         throw new UnsupportedOperationException("unreachable");
     }

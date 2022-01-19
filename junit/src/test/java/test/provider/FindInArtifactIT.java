@@ -8,7 +8,7 @@ import org.junit.jupiter.api.extension.RegisterExtension;
 import test.NonCI;
 import test.Slow;
 
-import static com.github.t1.wunderbar.junit.Utils.deleteRecursive;
+import static com.github.t1.wunderbar.common.Utils.deleteRecursive;
 import static java.nio.file.Files.exists;
 
 @WunderBarApiProvider(baseUri = "dummy")
@@ -27,8 +27,8 @@ class FindInArtifactIT {
         if (exists(parent)) deleteRecursive(parent);
 
         fixture.in(MAVEN_CENTRAL_BAR_ARTIFACT
-            .withPackaging("bar").withClassifier("bar") // these are the defaults set in the WunderBarTestFinder
-            .getLocalRepositoryPath())
+                .withPackaging("bar").withClassifier("bar") // these are the defaults set in the WunderBarTestFinder
+                .getLocalRepositoryPath())
             // this is the exact order in the file
             .expect("ProductsResolverIT/shouldResolveProduct", 1)
             .expect("ProductsResolverIT/shouldFailToResolveForbiddenProduct", 1)

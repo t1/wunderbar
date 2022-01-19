@@ -1,7 +1,7 @@
 package com.github.t1.wunderbar.junit.provider;
 
 import com.github.t1.wunderbar.junit.WunderBarException;
-import com.github.t1.wunderbar.junit.consumer.Internal;
+import com.github.t1.wunderbar.common.Internal;
 import lombok.NonNull;
 import lombok.Value;
 import lombok.extern.slf4j.Slf4j;
@@ -44,7 +44,7 @@ public class WunderBarTestFinder {
      * }
      * </code></pre>
      */
-    public static DynamicNode findTestsIn(Path barPath) { return findTestsIn(barPath, null); }
+    public static DynamicNode findTestsIn(Path barPath) {return findTestsIn(barPath, null);}
 
     /** used for tests */
     public static @Internal DynamicNode findTestsIn(Path barPath, Function<Test, Executable> executableFactory) {
@@ -63,7 +63,7 @@ public class WunderBarTestFinder {
      * <p>
      * Note that both the <code>classifier</code> and the <code>packaging</code> (the file extension) are optional and default to <code>bar</code>.
      */
-    public static DynamicNode findTestsInArtifact(String coordinates) { return findTestsInArtifact(MavenCoordinates.of(coordinates)); }
+    public static DynamicNode findTestsInArtifact(String coordinates) {return findTestsInArtifact(MavenCoordinates.of(coordinates));}
 
     /**
      * Find all tests in that maven artifact, downloading it from a maven repository with the <code>mvn</code> command
@@ -72,7 +72,7 @@ public class WunderBarTestFinder {
      * <p>
      * Note that both the <code>classifier</code> and the <code>packaging</code> (the file extension) are optional and default to <code>bar</code>.
      */
-    public static DynamicNode findTestsInArtifact(MavenCoordinates coordinates) { return findTestsInArtifact(coordinates, null); }
+    public static DynamicNode findTestsInArtifact(MavenCoordinates coordinates) {return findTestsInArtifact(coordinates, null);}
 
     /** used for tests */
     public static @Internal DynamicNode findTestsInArtifact(MavenCoordinates coordinates, Function<Test, Executable> executableFactory) {
@@ -153,7 +153,7 @@ public class WunderBarTestFinder {
         int interactionCount;
         @NonNull URI uri;
 
-        @Override public String toString() { return path + " [" + interactionCount + "] in " + uri; }
+        @Override public String toString() {return path + " [" + interactionCount + "] in " + uri;}
 
         @Override public DynamicNode toDynamicNode(Function<Test, Executable> executableFactory) {
             return dynamicTest(path.getFileName().toString(), uri, executableFactory.apply(this));
@@ -179,5 +179,5 @@ public class WunderBarTestFinder {
         bar.tests().forEach(root::merge);
     }
 
-    private DynamicNode toDynamicNode() { return root.toDynamicNode(executableFactory); }
+    private DynamicNode toDynamicNode() {return root.toDynamicNode(executableFactory);}
 }

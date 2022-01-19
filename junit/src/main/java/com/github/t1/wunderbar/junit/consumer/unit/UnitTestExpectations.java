@@ -1,6 +1,6 @@
 package com.github.t1.wunderbar.junit.consumer.unit;
 
-import com.github.t1.wunderbar.junit.Utils;
+import com.github.t1.wunderbar.common.Utils;
 import com.github.t1.wunderbar.junit.consumer.WunderBarExpectation;
 import com.github.t1.wunderbar.junit.consumer.WunderBarExpectations;
 import com.github.t1.wunderbar.junit.consumer.WunderbarExpectationBuilder;

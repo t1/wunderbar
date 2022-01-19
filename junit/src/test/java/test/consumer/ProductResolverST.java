@@ -18,6 +18,7 @@ import java.net.URI;
 
 import static com.github.t1.wunderbar.junit.consumer.WunderbarExpectationBuilder.baseUri;
 import static com.github.t1.wunderbar.junit.consumer.WunderbarExpectationBuilder.given;
+import static com.github.t1.wunderbar.junit.http.HttpUtils.PROBLEM_DETAIL_TYPE;
 import static javax.ws.rs.core.Response.Status.FORBIDDEN;
 import static javax.ws.rs.core.Response.Status.NOT_FOUND;
 import static org.assertj.core.api.Assertions.catchThrowableOfType;
@@ -41,9 +42,6 @@ class ProductResolverST { // TODO extends ProductResolverTest {
     Product product = Product.builder().id("existing-product-id").name("some-product-name").price(15_99).build();
 
     @Test void shouldResolveProduct() {
-        given(products.product(product.getId())).willReturn(product);
-        given(products.product("not-actually-called")).willReturn(Product.builder().id("unreachable").build());
-
         var resolvedProduct = resolver.product(new Item(product.getId()));
 
         then(resolvedProduct).usingRecursiveComparison().isEqualTo(product);
@@ -51,8 +49,6 @@ class ProductResolverST { // TODO extends ProductResolverTest {
     }
 
     @Test void shouldFailToResolveUnknownProduct() {
-        given(products.product("unknown-product-id")).willThrow(new ProductNotFoundException("unknown-product-id"));
-
         var throwable = catchThrowableOfType(() -> resolver.product(new Item("unknown-product-id")), GraphQLClientException.class);
 
         then(throwable.getErrors()).hasSize(1);
@@ -62,8 +58,6 @@ class ProductResolverST { // TODO extends ProductResolverTest {
     }
 
     @Test void shouldFailToResolveForbiddenProduct() {
-        given(products.product("forbidden-product-id")).willThrow(new ProductForbiddenException("forbidden-product-id"));
-
         var throwable = catchThrowableOfType(() -> resolver.product(new Item("forbidden-product-id")), GraphQLClientException.class);
 
         then(throwable.getErrors()).hasSize(1);

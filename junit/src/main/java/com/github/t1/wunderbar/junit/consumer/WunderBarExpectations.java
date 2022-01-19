@@ -1,5 +1,7 @@
 package com.github.t1.wunderbar.junit.consumer;
 
+import com.github.t1.wunderbar.common.Internal;
+
 import java.lang.reflect.Method;
 import java.net.URI;
 
@@ -14,5 +16,6 @@ public @Internal interface WunderBarExpectations {
 
     Object invoke(Method method, Object... args);
 
+    /** the test is finished and the proxy won't be used anymore */
     void done();
 }

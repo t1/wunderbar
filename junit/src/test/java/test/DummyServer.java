@@ -4,7 +4,7 @@ import com.github.t1.wunderbar.junit.http.HttpRequest;
 import com.github.t1.wunderbar.junit.http.HttpResponse;
 import com.github.t1.wunderbar.junit.http.HttpResponse.HttpResponseBuilder;
 import com.github.t1.wunderbar.junit.http.HttpServer;
-import com.github.t1.wunderbar.mock.MockService;
+import com.github.t1.wunderbar.common.mock.MockService;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import org.junit.jupiter.api.extension.AfterAllCallback;

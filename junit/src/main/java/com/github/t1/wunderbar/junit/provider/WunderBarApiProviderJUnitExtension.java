@@ -22,7 +22,7 @@ import java.util.regex.Pattern;
 import java.util.stream.Stream;
 import java.util.stream.Stream.Builder;
 
-import static com.github.t1.wunderbar.junit.Utils.invoke;
+import static com.github.t1.wunderbar.common.Utils.invoke;
 
 class WunderBarApiProviderJUnitExtension implements Extension, BeforeEachCallback, AfterEachCallback {
     static WunderBarApiProviderJUnitExtension INSTANCE;
@@ -121,7 +121,7 @@ class WunderBarApiProviderJUnitExtension implements Extension, BeforeEachCallbac
     }
 
 
-    private void defaultOnInteractionError(OnInteractionErrorParams params) { params.assertions.assertAll(); }
+    private void defaultOnInteractionError(OnInteractionErrorParams params) {params.assertions.assertAll();}
 
 
     URI baseUri() {

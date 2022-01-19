@@ -22,7 +22,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Function;
 
-import static com.github.t1.wunderbar.junit.Utils.deleteRecursive;
+import static com.github.t1.wunderbar.common.Utils.deleteRecursive;
 import static com.github.t1.wunderbar.junit.provider.WunderBarTestFinder.findTestsIn;
 import static org.assertj.core.api.BDDAssertions.then;
 
@@ -55,7 +55,7 @@ class ApiProviderFixture implements Extension, BeforeEachCallback, AfterEachCall
         return this;
     }
 
-    ApiProviderFixture withTest(String directory) { return withTest(directory, Integer.toString(nextTestValue++)); }
+    ApiProviderFixture withTest(String directory) {return withTest(directory, Integer.toString(nextTestValue++));}
 
     ApiProviderFixture withTest(String directory, String value) {
         return withTest(directory, request(value), response(value));

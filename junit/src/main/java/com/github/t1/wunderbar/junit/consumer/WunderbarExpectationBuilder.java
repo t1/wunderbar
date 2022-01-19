@@ -1,5 +1,6 @@
 package com.github.t1.wunderbar.junit.consumer;
 
+import com.github.t1.wunderbar.common.Internal;
 import com.github.t1.wunderbar.junit.WunderBarException;
 
 import java.lang.reflect.Field;
@@ -8,7 +9,7 @@ import java.net.URI;
 import java.util.Objects;
 import java.util.function.Consumer;
 
-import static com.github.t1.wunderbar.junit.Utils.getField;
+import static com.github.t1.wunderbar.common.Utils.getField;
 
 /**
  * Static methods for building expectations, etc.
