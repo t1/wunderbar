@@ -12,11 +12,10 @@ import static com.github.t1.wunderbar.common.Utils.formatJson;
 import static com.github.t1.wunderbar.common.mock.GraphQLBodyMatcher.graphQlRequest;
 import static com.github.t1.wunderbar.common.mock.RestErrorSupplier.restError;
 import static com.github.t1.wunderbar.common.mock.RestResponseSupplier.restResponse;
-import static com.github.t1.wunderbar.common.mock.WunderBarMockExpectation.exp;
 
 @Slf4j
 public class MockService {
-    static final List<WunderBarMockExpectation> EXPECTATIONS = new ArrayList<>();
+    private static final List<WunderBarMockExpectation> EXPECTATIONS = new ArrayList<>();
 
     static {
         addExpectation(graphQlRequest().query(
@@ -32,22 +31,23 @@ public class MockService {
     }
 
     public static WunderBarMockExpectation addExpectation(RequestMatcher queryMatcher, ResponseSupplier responseSupplier) {
-        var expectation = exp(queryMatcher, responseSupplier);
+        var expectation = WunderBarMockExpectation.of(queryMatcher, responseSupplier);
         EXPECTATIONS.add(expectation);
         return expectation;
     }
 
     public static void removeExpectation(int id) {
+        log.debug("remove expectation: {}", id);
         var expectation = EXPECTATIONS.stream().filter(e -> e.getId() == id)
             .findFirst().orElseThrow(() -> new IllegalStateException("can't remove expectation " + id + ": not found."));
         EXPECTATIONS.remove(expectation);
     }
 
     public HttpResponse service(HttpRequest request) throws IOException {
-        log.info("received {}:{}", request.getMethod(), request.getUri());
+        log.info("received {} {} {}", request.getMethod(), request.getUri(), request.getContentType());
         var body = request.jsonBody().orElse(null);
         log.debug("received body:\n{}", formatJson(body));
-        WunderBarMockExpectation match = MockService.noMatch();
+        WunderBarMockExpectation match = NO_MATCH;
         for (int i = 0, expectationsSize = EXPECTATIONS.size(); i < expectationsSize; i++) {
             WunderBarMockExpectation expectation = EXPECTATIONS.get(i);
             log.debug("{} match {}", i, expectation.getRequestMatcher());
@@ -60,9 +60,11 @@ public class MockService {
         return match.getResponseSupplier().apply(request);
     }
 
-    private static WunderBarMockExpectation noMatch() {
-        var message = "no matching expectation found";
-        return exp(RequestMatcher.builder().build(), new ResponseSupplier() {
+    private static final WunderBarMockExpectation NO_MATCH = WunderBarMockExpectation.of(
+        RequestMatcher.builder().build(),
+        new ResponseSupplier() {
+            private static final String message = "no matching expectation found";
+
             @Override public String toString() {return message;}
 
             @Override public HttpResponse apply(HttpRequest req) {
@@ -70,5 +72,4 @@ public class MockService {
                 return restError().detail(message).build().apply(req);
             }
         });
-    }
 }

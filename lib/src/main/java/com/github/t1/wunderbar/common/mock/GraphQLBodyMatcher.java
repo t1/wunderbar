@@ -14,6 +14,7 @@ public class GraphQLBodyMatcher implements Predicate<JsonValue> {
     String query;
     String queryPattern;
     JsonObject variables;
+    String operationName;
 
     public static class GraphQLBodyMatcherBuilder {
         public RequestMatcher build() {
@@ -41,7 +42,7 @@ public class GraphQLBodyMatcher implements Predicate<JsonValue> {
     }
 
     private boolean matchBody(JsonObject jsonObject) {
-        return matchQuery(jsonObject) && matchVariables(jsonObject);
+        return matchQuery(jsonObject) && matchVariables(jsonObject) && matchOperationName(jsonObject);
     }
 
     private boolean matchQuery(JsonObject jsonObject) {
@@ -55,5 +56,11 @@ public class GraphQLBodyMatcher implements Predicate<JsonValue> {
         if (variables == null) return true;
         var actualVariables = jsonObject.getJsonObject("variables");
         return this.variables.equals(actualVariables);
+    }
+
+    private boolean matchOperationName(JsonObject jsonObject) {
+        if (GraphQLBodyMatcher.this.operationName == null) return true;
+        var actualOperationName = jsonObject.getString("operationName");
+        return this.operationName.equals(actualOperationName);
     }
 }
