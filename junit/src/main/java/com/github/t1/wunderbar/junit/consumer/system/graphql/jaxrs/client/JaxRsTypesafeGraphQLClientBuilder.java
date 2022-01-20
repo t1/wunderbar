@@ -5,6 +5,7 @@ import io.smallrye.graphql.client.impl.GraphQLClientsConfiguration;
 import io.smallrye.graphql.client.impl.typesafe.reflection.MethodInvocation;
 import io.smallrye.graphql.client.typesafe.api.GraphQLClientApi;
 import io.smallrye.graphql.client.typesafe.api.TypesafeGraphQLClientBuilder;
+import io.smallrye.graphql.client.websocket.WebsocketSubprotocol;
 
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
@@ -43,6 +44,10 @@ public class JaxRsTypesafeGraphQLClientBuilder implements TypesafeGraphQLClientB
     }
 
     @Override public TypesafeGraphQLClientBuilder header(String s, String s1) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override public TypesafeGraphQLClientBuilder subprotocols(WebsocketSubprotocol... websocketSubprotocols) {
         throw new UnsupportedOperationException();
     }
 
