@@ -49,6 +49,8 @@ public abstract @Internal class HttpServiceExpectation extends WunderBarExpectat
 
     @Override public URI baseUri() {return server.baseUri();}
 
+    public boolean hasException() {return exception != null;}
+
     public final Object invoke() {
         if (this.service == null) this.service = service();
         return Utils.invoke(service, method, args);

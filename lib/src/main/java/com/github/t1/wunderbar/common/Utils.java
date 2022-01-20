@@ -6,6 +6,7 @@ import lombok.SneakyThrows;
 import lombok.experimental.UtilityClass;
 
 import javax.json.Json;
+import javax.json.JsonStructure;
 import javax.json.JsonValue;
 import javax.json.bind.Jsonb;
 import javax.json.bind.JsonbBuilder;
@@ -24,10 +25,12 @@ import java.nio.file.Path;
 import java.util.Base64;
 import java.util.Collections;
 import java.util.Map;
+import java.util.stream.Stream;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.Locale.US;
 import static java.util.stream.Collectors.toList;
+import static javax.json.JsonPatch.Operation.ADD;
 
 @UtilityClass
 public @Internal class Utils {
@@ -56,11 +59,15 @@ public @Internal class Utils {
         return formatJson(value);
     }
 
+    public static <T> T fromJson(JsonValue jsonValue, Class<T> type) {
+        return (jsonValue == null) ? null : JSON.fromJson(jsonValue.toString(), type);
+    }
+
     public static JsonValue readJson(Object object) {return readJson(JSON.toJson(object));}
 
     public static JsonValue readJson(String json) {
         try {
-            return json.isBlank() ? JsonValue.NULL : Json.createReader(new StringReader(json)).readValue();
+            return Json.createReader(new StringReader(json)).readValue();
         } catch (JsonParsingException e) {
             var offset = (int) e.getLocation().getStreamOffset();
             throw new RuntimeException("can't parse json:\n" + json.substring(0, offset) + "👉" + json.substring(offset), e);
@@ -68,6 +75,7 @@ public @Internal class Utils {
     }
 
     public static String formatJson(JsonValue value) {
+        if (value == null) return "null";
         var writer = new StringWriter();
         Json.createWriterFactory(Map.of(JsonGenerator.PRETTY_PRINTING, true))
             .createWriter(writer)
@@ -98,10 +106,17 @@ public @Internal class Utils {
 
     private static String camelToKebab(String in) {return String.join("-", in.split("(?=\\p{javaUpperCase})")).toLowerCase(US);}
 
-    @SneakyThrows(ReflectiveOperationException.class)
-    public static Object getField(Object instance, Field field) {
+    @SneakyThrows(NoSuchFieldException.class)
+    public static <T> T getField(Object instance, String fieldName) {
+        Field field = instance.getClass().getDeclaredField(fieldName);
+        return getField(instance, field);
+    }
+
+    @SneakyThrows(IllegalAccessException.class)
+    public static <T> T getField(Object instance, Field field) {
         field.setAccessible(true);
-        return field.get(instance);
+        //noinspection unchecked
+        return (T) field.get(instance);
     }
 
     @SneakyThrows(ReflectiveOperationException.class)
@@ -135,6 +150,19 @@ public @Internal class Utils {
     private static String getSubtypeOrSuffix(MediaType mediaType) {
         var subtype = mediaType.getSubtype();
         return subtype.contains("+") ? subtype.substring(subtype.indexOf('+') + 1) : subtype;
+    }
+
+    public static Stream<JsonValue> jsonNonAddDiff(JsonValue expected, JsonValue actual) {
+        if (expected.getValueType() != actual.getValueType()) {
+            expected = Json.createObjectBuilder().add("diff-dummy", expected).build();
+            actual = Json.createObjectBuilder().add("diff-dummy", actual).build();
+        }
+        return Json.createDiff((JsonStructure) expected, (JsonStructure) actual).toJsonArray().stream()
+            .filter(Utils::isNonAdd);
+    }
+
+    private static boolean isNonAdd(JsonValue jsonValue) {
+        return !jsonValue.asJsonObject().getString("op").equals(ADD.operationName());
     }
 
     @Builder @Getter

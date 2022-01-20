@@ -3,7 +3,7 @@ package com.github.t1.wunderbar.junit.consumer.system.graphql.jaxrs.client;
 import io.smallrye.graphql.client.impl.GraphQLClientConfiguration;
 import io.smallrye.graphql.client.impl.typesafe.ResultBuilder;
 import io.smallrye.graphql.client.impl.typesafe.reflection.MethodInvocation;
-import org.jboss.logging.Logger;
+import lombok.extern.slf4j.Slf4j;
 
 import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.MultivaluedMap;
@@ -15,9 +15,8 @@ import static com.github.t1.wunderbar.junit.http.HttpUtils.APPLICATION_JSON_UTF8
 import static javax.ws.rs.client.Entity.entity;
 import static javax.ws.rs.core.Response.Status.Family.SUCCESSFUL;
 
+@Slf4j
 class JaxRsTypesafeGraphQLClientProxy {
-    private static final Logger log = Logger.getLogger(JaxRsTypesafeGraphQLClientProxy.class);
-
     private final WebTarget target;
     private final GraphQLClientConfiguration configuration;
 
@@ -29,6 +28,7 @@ class JaxRsTypesafeGraphQLClientProxy {
     Object invoke(Class<?> api, MethodInvocation method) {
         if (method.isDeclaredInObject())
             return method.invoke(this);
+        log.debug("call {} to {}", method.getName(), target.getUri());
 
         MultivaluedMap<String, Object> headers = new HeaderBuilder(api, method,
             configuration != null ? configuration.getHeaders() : Collections.emptyMap())
@@ -36,8 +36,9 @@ class JaxRsTypesafeGraphQLClientProxy {
         String request = new GraphQLRequestBuilder(method).build().toString();
 
         String response = post(request, headers);
-        log.debugf("response graphql: %s", response);
 
+        log.debug("response graphql: {}", response);
+        if (response == null || response.isBlank()) response = "{}";
         return new ResultBuilder(method, response).read();
     }
 

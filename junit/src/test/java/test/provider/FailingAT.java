@@ -1,5 +1,7 @@
 package test.provider;
 
+import com.github.t1.wunderbar.junit.provider.AfterInteraction;
+import com.github.t1.wunderbar.junit.provider.BeforeInteraction;
 import com.github.t1.wunderbar.junit.provider.OnInteractionError;
 import com.github.t1.wunderbar.junit.provider.WunderBarApiProvider;
 import org.assertj.core.api.BDDSoftAssertions;
@@ -10,6 +12,8 @@ import test.DummyServer;
 
 import java.net.URI;
 
+import static com.github.t1.wunderbar.common.mock.GraphQLResponseBuilder.graphQL;
+import static com.github.t1.wunderbar.common.mock.GraphQLResponseBuilder.graphQlError;
 import static com.github.t1.wunderbar.junit.provider.CustomBDDAssertions.then;
 import static com.github.t1.wunderbar.junit.provider.WunderBarTestFinder.findTestsIn;
 import static org.assertj.core.api.BDDSoftAssertions.thenSoftly;
@@ -17,17 +21,23 @@ import static org.assertj.core.api.BDDSoftAssertions.thenSoftly;
 @WunderBarApiProvider(baseUri = "{endpoint()}")
 class FailingAT {
     @RegisterExtension DummyServer dummyServer = new DummyServer();
+    @RegisterExtension ExpectationsExtension expectations = new ExpectationsExtension();
 
     @SuppressWarnings("unused")
     URI endpoint() {return dummyServer.baseUri();}
 
-    @TestFactory
-    DynamicNode failingConsumerTests() {
+    @BeforeInteraction void setup() {
+        expectations.addGraphQLProduct("existing-product-id", graphQL().build());
+        expectations.addGraphQLProduct("unexpected-fail", graphQlError("unexpected-fail", "product unexpected-fail fails unexpectedly"));
+    }
+
+    @AfterInteraction void cleanup() {expectations.cleanup();}
+
+    @TestFactory DynamicNode failingConsumerTests() {
         return findTestsIn("src/test/resources/failing-wunder-bar");
     }
 
-    @OnInteractionError
-    void onInteractionError(BDDSoftAssertions assertions) {
+    @OnInteractionError void onInteractionError(BDDSoftAssertions assertions) {
         var errors = assertions.assertionErrorsCollected();
         thenSoftly(softly -> {
             softly.then(errors).hasSize(2);

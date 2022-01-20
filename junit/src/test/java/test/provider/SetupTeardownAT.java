@@ -25,31 +25,31 @@ class SetupTeardownAT {
     @RegisterExtension DummyServer dummyServer = new DummyServer();
 
     @SuppressWarnings("unused")
-    URI endpoint() { return dummyServer.baseUri(); }
+    URI endpoint() {return dummyServer.baseUri();}
 
     List<String> calledWithoutArgs = new ArrayList<>();
     List<String> calledWithArgs = new ArrayList<>();
 
-    @BeforeEach void beforeEach() { calledWithoutArgs.add("beforeEach"); }
+    @BeforeEach void beforeEach() {calledWithoutArgs.add("beforeEach");}
 
-    @BeforeDynamicTest void beforeWithoutArgs() { calledWithoutArgs.add("beforeWithoutArgsCalled"); }
+    @BeforeDynamicTest void beforeWithoutArgs() {calledWithoutArgs.add("beforeWithoutArgsCalled");}
 
-    @BeforeDynamicTest void beforeWithListArg(List<HttpInteraction> list) { calledWithArgs.add("beforeWithListArgCalled"); }
-
-
-    @BeforeInteraction void beforeInteractionWithoutArg() { calledWithoutArgs.add("beforeInteractionWithoutArgCalled"); }
-
-    @BeforeInteraction void beforeInteractionWithArg(HttpInteraction interaction) { calledWithArgs.add("beforeInteractionWithArgCalled"); }
+    @BeforeDynamicTest void beforeWithListArg(List<HttpInteraction> list) {calledWithArgs.add("beforeWithListArgCalled");}
 
 
-    @AfterInteraction void afterInteractionWithoutArg() { calledWithoutArgs.add("afterInteractionWithoutArgCalled"); }
+    @BeforeInteraction void beforeInteractionWithoutArg() {calledWithoutArgs.add("beforeInteractionWithoutArgCalled");}
 
-    @AfterInteraction void afterInteractionWithArg(HttpInteraction interaction) { calledWithArgs.add("afterInteractionWithArgCalled"); }
+    @BeforeInteraction void beforeInteractionWithArg(HttpInteraction interaction) {calledWithArgs.add("beforeInteractionWithArgCalled");}
 
 
-    @AfterDynamicTest void afterWithoutArgs() { calledWithoutArgs.add("afterWithoutArgsCalled"); }
+    @AfterInteraction void afterInteractionWithoutArg() {calledWithoutArgs.add("afterInteractionWithoutArgCalled");}
 
-    @AfterDynamicTest void afterWithListArg(List<HttpInteraction> list) { calledWithArgs.add("afterWithListArgCalled"); }
+    @AfterInteraction void afterInteractionWithArg(HttpInteraction interaction) {calledWithArgs.add("afterInteractionWithArgCalled");}
+
+
+    @AfterDynamicTest void afterWithoutArgs() {calledWithoutArgs.add("afterWithoutArgsCalled");}
+
+    @AfterDynamicTest void afterWithListArg(List<HttpInteraction> list) {calledWithArgs.add("afterWithListArgCalled");}
 
 
     @TestFactory DynamicNode consumerTests() {

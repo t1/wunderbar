@@ -7,9 +7,9 @@ import javax.json.JsonObject;
 import javax.json.JsonStructure;
 import javax.json.JsonValue;
 
+import static com.github.t1.wunderbar.common.Utils.jsonNonAddDiff;
 import static com.github.t1.wunderbar.junit.provider.CustomBDDAssertions.then;
 import static java.util.stream.Collectors.toList;
-import static javax.json.JsonPatch.Operation.ADD;
 
 /**
  * AssertJ assertion on JSON values
@@ -24,19 +24,12 @@ public class JsonValueAssert {
                          "expected: " + expected + "\n" +
                          "actual  : " + actual)
             .isEqualTo(expected.getValueType());
-        // TODO diff json array and scalar
-        var diff = Json.createDiff(expected.asJsonObject(), actual.asJsonObject()).toJsonArray();
-        var nonAddDescriptions = diff.stream()
-            .filter(this::isNonAdd)
+        var nonAddDescriptions = jsonNonAddDiff(expected, actual)
             .map(patch -> describe(patch.asJsonObject(), expected.asJsonObject()))
             .collect(toList());
         then(nonAddDescriptions)
             .describedAs("json diff (ignoring `add` operations)")
             .isEmpty();
-    }
-
-    private boolean isNonAdd(JsonValue jsonValue) {
-        return !jsonValue.asJsonObject().getString("op").equals(ADD.operationName());
     }
 
     private String describe(JsonObject patch, JsonStructure expectedRoot) {

@@ -22,7 +22,6 @@ import test.Slow;
 
 import java.util.List;
 
-import static com.github.t1.wunderbar.junit.consumer.Level.SYSTEM;
 import static com.github.t1.wunderbar.junit.consumer.WunderBarApiConsumer.NONE;
 import static com.github.t1.wunderbar.junit.consumer.WunderbarExpectationBuilder.createService;
 import static com.github.t1.wunderbar.junit.consumer.WunderbarExpectationBuilder.given;
@@ -32,14 +31,20 @@ import static org.testcontainers.containers.Network.newNetwork;
 @Disabled("the mockserver doesn't work, yet")
 @Slow
 @Testcontainers
-@WunderBarApiConsumer(level = SYSTEM, fileName = NONE)
-class OrderMockServerIT {
+@WunderBarApiConsumer(fileName = NONE)
+class OrderMockST {
     private static final Network NETWORK = newNetwork();
 
     @Container static JeeContainer ORDERS = jeeContainer()
+        .withMainPortBoundToFixedPort(18080)
+        .withPortBoundToFixedPort(19990, 9990)
+        .withPortBoundToFixedPort(18787, 8787)
         .withDeployment("target/order.war");
 
     @Container static JeeContainer PRODUCTS = jeeContainer()
+        .withMainPortBoundToFixedPort(28080)
+        .withPortBoundToFixedPort(29990, 9990)
+        .withPortBoundToFixedPort(28787, 8787)
         .withNetworkAliases("products")
         .withDeployment("../../mock/target/wunderbar-mock-server.war");
 

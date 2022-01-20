@@ -47,18 +47,18 @@ abstract class BarReader {
             .collect(toList());
     }
 
-    private HttpRequest request(Test test, int n) { return HttpRequest.from(requestHeaders(test, n), requestBody(test, n)); }
+    private HttpRequest request(Test test, int n) {return HttpRequest.from(requestHeaders(test, n), requestBody(test, n));}
 
-    private Properties requestHeaders(Test test, int n) { return properties(read(test.getPath() + "/" + n + " request-headers.properties")); }
+    private Properties requestHeaders(Test test, int n) {return properties(read(test.getPath() + "/" + n + " request-headers.properties"));}
 
-    private Optional<String> requestBody(Test test, int n) { return optionalRead(test.getPath() + "/" + n + " request-body.json"); }
+    private Optional<String> requestBody(Test test, int n) {return optionalRead(test.getPath() + "/" + n + " request-body.json");}
 
 
-    private HttpResponse response(Test test, int n) { return HttpResponse.from(responseHeaders(test, n), responseBody(test, n)); }
+    private HttpResponse response(Test test, int n) {return HttpResponse.from(responseHeaders(test, n), responseBody(test, n));}
 
-    private Properties responseHeaders(Test test, int n) { return properties(read(test.getPath() + "/" + n + " response-headers.properties")); }
+    private Properties responseHeaders(Test test, int n) {return properties(read(test.getPath() + "/" + n + " response-headers.properties"));}
 
-    private Optional<String> responseBody(Test test, int n) { return optionalRead(test.getPath() + "/" + n + " response-body.json"); }
+    private Optional<String> responseBody(Test test, int n) {return optionalRead(test.getPath() + "/" + n + " response-body.json");}
 
 
     private String read(String name) {
@@ -81,6 +81,6 @@ abstract class BarReader {
         int number;
         @NonNull URI uri;
 
-        Test toTest() { return new Test(path, number, uri); }
+        Test toTest() {return new Test(path, number, uri);}
     }
 }

@@ -3,6 +3,7 @@ package com.github.t1.wunderbar.junit.http;
 import io.undertow.Undertow;
 import io.undertow.server.HttpServerExchange;
 import lombok.NonNull;
+import lombok.SneakyThrows;
 
 import java.net.InetSocketAddress;
 import java.net.URI;
@@ -56,11 +57,13 @@ public class HttpServer {
             exchange.getResponseSender().send(body, charset(response.getContentType())));
     }
 
+    @SneakyThrows(InterruptedException.class)
     private Optional<String> readRequestBody(HttpServerExchange httpServerExchange) {
         if (httpServerExchange.isRequestComplete()) return Optional.empty();
         var body = new AtomicReference<String>();
-        httpServerExchange.getRequestReceiver().receiveFullString((x, value) -> body.setRelease(value),
-            Charset.forName(httpServerExchange.getRequestCharset()));
+        Thread.sleep(1); // it's strange, but without this, Undertow sometimes looses the body
+        var charset = Charset.forName(httpServerExchange.getRequestCharset());
+        httpServerExchange.getRequestReceiver().receiveFullString((exchange, value) -> body.setRelease(value), charset);
         return Optional.ofNullable(body.getAcquire());
     }
 

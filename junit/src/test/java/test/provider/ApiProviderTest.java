@@ -17,17 +17,17 @@ class ApiProviderTest {
                 HttpRequest.builder()
                     .method("POST")
                     .body("{\n" +
-                        "  \"query\":\"query product($id: String) { product(id: $id) {id name} }\",\n" +
-                        "  \"variables\":{\"id\":\"x\"}\n" +
-                        "}")
+                          "  \"query\":\"query product($id: String) { product(id: $id) {id name} }\",\n" +
+                          "  \"variables\":{\"id\":\"x\"}\n" +
+                          "}")
                     .build(),
                 HttpResponse.builder()
                     .body("{\n" +
-                        "  \"data\": {\n" +
-                        "    \"product\": {\"id\": \"x\",\"name\": \"some-product-name\"}\n" +
-                        "  },\n" +
-                        "  \"errors\": []\n" +
-                        "}\n")
+                          "  \"data\": {\n" +
+                          "    \"product\": {\"id\": \"x\",\"name\": \"some-product-name\"}\n" +
+                          "  },\n" +
+                          "  \"errors\": []\n" +
+                          "}\n")
                     .build())
 
             .expect("some-container/some-test", 1);

@@ -10,6 +10,7 @@ import test.consumer.ProductResolver.Item;
 import test.consumer.ProductResolver.Product;
 import test.consumer.ProductResolver.Products;
 
+import static com.github.t1.wunderbar.junit.consumer.WunderbarExpectationBuilder.given;
 import static com.github.t1.wunderbar.junit.provider.CustomBDDAssertions.then;
 
 @SuppressWarnings({"removal", "deprecated"})
@@ -29,10 +30,12 @@ class ProductResolverDeprecatedST {
     }
 
     @Test void shouldResolveProductFromFunctionEndpoint() {
+        var product = Product.builder().id("existing-product-id").name("some-product-name").price(15_99).build();
+        given(products.product("existing-product-id")).willReturn(product);
+
         var resolvedProduct = resolver.product(new Item("existing-product-id"));
 
-        then(resolvedProduct).usingRecursiveComparison().isEqualTo(
-            Product.builder().id("existing-product-id").name("some-product-name").price(15_99).build());
+        then(resolvedProduct).usingRecursiveComparison().isEqualTo(product);
         then(endpointCalled).as("endpoint function called").isTrue();
     }
 }

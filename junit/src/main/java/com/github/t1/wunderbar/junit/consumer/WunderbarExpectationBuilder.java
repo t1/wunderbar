@@ -3,7 +3,6 @@ package com.github.t1.wunderbar.junit.consumer;
 import com.github.t1.wunderbar.common.Internal;
 import com.github.t1.wunderbar.junit.WunderBarException;
 
-import java.lang.reflect.Field;
 import java.lang.reflect.InvocationHandler;
 import java.net.URI;
 import java.util.Objects;
@@ -122,10 +121,12 @@ public class WunderbarExpectationBuilder<T> {
     // this is an ugly hack, but I currently don't have a better idea
     private static Proxy getProxy(InvocationHandler invocationHandler) {
         try {
-            Field field = invocationHandler.getClass().getDeclaredField("arg$1");
-            return (Proxy) getField(invocationHandler, field);
-        } catch (NoSuchFieldException | ClassCastException e) {
-            throw new IllegalArgumentException("not a service proxy instance", e);
+            return getField(invocationHandler, "arg$1");
+        } catch (Exception e) { // work around SneakyThrows
+            //noinspection ConstantConditions
+            if (e instanceof NoSuchFieldException || e instanceof ClassCastException)
+                throw new IllegalArgumentException("not a service proxy instance", e);
+            throw new RuntimeException("can't determine service proxy instance", e);
         }
     }
 }

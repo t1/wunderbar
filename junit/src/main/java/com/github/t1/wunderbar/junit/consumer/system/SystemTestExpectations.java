@@ -1,7 +1,9 @@
 package com.github.t1.wunderbar.junit.consumer.system;
 
 import com.github.t1.wunderbar.common.mock.RequestMatcher;
+import com.github.t1.wunderbar.common.mock.RequestMatcher.BodyMatcher;
 import com.github.t1.wunderbar.common.mock.ResponseSupplier;
+import com.github.t1.wunderbar.common.mock.RestResponseSupplier;
 import com.github.t1.wunderbar.junit.WunderBarException;
 import com.github.t1.wunderbar.junit.consumer.BarWriter;
 import com.github.t1.wunderbar.junit.consumer.Technology;
@@ -56,7 +58,7 @@ public class SystemTestExpectations implements WunderBarExpectations {
         this.filter = new BarFilter(bar);
         this.api = buildApi();
         this.mock = new JaxRsTypesafeGraphQLClientBuilder().endpoint(mockEndpoint(baseUri)).build(WunderBarMockServerApi.class);
-        this.stubServer = new HttpServer(0, this::handleStubRequest);
+        this.stubServer = new HttpServer(this::handleStubRequest);
     }
 
     private URI mockEndpoint(URI baseUri) {
@@ -68,7 +70,7 @@ public class SystemTestExpectations implements WunderBarExpectations {
     }
 
     protected Object buildApi() {
-        log.info("system test endpoint: {}", baseUri);
+        log.info("build {} system test endpoint: {}", technology, baseUri);
         switch (technology) {
             case GRAPHQL:
                 return new JaxRsTypesafeGraphQLClientBuilder()
@@ -90,6 +92,7 @@ public class SystemTestExpectations implements WunderBarExpectations {
 
     @Override public Object invoke(Method method, Object... args) {
         // as the SUT only knows about the real service, these invocations can only be from stubbing
+        log.debug("---------- start building expectation for {}", method.getName());
         this.currentExpectation = HttpServiceExpectation.of(technology, stubServer, method, args)
             .afterStubbing(this::addExpectationToMockService);
         WunderbarExpectationBuilder.buildingExpectation = currentExpectation;
@@ -97,16 +100,27 @@ public class SystemTestExpectations implements WunderBarExpectations {
     }
 
     private void addExpectationToMockService() {
+        buildExpectation();
+        addExpectation();
+    }
+
+    private void buildExpectation() {
+        log.debug("call stub service");
         try {
             currentExpectation.invoke();
+            log.debug("---------- stub service returned");
         } catch (Exception e) {
-            log.debug("mock invocation threw {}", e.toString());
+            log.debug("---------- stub service threw {}", e.toString());
         }
+    }
 
+    private void addExpectation() {
+        log.debug("add expectation to mock service");
         var stubbingResult = mock.addWunderBarExpectation(
-            match(currentInteraction.getRequest().withFormattedBody()),
-            ResponseSupplier.from(currentInteraction.getResponse()));
-        if (!"ok".equals(stubbingResult.getStatus()))
+            matcher(currentInteraction.getRequest().withFormattedBody()),
+            RestResponseSupplier.from(currentInteraction.getResponse()));
+        log.debug("---------- add expectation and stubbing done -> {}", stubbingResult);
+        if (stubbingResult == null || !"ok".equals(stubbingResult.getStatus()))
             throw new WunderBarException("unexpected response from adding expectation to mock server: " + stubbingResult);
         createdExpectationIds.add(stubbingResult.getId());
     }
@@ -118,20 +132,21 @@ public class SystemTestExpectations implements WunderBarExpectations {
         return response;
     }
 
-    private RequestMatcher match(HttpRequest expected) {
+    private RequestMatcher matcher(HttpRequest expected) {
         var builder = RequestMatcher.builder()
             .method(expected.getMethod())
             .path(expected.getUri().getPath()) // TODO query params, etc.?
             .contentType((expected.getContentType() == null) ? null : expected.getContentType().toString());
-        expected.getBody().ifPresent(expectedBody -> builder
-            .bodyMatcher(actual -> expectedBody.equals(actual.toString())));
+        expected.getBody().ifPresent(expectedBody -> builder.bodyMatcher(new BodyMatcher(expectedBody)));
         return builder.build();
     }
 
     @SneakyThrows(IOException.class)
     @Override public void done() {
+        log.debug("---------- call done -- cleanup");
         while (!createdExpectationIds.isEmpty()) mock.removeWunderBarExpectation(createdExpectationIds.remove(0));
         if (api instanceof Closeable) ((Closeable) api).close();
+        log.debug("---------- cleanup done");
     }
 
     @GraphQLClientApi
