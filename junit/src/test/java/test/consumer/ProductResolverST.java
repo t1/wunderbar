@@ -61,7 +61,7 @@ class ProductResolverST { // TODO extends ProductResolverTest {
         then(throwable.getErrors()).hasSize(1);
         var error = throwable.getErrors().get(0);
         then(error.getMessage()).isEqualTo("product unknown-product-id not found");
-        then(error.getExtensions().get("code")).isEqualTo("product-not-found"); // TODO simplify after #1224 is merged
+        then(error.getCode()).isEqualTo("product-not-found");
     }
 
     @Test void shouldFailToResolveForbiddenProduct() {
@@ -72,7 +72,7 @@ class ProductResolverST { // TODO extends ProductResolverTest {
         then(throwable.getErrors()).hasSize(1);
         var error = throwable.getErrors().get(0);
         then(error.getMessage()).isEqualTo("product forbidden-product-id is forbidden");
-        then(error.getExtensions().get("code")).isEqualTo("product-forbidden"); // TODO simplify after #1224 is merged
+        then(error.getCode()).isEqualTo("product-forbidden");
     }
 
     @Test void shouldGetBaseUri() {

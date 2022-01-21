@@ -9,24 +9,25 @@ import lombok.extern.slf4j.Slf4j;
 import javax.json.Json;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
+import java.util.function.Function;
 
-import static com.github.t1.wunderbar.common.Utils.fromJson;
 import static com.github.t1.wunderbar.common.mock.GraphQLResponseBuilder.graphQL;
-import static com.github.t1.wunderbar.common.mock.RestResponseSupplier.restResponse;
+import static com.github.t1.wunderbar.common.mock.MockService.addExpectation;
+import static com.github.t1.wunderbar.junit.http.HttpUtils.fromJson;
 
 @Slf4j
 @ToString
-class AddWunderBarExpectation implements ResponseSupplier {
+class AddWunderBarExpectation implements Function<HttpRequest, HttpResponse> {
     @Override public HttpResponse apply(HttpRequest request) {
         var variables = request.jsonBody().orElseThrow().asJsonObject().getJsonObject("variables");
         log.debug("add expectation: {}", variables);
         var matcherJson = variables.getJsonObject("matcher");
         var matcher = restMatcher(matcherJson);
         log.debug("    matcher: {}", matcher);
-        var supplier = supplier(variables.getJsonObject("responseSupplier"));
-        log.debug("    supplier: {}", supplier);
-        var expectation = MockService.addExpectation(matcher, supplier);
-        return graphQL().with(builder -> expectationResponse(builder, expectation)).build().apply(request);
+        var response = fromJson(variables.getJsonObject("response"), HttpResponse.class);
+        log.debug("    response: {}", response);
+        var expectation = addExpectation(matcher, response);
+        return graphQL().with(builder -> expectationResponse(builder, expectation)).build();
     }
 
     private static void expectationResponse(JsonObjectBuilder builder, WunderBarMockExpectation expectation) {
@@ -43,12 +44,5 @@ class AddWunderBarExpectation implements ResponseSupplier {
             .contentType(json.getString("contentType", null))
             .bodyMatcher(fromJson(json.get("bodyMatcher"), BodyMatcher.class))
             .build();
-    }
-
-    private static RestResponseSupplier supplier(JsonObject json) {
-        return restResponse()
-            .status(json.getInt("status", 200))
-            .contentType(json.getString("contentType", null))
-            .body(json.getOrDefault("body", null));
     }
 }

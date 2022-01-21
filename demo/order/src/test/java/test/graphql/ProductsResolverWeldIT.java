@@ -74,7 +74,7 @@ class ProductsResolverWeldIT {
         then(throwable.getErrors()).hasSize(1);
         var error = throwable.getErrors().get(0);
         then(error.getMessage()).isEqualTo("product x not found");
-        then(error.getExtensions().get("code")).isEqualTo("product-not-found"); // TODO simplify after #1224 is merged
+        then(error.getCode()).isEqualTo("product-not-found");
     }
 
     @Test void shouldFailToResolveForbiddenProduct() {
@@ -85,7 +85,7 @@ class ProductsResolverWeldIT {
         then(throwable.getErrors()).hasSize(1);
         var error = throwable.getErrors().get(0);
         then(error.getMessage()).isEqualTo("product x is forbidden");
-        then(error.getExtensions().get("code")).isEqualTo("product-forbidden"); // TODO simplify after #1224 is merged
+        then(error.getCode()).isEqualTo("product-forbidden");
     }
 
     private OrderItem item(String x) {
@@ -93,10 +93,10 @@ class ProductsResolverWeldIT {
     }
 
     private static class ProductNotFoundException extends RuntimeException {
-        public ProductNotFoundException(String id) { super("product " + id + " not found"); }
+        public ProductNotFoundException(String id) {super("product " + id + " not found");}
     }
 
     private static class ProductForbiddenException extends RuntimeException {
-        public ProductForbiddenException(String id) { super("product " + id + " is forbidden"); }
+        public ProductForbiddenException(String id) {super("product " + id + " is forbidden");}
     }
 }

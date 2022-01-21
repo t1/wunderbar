@@ -70,14 +70,12 @@ class ProductsResolverST {
 
     @BeforeAll
     static void setUp() {
-        System.setProperty(PRODUCTS_MP_GRAPHQL_CONFIG + "url", "dummy"); // TODO remove this after #1222 is merged
         System.setProperty(PRODUCTS_MP_GRAPHQL_CONFIG + "username", SYSTEM_TEST_USER);
         System.setProperty(PRODUCTS_MP_GRAPHQL_CONFIG + "password", SYSTEM_TEST_PASSWORD);
     }
 
     @AfterAll static void tearDown() {
         SERVER.stop();
-        System.clearProperty(PRODUCTS_MP_GRAPHQL_CONFIG + "url"); // TODO remove this after #1222 is merged
         System.clearProperty(PRODUCTS_MP_GRAPHQL_CONFIG + "username");
         System.clearProperty(PRODUCTS_MP_GRAPHQL_CONFIG + "password");
     }
@@ -104,7 +102,7 @@ class ProductsResolverST {
         then(throwable.getErrors()).hasSize(1);
         var error = throwable.getErrors().get(0);
         then(error.getMessage()).isEqualTo("product unknown-product-id not found");
-        then(error.getExtensions().get("code")).isEqualTo("product-not-found"); // TODO simplify after #1224 is merged
+        then(error.getCode()).isEqualTo("product-not-found");
     }
 
     @Test void shouldFailToResolveForbiddenProduct() {
@@ -113,6 +111,6 @@ class ProductsResolverST {
         then(throwable.getErrors()).hasSize(1);
         var error = throwable.getErrors().get(0);
         then(error.getMessage()).isEqualTo("product forbidden-product-id is forbidden");
-        then(error.getExtensions().get("code")).isEqualTo("product-forbidden"); // TODO simplify after #1224 is merged
+        then(error.getCode()).isEqualTo("product-forbidden");
     }
 }

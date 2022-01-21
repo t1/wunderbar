@@ -18,8 +18,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-import static com.github.t1.wunderbar.common.Utils.formatJson;
-import static com.github.t1.wunderbar.common.Utils.isCompatible;
+import static com.github.t1.wunderbar.junit.http.HttpUtils.formatJson;
+import static com.github.t1.wunderbar.junit.http.HttpUtils.isCompatible;
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON_TYPE;
 import static javax.ws.rs.core.Response.Status.NOT_IMPLEMENTED;
 

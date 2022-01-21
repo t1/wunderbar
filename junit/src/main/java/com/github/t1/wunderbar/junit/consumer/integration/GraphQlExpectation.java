@@ -13,7 +13,7 @@ import java.lang.reflect.Method;
 import java.util.List;
 import java.util.Map;
 
-import static com.github.t1.wunderbar.common.Utils.errorCode;
+import static com.github.t1.wunderbar.junit.http.HttpUtils.errorCode;
 
 class GraphQlExpectation extends HttpServiceExpectation {
     private final String configKey;

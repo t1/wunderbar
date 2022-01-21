@@ -28,6 +28,6 @@ public class MockServlet extends HttpServlet {
 
         servletResponse.setStatus(response.getStatus().getStatusCode());
         servletResponse.setContentType(response.getContentType().toString());
-        response.getBody().ifPresent(servletResponse.getWriter()::write);
+        response.body().ifPresent(servletResponse.getWriter()::write);
     }
 }

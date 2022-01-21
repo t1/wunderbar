@@ -53,7 +53,7 @@ public class HttpServer {
 
         exchange.setStatusCode(response.getStatus().getStatusCode());
         exchange.getResponseHeaders().put(CONTENT_TYPE, response.getContentType().toString());
-        response.getBody().ifPresent(body ->
+        response.body().ifPresent(body ->
             exchange.getResponseSender().send(body, charset(response.getContentType())));
     }
 

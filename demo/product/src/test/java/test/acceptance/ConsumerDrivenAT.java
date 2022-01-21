@@ -89,8 +89,7 @@ class ConsumerDrivenAT {
 
         var throwable = catchThrowableOfType(() -> api.store(product), GraphQLClientException.class);
 
-        // TODO simplify after #1224 is merged
-        then(throwable.getErrors().get(0).getExtensions().get("code")).isEqualTo("unauthorized");
+        then(throwable.getErrors().get(0).getCode()).isEqualTo("unauthorized");
     }
 
     @TestFactory DynamicNode demoOrderConsumerTests() {
@@ -218,9 +217,7 @@ class ConsumerDrivenAT {
         private String requestMethod() {return request.getMethod();}
 
         private Product expectedProduct() {
-            var responseBody = response.getBody()
-                .orElseThrow(() -> new RuntimeException("need a body to know how to make the service reply as expected"));
-            return JSONB.fromJson(responseBody, Product.class);
+            return JSONB.fromJson(response.body().orElseThrow(), Product.class);
         }
 
         private String requestedProductId() {
@@ -241,10 +238,7 @@ class ConsumerDrivenAT {
         @SuppressWarnings("CdiInjectionPointsInspection")
         private GraphQlSetUp(HttpInteraction interaction) {
             HttpResponse response = interaction.getResponse();
-            var responseBody = response.getBody()
-                .orElseThrow(() -> new RuntimeException("need a body to know how to make the service reply as expected"));
-            this.graphQlResponse = JSONB.fromJson(responseBody, GraphQlResponse.class);
-
+            this.graphQlResponse = JSONB.fromJson(response.body().orElseThrow(), GraphQlResponse.class);
             setup();
         }
 

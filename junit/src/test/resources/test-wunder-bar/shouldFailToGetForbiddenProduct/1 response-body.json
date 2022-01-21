@@ -1,5 +1,5 @@
 {
-    "detail": "HTTP 403 Forbidden",
-    "title": "ForbiddenException",
-    "type": "urn:problem-type:javax.ws.rs.ForbiddenException"
+  "detail": "HTTP 403 Forbidden",
+  "title": "forbidden exception",
+  "type": "urn:problem-type:forbidden"
 }

@@ -13,7 +13,7 @@ public abstract class BarWriter implements Closeable {
         return fileName.endsWith("/") ? new DirectoryBarWriter(path) : new JarBarWriter(path);
     }
 
-    @Override public String toString() {return getClass().getSimpleName()+":"+getPath();}
+    @Override public String toString() {return getClass().getSimpleName() + ":" + getPath();}
 
     public abstract Path getPath();
 
@@ -30,7 +30,7 @@ public abstract class BarWriter implements Closeable {
         request.getBody().ifPresent(body -> write(id + "request-body.json", body));
 
         write(id + "response-headers.properties", response.headerProperties());
-        response.getBody().ifPresent(body -> write(id + "response-body.json", body));
+        response.body().ifPresent(body -> write(id + "response-body.json", body));
     }
 
     protected abstract int count();

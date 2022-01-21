@@ -1,6 +1,5 @@
 package com.github.t1.wunderbar.junit.http;
 
-import com.github.t1.wunderbar.common.Utils;
 import com.github.t1.wunderbar.junit.http.Authorization.Dummy;
 import lombok.Builder;
 import lombok.Builder.Default;
@@ -13,10 +12,10 @@ import java.net.URI;
 import java.util.Optional;
 import java.util.Properties;
 
-import static com.github.t1.wunderbar.common.Utils.isCompatible;
 import static com.github.t1.wunderbar.junit.http.HttpUtils.APPLICATION_JSON_UTF8;
 import static com.github.t1.wunderbar.junit.http.HttpUtils.JSONB;
 import static com.github.t1.wunderbar.junit.http.HttpUtils.firstMediaType;
+import static com.github.t1.wunderbar.junit.http.HttpUtils.isCompatible;
 import static com.github.t1.wunderbar.junit.http.HttpUtils.optional;
 import static javax.ws.rs.core.HttpHeaders.ACCEPT;
 import static javax.ws.rs.core.HttpHeaders.AUTHORIZATION;
@@ -46,7 +45,7 @@ public class HttpRequest {
     @Default MediaType accept = APPLICATION_JSON_UTF8;
     @Default Optional<String> body = Optional.empty();
 
-    public HttpRequest withFormattedBody() {return (isJson()) ? withBody(body.map(Utils::formatJson)) : this;}
+    public HttpRequest withFormattedBody() {return (isJson()) ? withBody(body.map(HttpUtils::formatJson)) : this;}
 
     @Override public String toString() {return (headerProperties() + "\n" + body.orElse("")).trim();}
 
@@ -63,7 +62,7 @@ public class HttpRequest {
 
     public boolean isJson() {return hasBody() && isCompatible(APPLICATION_JSON_TYPE, contentType);}
 
-    public Optional<JsonValue> jsonBody() {return body.map(Utils::readJson);}
+    public Optional<JsonValue> jsonBody() {return body.map(HttpUtils::readJson);}
 
     @SuppressWarnings("unused")
     public static class HttpRequestBuilder {

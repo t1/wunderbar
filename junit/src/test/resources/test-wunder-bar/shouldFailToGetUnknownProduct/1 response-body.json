@@ -1,5 +1,5 @@
 {
-    "detail": "HTTP 404 Not Found",
-    "title": "NotFoundException",
-    "type": "urn:problem-type:javax.ws.rs.NotFoundException"
+  "detail": "HTTP 404 Not Found",
+  "title": "not found exception",
+  "type": "urn:problem-type:not-found"
 }

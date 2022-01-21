@@ -123,7 +123,7 @@ abstract class ProductResolverTest {
             then(e.getErrors()).hasSize(1);
             var error = e.getErrors().get(0);
             then(error.getMessage()).isEqualTo(message);
-            then(error.getExtensions().get("code")).isEqualTo(code); // TODO simplify after #1224 is merged
+            then(error.getCode()).isEqualTo(code);
         } else if (throwable instanceof WebApplicationException) {
             var response = ((WebApplicationException) throwable).getResponse();
             then(response.getStatusInfo()).isEqualTo(status);

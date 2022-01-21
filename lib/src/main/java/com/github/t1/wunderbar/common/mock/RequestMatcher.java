@@ -14,7 +14,7 @@ import javax.json.bind.annotation.JsonbCreator;
 import java.util.function.Predicate;
 
 import static com.github.t1.wunderbar.common.Utils.jsonNonAddDiff;
-import static com.github.t1.wunderbar.common.Utils.readJson;
+import static com.github.t1.wunderbar.junit.http.HttpUtils.readJson;
 
 @Value @Builder
 public class RequestMatcher {

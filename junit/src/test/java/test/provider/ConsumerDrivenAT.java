@@ -1,5 +1,7 @@
 package test.provider;
 
+import com.github.t1.wunderbar.junit.http.HttpResponse;
+import com.github.t1.wunderbar.junit.http.ProblemDetails;
 import com.github.t1.wunderbar.junit.provider.AfterInteraction;
 import com.github.t1.wunderbar.junit.provider.BeforeInteraction;
 import com.github.t1.wunderbar.junit.provider.WunderBarApiProvider;
@@ -9,10 +11,10 @@ import org.junit.jupiter.api.extension.RegisterExtension;
 import test.DummyServer;
 
 import javax.json.Json;
+import javax.ws.rs.ForbiddenException;
+import javax.ws.rs.NotFoundException;
 import java.net.URI;
 
-import static com.github.t1.wunderbar.common.mock.RestErrorSupplier.restError;
-import static com.github.t1.wunderbar.common.mock.RestResponseSupplier.restResponse;
 import static com.github.t1.wunderbar.junit.provider.WunderBarTestFinder.findTestsIn;
 
 @WunderBarApiProvider(baseUri = "{endpoint()}")
@@ -24,24 +26,14 @@ class ConsumerDrivenAT {
     URI endpoint() {return dummyServer.baseUri();}
 
     @BeforeInteraction void setup() {
-        expectations.addRestProduct("existing-product-id", restResponse().body(Json.createObjectBuilder()
+        expectations.addRestProduct("existing-product-id", HttpResponse.builder().body(Json.createObjectBuilder()
             .add("id", "existing-product-id")
             .add("name", "some-product-name")
             .add("price", 1599)
             .build()
-        ));
-        expectations.addRestProduct("forbidden-product-id", restError()
-            .status(403)
-            .detail("HTTP 403 Forbidden")
-            .title("ForbiddenException")
-            .type("urn:problem-type:javax.ws.rs.ForbiddenException")
-            .build());
-        expectations.addRestProduct("unknown-product-id", restError()
-            .status(404)
-            .detail("HTTP 404 Not Found")
-            .title("NotFoundException")
-            .type("urn:problem-type:javax.ws.rs.NotFoundException")
-            .build());
+        ).build());
+        expectations.addRestProduct("forbidden-product-id", ProblemDetails.of(new ForbiddenException()).toResponse());
+        expectations.addRestProduct("unknown-product-id", ProblemDetails.of(new NotFoundException()).toResponse());
     }
 
     @AfterInteraction void cleanup() {expectations.cleanup();}

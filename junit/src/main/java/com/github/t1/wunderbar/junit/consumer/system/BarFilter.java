@@ -18,7 +18,7 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.net.URI;
 
-import static com.github.t1.wunderbar.common.Utils.formatJson;
+import static com.github.t1.wunderbar.junit.http.HttpUtils.formatJson;
 import static javax.ws.rs.core.HttpHeaders.AUTHORIZATION;
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON_TYPE;
 

@@ -63,7 +63,7 @@ class ProductsResolverIT {
         then(throwable.getErrors()).hasSize(1);
         var error = throwable.getErrors().get(0);
         then(error.getMessage()).isEqualTo("product x not found");
-        then(error.getExtensions().get("code")).isEqualTo("product-not-found"); // TODO simplify after #1224 is merged
+        then(error.getCode()).isEqualTo("product-not-found");
     }
 
     @Test void shouldFailToResolveForbiddenProduct() {
@@ -74,7 +74,7 @@ class ProductsResolverIT {
         then(throwable.getErrors()).hasSize(1);
         var error = throwable.getErrors().get(0);
         then(error.getMessage()).isEqualTo("product x is forbidden");
-        then(error.getExtensions().get("code")).isEqualTo("product-forbidden"); // TODO simplify after #1224 is merged
+        then(error.getCode()).isEqualTo("product-forbidden");
     }
 
     private OrderItem item(String x) {

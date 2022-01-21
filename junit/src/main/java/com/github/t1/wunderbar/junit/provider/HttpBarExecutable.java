@@ -17,7 +17,7 @@ import javax.json.JsonStructure;
 import javax.json.JsonValue;
 import java.util.function.Function;
 
-import static com.github.t1.wunderbar.common.Utils.isCompatible;
+import static com.github.t1.wunderbar.junit.http.HttpUtils.isCompatible;
 import static com.github.t1.wunderbar.junit.provider.CustomBDDAssertions.then;
 
 @RequiredArgsConstructor

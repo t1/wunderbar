@@ -2,8 +2,6 @@ package com.github.t1.wunderbar.junit.consumer.system;
 
 import com.github.t1.wunderbar.common.mock.RequestMatcher;
 import com.github.t1.wunderbar.common.mock.RequestMatcher.BodyMatcher;
-import com.github.t1.wunderbar.common.mock.ResponseSupplier;
-import com.github.t1.wunderbar.common.mock.RestResponseSupplier;
 import com.github.t1.wunderbar.junit.WunderBarException;
 import com.github.t1.wunderbar.junit.consumer.BarWriter;
 import com.github.t1.wunderbar.junit.consumer.Technology;
@@ -118,7 +116,7 @@ public class SystemTestExpectations implements WunderBarExpectations {
         log.debug("add expectation to mock service");
         var stubbingResult = mock.addWunderBarExpectation(
             matcher(currentInteraction.getRequest().withFormattedBody()),
-            RestResponseSupplier.from(currentInteraction.getResponse()));
+            currentInteraction.getResponse());
         log.debug("---------- add expectation and stubbing done -> {}", stubbingResult);
         if (stubbingResult == null || !"ok".equals(stubbingResult.getStatus()))
             throw new WunderBarException("unexpected response from adding expectation to mock server: " + stubbingResult);
@@ -151,7 +149,7 @@ public class SystemTestExpectations implements WunderBarExpectations {
 
     @GraphQLClientApi
     private interface WunderBarMockServerApi {
-        @Mutation WunderBarStubbingResult addWunderBarExpectation(@NonNull RequestMatcher matcher, @NonNull ResponseSupplier responseSupplier);
+        @Mutation WunderBarStubbingResult addWunderBarExpectation(@NonNull RequestMatcher matcher, @NonNull HttpResponse response);
         @SuppressWarnings("UnusedReturnValue") @Mutation String removeWunderBarExpectation(int id);
     }
 

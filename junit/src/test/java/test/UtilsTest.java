@@ -7,7 +7,7 @@ import org.junit.jupiter.params.provider.MethodSource;
 import javax.ws.rs.core.MediaType;
 import java.util.stream.Stream;
 
-import static com.github.t1.wunderbar.common.Utils.isCompatible;
+import static com.github.t1.wunderbar.junit.http.HttpUtils.isCompatible;
 import static org.assertj.core.api.BDDAssertions.then;
 
 class UtilsTest {

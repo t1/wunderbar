@@ -1,5 +1,6 @@
 package com.github.t1.wunderbar.common.mock;
 
+import com.github.t1.wunderbar.junit.http.HttpResponse;
 import lombok.ToString;
 
 import javax.json.Json;
@@ -8,13 +9,11 @@ import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
 import java.util.function.Consumer;
 
-import static com.github.t1.wunderbar.common.mock.RestResponseSupplier.restResponse;
-
 @ToString
 public class GraphQLResponseBuilder {
     public static GraphQLResponseBuilder graphQL() {return new GraphQLResponseBuilder();}
 
-    public static ResponseSupplier graphQlError(String code, String message) {
+    public static HttpResponse graphQlError(String code, String message) {
         return graphQL().add("errors", Json.createArrayBuilder()
             .add(Json.createObjectBuilder()
                 .add("message", message)
@@ -45,7 +44,7 @@ public class GraphQLResponseBuilder {
         return this;
     }
 
-    public ResponseSupplier build() {
-        return restResponse().body(builder.build());
+    public HttpResponse build() {
+        return HttpResponse.builder().body(builder.build()).build();
     }
 }
