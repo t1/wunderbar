@@ -75,7 +75,7 @@ public @Internal class Utils {
     }
 
     public static String formatJson(JsonValue value) {
-        if (value == null) return "null";
+        if (value == null) return null;
         var writer = new StringWriter();
         Json.createWriterFactory(Map.of(JsonGenerator.PRETTY_PRINTING, true))
             .createWriter(writer)

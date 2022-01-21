@@ -47,9 +47,8 @@ public class HttpUtils {
     }
 
     static JsonValue toJson(String string) {
-        System.out.println("####" + string + "####");
         try {
-            return string.isEmpty() ? JsonValue.NULL : Json.createReader(new StringReader(string)).read();
+            return string == null || string.isEmpty() ? JsonValue.NULL : Json.createReader(new StringReader(string)).read();
         } catch (JsonParsingException e) {
             return JsonValue.NULL;
         }
