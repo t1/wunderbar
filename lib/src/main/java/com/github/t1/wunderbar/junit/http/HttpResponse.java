@@ -61,6 +61,26 @@ public class HttpResponse {
 
     @SuppressWarnings("unused")
     public static class HttpResponseBuilder {
+        public HttpResponseBuilder status(int status) {
+            return status(Status.fromStatusCode(status));
+        }
+
+        public HttpResponseBuilder status(StatusType status) {
+            this.status = status;
+            return this;
+        }
+
+
+        public HttpResponseBuilder contentType(String contentType) {
+            return contentType(MediaType.valueOf(contentType));
+        }
+
+        public HttpResponseBuilder contentType(MediaType contentType) {
+            this.contentType = contentType;
+            return this;
+        }
+
+
         public HttpResponseBuilder with(String field, Object value) {
             return with(builder -> builder.add(field, readJson(value)));
         }
@@ -80,15 +100,6 @@ public class HttpResponse {
 
         public HttpResponseBuilder body(String body) {
             this.body = body;
-            return this;
-        }
-
-        public HttpResponseBuilder status(int status) {
-            return status(Status.fromStatusCode(status));
-        }
-
-        public HttpResponseBuilder status(StatusType status) {
-            this.status = status;
             return this;
         }
     }

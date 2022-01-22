@@ -5,7 +5,6 @@ import com.github.t1.wunderbar.junit.http.HttpResponse;
 import com.github.t1.wunderbar.junit.http.ProblemDetails;
 import lombok.extern.slf4j.Slf4j;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -52,7 +51,7 @@ public class MockService {
         EXPECTATIONS.remove(expectation);
     }
 
-    public HttpResponse service(HttpRequest rawRequest) throws IOException {
+    public HttpResponse service(HttpRequest rawRequest) {
         var request = rawRequest.withFormattedBody();
         log.info("received request:\n{}", request);
         WunderBarMockExpectation match = EXPECTATIONS.stream()

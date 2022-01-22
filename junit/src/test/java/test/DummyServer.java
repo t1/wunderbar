@@ -4,12 +4,10 @@ import com.github.t1.wunderbar.common.mock.MockService;
 import com.github.t1.wunderbar.junit.http.HttpRequest;
 import com.github.t1.wunderbar.junit.http.HttpResponse;
 import com.github.t1.wunderbar.junit.http.HttpServer;
-import lombok.SneakyThrows;
 import org.junit.jupiter.api.extension.AfterAllCallback;
 import org.junit.jupiter.api.extension.Extension;
 import org.junit.jupiter.api.extension.ExtensionContext;
 
-import java.io.IOException;
 import java.net.URI;
 
 /** this server would normally be a real server running somewhere */
@@ -20,7 +18,6 @@ public class DummyServer implements Extension, AfterAllCallback {
         return SERVER.baseUri();
     }
 
-    @SneakyThrows(IOException.class)
     private static HttpResponse handle(HttpRequest request) {return new MockService().service(request);}
 
     @Override public void afterAll(ExtensionContext context) {SERVER.stop();}

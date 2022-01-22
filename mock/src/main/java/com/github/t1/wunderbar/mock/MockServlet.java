@@ -23,6 +23,7 @@ public class MockServlet extends HttpServlet {
             .uri(maybe(servletRequest.getPathInfo(), "") +
                  maybe(servletRequest.getQueryString(), "?"))
             .contentType(servletRequest.getContentType())
+            .accept(servletRequest.getHeader("Accept"))
             .body(servletRequest.getReader().lines().collect(joining()))
             .build();
 

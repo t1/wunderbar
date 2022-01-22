@@ -3,6 +3,7 @@ package com.github.t1.wunderbar.junit.http;
 import com.github.t1.wunderbar.common.Internal;
 import com.github.t1.wunderbar.junit.http.Authorization.Dummy;
 import lombok.Builder;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Value;
 import lombok.With;
@@ -28,7 +29,7 @@ import static javax.ws.rs.core.HttpHeaders.CONTENT_TYPE;
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON_TYPE;
 import static lombok.AccessLevel.NONE;
 
-@Value @Builder @With
+@Value @Builder @With @EqualsAndHashCode(exclude = "jsonValue")
 public class HttpRequest {
     public static HttpRequest from(Properties properties, Optional<String> body) {
         var builder = HttpRequest.builder();
@@ -140,6 +141,15 @@ public class HttpRequest {
 
         public HttpRequestBuilder contentType(MediaType contentType) {
             this.contentType = contentType;
+            return this;
+        }
+
+        public HttpRequestBuilder accept(String accept) {
+            return accept(firstMediaType(accept));
+        }
+
+        public HttpRequestBuilder accept(MediaType accept) {
+            this.accept = accept;
             return this;
         }
 
