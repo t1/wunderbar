@@ -1,6 +1,5 @@
 package test.tools;
 
-import lombok.extern.slf4j.Slf4j;
 import org.eclipse.microprofile.rest.client.RestClientBuilder;
 import org.junit.jupiter.api.extension.AfterAllCallback;
 import org.junit.jupiter.api.extension.BeforeAllCallback;
@@ -21,18 +20,19 @@ import static javax.ws.rs.core.MediaType.TEXT_PLAIN_TYPE;
 import static javax.ws.rs.core.Response.Status.Family.SUCCESSFUL;
 
 /** @see QuarkusService */
-@Slf4j
 public class QuarkusServiceExtension implements Extension, BeforeAllCallback, AfterAllCallback {
     public static final String ENDPOINT = "http://localhost:8081";
     private Process service;
 
     @Override public void beforeAll(ExtensionContext context) throws Exception {
+        System.out.println("start quarkus");
         service = new ProcessBuilder().command("java", "-jar", "target/quarkus-app/quarkus-run.jar").inheritIO().start();
+        System.out.println("starting quarkus");
         waitUntilReady();
     }
 
     // TODO there must be a better way to wait for the readiness than a busy-waiting loop
-    private void waitUntilReady() throws TimeoutException {
+    private void waitUntilReady() throws TimeoutException, InterruptedException {
         var healthClient = RestClientBuilder.newBuilder()
             .baseUri(URI.create(ENDPOINT))
             .build(HealthClient.class);
@@ -44,8 +44,10 @@ public class QuarkusServiceExtension implements Extension, BeforeAllCallback, Af
             } catch (Exception e) {
                 response = Response.status(399).type(TEXT_PLAIN_TYPE).entity(e.toString()).build();
             }
+            System.out.println("busy-wait. " + info(response));
             if (response.getStatusInfo().getFamily().equals(SUCCESSFUL)) return;
-            log.debug("busy-wait. {}", info(response));
+            //noinspection BusyWait
+            Thread.sleep(100);
         } while (Duration.between(start, Instant.now()).getSeconds() < 10);
         throw new TimeoutException("while waiting for readiness. Last got: " + info(response));
     }
@@ -56,6 +58,7 @@ public class QuarkusServiceExtension implements Extension, BeforeAllCallback, Af
     }
 
     @Override public void afterAll(ExtensionContext context) {
+        System.out.println("stop quarkus (alive=" + (service != null && service.isAlive()) + ")");
         if (service != null) service.destroy();
     }
 
