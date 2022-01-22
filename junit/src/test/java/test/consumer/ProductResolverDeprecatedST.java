@@ -7,11 +7,11 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 import test.DummyServer;
 import test.consumer.ProductResolver.Item;
-import test.consumer.ProductResolver.Product;
 import test.consumer.ProductResolver.Products;
 
 import static com.github.t1.wunderbar.junit.consumer.WunderbarExpectationBuilder.given;
 import static com.github.t1.wunderbar.junit.provider.CustomBDDAssertions.then;
+import static test.consumer.TestData.someProduct;
 
 @SuppressWarnings({"removal", "deprecated"})
 @WunderBarApiConsumer(endpoint = "{deprecatedEndpoint()}")
@@ -30,10 +30,10 @@ class ProductResolverDeprecatedST {
     }
 
     @Test void shouldResolveProductFromFunctionEndpoint() {
-        var product = Product.builder().id("existing-product-id").name("some-product-name").price(15_99).build();
-        given(products.product("existing-product-id")).willReturn(product);
+        var product = someProduct();
+        given(products.product(product.getId())).willReturn(product);
 
-        var resolvedProduct = resolver.product(new Item("existing-product-id"));
+        var resolvedProduct = resolver.product(new Item(product.getId()));
 
         then(resolvedProduct).usingRecursiveComparison().isEqualTo(product);
         then(endpointCalled).as("endpoint function called").isTrue();

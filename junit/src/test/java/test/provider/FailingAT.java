@@ -17,6 +17,7 @@ import static com.github.t1.wunderbar.common.mock.GraphQLResponseBuilder.graphQl
 import static com.github.t1.wunderbar.junit.provider.CustomBDDAssertions.then;
 import static com.github.t1.wunderbar.junit.provider.WunderBarTestFinder.findTestsIn;
 import static org.assertj.core.api.BDDSoftAssertions.thenSoftly;
+import static test.consumer.TestData.someId;
 
 @WunderBarApiProvider(baseUri = "{endpoint()}")
 class FailingAT {
@@ -27,7 +28,7 @@ class FailingAT {
     URI endpoint() {return dummyServer.baseUri();}
 
     @BeforeInteraction void setup() {
-        expectations.addGraphQLProduct("existing-product-id", graphQLResponse().build());
+        expectations.addGraphQLProduct(someId(), graphQLResponse().build());
         expectations.addGraphQLProduct("unexpected-fail", graphQlError("unexpected-fail", "product unexpected-fail fails unexpectedly"));
     }
 

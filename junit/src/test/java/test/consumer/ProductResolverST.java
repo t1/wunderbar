@@ -25,6 +25,7 @@ import static javax.ws.rs.core.Response.Status.FORBIDDEN;
 import static javax.ws.rs.core.Response.Status.NOT_FOUND;
 import static org.assertj.core.api.Assertions.catchThrowableOfType;
 import static org.assertj.core.api.BDDAssertions.then;
+import static test.consumer.TestData.someProduct;
 
 @WunderBarApiConsumer
 class ProductResolverST { // TODO extends ProductResolverTest {
@@ -41,37 +42,38 @@ class ProductResolverST { // TODO extends ProductResolverTest {
         return dummyServer.baseUri();
     }
 
-    Product product = Product.builder().id("existing-product-id").name("some-product-name").price(15_99).build();
+    Product product = someProduct();
+    String productId = product.getId();
 
     @Test void shouldResolveProduct() {
-        given(products.product(product.getId())).willReturn(product);
+        given(products.product(productId)).willReturn(product);
         given(products.product("not-actually-called")).willReturn(Product.builder().id("unreachable").build());
 
-        var resolvedProduct = resolver.product(new Item(product.getId()));
+        var resolvedProduct = resolver.product(new Item(productId));
 
         then(resolvedProduct).usingRecursiveComparison().isEqualTo(product);
         then(endpointCalled).as("endpoint function called").isTrue();
     }
 
     @Test void shouldFailToResolveUnknownProduct() {
-        given(products.product("unknown-product-id")).willThrow(new ProductNotFoundException("unknown-product-id"));
+        given(products.product(productId)).willThrow(new ProductNotFoundException(productId));
 
-        var throwable = catchThrowableOfType(() -> resolver.product(new Item("unknown-product-id")), GraphQLClientException.class);
+        var throwable = catchThrowableOfType(() -> resolver.product(new Item(productId)), GraphQLClientException.class);
 
         then(throwable.getErrors()).hasSize(1);
         var error = throwable.getErrors().get(0);
-        then(error.getMessage()).isEqualTo("product unknown-product-id not found");
+        then(error.getMessage()).isEqualTo("product " + productId + " not found");
         then(error.getCode()).isEqualTo("product-not-found");
     }
 
     @Test void shouldFailToResolveForbiddenProduct() {
-        given(products.product("forbidden-product-id")).willThrow(new ProductForbiddenException("forbidden-product-id"));
+        given(products.product(productId)).willThrow(new ProductForbiddenException(productId));
 
-        var throwable = catchThrowableOfType(() -> resolver.product(new Item("forbidden-product-id")), GraphQLClientException.class);
+        var throwable = catchThrowableOfType(() -> resolver.product(new Item(productId)), GraphQLClientException.class);
 
         then(throwable.getErrors()).hasSize(1);
         var error = throwable.getErrors().get(0);
-        then(error.getMessage()).isEqualTo("product forbidden-product-id is forbidden");
+        then(error.getMessage()).isEqualTo("product " + productId + " is forbidden");
         then(error.getCode()).isEqualTo("product-forbidden");
     }
 
@@ -89,19 +91,18 @@ class ProductResolverST { // TODO extends ProductResolverTest {
         URI endpoint() {return ProductResolverST.this.endpoint();}
 
         @Test void shouldGetProduct() {
-            var givenProduct = Product.builder().id("existing-product-id").name("some-product-name").price(15_99).build();
-            given(restProducts.product(givenProduct.getId())).willReturn(product);
+            given(restProducts.product(productId)).willReturn(product);
 
-            var response = resolveProduct(givenProduct.getId());
+            var response = resolveProduct(productId);
 
-            then(response).usingRecursiveComparison().isEqualTo(givenProduct);
+            then(response).usingRecursiveComparison().isEqualTo(product);
             then(endpointCalled).as("endpoint function called").isTrue();
         }
 
         @Test void shouldFailToGetUnknownProduct() {
-            given(restProducts.product("unknown-product-id")).willThrow(new NotFoundException("unknown-product-id"));
+            given(restProducts.product(productId)).willThrow(new NotFoundException(productId));
 
-            var throwable = catchThrowableOfType(() -> resolveProduct("unknown-product-id"), WebApplicationException.class);
+            var throwable = catchThrowableOfType(() -> resolveProduct(productId), WebApplicationException.class);
 
             var response = throwable.getResponse();
             then(response.getStatusInfo()).isEqualTo(NOT_FOUND);
@@ -109,9 +110,9 @@ class ProductResolverST { // TODO extends ProductResolverTest {
         }
 
         @Test void shouldFailToGetForbiddenProduct() {
-            given(restProducts.product("forbidden-product-id")).willThrow(new ForbiddenException("forbidden-product-id"));
+            given(restProducts.product(productId)).willThrow(new ForbiddenException(productId));
 
-            var throwable = catchThrowableOfType(() -> resolveProduct("forbidden-product-id"), WebApplicationException.class);
+            var throwable = catchThrowableOfType(() -> resolveProduct(productId), WebApplicationException.class);
 
             then(throwable.getResponse().getStatusInfo()).isEqualTo(FORBIDDEN);
         }
