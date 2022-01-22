@@ -6,16 +6,19 @@ import lombok.ToString;
 
 import javax.json.Json;
 import javax.json.JsonObjectBuilder;
-import java.util.function.Function;
 
-import static com.github.t1.wunderbar.common.mock.GraphQLResponseBuilder.graphQL;
+import static com.github.t1.wunderbar.common.mock.GraphQLResponseBuilder.graphQLResponse;
 
 @ToString
-class RemoveWunderBarExpectation implements Function<HttpRequest, HttpResponse> {
-    @Override public HttpResponse apply(HttpRequest request) {
-        var variables = request.jsonBody().orElseThrow().asJsonObject().getJsonObject("variables");
+class RemoveWunderBarExpectation extends GraphQLMockExpectation {
+    RemoveWunderBarExpectation() {
+        super("mutation removeWunderBarExpectation($id: Int!) { removeWunderBarExpectation(id: $id) }");
+    }
+
+    @Override public HttpResponse handle(HttpRequest request) {
+        var variables = request.get("variables").asJsonObject();
         MockService.removeExpectation(variables.getInt("id"));
-        return graphQL().with(RemoveWunderBarExpectation::removeResponse).build();
+        return graphQLResponse().with(RemoveWunderBarExpectation::removeResponse).build();
     }
 
     private static void removeResponse(JsonObjectBuilder builder) {

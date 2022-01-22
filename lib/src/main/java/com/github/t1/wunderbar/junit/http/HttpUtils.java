@@ -81,7 +81,9 @@ public class HttpUtils {
             return Json.createReader(new StringReader(json)).readValue();
         } catch (JsonParsingException e) {
             var offset = (int) e.getLocation().getStreamOffset();
-            throw new RuntimeException("can't parse json:\n" + json.substring(0, offset) + "👉" + json.substring(offset), e);
+            var pre = (offset < 0) ? "" : json.substring(0, offset);
+            var post = (offset < 0) ? json : json.substring(offset);
+            throw new RuntimeException("can't parse json:\n" + pre + "👉" + post, e);
         }
     }
 

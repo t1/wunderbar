@@ -16,11 +16,7 @@ import java.lang.reflect.Method;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
-import static com.github.t1.wunderbar.junit.http.HttpUtils.formatJson;
-import static com.github.t1.wunderbar.junit.http.HttpUtils.isCompatible;
-import static javax.ws.rs.core.MediaType.APPLICATION_JSON_TYPE;
 import static javax.ws.rs.core.Response.Status.NOT_IMPLEMENTED;
 
 @Slf4j
@@ -60,8 +56,7 @@ public @Internal class IntegrationTestExpectations implements WunderBarExpectati
     }
 
     private HttpResponse handleRequest(HttpRequest request) {
-        if (request.getBody().isPresent() && isCompatible(APPLICATION_JSON_TYPE, request.getContentType()))
-            request = request.withBody(Optional.of(formatJson(request.getBody().get())));
+        request = request.withFormattedBody();
 
         if (currentExpectation == null)
             return HttpResponse.builder().status(NOT_IMPLEMENTED).body("no current expectation set").build();

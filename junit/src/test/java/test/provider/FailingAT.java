@@ -12,7 +12,7 @@ import test.DummyServer;
 
 import java.net.URI;
 
-import static com.github.t1.wunderbar.common.mock.GraphQLResponseBuilder.graphQL;
+import static com.github.t1.wunderbar.common.mock.GraphQLResponseBuilder.graphQLResponse;
 import static com.github.t1.wunderbar.common.mock.GraphQLResponseBuilder.graphQlError;
 import static com.github.t1.wunderbar.junit.provider.CustomBDDAssertions.then;
 import static com.github.t1.wunderbar.junit.provider.WunderBarTestFinder.findTestsIn;
@@ -27,7 +27,7 @@ class FailingAT {
     URI endpoint() {return dummyServer.baseUri();}
 
     @BeforeInteraction void setup() {
-        expectations.addGraphQLProduct("existing-product-id", graphQL().build());
+        expectations.addGraphQLProduct("existing-product-id", graphQLResponse().build());
         expectations.addGraphQLProduct("unexpected-fail", graphQlError("unexpected-fail", "product unexpected-fail fails unexpectedly"));
     }
 

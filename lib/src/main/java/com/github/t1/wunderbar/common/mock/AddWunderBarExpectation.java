@@ -1,6 +1,5 @@
 package com.github.t1.wunderbar.common.mock;
 
-import com.github.t1.wunderbar.common.mock.RequestMatcher.BodyMatcher;
 import com.github.t1.wunderbar.junit.http.HttpRequest;
 import com.github.t1.wunderbar.junit.http.HttpResponse;
 import lombok.ToString;
@@ -9,25 +8,31 @@ import lombok.extern.slf4j.Slf4j;
 import javax.json.Json;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
-import java.util.function.Function;
 
-import static com.github.t1.wunderbar.common.mock.GraphQLResponseBuilder.graphQL;
-import static com.github.t1.wunderbar.common.mock.MockService.addExpectation;
+import static com.github.t1.wunderbar.common.mock.GraphQLResponseBuilder.graphQLResponse;
 import static com.github.t1.wunderbar.junit.http.HttpUtils.fromJson;
 
-@Slf4j
-@ToString
-class AddWunderBarExpectation implements Function<HttpRequest, HttpResponse> {
-    @Override public HttpResponse apply(HttpRequest request) {
-        var variables = request.jsonBody().orElseThrow().asJsonObject().getJsonObject("variables");
+@ToString @Slf4j
+class AddWunderBarExpectation extends GraphQLMockExpectation {
+    AddWunderBarExpectation() {
+        super("mutation addWunderBarExpectation($request: HttpRequestInput!, $response: HttpResponseInput!) " +
+              "{ addWunderBarExpectation(request: $request, response: $response) {id status} }");
+    }
+
+    @Override public HttpResponse handle(HttpRequest request) {
+        var variables = request.get("variables").asJsonObject();
+        var expectation = addExpectation(variables);
+        return graphQLResponse().with(builder -> expectationResponse(builder, expectation)).build();
+    }
+
+    private WunderBarMockExpectation addExpectation(JsonObject variables) {
         log.debug("add expectation: {}", variables);
-        var matcherJson = variables.getJsonObject("matcher");
-        var matcher = restMatcher(matcherJson);
-        log.debug("    matcher: {}", matcher);
+        var requestJson = variables.getJsonObject("request");
+        var request = fromJson(requestJson, HttpRequest.class);
+        log.debug("    request: {}", request);
         var response = fromJson(variables.getJsonObject("response"), HttpResponse.class);
         log.debug("    response: {}", response);
-        var expectation = addExpectation(matcher, response);
-        return graphQL().with(builder -> expectationResponse(builder, expectation)).build();
+        return MockService.addExpectation(request, response);
     }
 
     private static void expectationResponse(JsonObjectBuilder builder, WunderBarMockExpectation expectation) {
@@ -35,14 +40,5 @@ class AddWunderBarExpectation implements Function<HttpRequest, HttpResponse> {
             .add("addWunderBarExpectation", Json.createObjectBuilder()
                 .add("status", "ok")
                 .add("id", expectation.getId())));
-    }
-
-    private static RequestMatcher restMatcher(JsonObject json) {
-        return RequestMatcher.builder()
-            .method(json.getString("method", null))
-            .path(json.getString("path", null))
-            .contentType(json.getString("contentType", null))
-            .bodyMatcher(fromJson(json.get("bodyMatcher"), BodyMatcher.class))
-            .build();
     }
 }

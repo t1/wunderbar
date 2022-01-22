@@ -22,6 +22,8 @@ import static test.consumer.ProductResolverIT.WithConfigKeyGenerator.WITH_CONFIG
 
 @WunderBarApiConsumer
 class ProductResolverIT extends ProductResolverTest {
+    void verifyBaseUri(URI baseUri) {then(baseUri.toString()).startsWith("http://localhost:");}
+
     @WunderBarApiConsumer(level = INTEGRATION)
     @Nested class FixedPort {
         @Service(port = 18373) Products productsWithFixedPort;

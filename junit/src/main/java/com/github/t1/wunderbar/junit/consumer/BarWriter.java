@@ -27,7 +27,7 @@ public abstract class BarWriter implements Closeable {
         String id = getDirectory() + "/" + (count() + 1) + " ";
         if (request.getAuthorization() != null) request = request.withAuthorization(Authorization.Dummy.INSTANCE);
         write(id + "request-headers.properties", request.headerProperties());
-        request.getBody().ifPresent(body -> write(id + "request-body.json", body));
+        request.body().ifPresent(body -> write(id + "request-body.json", body));
 
         write(id + "response-headers.properties", response.headerProperties());
         response.body().ifPresent(body -> write(id + "response-body.json", body));

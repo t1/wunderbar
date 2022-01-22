@@ -2,7 +2,7 @@ package test.provider;
 
 import com.github.t1.wunderbar.common.mock.GraphQLBodyMatcher;
 import com.github.t1.wunderbar.common.mock.MockService;
-import com.github.t1.wunderbar.common.mock.RequestMatcher;
+import com.github.t1.wunderbar.junit.http.HttpRequest;
 import com.github.t1.wunderbar.junit.http.HttpResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.extension.Extension;
@@ -18,17 +18,17 @@ public class ExpectationsExtension implements Extension {
 
     public void addGraphQLProduct(String id, HttpResponse response) {
         var expectation = addExpectation(GraphQLBodyMatcher.graphQlRequest()
-            .queryPattern("query product\\(\\$id: String!\\) \\{ product\\(id: \\$id\\) \\{id name (description )?price} }")
+            .query("query product($id: String!) { product(id: $id) {id name price} }")
             .variables(Json.createObjectBuilder().add("id", id).build())
+            .operationName("product")
             .build(), response);
         expectationIds.push(expectation.getId());
         log.debug("[GraphQL] generated expectation ids: {}", expectationIds);
     }
 
     public void addRestProduct(String id, HttpResponse response) {
-        var expectation = addExpectation(RequestMatcher.builder()
-                .path("/rest/products/" + id).build(),
-            response);
+        var request = HttpRequest.builder().uri("/rest/products/" + id).build();
+        var expectation = addExpectation(request, response);
         expectationIds.push(expectation.getId());
         log.debug("[REST] generated expectation ids: {}", expectationIds);
     }

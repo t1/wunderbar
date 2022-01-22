@@ -11,10 +11,10 @@ import java.util.function.Consumer;
 
 @ToString
 public class GraphQLResponseBuilder {
-    public static GraphQLResponseBuilder graphQL() {return new GraphQLResponseBuilder();}
+    public static GraphQLResponseBuilder graphQLResponse() {return new GraphQLResponseBuilder();}
 
     public static HttpResponse graphQlError(String code, String message) {
-        return graphQL().add("errors", Json.createArrayBuilder()
+        return graphQLResponse().add("errors", Json.createArrayBuilder()
             .add(Json.createObjectBuilder()
                 .add("message", message)
                 .add("extensions", Json.createObjectBuilder()

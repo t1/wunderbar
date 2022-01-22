@@ -1,7 +1,5 @@
 package com.github.t1.wunderbar.junit.consumer.system;
 
-import com.github.t1.wunderbar.common.mock.RequestMatcher;
-import com.github.t1.wunderbar.common.mock.RequestMatcher.BodyMatcher;
 import com.github.t1.wunderbar.junit.WunderBarException;
 import com.github.t1.wunderbar.junit.consumer.BarWriter;
 import com.github.t1.wunderbar.junit.consumer.Technology;
@@ -115,7 +113,7 @@ public class SystemTestExpectations implements WunderBarExpectations {
     private void addExpectation() {
         log.debug("add expectation to mock service");
         var stubbingResult = mock.addWunderBarExpectation(
-            matcher(currentInteraction.getRequest().withFormattedBody()),
+            currentInteraction.getRequest().withFormattedBody(),
             currentInteraction.getResponse());
         log.debug("---------- add expectation and stubbing done -> {}", stubbingResult);
         if (stubbingResult == null || !"ok".equals(stubbingResult.getStatus()))
@@ -130,27 +128,21 @@ public class SystemTestExpectations implements WunderBarExpectations {
         return response;
     }
 
-    private RequestMatcher matcher(HttpRequest expected) {
-        var builder = RequestMatcher.builder()
-            .method(expected.getMethod())
-            .path(expected.getUri().getPath()) // TODO query params, etc.?
-            .contentType((expected.getContentType() == null) ? null : expected.getContentType().toString());
-        expected.getBody().ifPresent(expectedBody -> builder.bodyMatcher(new BodyMatcher(expectedBody)));
-        return builder.build();
-    }
-
     @SneakyThrows(IOException.class)
     @Override public void done() {
         log.debug("---------- call done -- cleanup");
-        while (!createdExpectationIds.isEmpty()) mock.removeWunderBarExpectation(createdExpectationIds.remove(0));
+        while (!createdExpectationIds.isEmpty()) {
+            var status = mock.removeWunderBarExpectation(createdExpectationIds.remove(0));
+            assert "ok".equals(status);
+        }
         if (api instanceof Closeable) ((Closeable) api).close();
         log.debug("---------- cleanup done");
     }
 
     @GraphQLClientApi
     private interface WunderBarMockServerApi {
-        @Mutation WunderBarStubbingResult addWunderBarExpectation(@NonNull RequestMatcher matcher, @NonNull HttpResponse response);
-        @SuppressWarnings("UnusedReturnValue") @Mutation String removeWunderBarExpectation(int id);
+        @Mutation WunderBarStubbingResult addWunderBarExpectation(@NonNull HttpRequest request, @NonNull HttpResponse response);
+        @Mutation String removeWunderBarExpectation(int id);
     }
 
     @Data

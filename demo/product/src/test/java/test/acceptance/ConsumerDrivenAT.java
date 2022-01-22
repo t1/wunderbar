@@ -13,6 +13,7 @@ import io.smallrye.graphql.client.typesafe.api.GraphQLClientApi;
 import io.smallrye.graphql.client.typesafe.api.Header;
 import io.smallrye.graphql.client.typesafe.api.TypesafeGraphQLClientBuilder;
 import lombok.Data;
+import lombok.extern.slf4j.Slf4j;
 import org.eclipse.microprofile.graphql.Mutation;
 import org.eclipse.microprofile.graphql.NonNull;
 import org.eclipse.microprofile.graphql.Query;
@@ -39,6 +40,7 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.assertj.core.api.Assertions.catchThrowableOfType;
 import static test.tools.QuarkusServiceExtension.ENDPOINT;
 
+@Slf4j
 @QuarkusService
 @WunderBarApiProvider(baseUri = ENDPOINT)
 class ConsumerDrivenAT {
@@ -132,8 +134,8 @@ class ConsumerDrivenAT {
     @BeforeInteraction HttpRequest createTestData(HttpInteraction interaction) {
         var request = interaction.getRequest();
         var isGraphQL = request.getUri().getPath().equals("/graphql");
-        System.out.println("create test data for " + (isGraphQL ? "graphql" : "rest") + " interaction " + interaction.getNumber() + ": "
-                           + request.getMethod() + " " + request.getUri());
+        log.info("create test data for " + (isGraphQL ? "graphql" : "rest") + " interaction " + interaction.getNumber() + ": "
+                 + request.getMethod() + " " + request.getUri());
         var setup = isGraphQL
             ? new GraphQlSetUp(interaction)
             : new RestSetUp(interaction);

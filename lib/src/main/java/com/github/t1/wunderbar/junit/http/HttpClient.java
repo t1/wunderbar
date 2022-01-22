@@ -51,7 +51,7 @@ public class HttpClient {
         var builder = java.net.http.HttpRequest.newBuilder()
             // using URI#resolve would remove the context path of the base uri
             .uri(URI.create(baseUri + "" + request.getUri()))
-            .method(request.getMethod(), request.getBody().map(BodyPublishers::ofString).orElse(noBody()))
+            .method(request.getMethod(), request.body().map(BodyPublishers::ofString).orElse(noBody()))
             .header(CONTENT_TYPE, request.getContentType().toString())
             .header(ACCEPT, request.getAccept().toString());
         if (request.getAuthorization() != null) builder.header(AUTHORIZATION, request.getAuthorization().toHeader());

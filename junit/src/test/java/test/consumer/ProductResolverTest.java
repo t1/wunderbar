@@ -40,7 +40,6 @@ import static test.consumer.TestData.someProduct;
 
 @WunderBarApiConsumer
 abstract class ProductResolverTest {
-
     @Service Products products;
     @Service NamedProducts namedProducts;
     @Service ProductsGetter productsGetter;
@@ -137,12 +136,12 @@ abstract class ProductResolverTest {
         }
     }
 
-    void verifyBaseUri(URI baseUri) {then(baseUri.toString()).startsWith("http://localhost:");}
+    abstract void verifyBaseUri(URI baseUri);
 
     @Nested class StaticMethods {
         @Test void shouldGetBaseUri() {
             var baseUri = baseUri(products);
-            System.out.println("actual service uri: " + baseUri);
+
             verifyBaseUri(baseUri);
         }
 

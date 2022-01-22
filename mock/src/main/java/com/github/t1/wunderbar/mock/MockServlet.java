@@ -20,6 +20,8 @@ public class MockServlet extends HttpServlet {
     public void service(HttpServletRequest servletRequest, HttpServletResponse servletResponse) throws IOException {
         HttpRequest request = HttpRequest.builder()
             .method(servletRequest.getMethod())
+            .uri(maybe(servletRequest.getPathInfo(), "") +
+                 maybe(servletRequest.getQueryString(), "?"))
             .contentType(servletRequest.getContentType())
             .body(servletRequest.getReader().lines().collect(joining()))
             .build();
@@ -29,5 +31,9 @@ public class MockServlet extends HttpServlet {
         servletResponse.setStatus(response.getStatus().getStatusCode());
         servletResponse.setContentType(response.getContentType().toString());
         response.body().ifPresent(servletResponse.getWriter()::write);
+    }
+
+    private String maybe(String string, String prefix) {
+        return string == null ? "" : prefix + string;
     }
 }

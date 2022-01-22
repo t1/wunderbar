@@ -77,7 +77,7 @@ class ProductResolverST { // TODO extends ProductResolverTest {
 
     @Test void shouldGetBaseUri() {
         var baseUri = baseUri(products);
-        System.out.println("actual service uri: " + baseUri);
+
         then(baseUri.toString()).startsWith("http://localhost:");
     }
 

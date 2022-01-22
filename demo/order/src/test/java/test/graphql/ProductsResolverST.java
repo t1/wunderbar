@@ -16,8 +16,6 @@ import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
-import javax.json.Json;
-import java.io.StringReader;
 import java.net.URI;
 
 import static org.assertj.core.api.Assertions.catchThrowableOfType;
@@ -36,12 +34,12 @@ class ProductsResolverST {
 
     static HttpResponse handle(HttpRequest request) {
         assert request.getUri().toString().equals("/graphql") : "unexpected uri " + request.getUri();
-        assert request.getBody().isPresent();
-        var body = Json.createReader(new StringReader(request.getBody().get())).readObject();
+        assert request.hasBody();
+        var body = request.jsonValue().asJsonObject();
         var query = body.getString("query");
         assert query.equals("query product($id: String!) { product(id: $id) {id name description price} }")
             : "unexpected query: [" + query + "]";
-        if (isMutation(query)) // currently not used
+        if (isMutation(query)) // currently, not used
             assert SYSTEM_TEST_CREDENTIALS.equals(request.getAuthorization()) : "expected mutation to be authorized with the system test credentials";
         else assert request.getAuthorization() == null : "expected query not to be authorized";
 
