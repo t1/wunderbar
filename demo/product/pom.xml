@@ -32,6 +32,11 @@
             <type>war</type>
             <scope>test</scope><!-- just make sure `order` is built first -->
         </dependency>
+        <dependency>
+            <groupId>com.github.t1</groupId>
+            <artifactId>wunderbar.lib</artifactId>
+            <version>${project.version}</version>
+        </dependency>
 
         <dependency>
             <groupId>io.quarkus</groupId>

@@ -17,7 +17,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.eclipse.microprofile.graphql.Mutation;
 import org.eclipse.microprofile.graphql.NonNull;
 import org.eclipse.microprofile.graphql.Query;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DynamicNode;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestFactory;
@@ -95,7 +94,6 @@ class ConsumerDrivenAT {
         then(throwable.getErrors().get(0).getCode()).isEqualTo("unauthorized");
     }
 
-    @Disabled("just for one build on GitHub")
     @TestFactory DynamicNode demoOrderConsumerTests() {
         return findTestsIn("../order/target/wunder.bar");
     }

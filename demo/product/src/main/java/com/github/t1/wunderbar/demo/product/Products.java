@@ -1,5 +1,6 @@
 package com.github.t1.wunderbar.demo.product;
 
+import com.github.t1.wunderbar.junit.http.ProblemDetails;
 import lombok.extern.slf4j.Slf4j;
 import org.eclipse.microprofile.graphql.GraphQLApi;
 import org.eclipse.microprofile.graphql.Mutation;
@@ -17,13 +18,10 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Response;
-import javax.ws.rs.core.Response.Status;
 import java.security.Principal;
 import java.util.Collection;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
-
-import static java.util.Locale.US;
 
 @GraphQLApi @Path("/products")
 @Slf4j @SuppressWarnings("QsUndeclaredPathMimeTypesInspection")
@@ -104,12 +102,12 @@ public class Products {
 
     @SuppressWarnings("CdiInjectionPointsInspection")
     static class ProductNotFoundException extends BusinessException {
-        ProductNotFoundException(String productId) { super(new NotFoundException("product " + productId + " not found")); }
+        ProductNotFoundException(String productId) {super(new NotFoundException("product " + productId + " not found"));}
     }
 
     @SuppressWarnings("CdiInjectionPointsInspection")
     static class ProductForbiddenException extends BusinessException {
-        ProductForbiddenException(String productId) { super(new ForbiddenException("product " + productId + " is forbidden")); }
+        ProductForbiddenException(String productId) {super(new ForbiddenException("product " + productId + " is forbidden"));}
     }
 
     @SuppressWarnings("CdiInjectionPointsInspection")
@@ -118,22 +116,8 @@ public class Products {
             super(template.getMessage(), response(template));
         }
 
-        private static Response response(WebApplicationException type) {
-            var status = type.getResponse().getStatus();
-            return Response.status(status).type("application/problem+json").entity(
-                "{\n" +
-                "    \"detail\": \"HTTP " + status + " " + Status.fromStatusCode(status) + "\",\n" +
-                "    \"title\": \"" + type.getClass().getSimpleName() + "\",\n" +
-                "    \"type\": \"urn:problem-type:" + errorCode(type) + "\"\n" +
-                "}\n").build();
+        private static Response response(WebApplicationException exception) {
+            return ProblemDetails.of(exception).toResponse().toJaxRs();
         }
     }
-
-    public static String errorCode(Exception exception) {
-        var code = camelToKebab(exception.getClass().getSimpleName());
-        if (code.endsWith("-exception")) code = code.substring(0, code.length() - 10);
-        return code;
-    }
-
-    private static String camelToKebab(String in) { return String.join("-", in.split("(?=\\p{javaUpperCase})")).toLowerCase(US); }
 }

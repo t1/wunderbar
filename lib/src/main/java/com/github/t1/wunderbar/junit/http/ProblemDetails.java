@@ -1,7 +1,6 @@
 package com.github.t1.wunderbar.junit.http;
 
 import lombok.Builder;
-import lombok.Getter;
 import lombok.Value;
 
 import javax.ws.rs.WebApplicationException;
@@ -13,7 +12,7 @@ import static com.github.t1.wunderbar.junit.http.HttpUtils.errorCode;
 import static com.github.t1.wunderbar.junit.http.HttpUtils.title;
 import static javax.ws.rs.core.Response.Status.INTERNAL_SERVER_ERROR;
 
-@Value @Builder @Getter
+@Value @Builder
 public class ProblemDetails {
     public static ProblemDetails of(Exception exception) {
         return ProblemDetails.builder()

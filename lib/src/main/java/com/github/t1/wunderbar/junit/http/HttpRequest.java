@@ -70,8 +70,6 @@ public class HttpRequest {
         this.body = body;
     }
 
-    public HttpRequest withFormattedBody() {return (isJson()) ? withBody(body().map(HttpUtils::formatJson).orElseThrow()) : this;}
-
     @Override public String toString() {return (headerProperties() + "\n" + body().orElse("")).trim();}
 
     public String headerProperties() {
@@ -82,6 +80,8 @@ public class HttpRequest {
                ((contentType == null) ? "" : CONTENT_TYPE + ": " + contentType + "\n") +
                ((authorization == null) ? "" : AUTHORIZATION + ": " + authorization + "\n");
     }
+
+    public HttpRequest withFormattedBody() {return (isJson()) ? withBody(body().map(HttpUtils::formatJson).orElseThrow()) : this;}
 
     /** Almost the same as <code>equals</code>, but the content types only have to be compatible */
     public boolean matches(HttpRequest that) {
@@ -101,11 +101,11 @@ public class HttpRequest {
 
     public Optional<String> body() {return Optional.ofNullable(body);}
 
+    public Optional<JsonValue> getJsonBody() {return jsonValue.updateAndGet(this::createOrGetJsonValue);}
+
     public boolean isJson() {return hasBody() && isCompatible(APPLICATION_JSON_TYPE, contentType);}
 
     public boolean isJsonObject() {return isJson() && jsonValue().getValueType() == OBJECT;}
-
-    public Optional<JsonValue> getJsonBody() {return jsonValue.updateAndGet(this::createOrGetJsonValue);}
 
     private Optional<JsonValue> createOrGetJsonValue(Optional<JsonValue> old) {
         //noinspection OptionalAssignedToNull // not initialized
@@ -154,6 +154,7 @@ public class HttpRequest {
         }
 
         public HttpRequestBuilder body(Object body) {
+            if (body == null || body == JsonValue.NULL) return body(null);
             // JSON-B may produce a leading nl, but we want only a trailing nl
             return body(JSONB.toJson(body).trim() + "\n");
         }

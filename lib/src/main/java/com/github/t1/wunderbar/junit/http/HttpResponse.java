@@ -1,27 +1,36 @@
 package com.github.t1.wunderbar.junit.http;
 
 import lombok.Builder;
+import lombok.Getter;
 import lombok.Value;
 import lombok.With;
 
 import javax.json.Json;
+import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
 import javax.json.JsonValue;
 import javax.json.bind.annotation.JsonbCreator;
 import javax.json.bind.annotation.JsonbTypeAdapter;
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.Response.StatusType;
 import java.util.Optional;
 import java.util.Properties;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
+import java.util.function.Function;
 
 import static com.github.t1.wunderbar.junit.http.HttpUtils.APPLICATION_JSON_UTF8;
 import static com.github.t1.wunderbar.junit.http.HttpUtils.JSONB;
 import static com.github.t1.wunderbar.junit.http.HttpUtils.fromJson;
+import static com.github.t1.wunderbar.junit.http.HttpUtils.isCompatible;
 import static com.github.t1.wunderbar.junit.http.HttpUtils.optional;
 import static com.github.t1.wunderbar.junit.http.HttpUtils.readJson;
+import static javax.json.JsonValue.ValueType.OBJECT;
+import static javax.ws.rs.core.MediaType.APPLICATION_JSON_TYPE;
 import static javax.ws.rs.core.Response.Status.OK;
+import static lombok.AccessLevel.NONE;
 
 @Value @Builder @With
 public class HttpResponse {
@@ -38,6 +47,8 @@ public class HttpResponse {
     @JsonbTypeAdapter(MediaTypeAdapter.class)
     MediaType contentType;
     String body;
+    /** internal, lazily converted json */
+    @Getter(NONE) AtomicReference<Optional<JsonValue>> jsonValue = new AtomicReference<>();
 
     @JsonbCreator public HttpResponse(StatusType status, MediaType contentType, String body) {
         this.status = (status == null) ? OK : status;
@@ -55,9 +66,47 @@ public class HttpResponse {
 
     public String getStatusString() {return status.getStatusCode() + " " + status.getReasonPhrase();}
 
+    public HttpResponse withFormattedBody() {return (isJson()) ? withBody(body().map(HttpUtils::formatJson).orElseThrow()) : this;}
+
+    public boolean hasBody() {return body != null;}
+
     public Optional<String> body() {return Optional.ofNullable(body);}
 
-    public Optional<JsonValue> getJsonBody() {return body().map(HttpUtils::toJson);}
+    public Optional<JsonValue> getJsonBody() {return jsonValue.updateAndGet(this::createOrGetJsonValue);}
+
+    public boolean isJson() {return hasBody() && isCompatible(APPLICATION_JSON_TYPE, contentType);}
+
+    public boolean isJsonObject() {return isJson() && jsonValue().getValueType() == OBJECT;}
+
+    private Optional<JsonValue> createOrGetJsonValue(Optional<JsonValue> old) {
+        //noinspection OptionalAssignedToNull // not initialized
+        return (old == null) ? body().map(HttpUtils::readJson) : old;
+    }
+
+    public JsonValue jsonValue() {return getJsonBody().orElseThrow();}
+
+    public JsonObject jsonObject() {return jsonValue().asJsonObject();}
+
+    public boolean has(String field) {
+        return isJsonObject() && jsonObject().containsKey(field);
+    }
+
+    public JsonValue get(String pointer) {
+        return jsonObject().getValue("/" + pointer);
+    }
+
+    public HttpResponse withJsonObject(Function<JsonObjectBuilder, JsonObjectBuilder> mapper) {
+        assert isJsonObject();
+        return withJsonBody(mapper.apply(Json.createObjectBuilder(jsonObject())).build());
+    }
+
+    public HttpResponse withJsonBody(JsonValue body) {
+        return withBody(body.toString());
+    }
+
+    public Response toJaxRs() {
+        return Response.status(getStatus()).type(getContentType()).entity(getBody()).build();
+    }
 
     @SuppressWarnings("unused")
     public static class HttpResponseBuilder {
@@ -93,7 +142,7 @@ public class HttpResponse {
         }
 
         public HttpResponseBuilder body(Object body) {
-            if (body == JsonValue.NULL) return body(null);
+            if (body == null || body == JsonValue.NULL) return body(null);
             // JSON-B may produce a leading nl, but we want only a trailing nl
             return body(JSONB.toJson(body).trim() + "\n");
         }

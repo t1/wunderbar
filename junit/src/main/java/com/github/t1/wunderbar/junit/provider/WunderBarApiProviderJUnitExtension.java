@@ -11,6 +11,10 @@ import org.junit.jupiter.api.extension.BeforeEachCallback;
 import org.junit.jupiter.api.extension.Extension;
 import org.junit.jupiter.api.extension.ExtensionContext;
 
+import javax.json.Json;
+import javax.json.JsonPointer;
+import javax.json.JsonStructure;
+import javax.json.JsonValue;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.net.URI;
@@ -23,6 +27,9 @@ import java.util.stream.Stream;
 import java.util.stream.Stream.Builder;
 
 import static com.github.t1.wunderbar.common.Utils.invoke;
+import static com.github.t1.wunderbar.junit.http.HttpUtils.PROBLEM_DETAIL_TYPE;
+import static com.github.t1.wunderbar.junit.http.HttpUtils.isCompatible;
+import static com.github.t1.wunderbar.junit.provider.CustomBDDAssertions.then;
 
 class WunderBarApiProviderJUnitExtension implements Extension, BeforeEachCallback, AfterEachCallback {
     static WunderBarApiProviderJUnitExtension INSTANCE;
@@ -103,7 +110,7 @@ class WunderBarApiProviderJUnitExtension implements Extension, BeforeEachCallbac
         var args = new Object[method.getParameterCount()];
         for (int i = 0; i < args.length; i++) {
             if (method.getParameters()[i].getType().equals(HttpInteraction.class))
-                args[i] = params.getInteraction();
+                args[i] = params.getExpected();
             else if (method.getParameters()[i].getType().equals(HttpResponse.class))
                 args[i] = params.getActual();
             else if (method.getParameters()[i].getType().equals(BDDSoftAssertions.class))
@@ -152,8 +159,54 @@ class WunderBarApiProviderJUnitExtension implements Extension, BeforeEachCallbac
     private static final Pattern FUNCTION = Pattern.compile("(?<prefix>.*)\\{(?<method>.*)\\(\\)}(?<suffix>.*)");
 
     static @Value class OnInteractionErrorParams {
-        HttpInteraction interaction;
+        HttpInteraction expected;
         HttpResponse actual;
-        BDDSoftAssertions assertions;
+        BDDSoftAssertions assertions = new BDDSoftAssertions();
+
+        OnInteractionErrorParams(HttpInteraction expected, HttpResponse actual) {
+            this.expected = expected;
+            this.actual = actual;
+            checkResponse(actual, expected.getResponse());
+        }
+
+        private void checkResponse(HttpResponse actual, HttpResponse expected) {
+            assertions.then(actual.getStatusString()).describedAs("status").isEqualTo(expected.getStatusString());
+            assertions.then(isCompatible(actual.getContentType(), expected.getContentType()))
+                .describedAs("Content-Type: " + actual.getContentType() + " to be compatible to " + expected.getContentType())
+                .isTrue();
+            checkBody(body(actual), body(expected));
+        }
+
+        private JsonValue body(HttpResponse response) {
+            if (PROBLEM_DETAIL_TYPE.isCompatible(response.getContentType()))
+                response = removeVolatileProblemDetails(response);
+            return response.getJsonBody().orElse(JsonValue.NULL);
+        }
+
+        /**
+         * The Problem Details fields <code>title</code> and <code>detail</code> are meant for human readability
+         * and explicitly allowed to change between calls; don't check those
+         */
+        private HttpResponse removeVolatileProblemDetails(HttpResponse response) {
+            return response.withFormattedBody().withJsonObject(body -> {
+                body.remove("title");
+                body.remove("detail");
+                return body;
+            });
+        }
+
+        private void checkBody(JsonValue actual, JsonValue expected) {
+            if (actual instanceof JsonStructure && expected instanceof JsonStructure)
+                checkForUnexpectedErrors((JsonStructure) actual, (JsonStructure) expected);
+            assertions.check(() -> then(actual).isEqualToIgnoringNewFields(expected));
+        }
+
+        /** GraphQL: show unexpected errors in addition to the missing or only partial data */
+        private void checkForUnexpectedErrors(JsonStructure actual, JsonStructure expected) {
+            if (ERRORS.containsValue(actual) && !ERRORS.containsValue(expected))
+                assertions.then(ERRORS.getValue(actual)).as("errors").isNull();
+        }
+
+        private static final JsonPointer ERRORS = Json.createPointer("/errors");
     }
 }
