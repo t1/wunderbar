@@ -1,15 +1,14 @@
 package com.github.t1.wunderbar.junit.consumer.system.graphql.jaxrs.client;
 
 import io.smallrye.graphql.client.impl.GraphQLClientConfiguration;
+import io.smallrye.graphql.client.impl.typesafe.HeaderBuilder;
 import io.smallrye.graphql.client.impl.typesafe.ResultBuilder;
 import io.smallrye.graphql.client.impl.typesafe.reflection.MethodInvocation;
 import lombok.extern.slf4j.Slf4j;
 
 import javax.ws.rs.client.WebTarget;
-import javax.ws.rs.core.MultivaluedMap;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.Response.StatusType;
 import java.util.Collections;
+import java.util.Map;
 
 import static com.github.t1.wunderbar.junit.http.HttpUtils.APPLICATION_JSON_UTF8;
 import static javax.ws.rs.client.Entity.entity;
@@ -30,24 +29,25 @@ class JaxRsTypesafeGraphQLClientProxy {
             return method.invoke(this);
         log.debug("call {} to {}", method.getName(), target.getUri());
 
-        MultivaluedMap<String, Object> headers = new HeaderBuilder(api, method,
+        var headers = new HeaderBuilder(api, method,
             configuration != null ? configuration.getHeaders() : Collections.emptyMap())
             .build();
-        String request = new GraphQLRequestBuilder(method).build().toString();
+        var request = new GraphQLRequestBuilder(method).build().toString();
 
-        String response = post(request, headers);
+        var response = post(request, headers);
 
         log.debug("response graphql: {}", response);
         if (response == null || response.isBlank()) response = "{}";
         return new ResultBuilder(method, response).read();
     }
 
-    private String post(String request, MultivaluedMap<String, Object> headers) {
-        Response response = target
-            .request(APPLICATION_JSON_UTF8)
-            .headers(headers)
-            .post(entity(request, APPLICATION_JSON_UTF8));
-        StatusType status = response.getStatusInfo();
+    private String post(String requestBody, Map<String, String> headers) {
+        var request = target.request(APPLICATION_JSON_UTF8);
+        headers.forEach(request::header);
+
+        var response = request.post(entity(requestBody, APPLICATION_JSON_UTF8));
+
+        var status = response.getStatusInfo();
         if (status.getFamily() != SUCCESSFUL)
             throw new IllegalStateException(
                 "expected successful status code but got " +
