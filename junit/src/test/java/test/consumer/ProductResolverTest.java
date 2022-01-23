@@ -27,6 +27,7 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.net.URI;
 
+import static com.github.t1.wunderbar.junit.consumer.Service.DEFAULT_ENDPOINT;
 import static com.github.t1.wunderbar.junit.consumer.WunderbarExpectationBuilder.baseUri;
 import static com.github.t1.wunderbar.junit.consumer.WunderbarExpectationBuilder.createService;
 import static com.github.t1.wunderbar.junit.consumer.WunderbarExpectationBuilder.given;
@@ -40,10 +41,12 @@ import static test.consumer.TestData.someProduct;
 
 @WunderBarApiConsumer
 abstract class ProductResolverTest {
-    @Service Products products;
+    @Service(endpoint = "{endpoint()}") Products products;
     @Service NamedProducts namedProducts;
     @Service ProductsGetter productsGetter;
     @SystemUnderTest ProductResolver resolver;
+
+    String endpoint() {return DEFAULT_ENDPOINT;}
 
     @GraphQLClientApi
     interface NamedProducts {
@@ -70,38 +73,39 @@ abstract class ProductResolverTest {
     }
 
     Product product = someProduct();
+    String productId = product.getId();
 
     @Test void shouldResolveProduct() {
-        given(products.product(product.getId())).willReturn(product);
+        given(products.product(productId)).willReturn(product);
         given(products.product("not-actually-called")).willReturn(Product.builder().id("unreachable").build());
 
-        var resolvedProduct = resolver.product(new Item(product.getId()));
+        var resolvedProduct = resolver.product(new Item(productId));
 
         then(resolvedProduct).usingRecursiveComparison().isEqualTo(product);
     }
 
     @Test void shouldResolveNamedProductMethod() {
-        given(namedProducts.productById(product.getId())).willReturn(product);
+        given(namedProducts.productById(productId)).willReturn(product);
 
-        var resolvedProduct = namedProducts.productById(product.getId());
+        var resolvedProduct = namedProducts.productById(productId);
 
         then(resolvedProduct).usingRecursiveComparison().isEqualTo(product);
     }
 
     @Test void shouldResolveProductGetter() {
-        given(productsGetter.getProduct(product.getId())).willReturn(product);
+        given(productsGetter.getProduct(productId)).willReturn(product);
 
-        var resolvedProduct = productsGetter.getProduct(product.getId());
+        var resolvedProduct = productsGetter.getProduct(productId);
 
         then(resolvedProduct).usingRecursiveComparison().isEqualTo(product);
     }
 
     @Test void shouldUpdateProduct() {
-        given(products.product(product.getId())).willReturn(product);
-        given(products.patch(new Product().withId(product.getId()).withPrice(12_99))).willReturn(product.withPrice(12_99));
+        given(products.product(productId)).willReturn(product);
+        given(products.patch(new Product().withId(productId).withPrice(12_99))).willReturn(product.withPrice(12_99));
 
-        var preCheck = resolver.product(new Item(product.getId()));
-        var resolvedProduct = resolver.productWithPriceUpdate(new Item(product.getId()), 12_99);
+        var preCheck = resolver.product(new Item(productId));
+        var resolvedProduct = resolver.productWithPriceUpdate(new Item(productId), 12_99);
 
         then(preCheck).usingRecursiveComparison().isEqualTo(product);
         then(resolvedProduct).usingRecursiveComparison().isEqualTo(product.withPrice(12_99));

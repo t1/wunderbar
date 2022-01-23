@@ -87,9 +87,6 @@ class ProductResolverST { // TODO extends ProductResolverTest {
         @Service(endpoint = "{endpoint()}/{technology}") ProductsRestClient restProducts;
         @SystemUnderTest RestProducts restResolver;
 
-        @SuppressWarnings("unused")
-        URI endpoint() {return ProductResolverST.this.endpoint();}
-
         @Test void shouldGetProduct() {
             given(restProducts.product(productId)).willReturn(product);
 

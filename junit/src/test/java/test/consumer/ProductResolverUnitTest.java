@@ -14,5 +14,5 @@ class ProductResolverUnitTest extends ProductResolverTest {
      */
     @Override void shouldUpdateProduct() {}
 
-    @Override void verifyBaseUri(URI baseUri) { then(baseUri).isNull(); }
+    @Override void verifyBaseUri(URI baseUri) {then(baseUri).isNull();}
 }

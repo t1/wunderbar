@@ -13,6 +13,7 @@ import org.junit.jupiter.api.extension.ExtensionContext.Store.CloseableResource;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.net.URI;
 import java.nio.file.Path;
 import java.time.Duration;
@@ -177,14 +178,51 @@ class WunderBarApiConsumerJUnitExtension implements Extension, BeforeEachCallbac
         return endpoint;
     }
 
-    @SneakyThrows(ReflectiveOperationException.class)
     private String functionCall(String methodName) {
         var instance = context.getRequiredTestInstance();
-        var method = instance.getClass().getDeclaredMethod(methodName);
-        method.setAccessible(true);
-        var result = method.invoke(instance);
+        var method = new EndpointInvocation(instance, methodName);
+        var result = method.invoke();
         if (result == null) throw new NullPointerException("endpoint method '" + methodName + "' returned null");
         return result.toString();
+    }
+
+    /** We also search in enclosing classes, but the nested instance is not a subclass of the enclosing class */
+    private static class EndpointInvocation {
+        Object instance;
+        String methodName;
+        Method method;
+
+        private EndpointInvocation(Object instance, String methodName) {
+            this.instance = instance;
+            this.methodName = methodName;
+            find(instance.getClass());
+            if (method == null) throw new WunderBarException("endpoint method not found '" + methodName + "'");
+        }
+
+        void find(Class<?> type) {
+            try {
+                method = type.getDeclaredMethod(methodName);
+            } catch (NoSuchMethodException e) {
+                if (type.getSuperclass() != null) find(type.getSuperclass());
+                if (method == null && type.isMemberClass()) {
+                    instance = enclosingInstance();
+                    find(type.getEnclosingClass());
+                }
+            }
+        }
+
+        @SneakyThrows(ReflectiveOperationException.class)
+        private Object enclosingInstance() {
+            var field = instance.getClass().getDeclaredField("this$0");
+            field.setAccessible(true);
+            return field.get(instance);
+        }
+
+        @SneakyThrows(ReflectiveOperationException.class)
+        Object invoke() {
+            method.setAccessible(true);
+            return method.invoke(instance);
+        }
     }
 
     private String testId() {
