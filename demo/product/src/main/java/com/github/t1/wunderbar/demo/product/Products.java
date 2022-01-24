@@ -100,17 +100,14 @@ public class Products {
         return removed;
     }
 
-    @SuppressWarnings("CdiInjectionPointsInspection")
     static class ProductNotFoundException extends BusinessException {
         ProductNotFoundException(String productId) {super(new NotFoundException("product " + productId + " not found"));}
     }
 
-    @SuppressWarnings("CdiInjectionPointsInspection")
     static class ProductForbiddenException extends BusinessException {
         ProductForbiddenException(String productId) {super(new ForbiddenException("product " + productId + " is forbidden"));}
     }
 
-    @SuppressWarnings("CdiInjectionPointsInspection")
     static class BusinessException extends WebApplicationException {
         public BusinessException(WebApplicationException template) {
             super(template.getMessage(), response(template));

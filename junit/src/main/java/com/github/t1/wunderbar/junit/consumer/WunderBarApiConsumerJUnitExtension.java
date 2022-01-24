@@ -41,7 +41,6 @@ import static com.github.t1.wunderbar.junit.consumer.Technology.GRAPHQL;
 import static com.github.t1.wunderbar.junit.consumer.Technology.REST;
 import static com.github.t1.wunderbar.junit.consumer.WunderBarApiConsumer.NONE;
 import static java.time.temporal.ChronoUnit.NANOS;
-import static java.util.Locale.ROOT;
 import static java.util.stream.Collectors.toList;
 import static org.junit.jupiter.api.extension.ExtensionContext.Namespace.GLOBAL;
 
@@ -59,7 +58,7 @@ class WunderBarApiConsumerJUnitExtension implements Extension, BeforeEachCallbac
     private String testId;
     private BarWriter bar;
     private Instant start;
-    private final List<Proxy> proxies = new ArrayList<>();
+    private final List<Proxy<?>> proxies = new ArrayList<>();
 
     @Override public void beforeEach(ExtensionContext context) {
         INSTANCE = this;
@@ -136,13 +135,13 @@ class WunderBarApiConsumerJUnitExtension implements Extension, BeforeEachCallbac
 
     private void createProxy(Field field) {
         var service = field.getAnnotation(Service.class);
-        Proxy proxy = createProxy(field.getType(), service);
+        Proxy<?> proxy = createProxy(field.getType(), service);
         setField(instanceFor(field), field, proxy.getStubbingProxy());
     }
 
-    Proxy createProxy(Class<?> type, Service service) {
+    <T> Proxy<T> createProxy(Class<T> type, Service service) {
         var technology = technology(type);
-        var proxy = new Proxy(level(), bar, type, endpoint(service, technology), technology);
+        var proxy = new Proxy<>(level(), bar, type, endpoint(service, technology), technology);
         this.proxies.add(proxy);
         return proxy;
     }
@@ -166,8 +165,8 @@ class WunderBarApiConsumerJUnitExtension implements Extension, BeforeEachCallbac
         var endpoint = service.endpoint();
         if (DEFAULT_ENDPOINT.equals(endpoint)) endpoint = settings.endpoint();
         endpoint = replace(endpoint, FUNCTION, this::functionCall);
+        endpoint = replace(endpoint, TECHNOLOGY, __ -> technology.path());
         endpoint = replace(endpoint, PORT, __ -> Integer.toString(service.port()));
-        endpoint = replace(endpoint, TECHNOLOGY, __ -> technology.name().toLowerCase(ROOT));
         return URI.create(endpoint);
     }
 

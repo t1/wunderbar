@@ -24,8 +24,12 @@ public class MockService {
 
     public static WunderBarMockExpectation addExpectation(HttpRequest expectedRequest, HttpResponse response) {
         var expectation = new WunderBarMockExpectation() {
-            @Override public String toString() {
-                return expectedRequest.getMethod() + " " + expectedRequest.getUri() + " => " + response.getStatusString();
+            @Override public String toString() {return info(expectedRequest) + " => " + response.getStatusString();}
+
+            private String info(HttpRequest request) {
+                return request.getMethod() + " " + request.getUri()
+                       + (request.has("query") ? " query=" + request.get("query") : "")
+                       + (request.has("operationName") ? " op=" + request.get("operationName") : "");
             }
 
             @Override public boolean matches(HttpRequest request) {return expectedRequest.matches(request);}

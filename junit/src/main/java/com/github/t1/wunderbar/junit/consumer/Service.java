@@ -26,9 +26,12 @@ public @interface Service {
      * <ul>
      * <li>A method template variable like <code>{foo()}</code> will be replaced by the result of a call to the (maybe static) method
      *     of that name in the test class.
-     * <li>The <code>{port}</code> will be replaced by the {@link #port()} property, i.e. by default <code>RANDOM</code>.
      * <li>The template variable <code>technology</code> will be replaced by <code>graphql</code> or <code>rest</code> respectively.
+     * <li>The <code>{port}</code> will be replaced by the {@link #port()} property, i.e. by default <code>RANDOM</code>.
      * </ul>
+     * <p>
+     * Note that the replacement happens in exactly this order, i.e. you can return <code>{technology}</code> from your
+     * <code>{endpoint()}</code> function, and it will be replaced properly.
      */
     String endpoint() default DEFAULT_ENDPOINT;
 

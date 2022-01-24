@@ -26,13 +26,13 @@ public interface Authorization {
         }
     }
 
-    /** The credentials as used for an http <code>Authorization</code> header */
+    /** The credentials as used for the http <code>Authorization</code> header */
     String toHeader();
 
     @Value class Dummy implements Authorization {
         public static final Dummy INSTANCE = new Dummy("authorization");
 
-        public Dummy(String credentials) {assert "authorization".equals(credentials);}
+        private Dummy(String credentials) {assert "authorization" .equals(credentials);}
 
         @Override public String toString() {return "Dummy authorization";}
 

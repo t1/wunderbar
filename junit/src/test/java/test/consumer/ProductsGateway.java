@@ -11,7 +11,7 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import java.io.Closeable;
 
-public class RestProducts {
+public class ProductsGateway {
     @Inject ProductsRestClient products;
 
     public Product product(Item item) {
@@ -19,7 +19,7 @@ public class RestProducts {
     }
 
     public Product productWithPriceUpdate(Item item, int newPrice) {
-        var patch = new Product().withId(item.getProductId()).withPrice(newPrice);
+        var patch = Product.builder().id(item.getProductId()).price(newPrice).build();
         return products.patch(patch);
     }
 

@@ -1,6 +1,7 @@
 package test.consumer;
 
 import com.github.t1.wunderbar.junit.consumer.Service;
+import com.github.t1.wunderbar.junit.consumer.Technology;
 import com.github.t1.wunderbar.junit.consumer.WunderBarApiConsumer;
 import io.smallrye.graphql.client.typesafe.api.GraphQLClientApi;
 import org.junit.jupiter.api.Nested;
@@ -22,7 +23,7 @@ import static test.consumer.ProductResolverIT.WithConfigKeyGenerator.WITH_CONFIG
 
 @WunderBarApiConsumer
 class ProductResolverIT extends ProductResolverTest {
-    void verifyBaseUri(URI baseUri) {then(baseUri.toString()).startsWith("http://localhost:");}
+    void verifyBaseUri(URI baseUri, Technology technology) {then(baseUri.toString()).startsWith("http://localhost:");}
 
     @WunderBarApiConsumer(level = INTEGRATION)
     @Nested class FixedPort {

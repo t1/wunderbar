@@ -96,17 +96,13 @@ public class HttpUtils {
         return writer.toString().trim() + "\n";
     }
 
-    public static String errorCode(Exception exception) {
+    public static String errorCode(Throwable exception) {
         var code = String.join("-", splitCamel(exception.getClass().getSimpleName())).toLowerCase(ROOT);
         if (code.endsWith("-exception")) code = code.substring(0, code.length() - 10);
         return code;
     }
 
-    public static String title(Exception exception) {
-        return String.join(" ", splitCamel(exception.getClass().getSimpleName())).toLowerCase(ROOT);
-    }
-
-    private static String[] splitCamel(String in) {return in.split("(?=\\p{javaUpperCase})");}
+    public static String[] splitCamel(String in) {return in.split("(?=\\p{javaUpperCase})");}
 
     public static String base64(String string) {
         return Base64.getEncoder().encodeToString(string.getBytes(UTF_8));
@@ -119,7 +115,7 @@ public class HttpUtils {
     /**
      * Like {@link MediaType#isCompatible(MediaType)}, but taking suffixes like <b><code>+json</code></b> into account.
      *
-     * @see <a href="https://datatracker.ietf.org/doc/html/rfc6838#section-4.2.8">rfc-6838</a>
+     * @see <a href="https://datatracker.ietf.org/doc/html/rfc6838#section-4.2.8">RFC-6838</a>
      */
     public static boolean isCompatible(MediaType left, MediaType right) {
         if (left == null) return right == null;

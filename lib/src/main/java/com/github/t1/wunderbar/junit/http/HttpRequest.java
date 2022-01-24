@@ -17,6 +17,7 @@ import java.util.Optional;
 import java.util.Properties;
 import java.util.concurrent.atomic.AtomicReference;
 
+import static com.github.t1.wunderbar.common.Utils.jsonNonAddDiff;
 import static com.github.t1.wunderbar.junit.http.HttpUtils.APPLICATION_JSON_UTF8;
 import static com.github.t1.wunderbar.junit.http.HttpUtils.JSONB;
 import static com.github.t1.wunderbar.junit.http.HttpUtils.firstMediaType;
@@ -83,14 +84,23 @@ public class HttpRequest {
 
     public HttpRequest withFormattedBody() {return (isJson()) ? withBody(body().map(HttpUtils::formatJson).orElseThrow()) : this;}
 
-    /** Almost the same as <code>equals</code>, but the content types only have to be compatible */
+    /**
+     * Almost the same as <code>equals</code>, but
+     * the content types only have to be compatible, and
+     * <code>that</code> body may contain more fields than <code>this</code> does.
+     */
     public boolean matches(HttpRequest that) {
         return this.method.equals(that.method)
                && this.uri.equals(that.uri)
                && (this.authorization == null || this.authorization.equals(that.authorization))
                && (this.contentType == null || this.contentType.isCompatible(that.contentType))
                && (this.accept == null || this.accept.isCompatible(that.accept))
-               && (this.body == null || (this.isJson() && that.isJson() && this.jsonValue().equals(that.jsonValue())));
+               && (this.body == null || matchesBody(that));
+    }
+
+    private boolean matchesBody(HttpRequest that) {
+        if (!this.isJson() || !that.isJson()) return false;
+        return jsonNonAddDiff(this.jsonValue(), that.jsonValue()).findAny().isEmpty();
     }
 
     public URI getUri() {return URI.create(uri);}
@@ -116,13 +126,9 @@ public class HttpRequest {
 
     public JsonObject jsonObject() {return jsonValue().asJsonObject();}
 
-    public boolean has(String field) {
-        return isJsonObject() && jsonObject().containsKey(field);
-    }
+    public boolean has(String field) {return isJsonObject() && jsonObject().containsKey(field);}
 
-    public JsonValue get(String pointer) {
-        return jsonObject().getValue("/" + pointer);
-    }
+    public JsonValue get(String pointer) {return jsonObject().getValue("/" + pointer);}
 
     @SuppressWarnings("unused")
     public static class HttpRequestBuilder {

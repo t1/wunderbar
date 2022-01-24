@@ -9,16 +9,16 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.net.URI;
 
-class Proxy {
+class Proxy<T> implements ProxyFactory<T> {
     private final Level level;
     private final BarWriter bar;
-    private final Class<?> type;
+    private final Class<T> type;
     private final URI endpoint;
     private final Technology technology;
-    private final Object proxy;
-    @Getter private final WunderBarExpectations expectations;
+    private final T proxy;
+    @Getter private final WunderBarExpectations<T> expectations;
 
-    public Proxy(Level level, BarWriter bar, Class<?> type, URI endpoint, Technology technology) {
+    public Proxy(Level level, BarWriter bar, Class<T> type, URI endpoint, Technology technology) {
         this.level = level;
         this.bar = bar;
         this.type = type;
@@ -32,7 +32,7 @@ class Proxy {
         return "Proxy(" + level + ":" + type.getSimpleName() + ":" + expectations.baseUri() + ")";
     }
 
-    private <T> T createProxy(Class<T> type) {
+    private T createProxy(Class<T> type) {
         return type.cast(java.lang.reflect.Proxy.newProxyInstance(getClassLoader(), new Class[]{type}, this::proxyInvoked));
     }
 
@@ -48,16 +48,16 @@ class Proxy {
         return expectations.invoke(method, args);
     }
 
-    private WunderBarExpectations createExpectations() {
+    private WunderBarExpectations<T> createExpectations() {
         switch (level) {
             case AUTO:
                 throw new IllegalStateException("Unreachable code: AUTO level should have been resolved already");
             case UNIT:
-                return new UnitTestExpectations(type);
+                return new UnitTestExpectations<>(type);
             case INTEGRATION:
-                return new IntegrationTestExpectations(endpoint, technology, bar);
+                return new IntegrationTestExpectations<>(endpoint, technology, bar);
             case SYSTEM:
-                return new SystemTestExpectations(technology, type, endpoint, bar);
+                return new SystemTestExpectations<>(type, endpoint, technology, bar);
         }
         throw new UnsupportedOperationException("unreachable");
     }
@@ -66,9 +66,9 @@ class Proxy {
         return field.getType().isAssignableFrom(type);
     }
 
-    Object getStubbingProxy() {return expectations.asStubbingProxy(proxy);}
+    @Override public T getStubbingProxy() {return expectations.asStubbingProxy(proxy);}
 
-    Object getSutProxy() {return expectations.asSutProxy(proxy);}
+    @Override public T getSutProxy() {return expectations.asSutProxy(proxy);}
 
     void done() {expectations.done();}
 }

@@ -14,7 +14,7 @@ import java.net.URI;
 
 import static com.github.t1.wunderbar.common.mock.GraphQLResponseBuilder.graphQLResponse;
 import static com.github.t1.wunderbar.common.mock.GraphQLResponseBuilder.graphQlError;
-import static com.github.t1.wunderbar.junit.provider.CustomBDDAssertions.then;
+import static com.github.t1.wunderbar.junit.provider.WunderBarBDDAssertions.then;
 import static com.github.t1.wunderbar.junit.provider.WunderBarTestFinder.findTestsIn;
 import static org.assertj.core.api.BDDSoftAssertions.thenSoftly;
 import static test.consumer.TestData.someId;

@@ -20,7 +20,7 @@ import java.util.List;
 import static javax.ws.rs.core.Response.Status.NOT_IMPLEMENTED;
 
 @Slf4j
-public @Internal class IntegrationTestExpectations implements WunderBarExpectations {
+public @Internal class IntegrationTestExpectations<T> implements WunderBarExpectations<T> {
     private final BarWriter bar;
     private final Technology technology;
     private final List<HttpServiceExpectation> expectations = new ArrayList<>();

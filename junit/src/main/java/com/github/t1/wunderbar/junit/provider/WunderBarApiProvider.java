@@ -13,7 +13,7 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
  * <p>
  * You may have to start and stop the service you're testing, but that's beyond the scope of WunderBar.
  * <p>
- * Instead of using fixed ids et.al. for the various behavior, it's much better to derive the expected data (or errors) from the expectations
+ * Instead of using fixed ids et al. for the various behavior, it's much better to derive the expected data (or errors) from the expectations
  * defined in the <code>bar</code>. You can add and remove that test data by accessing directly, e.g. the database of your service, or by
  * using other methods of your API to manipulate it through your service. Sometimes you may need to add a 'backdoor' that is only accessible
  * from your own test setup/cleanup code.

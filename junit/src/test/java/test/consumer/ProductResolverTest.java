@@ -2,62 +2,52 @@ package test.consumer;
 
 import com.github.t1.wunderbar.junit.consumer.Service;
 import com.github.t1.wunderbar.junit.consumer.SystemUnderTest;
+import com.github.t1.wunderbar.junit.consumer.Technology;
 import com.github.t1.wunderbar.junit.consumer.WunderBarApiConsumer;
-import io.smallrye.graphql.client.GraphQLClientException;
 import io.smallrye.graphql.client.typesafe.api.GraphQLClientApi;
-import org.eclipse.microprofile.graphql.Name;
-import org.eclipse.microprofile.rest.client.inject.RegisterRestClient;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import test.consumer.ProductResolver.Item;
+import test.consumer.ProductResolver.NamedProducts;
 import test.consumer.ProductResolver.Product;
 import test.consumer.ProductResolver.Products;
+import test.consumer.ProductResolver.ProductsGetter;
+import test.consumer.ProductsGateway.ProductsRestClient;
 
 import javax.ws.rs.ForbiddenException;
-import javax.ws.rs.GET;
 import javax.ws.rs.NotFoundException;
-import javax.ws.rs.POST;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.WebApplicationException;
-import javax.ws.rs.core.Response.Status;
-import java.io.Closeable;
+import javax.ws.rs.core.Response.StatusType;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.net.URI;
 
+import static com.github.t1.wunderbar.junit.assertions.GraphQLClientExceptionAssert.GRAPHQL_CLIENT_EXCEPTION;
+import static com.github.t1.wunderbar.junit.assertions.ProblemDetailsAssert.PROBLEM_DETAILS;
 import static com.github.t1.wunderbar.junit.consumer.Service.DEFAULT_ENDPOINT;
+import static com.github.t1.wunderbar.junit.consumer.Technology.GRAPHQL;
+import static com.github.t1.wunderbar.junit.consumer.Technology.REST;
 import static com.github.t1.wunderbar.junit.consumer.WunderbarExpectationBuilder.baseUri;
+import static com.github.t1.wunderbar.junit.consumer.WunderbarExpectationBuilder.createProxy;
 import static com.github.t1.wunderbar.junit.consumer.WunderbarExpectationBuilder.createService;
 import static com.github.t1.wunderbar.junit.consumer.WunderbarExpectationBuilder.given;
+import static com.github.t1.wunderbar.junit.provider.WunderBarBDDAssertions.then;
 import static javax.ws.rs.core.Response.Status.FORBIDDEN;
 import static javax.ws.rs.core.Response.Status.INTERNAL_SERVER_ERROR;
 import static javax.ws.rs.core.Response.Status.NOT_FOUND;
 import static org.assertj.core.api.Assertions.catchThrowable;
-import static org.assertj.core.api.Assertions.catchThrowableOfType;
-import static org.assertj.core.api.BDDAssertions.then;
+import static test.consumer.TestData.someInt;
 import static test.consumer.TestData.someProduct;
 
 @WunderBarApiConsumer
 abstract class ProductResolverTest {
     @Service(endpoint = "{endpoint()}") Products products;
-    @Service NamedProducts namedProducts;
-    @Service ProductsGetter productsGetter;
+    @Service(endpoint = "{endpoint()}") NamedProducts namedProducts;
+    @Service(endpoint = "{endpoint()}") ProductsGetter productsGetter;
     @SystemUnderTest ProductResolver resolver;
 
     String endpoint() {return DEFAULT_ENDPOINT;}
-
-    @GraphQLClientApi
-    interface NamedProducts {
-        @Name("p")
-        Product productById(String id);
-    }
-
-    @GraphQLClientApi
-    interface ProductsGetter {
-        Product getProduct(String id);
-    }
 
     @Nested class UnrecognizableTechnologies {
         @Test void shouldFailToRecognizeTechnology() {
@@ -74,12 +64,13 @@ abstract class ProductResolverTest {
 
     Product product = someProduct();
     String productId = product.getId();
+    Item item = new Item(productId);
 
     @Test void shouldResolveProduct() {
         given(products.product(productId)).willReturn(product);
         given(products.product("not-actually-called")).willReturn(Product.builder().id("unreachable").build());
 
-        var resolvedProduct = resolver.product(new Item(productId));
+        var resolvedProduct = resolver.product(item);
 
         then(resolvedProduct).usingRecursiveComparison().isEqualTo(product);
     }
@@ -87,7 +78,7 @@ abstract class ProductResolverTest {
     @Test void shouldResolveNamedProductMethod() {
         given(namedProducts.productById(productId)).willReturn(product);
 
-        var resolvedProduct = namedProducts.productById(productId);
+        var resolvedProduct = resolver.namedProduct(item);
 
         then(resolvedProduct).usingRecursiveComparison().isEqualTo(product);
     }
@@ -95,58 +86,52 @@ abstract class ProductResolverTest {
     @Test void shouldResolveProductGetter() {
         given(productsGetter.getProduct(productId)).willReturn(product);
 
-        var resolvedProduct = productsGetter.getProduct(productId);
+        var resolvedProduct = resolver.productGetter(item);
 
         then(resolvedProduct).usingRecursiveComparison().isEqualTo(product);
     }
 
     @Test void shouldUpdateProduct() {
+        var newPrice = someInt();
         given(products.product(productId)).willReturn(product);
-        given(products.patch(new Product().withId(productId).withPrice(12_99))).willReturn(product.withPrice(12_99));
-
-        var preCheck = resolver.product(new Item(productId));
-        var resolvedProduct = resolver.productWithPriceUpdate(new Item(productId), 12_99);
-
+        given(products.patch(new Product().withId(productId).withPrice(newPrice))).willReturn(product.withPrice(newPrice));
+        var preCheck = resolver.product(item);
         then(preCheck).usingRecursiveComparison().isEqualTo(product);
-        then(resolvedProduct).usingRecursiveComparison().isEqualTo(product.withPrice(12_99));
+
+        var resolvedProduct = resolver.productWithPriceUpdate(item, newPrice);
+
+        then(resolvedProduct).usingRecursiveComparison().isEqualTo(product.withPrice(newPrice));
     }
 
     @Test void shouldFailToResolveUnknownProduct() {
-        given(products.product("x")).willThrow(new ProductNotFoundException("x"));
+        given(products.product(productId)).willThrow(new ProductNotFoundException(productId));
 
-        var throwable = catchThrowable(() -> resolver.product(new Item("x")));
+        var throwable = catchThrowable(() -> resolver.product(item));
 
-        failsWith(throwable, "product-not-found", "product x not found", NOT_FOUND);
+        thenGraphQlError(throwable, "product-not-found", "product " + productId + " not found");
     }
 
-    void failsWith(Throwable throwable, String code, String message, Status status) {
-        then(throwable).isNotNull();
-        if (throwable instanceof GraphQLClientException) {
-            GraphQLClientException e = (GraphQLClientException) throwable;
-            then(e.getErrors()).hasSize(1);
-            var error = e.getErrors().get(0);
-            then(error.getMessage()).isEqualTo(message);
-            then(error.getCode()).isEqualTo(code);
-        } else if (throwable instanceof WebApplicationException) {
-            var response = ((WebApplicationException) throwable).getResponse();
-            then(response.getStatusInfo()).isEqualTo(status);
-            if (!throwable.getMessage().equals(message)) { // i.e. not level=UNIT
-                var body = response.readEntity(String.class);
-                then(body).contains("\"detail\": \"" + message + "\"");
-                then(body).contains("\"type\": \"urn:problem-type:" + code + "\"");
-            }
-        } else /* level=UNIT */ {
-            then(throwable.getMessage()).isEqualTo(message);
-        }
+    @Test void shouldFailToResolveForbiddenProduct() {
+        given(products.product(productId)).willThrow(new ProductForbiddenException(productId));
+
+        var throwable = catchThrowable(() -> resolver.product(item));
+
+        thenGraphQlError(throwable, "product-forbidden", "product " + productId + " is forbidden");
     }
 
-    abstract void verifyBaseUri(URI baseUri);
+    protected void thenGraphQlError(Throwable throwable, String errorCode, String message) {
+        then(throwable).asInstanceOf(GRAPHQL_CLIENT_EXCEPTION)
+            .hasErrorCode(errorCode)
+            .withMessage(message);
+    }
+
+    abstract void verifyBaseUri(URI baseUri, Technology technology);
 
     @Nested class StaticMethods {
         @Test void shouldGetBaseUri() {
             var baseUri = baseUri(products);
 
-            verifyBaseUri(baseUri);
+            verifyBaseUri(baseUri, GRAPHQL);
         }
 
         @Test void shouldFailToGetBaseUriFromNonProxy() {
@@ -175,10 +160,10 @@ abstract class ProductResolverTest {
         private Object dummyHandler(Object o, Method method, Object[] objects) {throw new RuntimeException("unexpected");}
 
         @Test void shouldManuallyBuildProxy() {
-            var proxy = createService(Products.class);
+            var proxy = createProxy(Products.class, Service.DEFAULT.withEndpoint(endpoint()));
             var givenProduct = Product.builder().id("proxy").name("some-product-name").build();
-            given(proxy.product(givenProduct.getId())).willReturn(givenProduct);
-            resolver.products = proxy;
+            given(proxy.getStubbingProxy().product(givenProduct.getId())).willReturn(givenProduct);
+            resolver.products = proxy.getSutProxy();
 
             var resolvedProduct = resolver.product(new Item(givenProduct.getId()));
 
@@ -187,78 +172,77 @@ abstract class ProductResolverTest {
     }
 
     @Nested class Rest {
-        @Service RestService restService;
+        @Service(endpoint = "{endpoint()}") ProductsRestClient restService;
+        @SystemUnderTest ProductsGateway gateway;
+
+        @Test void shouldGetBaseUri() {
+            var baseUri = baseUri(restService);
+
+            verifyBaseUri(baseUri, REST);
+        }
 
         @Test void shouldGetProduct() {
-            var givenProduct = Product.builder().id("r").name("some-product-name").build();
-            given(restService.getProduct(givenProduct.id)).willReturn(givenProduct);
+            given(restService.product(productId)).willReturn(product);
 
-            var response = restService.getProduct(givenProduct.id);
+            var response = gateway.product(item);
 
-            then(response).usingRecursiveComparison().isEqualTo(givenProduct);
+            then(response).usingRecursiveComparison().isEqualTo(product);
         }
 
         @Test void shouldGetTwoProducts() {
             var givenProduct1 = Product.builder().id("r1").name("some-product-name1").build();
             var givenProduct2 = Product.builder().id("r2").name("some-product-name2").build();
-            given(restService.getProduct(givenProduct1.id)).willReturn(givenProduct1);
-            given(restService.getProduct(givenProduct2.id)).willReturn(givenProduct2);
+            given(restService.product(givenProduct1.id)).willReturn(givenProduct1);
+            given(restService.product(givenProduct2.id)).willReturn(givenProduct2);
 
-            var response1 = restService.getProduct(givenProduct1.id);
-            var response2 = restService.getProduct(givenProduct2.id);
+            var response1 = gateway.product(new Item(givenProduct1.id));
+            var response2 = gateway.product(new Item(givenProduct2.id));
 
             then(response1).usingRecursiveComparison().isEqualTo(givenProduct1);
             then(response2).usingRecursiveComparison().isEqualTo(givenProduct2);
         }
 
         @Test void shouldFailToGetFailingProduct() {
-            var productId = "ry";
-            given(restService.getProduct(productId)).willThrow(new IllegalStateException("some internal error"));
+            given(restService.product(productId)).willThrow(new IllegalStateException("some internal error"));
 
-            var throwable = catchThrowable(() -> restService.getProduct(productId));
+            var throwable = catchThrowable(() -> gateway.product(item));
 
-            failsWith(throwable, "illegal-state", "some internal error", INTERNAL_SERVER_ERROR);
+            thenRestError(throwable, INTERNAL_SERVER_ERROR, "illegal-state", "some internal error");
         }
 
         @Test void shouldFailToGetForbiddenProduct() {
-            var productId = "rx";
-            given(restService.getProduct(productId)).willThrow(new ForbiddenException());
+            given(restService.product(productId)).willThrow(new ForbiddenException("product " + productId + " is forbidden"));
 
-            var throwable = catchThrowableOfType(() -> restService.getProduct(productId), WebApplicationException.class);
+            var throwable = catchThrowable(() -> gateway.product(item));
 
-            // no response body, so failsWith doesn't work
-            then(throwable.getResponse().getStatusInfo()).isEqualTo(FORBIDDEN);
+            thenRestError(throwable, FORBIDDEN, "forbidden", "product " + productId + " is forbidden");
         }
 
         @Test void shouldFailToGetUnknownProduct() {
-            given(restService.getProduct("y")).willThrow(new NotFoundException("product y not found"));
+            given(restService.product(productId)).willThrow(new NotFoundException("product " + productId + " not found"));
 
-            var throwable = catchThrowableOfType(() -> restService.getProduct("y"), WebApplicationException.class);
+            var throwable = catchThrowable(() -> gateway.product(item));
 
-            failsWith(throwable, "not-found", "product y not found", NOT_FOUND);
+            thenRestError(throwable, NOT_FOUND, "not-found", "product " + productId + " not found");
         }
 
         @Test void shouldPatchProduct() {
-            var givenProduct = Product.builder().id("rp").name("some-product-name").price(15_99).build();
-            given(restService.patch("rp", new Product().withPrice(12_99))).willReturn(1);
-            given(restService.getProduct("rp")).willReturn(givenProduct.withPrice(12_99));
+            int newPrice = someInt();
+            var patchedProduct = product.withPrice(newPrice);
+            var patch = Product.builder().id(productId).price(newPrice).build();
+            given(restService.patch(patch)).willReturn(patchedProduct);
 
-            restService.patch("rp", new Product().withPrice(12_99));
-            var updated = restService.getProduct("rp");
+            var updated = gateway.productWithPriceUpdate(item, newPrice);
 
-            then(updated).usingRecursiveComparison().isEqualTo(givenProduct.withPrice(12_99));
+            then(updated).usingRecursiveComparison().isEqualTo(patchedProduct);
         }
     }
 
-    @RegisterRestClient(baseUri = "dummy") @Path("/products")
-    public // RestEasy MP Rest Client requires the interface to be `public`
-    interface RestService extends Closeable {
-        @Path("/{productId}")
-        @GET Product getProduct(@PathParam("productId") String productId);
-
-        @Path("/{productId}")
-        @POST
-        int patch(@PathParam("productId") String id, Product patch);
+    protected void thenRestError(Throwable throwable, StatusType status, String typeSuffix, String detail) {
+        then(throwable).asInstanceOf(PROBLEM_DETAILS)
+            .hasStatus(status)
+            .hasType("urn:problem-type:" + typeSuffix)
+            .hasDetail(detail);
     }
 
 
@@ -295,7 +279,7 @@ abstract class ProductResolverTest {
 
     @DisplayName("nested/service")
     @Nested class NestedService {
-        @Service Products nestedProducts;
+        @Service(endpoint = "{endpoint()}") Products nestedProducts;
 
         @Test void shouldFindNestedService() {
             var givenProduct = Product.builder().id("y").build();
@@ -322,45 +306,53 @@ abstract class ProductResolverTest {
     }
 
     @Nested class ReturnTypes {
-        @Service ReturnTypesService service;
+        ReturnTypesService stub;
+        ReturnTypesService service;
+
+        @BeforeEach
+        void setUp() {
+            var proxy = createProxy(ReturnTypesService.class, Service.DEFAULT.withEndpoint(endpoint()));
+            stub = proxy.getStubbingProxy();
+            service = proxy.getSutProxy();
+        }
 
         @Test void shouldGetBoolean() {
-            given(service.getBoolean()).willReturn(true);
+            given(stub.getBoolean()).willReturn(true);
             then(service.getBoolean()).isTrue();
         }
 
         @Test void shouldGetByte() {
-            given(service.getByte()).willReturn((byte) 0x12);
+            given(stub.getByte()).willReturn((byte) 0x12);
             then(service.getByte()).isEqualTo((byte) 0x12);
         }
 
         @Test void shouldGetChar() {
-            given(service.getChar()).willReturn('c');
+            given(stub.getChar()).willReturn('c');
             then(service.getChar()).isEqualTo('c');
         }
 
         @Test void shouldGetShort() {
-            given(service.getShort()).willReturn((short) 0x12);
+            given(stub.getShort()).willReturn((short) 0x12);
             then(service.getShort()).isEqualTo((short) 0x12);
         }
 
         @Test void shouldGetInt() {
-            given(service.getInt()).willReturn(0x12);
+            given(stub.getInt()).willReturn(0x12);
             then(service.getInt()).isEqualTo(0x12);
         }
 
         @Test void shouldGetLong() {
-            given(service.getLong()).willReturn(0x12L);
+            given(stub.getLong()).willReturn(0x12L);
             then(service.getLong()).isEqualTo(0x12L);
         }
 
         @Test void shouldGetFloat() {
-            given(service.getFloat()).willReturn(1.2f);
+            given(stub.getFloat()).willReturn(1.2f);
             then(service.getFloat()).isEqualTo(1.2f);
         }
 
         @Test void shouldGetDouble() {
-            given(service.getDouble()).willReturn(1.2d);
+            given(stub.getDouble()).willReturn(1.2d);
             then(service.getDouble()).isEqualTo(1.2d);
         }
     }

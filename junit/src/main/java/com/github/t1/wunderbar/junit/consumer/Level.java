@@ -25,7 +25,7 @@ public enum Level {
     UNIT,
 
     /**
-     * Start an http service locally and save all requests and responses in a <code>bar</code> file.
+     * Start a http service locally and save all requests and responses in a <code>bar</code> file.
      * This tests the actual annotations on your API interface as well as the de/serialization.
      * And it specifies the API you expect a service to provide, even before that service exists.
      * <p>

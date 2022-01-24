@@ -33,7 +33,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.regex.Pattern;
 
-import static com.github.t1.wunderbar.junit.provider.CustomBDDAssertions.then;
+import static com.github.t1.wunderbar.junit.provider.WunderBarBDDAssertions.then;
 import static com.github.t1.wunderbar.junit.provider.WunderBarTestFinder.findTestsIn;
 import static com.github.t1.wunderbar.junit.provider.WunderBarTestFinder.findTestsInArtifact;
 import static java.nio.charset.StandardCharsets.UTF_8;
@@ -63,7 +63,7 @@ class ConsumerDrivenAT {
     private final Backdoor backdoor = TypesafeGraphQLClientBuilder.newBuilder().endpoint(GRAPHQL_ENDPOINT).build(Backdoor.class);
     private final List<String> created = new ArrayList<>();
 
-    /** We use this backdoor to setup and tear down the test data */
+    /** We use this backdoor to set up and tear down the test data */
     @GraphQLClientApi
     @SuppressWarnings("UnusedReturnValue")
     @Header(name = "Authorization", constant = JWT)
@@ -176,7 +176,6 @@ class ConsumerDrivenAT {
         private final HttpResponse response;
         protected boolean needsAuth;
 
-        @SuppressWarnings("CdiInjectionPointsInspection")
         private RestSetUp(HttpInteraction interaction) {
             this.request = interaction.getRequest();
             this.response = interaction.getResponse();
@@ -237,7 +236,6 @@ class ConsumerDrivenAT {
 
         private final GraphQlResponse graphQlResponse;
 
-        @SuppressWarnings("CdiInjectionPointsInspection")
         private GraphQlSetUp(HttpInteraction interaction) {
             HttpResponse response = interaction.getResponse();
             this.graphQlResponse = JSONB.fromJson(response.body().orElseThrow(), GraphQlResponse.class);

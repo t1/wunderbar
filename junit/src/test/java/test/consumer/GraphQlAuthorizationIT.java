@@ -30,6 +30,7 @@ public class GraphQlAuthorizationIT {
     private static final String AUTHORIZED_GRAPHQL_REQUEST_HEADERS =
         UNAUTHORIZED_GRAPHQL_REQUEST_HEADERS +
         "Authorization: Dummy authorization\n";
+    @SuppressWarnings("SpellCheckingInspection")
     private static final String DUMMY_CREDENTIALS = "Basic ZHVtbXktdXNlcm5hbWU6ZHVtbXktcGFzc3dvcmQ=";  // dummy-username:dummy-password
     private static final String DUMMY_TOKEN = "Bearer dummy-token";
 
@@ -199,7 +200,7 @@ public class GraphQlAuthorizationIT {
             var resolvedProduct = products.product(givenProduct.getId());
 
             then(resolvedProduct).usingRecursiveComparison().isEqualTo(givenProduct);
-            then(writtenHeader("shouldGenerateAndRestoreInterfaceHeaderCredentials","InterfaceHeaderCredentialsGenerator"))
+            then(writtenHeader("shouldGenerateAndRestoreInterfaceHeaderCredentials", "InterfaceHeaderCredentialsGenerator"))
                 .hasContent(AUTHORIZED_GRAPHQL_REQUEST_HEADERS);
         }
     }
@@ -221,7 +222,7 @@ public class GraphQlAuthorizationIT {
             var resolvedProduct = products.product(DUMMY_CREDENTIALS, givenProduct.getId());
 
             then(resolvedProduct).usingRecursiveComparison().isEqualTo(givenProduct);
-            then(writtenHeader("shouldGenerateAndRestoreParameterHeaderCredentials","ParameterHeaderCredentialsGenerator"))
+            then(writtenHeader("shouldGenerateAndRestoreParameterHeaderCredentials", "ParameterHeaderCredentialsGenerator"))
                 .hasContent(AUTHORIZED_GRAPHQL_REQUEST_HEADERS);
         }
     }

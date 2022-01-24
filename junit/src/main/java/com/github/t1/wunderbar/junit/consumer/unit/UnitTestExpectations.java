@@ -11,12 +11,12 @@ import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 
-public class UnitTestExpectations implements WunderBarExpectations {
+public class UnitTestExpectations<T> implements WunderBarExpectations<T> {
     private final List<UnitTestExpectation> expectations = new ArrayList<>();
-    private final Object mock;
+    private final T mock;
 
-    public UnitTestExpectations(Class<?> type) {
-        this.mock = Mockito.mock(type);
+    public UnitTestExpectations(Class<T> type) {
+        this.mock = type.cast(Mockito.mock(type));
     }
 
     @Override public URI baseUri() {return null;}

@@ -9,12 +9,13 @@ import java.net.URI;
 
 import static com.github.t1.wunderbar.junit.http.HttpUtils.PROBLEM_DETAIL_TYPE;
 import static com.github.t1.wunderbar.junit.http.HttpUtils.errorCode;
-import static com.github.t1.wunderbar.junit.http.HttpUtils.title;
+import static com.github.t1.wunderbar.junit.http.HttpUtils.splitCamel;
+import static java.util.Locale.ROOT;
 import static javax.ws.rs.core.Response.Status.INTERNAL_SERVER_ERROR;
 
 @Value @Builder
 public class ProblemDetails {
-    public static ProblemDetails of(Exception exception) {
+    public static ProblemDetails of(Throwable exception) {
         return ProblemDetails.builder()
             .status(statusOf(exception))
             .type(URI.create("urn:problem-type:" + errorCode(exception)))
@@ -23,11 +24,16 @@ public class ProblemDetails {
             .build();
     }
 
-    private static StatusType statusOf(Exception exception) {
+    public static StatusType statusOf(Throwable exception) {
         return (exception instanceof WebApplicationException)
             ? ((WebApplicationException) exception).getResponse().getStatusInfo()
             : null;
     }
+
+    public static String title(Throwable exception) {
+        return String.join(" ", splitCamel(exception.getClass().getSimpleName())).toLowerCase(ROOT);
+    }
+
 
     StatusType status; // this is optional in the spec, but we use it to transport the status to the HttpResponse
     URI type;

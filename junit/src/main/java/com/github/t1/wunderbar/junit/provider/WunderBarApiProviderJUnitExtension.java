@@ -29,7 +29,7 @@ import java.util.stream.Stream.Builder;
 import static com.github.t1.wunderbar.common.Utils.invoke;
 import static com.github.t1.wunderbar.junit.http.HttpUtils.PROBLEM_DETAIL_TYPE;
 import static com.github.t1.wunderbar.junit.http.HttpUtils.isCompatible;
-import static com.github.t1.wunderbar.junit.provider.CustomBDDAssertions.then;
+import static com.github.t1.wunderbar.junit.provider.WunderBarBDDAssertions.then;
 
 class WunderBarApiProviderJUnitExtension implements Extension, BeforeEachCallback, AfterEachCallback {
     static WunderBarApiProviderJUnitExtension INSTANCE;

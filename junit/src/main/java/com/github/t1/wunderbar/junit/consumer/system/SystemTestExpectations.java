@@ -27,7 +27,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Slf4j
-public class SystemTestExpectations implements WunderBarExpectations {
+public class SystemTestExpectations<T> implements WunderBarExpectations<T> {
     /*
      * Implementation notes:
      * - SUT: inject not the mock but the real service (this is also the case, if the SUT runs remotely)
@@ -37,17 +37,17 @@ public class SystemTestExpectations implements WunderBarExpectations {
      * - remove all expectations from the mock server
      */
     private final Technology technology;
-    protected final Class<?> type;
+    protected final Class<T> type;
     protected final URI baseUri;
     protected final BarFilter filter;
-    private final Object api;
+    private final T api;
     private final WunderBarMockServerApi mock;
     private final List<Integer> createdExpectationIds = new ArrayList<>();
     private final HttpServer stubServer;
     private HttpServiceExpectation currentExpectation;
     private HttpInteraction currentInteraction;
 
-    public SystemTestExpectations(Technology technology, Class<?> type, URI baseUri, BarWriter bar) {
+    public SystemTestExpectations(Class<T> type, URI baseUri, Technology technology, BarWriter bar) {
         this.technology = technology;
         this.type = type;
         this.baseUri = baseUri;
@@ -65,7 +65,7 @@ public class SystemTestExpectations implements WunderBarExpectations {
         return baseUri;
     }
 
-    protected Object buildApi() {
+    protected T buildApi() {
         log.info("build {} system test endpoint: {}", technology, baseUri);
         switch (technology) {
             case GRAPHQL:
@@ -84,7 +84,7 @@ public class SystemTestExpectations implements WunderBarExpectations {
 
     @Override public URI baseUri() {return baseUri;}
 
-    @Override public Object asSutProxy(Object proxy) {return api;}
+    @Override public T asSutProxy(T proxy) {return api;}
 
     @Override public Object invoke(Method method, Object... args) {
         // as the SUT only knows about the real service, these invocations can only be from stubbing
@@ -116,7 +116,7 @@ public class SystemTestExpectations implements WunderBarExpectations {
             currentInteraction.getRequest().withFormattedBody(),
             currentInteraction.getResponse());
         log.debug("---------- add expectation and stubbing done -> {}", stubbingResult);
-        if (stubbingResult == null || !"ok".equals(stubbingResult.getStatus()))
+        if (stubbingResult == null || !"ok" .equals(stubbingResult.getStatus()))
             throw new WunderBarException("unexpected response from adding expectation to mock server: " + stubbingResult);
         createdExpectationIds.add(stubbingResult.getId());
     }
@@ -133,7 +133,7 @@ public class SystemTestExpectations implements WunderBarExpectations {
         log.debug("---------- call done -- cleanup");
         while (!createdExpectationIds.isEmpty()) {
             var status = mock.removeWunderBarExpectation(createdExpectationIds.remove(0));
-            assert "ok".equals(status);
+            assert "ok" .equals(status);
         }
         if (api instanceof Closeable) ((Closeable) api).close();
         log.debug("---------- cleanup done");

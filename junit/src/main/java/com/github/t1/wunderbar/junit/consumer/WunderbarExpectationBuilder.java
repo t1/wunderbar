@@ -2,6 +2,7 @@ package com.github.t1.wunderbar.junit.consumer;
 
 import com.github.t1.wunderbar.common.Internal;
 import com.github.t1.wunderbar.junit.WunderBarException;
+import com.github.t1.wunderbar.junit.consumer.Service.Literal;
 
 import java.lang.reflect.InvocationHandler;
 import java.net.URI;
@@ -62,7 +63,7 @@ public class WunderbarExpectationBuilder<T> {
      * It can do so by checking the <code><b>code</b></code> that is returned for {@link Level#INTEGRATION integration} tests:
      * <ul>
      * <li>If the API is a REST service, the mock service returns the status code of a <code>WebApplicationException</code>
-     * (if it is one) and a <a href="https://tools.ietf.org/html/rfc7807">rfc-7807</a> style body with:
+     * (if it is one) and a <a href="https://datatracker.ietf.org/doc/html/rfc7807">RFC-7807</a> style body with:
      *     <ul>
      *     <li>a <code>detail</code> field containing the exception message,
      *     <li>a <code>title</code> field containing the exception class name, and
@@ -102,9 +103,13 @@ public class WunderbarExpectationBuilder<T> {
      * Creates an instance of the service, which normally is done via the {@link Service @Service} annotation.
      */
     public static <T> T createService(Class<T> type, Service.Literal service) {
+        return createProxy(type, service).getStubbingProxy();
+    }
+
+    public static <T> ProxyFactory<T> createProxy(Class<T> type, Literal service) {
         var extension = WunderBarApiConsumerJUnitExtension.INSTANCE;
         if (extension == null) throw new WunderBarException(WunderBarApiConsumer.class.getSimpleName() + " not found");
-        return type.cast(extension.createProxy(type, service).getStubbingProxy());
+        return extension.createProxy(type, service);
     }
 
 
@@ -119,7 +124,7 @@ public class WunderbarExpectationBuilder<T> {
     }
 
     // this is an ugly hack, but I currently don't have a better idea
-    private static Proxy getProxy(InvocationHandler invocationHandler) {
+    private static <T> Proxy<T> getProxy(InvocationHandler invocationHandler) {
         try {
             return getField(invocationHandler, "arg$1");
         } catch (Exception e) { // work around SneakyThrows
