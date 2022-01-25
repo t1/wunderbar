@@ -13,7 +13,7 @@ import java.util.Stack;
 import static com.github.t1.wunderbar.common.mock.MockService.addExpectation;
 
 @Slf4j
-public class ExpectationsExtension implements Extension {
+class ExpectationsExtension implements Extension {
     private final Stack<Integer> expectationIds = new Stack<>();
 
     public void addGraphQLProduct(String id, HttpResponse response) {

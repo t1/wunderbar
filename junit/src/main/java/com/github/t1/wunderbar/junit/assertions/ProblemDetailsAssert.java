@@ -41,7 +41,7 @@ public class ProblemDetailsAssert<SELF extends ProblemDetailsAssert<SELF, ACTUAL
         return myself;
     }
 
-    public JsonObject body() {
+    private JsonObject body() {
         if (body == null) {
             actual.getResponse().bufferEntity();
             var jsonString = actual.getResponse().readEntity(String.class);

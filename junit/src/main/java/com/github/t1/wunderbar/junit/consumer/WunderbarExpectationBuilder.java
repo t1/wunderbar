@@ -89,8 +89,8 @@ public class WunderbarExpectationBuilder<T> {
         }
     }
 
-    static class StubbingMismatchException extends WunderBarException {
-        StubbingMismatchException() {super("Stubbing mismatch: call `given` exactly once on the response object of a proxy call");}
+    private static class StubbingMismatchException extends WunderBarException {
+        private StubbingMismatchException() {super("Stubbing mismatch: call `given` exactly once on the response object of a proxy call");}
     }
 
 

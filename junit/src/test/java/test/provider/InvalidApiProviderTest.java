@@ -9,7 +9,7 @@ import static com.github.t1.wunderbar.junit.provider.WunderBarTestFinder.findTes
 import static org.junit.jupiter.api.DynamicTest.dynamicTest;
 
 // @WunderBarApiProvider(baseUri = "dummy")
-public class InvalidApiProviderTest {
+class InvalidApiProviderTest {
     // we can't check the exception thrown for the missing WunderBarApiProvider annotation
     // we can't check for the exception thrown for invalid argument type
     private static final boolean DISABLED = true;

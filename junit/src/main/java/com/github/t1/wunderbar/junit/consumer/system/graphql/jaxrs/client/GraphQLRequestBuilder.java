@@ -23,8 +23,7 @@ import java.util.Map;
 import java.util.stream.Stream;
 
 @Slf4j
-@RequiredArgsConstructor
-public class GraphQLRequestBuilder {
+@RequiredArgsConstructor class GraphQLRequestBuilder {
     private static final Map<String, String> QUERY_CACHE = new HashMap<>();
 
     private final MethodInvocation method;
@@ -41,11 +40,11 @@ public class GraphQLRequestBuilder {
         return requestString;
     }
 
-    public String query() {
+    private String query() {
         return QUERY_CACHE.computeIfAbsent(method.getKey(), key -> new QueryBuilder(method).build());
     }
 
-    public JsonObject variables() {
+    private JsonObject variables() {
         JsonObjectBuilder builder = Json.createObjectBuilder();
         method.valueParameters().forEach(parameter -> builder.add(parameter.getRawName(), value(parameter.getValue())));
         return builder.build();

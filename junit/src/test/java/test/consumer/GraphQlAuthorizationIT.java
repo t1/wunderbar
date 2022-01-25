@@ -20,7 +20,7 @@ import static com.github.t1.wunderbar.junit.consumer.WunderbarExpectationBuilder
 import static com.github.t1.wunderbar.junit.http.HttpUtils.APPLICATION_JSON_UTF8;
 import static org.assertj.core.api.BDDAssertions.then;
 
-public class GraphQlAuthorizationIT {
+class GraphQlAuthorizationIT {
     private static final List<Runnable> AFTER_ALL_CHECKS = new ArrayList<>();
     private static final String UNAUTHORIZED_GRAPHQL_REQUEST_HEADERS =
         "Method: POST\n" +

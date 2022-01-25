@@ -52,7 +52,7 @@ class BarFilter implements ClientRequestFilter, ClientResponseFilter {
 
         private final HttpResponseBuilder response = HttpResponse.builder();
 
-        Builder(ClientRequestContext requestContext) {
+        private Builder(ClientRequestContext requestContext) {
             request
                 .method(requestContext.getMethod())
                 .uri(local(requestContext.getUri()));
@@ -74,7 +74,7 @@ class BarFilter implements ClientRequestFilter, ClientResponseFilter {
             return URI.create("/" + schemeAndHost.relativize(uri));
         }
 
-        HttpRequest buildRequest() {
+        private HttpRequest buildRequest() {
             if (requestStringBuilder != null) {
                 var body = requestStringBuilder.toString();
                 if (APPLICATION_JSON_TYPE.isCompatible(requestMediaType)) body = formatJson(body);
@@ -84,7 +84,7 @@ class BarFilter implements ClientRequestFilter, ClientResponseFilter {
         }
 
         @SneakyThrows(IOException.class)
-        void add(ClientResponseContext responseContext) {
+        private void add(ClientResponseContext responseContext) {
             log.info("response {} {}", responseContext.getStatus(), responseContext.getStatusInfo().getReasonPhrase());
             response.status(responseContext.getStatusInfo());
             var contentType = responseContext.getMediaType();
@@ -101,7 +101,7 @@ class BarFilter implements ClientRequestFilter, ClientResponseFilter {
             }
         }
 
-        HttpResponse buildResponse() {
+        private HttpResponse buildResponse() {
             return response.build();
         }
     }

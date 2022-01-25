@@ -9,7 +9,7 @@ import java.util.List;
 import java.util.Map;
 
 @ToString @Getter @Builder
-public @Internal class GraphQlResponseBody {
+public @Internal class GraphQlResponse {
     Map<String, Object> data;
-    List<GraphQlError> errors;
+    List<GraphQLErrorResponse> errors;
 }

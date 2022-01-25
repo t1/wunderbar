@@ -44,7 +44,7 @@ public interface Authorization {
         String username;
         String password;
 
-        public Basic(String credentials) {
+        private Basic(String credentials) {
             var split = base64decode(credentials).split(":", 2);
             if (split.length != 2) throw new IllegalArgumentException("invalid basic authorization format");
             this.username = split[0];

@@ -179,26 +179,29 @@ class WunderBarApiConsumerJUnitExtension implements Extension, BeforeEachCallbac
 
     private String functionCall(String methodName) {
         var instance = context.getRequiredTestInstance();
-        var method = new EndpointInvocation(instance, methodName);
+        var method = new EndpointInvocation(methodName, instance);
         var result = method.invoke();
         if (result == null) throw new NullPointerException("endpoint method '" + methodName + "' returned null");
         return result.toString();
     }
 
-    /** We also search in enclosing classes, but the nested instance is not a subclass of the enclosing class */
+    /**
+     * Search super classes as well as enclosing classes.
+     * Careful: a nested instance is not a subclass of the enclosing class.
+     */
     private static class EndpointInvocation {
-        Object instance;
-        String methodName;
-        Method method;
+        private final String methodName;
+        private Object instance;
+        private Method method;
 
-        private EndpointInvocation(Object instance, String methodName) {
-            this.instance = instance;
+        private EndpointInvocation(String methodName, Object instance) {
             this.methodName = methodName;
+            this.instance = instance;
             find(instance.getClass());
             if (method == null) throw new WunderBarException("endpoint method not found '" + methodName + "'");
         }
 
-        void find(Class<?> type) {
+        private void find(Class<?> type) {
             try {
                 method = type.getDeclaredMethod(methodName);
             } catch (NoSuchMethodException e) {
@@ -218,7 +221,7 @@ class WunderBarApiConsumerJUnitExtension implements Extension, BeforeEachCallbac
         }
 
         @SneakyThrows(ReflectiveOperationException.class)
-        Object invoke() {
+        private Object invoke() {
             method.setAccessible(true);
             return method.invoke(instance);
         }

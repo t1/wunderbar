@@ -39,7 +39,7 @@ class HttpBarExecutable implements Executable {
     private class Execution {
         HttpInteraction expected;
 
-        public void run() {
+        private void run() {
             extension.beforeInteractionMethods.forEach(this::applyInteractionMethods);
             System.out.println("-- request " + expected.getNumber() + ":\n" + expected.getRequest() + "\n");
 

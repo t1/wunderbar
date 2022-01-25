@@ -33,7 +33,7 @@ import static com.github.t1.wunderbar.junit.provider.WunderBarBDDAssertions.then
 
 class WunderBarApiProviderJUnitExtension implements Extension, BeforeEachCallback, AfterEachCallback {
     static WunderBarApiProviderJUnitExtension INSTANCE;
-    WunderBarApiProvider settings;
+    private WunderBarApiProvider settings;
 
     private ExtensionContext context;
     List<Consumer<List<HttpInteraction>>> beforeDynamicTestMethods = new ArrayList<>();

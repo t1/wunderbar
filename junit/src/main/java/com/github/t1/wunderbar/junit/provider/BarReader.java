@@ -81,6 +81,6 @@ abstract class BarReader {
         int number;
         @NonNull URI uri;
 
-        Test toTest() {return new Test(path, number, uri);}
+        private Test toTest() {return new Test(path, number, uri);}
     }
 }

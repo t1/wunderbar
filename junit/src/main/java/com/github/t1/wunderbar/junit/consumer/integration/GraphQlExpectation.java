@@ -53,12 +53,12 @@ class GraphQlExpectation extends HttpServiceExpectation {
         return HttpResponse.builder().body(buildResponseBody()).build();
     }
 
-    private GraphQlResponseBody buildResponseBody() {
-        var responseBuilder = GraphQlResponseBody.builder();
+    private GraphQlResponse buildResponseBody() {
+        var responseBuilder = GraphQlResponse.builder();
         if (getResponse() != null)
             responseBuilder.data(Map.of(dataName(), getResponse()));
         if (getException() != null)
-            responseBuilder.errors(List.of(GraphQlError.builder()
+            responseBuilder.errors(List.of(GraphQLErrorResponse.builder()
                 .message(getException().getMessage())
                 .extension("code", errorCode(getException()))
                 .build()));

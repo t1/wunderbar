@@ -42,9 +42,10 @@ public class QuarkusServiceExtension implements Extension, BeforeAllCallback, Af
             try {
                 response = healthClient.ready();
             } catch (Exception e) {
-                response = Response.status(399).type(TEXT_PLAIN_TYPE).entity(e.toString()).build();
+                response = Response.status(DUMMY_STATUS).type(TEXT_PLAIN_TYPE).entity(e.toString()).build();
             }
-            System.out.println("busy-wait. " + info(response));
+            if (response.getStatus() == DUMMY_STATUS) System.out.print(".");
+            else if (!isSuccessful(response)) System.out.println("\nbusy-wait error: " + info(response));
             if (response.getStatusInfo().getFamily().equals(SUCCESSFUL)) return;
             //noinspection BusyWait
             Thread.sleep(100);
@@ -52,8 +53,11 @@ public class QuarkusServiceExtension implements Extension, BeforeAllCallback, Af
         throw new TimeoutException("while waiting for readiness. Last got: " + info(response));
     }
 
+    private boolean isSuccessful(Response response) {return SUCCESSFUL.equals(response.getStatusInfo().getFamily());}
+
     private String info(Response response) {
-        return response.getStatusInfo().getFamily() + "/" + response.getStatus() + "/" + response.getStatusInfo().getReasonPhrase()
+        return response.getStatusInfo().getFamily() + "/" + response.getStatus() + "/"
+               + response.getStatusInfo().getReasonPhrase()
                + ((response.hasEntity() ? ": " + response.readEntity(String.class) : ""));
     }
 
@@ -67,4 +71,6 @@ public class QuarkusServiceExtension implements Extension, BeforeAllCallback, Af
         @Produces(APPLICATION_JSON)
         @GET @Path("/ready") Response ready();
     }
+
+    private static final int DUMMY_STATUS = 399;
 }

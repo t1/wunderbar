@@ -15,7 +15,7 @@ import static lombok.AccessLevel.PRIVATE;
 
 @ToString @Getter @Setter @NoArgsConstructor
 @Builder @AllArgsConstructor(access = PRIVATE)
-public @Internal class GraphQlError {
+public @Internal class GraphQLErrorResponse {
     String message;
     @Singular Map<String, Object> extensions;
 }

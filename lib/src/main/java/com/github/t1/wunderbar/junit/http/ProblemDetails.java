@@ -30,7 +30,7 @@ public class ProblemDetails {
             : null;
     }
 
-    public static String title(Throwable exception) {
+    private static String title(Throwable exception) {
         return String.join(" ", splitCamel(exception.getClass().getSimpleName())).toLowerCase(ROOT);
     }
 

@@ -174,7 +174,7 @@ class ConsumerDrivenAT {
     private class RestSetUp implements SetUp {
         private final HttpRequest request;
         private final HttpResponse response;
-        protected boolean needsAuth;
+        private boolean needsAuth;
 
         private RestSetUp(HttpInteraction interaction) {
             this.request = interaction.getRequest();

@@ -37,9 +37,9 @@ public class SystemTestExpectations<T> implements WunderBarExpectations<T> {
      * - remove all expectations from the mock server
      */
     private final Technology technology;
-    protected final Class<T> type;
-    protected final URI baseUri;
-    protected final BarFilter filter;
+    private final Class<T> type;
+    private final URI baseUri;
+    private final BarFilter filter;
     private final T api;
     private final WunderBarMockServerApi mock;
     private final List<Integer> createdExpectationIds = new ArrayList<>();
@@ -65,7 +65,7 @@ public class SystemTestExpectations<T> implements WunderBarExpectations<T> {
         return baseUri;
     }
 
-    protected T buildApi() {
+    private T buildApi() {
         log.info("build {} system test endpoint: {}", technology, baseUri);
         switch (technology) {
             case GRAPHQL:
