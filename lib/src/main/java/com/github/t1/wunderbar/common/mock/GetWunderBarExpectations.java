@@ -3,14 +3,14 @@ package com.github.t1.wunderbar.common.mock;
 import com.github.t1.wunderbar.junit.http.HttpRequest;
 import com.github.t1.wunderbar.junit.http.HttpResponse;
 import com.github.t1.wunderbar.junit.http.HttpUtils;
-import lombok.ToString;
+import lombok.EqualsAndHashCode;
 
 import javax.json.Json;
 import javax.json.JsonObjectBuilder;
 
 import static com.github.t1.wunderbar.common.mock.GraphQLResponseBuilder.graphQLResponse;
 
-@ToString
+@EqualsAndHashCode(callSuper = true)
 class GetWunderBarExpectations extends GraphQLMockExpectation {
     GetWunderBarExpectations() {
         super("query getWunderBarExpectations { getWunderBarExpectations() {id} }");

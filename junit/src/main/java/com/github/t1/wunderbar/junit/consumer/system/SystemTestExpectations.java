@@ -23,8 +23,6 @@ import java.io.Closeable;
 import java.io.IOException;
 import java.lang.reflect.Method;
 import java.net.URI;
-import java.util.ArrayList;
-import java.util.List;
 
 @Slf4j
 public class SystemTestExpectations<T> implements WunderBarExpectations<T> {
@@ -42,8 +40,8 @@ public class SystemTestExpectations<T> implements WunderBarExpectations<T> {
     private final BarFilter filter;
     private final T api;
     private final WunderBarMockServerApi mock;
-    private final List<Integer> createdExpectationIds = new ArrayList<>();
     private final HttpServer stubServer;
+    private boolean didAddExpectations = false;
     private HttpServiceExpectation currentExpectation;
     private HttpInteraction currentInteraction;
 
@@ -112,13 +110,13 @@ public class SystemTestExpectations<T> implements WunderBarExpectations<T> {
 
     private void addExpectation() {
         log.debug("add expectation to mock service");
+        this.didAddExpectations = true;
         var stubbingResult = mock.addWunderBarExpectation(
             currentInteraction.getRequest().withFormattedBody(),
             currentInteraction.getResponse());
         log.debug("---------- add expectation and stubbing done -> {}", stubbingResult);
-        if (stubbingResult == null || !"ok" .equals(stubbingResult.getStatus()))
+        if (stubbingResult == null || !"ok".equals(stubbingResult.getStatus()))
             throw new WunderBarException("unexpected response from adding expectation to mock server: " + stubbingResult);
-        createdExpectationIds.add(stubbingResult.getId());
     }
 
     private HttpResponse handleStubRequest(HttpRequest request) {
@@ -131,9 +129,9 @@ public class SystemTestExpectations<T> implements WunderBarExpectations<T> {
     @SneakyThrows(IOException.class)
     @Override public void done() {
         log.debug("---------- call done -- cleanup");
-        while (!createdExpectationIds.isEmpty()) {
-            var status = mock.removeWunderBarExpectation(createdExpectationIds.remove(0));
-            assert "ok" .equals(status);
+        if (didAddExpectations) {
+            var status = mock.cleanupWunderBarExpectation();
+            assert "ok".equals(status);
         }
         if (api instanceof Closeable) ((Closeable) api).close();
         log.debug("---------- cleanup done");
@@ -142,7 +140,7 @@ public class SystemTestExpectations<T> implements WunderBarExpectations<T> {
     @GraphQLClientApi
     private interface WunderBarMockServerApi {
         @Mutation WunderBarStubbingResult addWunderBarExpectation(@NonNull HttpRequest request, @NonNull HttpResponse response);
-        @Mutation String removeWunderBarExpectation(int id);
+        @Mutation String cleanupWunderBarExpectation();
     }
 
     @Data

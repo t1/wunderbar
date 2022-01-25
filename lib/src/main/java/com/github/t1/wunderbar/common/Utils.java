@@ -12,9 +12,11 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.stream.Stream;
 
+import static java.util.stream.Collectors.joining;
 import static java.util.stream.Collectors.toList;
 import static javax.json.JsonPatch.Operation.ADD;
 
@@ -80,5 +82,12 @@ public @Internal class Utils {
 
     private static boolean isNonAdd(JsonValue jsonValue) {
         return !jsonValue.asJsonObject().getString("op").equals(ADD.operationName());
+    }
+
+    public static String prefix(String prefix, String string) {
+        return (string == null) ? prefix + "null" :
+            Arrays.stream(string.split("\n"))
+                .map(line -> prefix + line)
+                .collect(joining("\n"));
     }
 }

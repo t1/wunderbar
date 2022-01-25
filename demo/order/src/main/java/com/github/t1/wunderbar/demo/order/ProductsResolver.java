@@ -2,6 +2,7 @@ package com.github.t1.wunderbar.demo.order;
 
 import io.smallrye.graphql.client.typesafe.api.AuthorizationHeader;
 import io.smallrye.graphql.client.typesafe.api.GraphQLClientApi;
+import lombok.extern.slf4j.Slf4j;
 import org.eclipse.microprofile.graphql.GraphQLApi;
 import org.eclipse.microprofile.graphql.Mutation;
 import org.eclipse.microprofile.graphql.NonNull;
@@ -10,17 +11,25 @@ import org.eclipse.microprofile.graphql.Source;
 import javax.inject.Inject;
 
 @GraphQLApi
+@Slf4j
 public class ProductsResolver {
     @Inject
     Products products;
 
     public Product product(@Source OrderItem item) {
-        return products.product(item.getProductId());
+        log.debug("resolve product for {}", item);
+        var product = products.product(item.getProductId());
+        log.debug("resolved product {}", product);
+        return product;
     }
 
     public Product productWithPriceUpdate(OrderItem item, int newPrice) {
+        log.debug("patch product {} with price {}", item, newPrice);
         var patch = new Product().withId(item.getProductId()).withPrice(newPrice);
-        return products.update(patch);
+        log.debug("patch {}", patch);
+        var patchedProduct = products.update(patch);
+        log.debug("patched product {}", patchedProduct);
+        return patchedProduct;
     }
 
     @GraphQLClientApi(configKey = "products")

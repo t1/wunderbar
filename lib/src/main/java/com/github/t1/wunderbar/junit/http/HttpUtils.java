@@ -4,6 +4,7 @@ import lombok.experimental.UtilityClass;
 
 import javax.json.Json;
 import javax.json.JsonObjectBuilder;
+import javax.json.JsonString;
 import javax.json.JsonValue;
 import javax.json.bind.Jsonb;
 import javax.json.bind.JsonbBuilder;
@@ -94,6 +95,12 @@ public class HttpUtils {
             .createWriter(writer)
             .write(value);
         return writer.toString().trim() + "\n";
+    }
+
+    public static String toFlatString(JsonValue jsonValue) {
+        if (jsonValue == null || JsonValue.NULL.equals(jsonValue)) return "null";
+        var string = (jsonValue instanceof JsonString) ? ((JsonString) jsonValue).getString() : jsonValue.toString();
+        return string.replace("\n", " ").replace("\"", "");
     }
 
     public static String errorCode(Throwable exception) {

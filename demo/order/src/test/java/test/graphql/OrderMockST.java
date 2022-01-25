@@ -21,6 +21,7 @@ import test.Slow;
 
 import java.util.List;
 
+import static com.github.t1.wunderbar.demo.order.Orders.PRODUCT_ID;
 import static com.github.t1.wunderbar.junit.consumer.WunderBarApiConsumer.NONE;
 import static com.github.t1.wunderbar.junit.consumer.WunderbarExpectationBuilder.createService;
 import static com.github.t1.wunderbar.junit.consumer.WunderbarExpectationBuilder.given;
@@ -91,14 +92,16 @@ class OrderMockST {
         this.api = TypesafeGraphQLClientBuilder.newBuilder().endpoint(ORDERS.baseUri() + "graphql").build(Api.class);
     }
 
+    Product product = Product.builder()
+        .id(PRODUCT_ID)
+        .name("product #" + PRODUCT_ID)
+        .price(1599)
+        .build();
+
     @Slow
     @Test void shouldGetOrder() {
-        Product givenProduct = Product.builder()
-            .id(PRODUCT_ID)
-            .name("some-product-name")
-            .price(1599)
-            .build();
-        given(products.product(PRODUCT_ID)).willReturn(givenProduct);
+        given(products.product(PRODUCT_ID)).willReturn(product); // for item 1
+        given(products.product(PRODUCT_ID)).willReturn(product); // for item 2
 
         var order = api.order("1");
 
@@ -108,15 +111,13 @@ class OrderMockST {
             .item(OrderItem.builder()
                 .position(1)
                 .productId(PRODUCT_ID)
-                .product(givenProduct)
+                .product(product)
                 .build())
             .item(OrderItem.builder()
                 .position(2)
                 .productId(PRODUCT_ID)
-                .product(givenProduct)
+                .product(product)
                 .build())
             .build());
     }
-
-    private static final String PRODUCT_ID = "existing-product-id";
 }

@@ -10,6 +10,7 @@ import javax.ws.rs.client.WebTarget;
 import java.util.Collections;
 import java.util.Map;
 
+import static com.github.t1.wunderbar.common.Utils.prefix;
 import static com.github.t1.wunderbar.junit.http.HttpUtils.APPLICATION_JSON_UTF8;
 import static javax.ws.rs.client.Entity.entity;
 import static javax.ws.rs.core.Response.Status.Family.SUCCESSFUL;
@@ -36,7 +37,7 @@ class JaxRsTypesafeGraphQLClientProxy {
 
         var response = post(request, headers);
 
-        log.debug("response graphql: {}", response);
+        log.debug("response graphql:\n{}", prefix("    ", response));
         if (response == null || response.isBlank()) response = "{}";
         return new ResultBuilder(method, response).read();
     }

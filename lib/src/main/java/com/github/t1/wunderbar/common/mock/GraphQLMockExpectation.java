@@ -1,11 +1,12 @@
 package com.github.t1.wunderbar.common.mock;
 
 import com.github.t1.wunderbar.junit.http.HttpRequest;
+import lombok.EqualsAndHashCode;
 import lombok.RequiredArgsConstructor;
 
 import javax.json.JsonObject;
 
-@RequiredArgsConstructor
+@RequiredArgsConstructor @EqualsAndHashCode(callSuper = true)
 abstract class GraphQLMockExpectation extends WunderBarMockExpectation {
     private final String query;
 
