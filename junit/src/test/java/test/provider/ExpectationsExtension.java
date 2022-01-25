@@ -17,20 +17,23 @@ class ExpectationsExtension implements Extension {
     private final Stack<Integer> expectationIds = new Stack<>();
 
     public void addGraphQLProduct(String id, HttpResponse response) {
-        var expectation = addExpectation(GraphQLBodyMatcher.graphQlRequest()
+        add(GraphQLBodyMatcher.graphQlRequest()
             .query("query product($id: String!) { product(id: $id) {id name price} }")
             .variables(Json.createObjectBuilder().add("id", id).build())
             .operationName("product")
             .build(), response);
-        expectationIds.push(expectation.getId());
         log.debug("[GraphQL] generated expectation ids: {}", expectationIds);
     }
 
     public void addRestProduct(String id, HttpResponse response) {
         var request = HttpRequest.builder().uri("/rest/products/" + id).build();
+        add(request, response);
+        log.debug("[REST] generated expectation ids: {}", expectationIds);
+    }
+
+    public void add(HttpRequest request, HttpResponse response) {
         var expectation = addExpectation(request, response);
         expectationIds.push(expectation.getId());
-        log.debug("[REST] generated expectation ids: {}", expectationIds);
     }
 
     public void cleanup() {

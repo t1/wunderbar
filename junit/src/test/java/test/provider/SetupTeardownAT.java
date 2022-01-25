@@ -1,6 +1,8 @@
 package test.provider;
 
 import com.github.t1.wunderbar.junit.http.HttpInteraction;
+import com.github.t1.wunderbar.junit.http.HttpRequest;
+import com.github.t1.wunderbar.junit.http.HttpResponse;
 import com.github.t1.wunderbar.junit.provider.AfterDynamicTest;
 import com.github.t1.wunderbar.junit.provider.AfterInteraction;
 import com.github.t1.wunderbar.junit.provider.BeforeDynamicTest;
@@ -23,12 +25,23 @@ import static org.assertj.core.api.BDDAssertions.then;
 @WunderBarApiProvider(baseUri = "{endpoint()}")
 class SetupTeardownAT {
     @RegisterExtension DummyServer dummyServer = new DummyServer();
+    @RegisterExtension ExpectationsExtension expectations = new ExpectationsExtension();
 
     @SuppressWarnings("unused")
     URI endpoint() {return dummyServer.baseUri();}
 
+    // two lists, as the order of the methods within the same lifecycle is undefined
     List<String> calledWithoutArgs = new ArrayList<>();
     List<String> calledWithArgs = new ArrayList<>();
+
+
+    @BeforeInteraction void setupHealth() {
+        expectations.add(HttpRequest.builder().uri("/q/health/ready").build(),
+            HttpResponse.builder().with("status", "UP").build());
+    }
+
+    @AfterInteraction void cleanupHealth() {expectations.cleanup();}
+
 
     @BeforeEach void beforeEach() {calledWithoutArgs.add("beforeEach");}
 
@@ -57,7 +70,6 @@ class SetupTeardownAT {
     }
 
     @AfterEach void tearDown() {
-        // two lists, as the order of the methods within the same lifecycle is undefined
         then(calledWithoutArgs).containsExactly(
             "beforeEach",
             "beforeWithoutArgsCalled",

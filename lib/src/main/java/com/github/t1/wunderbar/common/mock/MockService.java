@@ -18,8 +18,6 @@ public class MockService {
         addExpectation(new AddWunderBarExpectation());
         addExpectation(new GetWunderBarExpectations());
         addExpectation(new RemoveWunderBarExpectation());
-        addExpectation(HttpRequest.builder().uri("/q/health/ready").build(),
-            HttpResponse.builder().with("status", "UP").build());
     }
 
     public static WunderBarMockExpectation addExpectation(HttpRequest expectedRequest, HttpResponse response) {
