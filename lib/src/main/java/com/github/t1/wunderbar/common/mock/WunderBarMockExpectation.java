@@ -12,4 +12,6 @@ public abstract class WunderBarMockExpectation {
     public abstract boolean matches(HttpRequest request);
 
     public abstract HttpResponse handle(HttpRequest request);
+
+    public boolean moreInvocationsAllowed() {return true;}
 }

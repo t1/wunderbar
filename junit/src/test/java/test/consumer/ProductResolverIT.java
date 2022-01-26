@@ -36,7 +36,7 @@ class ProductResolverIT extends ProductResolverTest {
             var deprecatedBaseUri = new AtomicReference<URI>();
             given(productsWithFixedPort.product(givenProduct.getId()))
                 .whileSettingBaseUri(deprecatedBaseUri::set)
-                .willReturn(givenProduct);
+                .returns(givenProduct);
 
             var resolvedProduct = resolver.product(Item.builder().productId(givenProduct.getId()).build());
 
@@ -59,7 +59,7 @@ class ProductResolverIT extends ProductResolverTest {
         @Test void shouldFailToCallWillReturnWithNull() {
             var stub = given(products.product("dummy"));
 
-            var throwable = catchThrowable(() -> stub.willReturn(null));
+            var throwable = catchThrowable(() -> stub.returns(null));
 
             then(throwable).hasMessage("can't return null from an expectation");
         }
@@ -83,7 +83,7 @@ class ProductResolverIT extends ProductResolverTest {
             System.setProperty(propName + "username", "original-username");
             System.setProperty(propName + "password", "original-password");
             var givenProduct = Product.builder().id("nam").build();
-            given(productsWithConfigKey.product(givenProduct.getId())).willReturn(givenProduct);
+            given(productsWithConfigKey.product(givenProduct.getId())).returns(givenProduct);
 
             var resolvedProduct = productsWithConfigKey.product(givenProduct.getId());
 

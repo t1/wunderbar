@@ -19,18 +19,18 @@ class ExpectationsExtension implements Extension {
             .query("query product($id: String!) { product(id: $id) {id name price} }")
             .variables(Json.createObjectBuilder().add("id", id).build())
             .operationName("product")
-            .build(), response);
+            .build(), 1, response);
         log.debug("[GraphQL] generated expectation id {}", expectation.getId());
     }
 
     public void addRestProduct(String id, HttpResponse response) {
         var request = HttpRequest.builder().uri("/rest/products/" + id).build();
-        var expectation = add(request, response);
+        var expectation = add(request, 1, response);
         log.debug("[REST] generated expectation id {}", expectation.getId());
     }
 
-    public WunderBarMockExpectation add(HttpRequest request, HttpResponse response) {
-        return addExpectation(request, response);
+    public WunderBarMockExpectation add(HttpRequest request, int maxCallCount, HttpResponse response) {
+        return addExpectation(request, maxCallCount, response);
     }
 
     public void cleanup() {MockService.cleanup();}

@@ -34,7 +34,7 @@ class ProductsGatewayIT {
         .build();
 
     @Test void shouldGetProduct() {
-        given(products.product(PRODUCT_ID)).willReturn(PRODUCT);
+        given(products.product(PRODUCT_ID)).returns(PRODUCT);
 
         var response = gateway.product(ITEM);
 
@@ -43,8 +43,8 @@ class ProductsGatewayIT {
 
     @Test void shouldGetTwoProducts() {
         var givenProduct2 = Product.builder().id("some-product-id-2").name("some-product-name 2").build();
-        given(products.product(PRODUCT_ID)).willReturn(PRODUCT);
-        given(products.product(givenProduct2.getId())).willReturn(givenProduct2);
+        given(products.product(PRODUCT_ID)).returns(PRODUCT);
+        given(products.product(givenProduct2.getId())).returns(givenProduct2);
 
         var response1 = gateway.product(ITEM);
         var response2 = gateway.product(OrderItem.builder().productId(givenProduct2.getId()).build());
@@ -55,9 +55,9 @@ class ProductsGatewayIT {
 
     /** before you mutate an existing object, make sure it exists in the unmodified state */
     @Test void shouldUpdateProductPrice() {
-        given(products.product(PRODUCT_ID)).willReturn(PRODUCT);
+        given(products.product(PRODUCT_ID)).returns(PRODUCT);
         var expected = PRODUCT.withPrice(12_99);
-        given(products.patch(new Product().withId(PRODUCT_ID).withPrice(12_99))).willReturn(expected);
+        given(products.patch(new Product().withId(PRODUCT_ID).withPrice(12_99))).returns(expected);
 
         var preCheck = gateway.product(ITEM);
         var updated = gateway.productWithPriceUpdate(ITEM, 12_99);

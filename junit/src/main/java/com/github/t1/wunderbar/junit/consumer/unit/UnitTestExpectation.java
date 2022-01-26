@@ -1,6 +1,8 @@
 package com.github.t1.wunderbar.junit.consumer.unit;
 
+import com.github.t1.wunderbar.junit.consumer.Depletion;
 import com.github.t1.wunderbar.junit.consumer.WunderBarExpectation;
+import lombok.NonNull;
 import lombok.SneakyThrows;
 import org.mockito.BDDMockito;
 import org.mockito.BDDMockito.BDDMyOngoingStubbing;
@@ -10,6 +12,7 @@ import java.net.URI;
 
 class UnitTestExpectation extends WunderBarExpectation {
     private final BDDMyOngoingStubbing<Object> mockitoStub;
+    private int callCount;
 
     public UnitTestExpectation(Object mock, Method method, Object... args) {
         super(method, args);
@@ -24,11 +27,19 @@ class UnitTestExpectation extends WunderBarExpectation {
 
     @Override public URI baseUri() {return null;}
 
-    @Override public void willReturn(Object response) {
-        mockitoStub.willReturn(response);
+    @Override public void returns(@NonNull Depletion depletion, @NonNull Object response) {
+        mockitoStub.willAnswer(i -> {
+            ++callCount;
+            depletion.check(callCount);
+            return response;
+        });
     }
 
-    @Override public void willThrow(Exception exception) {
-        mockitoStub.willThrow(exception);
+    @Override public void willThrow(@NonNull Depletion depletion, @NonNull Exception exception) {
+        mockitoStub.willAnswer(i -> {
+            ++callCount;
+            depletion.check(callCount);
+            throw exception;
+        });
     }
 }

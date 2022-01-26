@@ -13,13 +13,15 @@ import javax.json.JsonObjectBuilder;
 import static com.github.t1.wunderbar.common.Utils.prefix;
 import static com.github.t1.wunderbar.common.mock.GraphQLResponseBuilder.graphQLResponse;
 import static com.github.t1.wunderbar.junit.http.HttpUtils.fromJson;
+import static com.github.t1.wunderbar.junit.http.HttpUtils.toFlatString;
 
 @Slf4j
 @ToString @EqualsAndHashCode(callSuper = true)
 class AddWunderBarExpectation extends GraphQLMockExpectation {
     AddWunderBarExpectation() {
-        super("mutation addWunderBarExpectation($request: HttpRequestInput!, $response: HttpResponseInput!) " +
-              "{ addWunderBarExpectation(request: $request, response: $response) {id status} }");
+        super("mutation addWunderBarExpectation" +
+              "($request: HttpRequestInput!, $depletion: DepletionInput!, $response: HttpResponseInput!) { " +
+              "addWunderBarExpectation(request: $request, depletion: $depletion, response: $response) {id status} }");
     }
 
     @Override public HttpResponse handle(HttpRequest request) {
@@ -30,12 +32,18 @@ class AddWunderBarExpectation extends GraphQLMockExpectation {
 
     private WunderBarMockExpectation addExpectation(JsonObject variables) {
         log.debug("add expectation: {}", variables);
-        var requestJson = variables.getJsonObject("request");
-        var request = fromJson(requestJson, HttpRequest.class);
+
+        var request = fromJson(variables.getJsonObject("request"), HttpRequest.class);
         log.debug("request:\n{}", prefix("    ", request.toString()));
+
+        var depletion = variables.getJsonObject("depletion");
+        log.debug("depletion: {}", toFlatString(depletion));
+        var maxCallCount = depletion.getInt("maxCallCount");
+
         var response = fromJson(variables.getJsonObject("response"), HttpResponse.class);
         log.debug("response:\n{}", prefix("    ", response.toString()));
-        return MockService.addExpectation(request, response);
+
+        return MockService.addExpectation(request, maxCallCount, response);
     }
 
     private static void expectationResponse(JsonObjectBuilder builder, WunderBarMockExpectation expectation) {

@@ -51,7 +51,7 @@ class GraphQlAuthorizationIT {
 
         @Test void shouldCallWithoutCredentials() {
             var givenProduct = Product.builder().id("nam").build();
-            given(nonAuthorizedMethodProducts.product(givenProduct.getId())).willReturn(givenProduct);
+            given(nonAuthorizedMethodProducts.product(givenProduct.getId())).returns(givenProduct);
 
             var resolvedProduct = nonAuthorizedMethodProducts.product(givenProduct.getId());
 
@@ -77,7 +77,7 @@ class GraphQlAuthorizationIT {
             System.setProperty(propName + "username", "original-username");
             System.setProperty(propName + "password", "original-password");
             var givenProduct = Product.builder().id("nam").build();
-            given(nonAuthorizedMethodProducts.product(givenProduct.getId())).willReturn(givenProduct);
+            given(nonAuthorizedMethodProducts.product(givenProduct.getId())).returns(givenProduct);
 
             var resolvedProduct = nonAuthorizedMethodProducts.product(givenProduct.getId());
 
@@ -111,7 +111,7 @@ class GraphQlAuthorizationIT {
             System.setProperty(propName + "username", "original-username");
             System.setProperty(propName + "password", "original-password");
             var givenProduct = Product.builder().id("am").build();
-            given(authorizedMethodProducts.product(givenProduct.getId())).willReturn(givenProduct);
+            given(authorizedMethodProducts.product(givenProduct.getId())).returns(givenProduct);
 
             var resolvedProduct = authorizedMethodProducts.product(givenProduct.getId());
 
@@ -131,7 +131,7 @@ class GraphQlAuthorizationIT {
         @Test void shouldGenerateAndRestoreNullCredentials() {
             var propName = AuthorizedMethodProducts2.class.getName() + "/mp-graphql/";
             var givenProduct = Product.builder().id("am2").build();
-            given(authorizedMethodProducts2.product(givenProduct.getId())).willReturn(givenProduct);
+            given(authorizedMethodProducts2.product(givenProduct.getId())).returns(givenProduct);
 
             var resolvedProduct = authorizedMethodProducts2.product(givenProduct.getId());
 
@@ -164,7 +164,7 @@ class GraphQlAuthorizationIT {
             System.setProperty(propName + "username", "original-username");
             System.setProperty(propName + "password", "original-password");
             var givenProduct = Product.builder().id("am").build();
-            given(authorizedInterfaceProducts.product(givenProduct.getId())).willReturn(givenProduct);
+            given(authorizedInterfaceProducts.product(givenProduct.getId())).returns(givenProduct);
 
             var resolvedProduct = authorizedInterfaceProducts.product(givenProduct.getId());
 
@@ -195,7 +195,7 @@ class GraphQlAuthorizationIT {
 
         @Test void shouldGenerateAndRestoreInterfaceHeaderCredentials() {
             var givenProduct = Product.builder().id("am").build();
-            given(products.product(givenProduct.getId())).willReturn(givenProduct);
+            given(products.product(givenProduct.getId())).returns(givenProduct);
 
             var resolvedProduct = products.product(givenProduct.getId());
 
@@ -217,7 +217,7 @@ class GraphQlAuthorizationIT {
 
         @Test void shouldGenerateAndRestoreParameterHeaderCredentials() {
             var givenProduct = Product.builder().id("am").build();
-            given(products.product(DUMMY_CREDENTIALS, givenProduct.getId())).willReturn(givenProduct);
+            given(products.product(DUMMY_CREDENTIALS, givenProduct.getId())).returns(givenProduct);
 
             var resolvedProduct = products.product(DUMMY_CREDENTIALS, givenProduct.getId());
 
@@ -240,7 +240,7 @@ class GraphQlAuthorizationIT {
 
         @Test void shouldGenerateAndRestoreInterfaceTokenHeaderCredentials() {
             var givenProduct = Product.builder().id("am").build();
-            given(products.product(givenProduct.getId())).willReturn(givenProduct);
+            given(products.product(givenProduct.getId())).returns(givenProduct);
 
             var resolvedProduct = products.product(givenProduct.getId());
 

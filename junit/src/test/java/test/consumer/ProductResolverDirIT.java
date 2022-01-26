@@ -29,7 +29,7 @@ class ProductResolverDirIT {
 
     @Test void shouldResolveProduct() {
         var givenProduct = Product.builder().id("x").name("some-product-name").build();
-        given(products.product(givenProduct.getId())).willReturn(givenProduct);
+        given(products.product(givenProduct.getId())).returns(givenProduct);
 
         var resolvedProduct = resolver.product(Item.builder().productId(givenProduct.getId()).build());
 
@@ -66,8 +66,8 @@ class ProductResolverDirIT {
     @Test void shouldResolveTwoProducts() throws IOException {
         var givenProduct1 = Product.builder().id("x").name("some-product-x").build();
         var givenProduct2 = Product.builder().id("y").name("some-product-y").build();
-        given(products.product(givenProduct1.getId())).willReturn(givenProduct1);
-        given(products.product(givenProduct2.getId())).willReturn(givenProduct2);
+        given(products.product(givenProduct1.getId())).returns(givenProduct1);
+        given(products.product(givenProduct2.getId())).returns(givenProduct2);
 
         var resolvedProduct1 = resolver.product(Item.builder().productId(givenProduct1.getId()).build());
         var resolvedProduct2 = resolver.product(Item.builder().productId(givenProduct2.getId()).build());

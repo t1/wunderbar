@@ -2,6 +2,7 @@ package com.github.t1.wunderbar.junit.consumer.system;
 
 import com.github.t1.wunderbar.junit.WunderBarException;
 import com.github.t1.wunderbar.junit.consumer.BarWriter;
+import com.github.t1.wunderbar.junit.consumer.Depletion;
 import com.github.t1.wunderbar.junit.consumer.Technology;
 import com.github.t1.wunderbar.junit.consumer.WunderBarExpectations;
 import com.github.t1.wunderbar.junit.consumer.WunderbarExpectationBuilder;
@@ -113,6 +114,7 @@ public class SystemTestExpectations<T> implements WunderBarExpectations<T> {
         this.didAddExpectations = true;
         var stubbingResult = mock.addWunderBarExpectation(
             currentInteraction.getRequest().withFormattedBody(),
+            currentExpectation.getDepletion(),
             currentInteraction.getResponse());
         log.debug("---------- add expectation and stubbing done -> {}", stubbingResult);
         if (stubbingResult == null || !"ok".equals(stubbingResult.getStatus()))
@@ -130,7 +132,7 @@ public class SystemTestExpectations<T> implements WunderBarExpectations<T> {
     @Override public void done() {
         log.debug("---------- call done -- cleanup");
         if (didAddExpectations) {
-            var status = mock.cleanupWunderBarExpectation();
+            var status = mock.cleanupWunderBarExpectations();
             assert "ok".equals(status);
         }
         if (api instanceof Closeable) ((Closeable) api).close();
@@ -139,8 +141,11 @@ public class SystemTestExpectations<T> implements WunderBarExpectations<T> {
 
     @GraphQLClientApi
     private interface WunderBarMockServerApi {
-        @Mutation WunderBarStubbingResult addWunderBarExpectation(@NonNull HttpRequest request, @NonNull HttpResponse response);
-        @Mutation String cleanupWunderBarExpectation();
+        @Mutation WunderBarStubbingResult addWunderBarExpectation(
+            @NonNull HttpRequest request,
+            @NonNull Depletion depletion,
+            @NonNull HttpResponse response);
+        @Mutation String cleanupWunderBarExpectations();
     }
 
     @Data

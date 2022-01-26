@@ -13,16 +13,16 @@ import static com.github.t1.wunderbar.common.mock.GraphQLResponseBuilder.graphQL
 
 @Slf4j
 @ToString @EqualsAndHashCode(callSuper = true)
-class CleanupWunderBarExpectation extends GraphQLMockExpectation {
-    CleanupWunderBarExpectation() {super("mutation cleanupWunderBarExpectation { cleanupWunderBarExpectation }");}
+class CleanupWunderBarExpectations extends GraphQLMockExpectation {
+    CleanupWunderBarExpectations() {super("mutation cleanupWunderBarExpectations { cleanupWunderBarExpectations }");}
 
     @Override public HttpResponse handle(HttpRequest request) {
         MockService.cleanup();
-        return graphQLResponse().with(CleanupWunderBarExpectation::finalResponse).build();
+        return graphQLResponse().with(this::finalResponse).build();
     }
 
-    private static void finalResponse(JsonObjectBuilder builder) {
+    private void finalResponse(JsonObjectBuilder builder) {
         builder.add("data", Json.createObjectBuilder()
-            .add("cleanupWunderBarExpectation", "ok"));
+            .add("cleanupWunderBarExpectations", "ok"));
     }
 }

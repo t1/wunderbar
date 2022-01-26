@@ -31,7 +31,7 @@ class ProductResolverDeprecatedST {
 
     @Test void shouldResolveProductFromFunctionEndpoint() {
         var product = someProduct();
-        given(products.product(product.getId())).willReturn(product);
+        given(products.product(product.getId())).returns(product);
 
         var resolvedProduct = resolver.product(new Item(product.getId()));
 

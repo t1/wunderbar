@@ -32,7 +32,7 @@ class ProductsResolverWeldIT {
 
     @Test void shouldResolveProduct() {
         var givenProduct = Product.builder().id("x").name("some-product-name").build();
-        given(products.product(givenProduct.getId())).willReturn(givenProduct);
+        given(products.product(givenProduct.getId())).returns(givenProduct);
 
         var resolvedProduct = resolver.product(item(givenProduct.getId()));
 
@@ -42,8 +42,8 @@ class ProductsResolverWeldIT {
     @Test void shouldResolveTwoProducts() {
         var givenProduct1 = Product.builder().id("x1").name("some-product-name 1").build();
         var givenProduct2 = Product.builder().id("x2").name("some-product-name 2").build();
-        given(products.product(givenProduct1.getId())).willReturn(givenProduct1);
-        given(products.product(givenProduct2.getId())).willReturn(givenProduct2);
+        given(products.product(givenProduct1.getId())).returns(givenProduct1);
+        given(products.product(givenProduct2.getId())).returns(givenProduct2);
 
         var resolvedProduct1 = resolver.product(item(givenProduct1.getId()));
         var resolvedProduct2 = resolver.product(item(givenProduct2.getId()));
@@ -55,8 +55,8 @@ class ProductsResolverWeldIT {
     /** before you mutate an existing object, make sure it exists in the unmodified state */
     @Test void shouldUpdateExistingProductPrice() {
         var product = Product.builder().id("p").name("some-product-name").price(15_99).build();
-        given(products.product(product.getId())).willReturn(product);
-        given(products.update(new Product().withId(product.getId()).withPrice(12_99))).willReturn(product.withPrice(12_99));
+        given(products.product(product.getId())).returns(product);
+        given(products.update(new Product().withId(product.getId()).withPrice(12_99))).returns(product.withPrice(12_99));
 
         var item = item(product.getId());
         var preCheck = resolver.product(item);

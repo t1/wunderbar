@@ -19,12 +19,16 @@ public class MockService {
     static {
         addExpectation(new AddWunderBarExpectation());
         addExpectation(new GetWunderBarExpectations());
-        addExpectation(new CleanupWunderBarExpectation());
+        addExpectation(new CleanupWunderBarExpectations());
         INITIAL_SIZE = EXPECTATIONS.size();
     }
 
-    public static WunderBarMockExpectation addExpectation(HttpRequest expectedRequest, HttpResponse response) {
-        return addExpectation(new WunderBarMockInteractionExpectation(expectedRequest, response));
+    public static WunderBarMockExpectation addExpectation(HttpRequest expectedRequest, int maxCallCount, HttpResponse response) {
+        return addExpectation(WunderBarMockInteractionExpectation.builder()
+            .expectedRequest(expectedRequest)
+            .maxCallCount(maxCallCount)
+            .response(response)
+            .build());
     }
 
     private static WunderBarMockExpectation addExpectation(WunderBarMockExpectation expectation) {
@@ -54,15 +58,18 @@ public class MockService {
             log.debug(message);
             return ProblemDetails.builder().detail(message).build().toResponse();
         }
-        if (expectation.getId() >= INITIAL_SIZE) EXPECTATIONS.remove(expectation);
-        return expectation.handle(request);
+        var response = expectation.handle(request);
+        if (!expectation.moreInvocationsAllowed()) {
+            log.debug("expectation is depleted... removing {}", expectation);
+            EXPECTATIONS.remove(expectation);
+        }
+        return response;
     }
 
     private WunderBarMockExpectation findExpectationMatching(HttpRequest request) {
         return EXPECTATIONS.stream()
             .peek(expectation -> log.debug("{} (of {}) match {}", expectation.getId(), EXPECTATIONS.size(), expectation))
             .filter(expectation -> expectation.matches(request))
-            .peek(expectation -> log.debug("matched! => {}", expectation))
             .findFirst().orElse(null);
     }
 }

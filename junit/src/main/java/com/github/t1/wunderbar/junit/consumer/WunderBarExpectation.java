@@ -13,14 +13,14 @@ import static lombok.AccessLevel.PROTECTED;
 
 @RequiredArgsConstructor(access = PROTECTED)
 public abstract @Internal class WunderBarExpectation {
-    protected final @NonNull Method method;
-    protected final @NonNull Object[] args;
+    protected final Method method;
+    protected final Object[] args;
 
     @Override public String toString() {
         return getClass().getSimpleName() + " for " + method + Arrays.toString(args);
     }
 
-    public boolean matches(Method method, Object... args) {
+    public final boolean matches(@NonNull Method method, @NonNull Object... args) {
         return method.equals(this.method) && deeplyEqual(args, this.args);
     }
 
@@ -40,9 +40,9 @@ public abstract @Internal class WunderBarExpectation {
 
     public abstract URI baseUri();
 
-    public abstract void willReturn(Object response);
+    public abstract void returns(@NonNull Depletion depletion, @NonNull Object response);
 
-    public abstract void willThrow(Exception exception);
+    public abstract void willThrow(@NonNull Depletion depletion, @NonNull Exception exception);
 
     public void done() {}
 }

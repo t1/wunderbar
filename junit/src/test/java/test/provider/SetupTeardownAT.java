@@ -36,7 +36,9 @@ class SetupTeardownAT {
 
 
     @BeforeInteraction void setupHealth() {
-        expectations.add(HttpRequest.builder().uri("/q/health/ready").build(),
+        expectations.add(
+            HttpRequest.builder().uri("/q/health/ready").build(),
+            1,
             HttpResponse.builder().with("status", "UP").build());
     }
 

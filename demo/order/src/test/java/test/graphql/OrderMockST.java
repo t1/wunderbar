@@ -100,8 +100,7 @@ class OrderMockST {
 
     @Slow
     @Test void shouldGetOrder() {
-        given(products.product(PRODUCT_ID)).willReturn(product); // for item 1
-        given(products.product(PRODUCT_ID)).willReturn(product); // for item 2
+        given(products.product(PRODUCT_ID)).returns(product);
 
         var order = api.order("1");
 

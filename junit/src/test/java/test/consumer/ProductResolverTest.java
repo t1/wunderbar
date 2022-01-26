@@ -1,5 +1,6 @@
 package test.consumer;
 
+import com.github.t1.wunderbar.junit.WunderBarException;
 import com.github.t1.wunderbar.junit.consumer.Service;
 import com.github.t1.wunderbar.junit.consumer.SystemUnderTest;
 import com.github.t1.wunderbar.junit.consumer.Technology;
@@ -32,6 +33,7 @@ import static com.github.t1.wunderbar.junit.consumer.WunderbarExpectationBuilder
 import static com.github.t1.wunderbar.junit.consumer.WunderbarExpectationBuilder.createProxy;
 import static com.github.t1.wunderbar.junit.consumer.WunderbarExpectationBuilder.createService;
 import static com.github.t1.wunderbar.junit.consumer.WunderbarExpectationBuilder.given;
+import static com.github.t1.wunderbar.junit.consumer.WunderbarExpectationBuilder.once;
 import static com.github.t1.wunderbar.junit.provider.WunderBarBDDAssertions.then;
 import static javax.ws.rs.core.Response.Status.FORBIDDEN;
 import static javax.ws.rs.core.Response.Status.INTERNAL_SERVER_ERROR;
@@ -67,16 +69,40 @@ abstract class ProductResolverTest {
     Item item = new Item(productId);
 
     @Test void shouldResolveProduct() {
-        given(products.product(productId)).willReturn(product);
-        given(products.product("not-actually-called")).willReturn(Product.builder().id("unreachable").build());
+        given(products.product(productId)).returns(product);
 
         var resolvedProduct = resolver.product(item);
 
         then(resolvedProduct).usingRecursiveComparison().isEqualTo(product);
     }
 
+    @Test void shouldResolveProductWithWillReturn() {
+        given(products.product(productId)).willReturn(product);
+
+        var resolvedProduct = resolver.product(item);
+
+        then(resolvedProduct).usingRecursiveComparison().isEqualTo(product);
+    }
+
+    @Test void shouldFailToResolveProductTwice() {
+        given(products.product(productId)).returns(once(), product);
+        given(products.product("not-actually-called")).returns(Product.builder().id("unreachable").build());
+
+        then(resolver.product(item)).as("first call").usingRecursiveComparison().isEqualTo(product);
+
+        var throwable = catchThrowable(() -> resolver.product(item));
+
+        thenFailedDepletion(throwable);
+    }
+
+    protected void thenFailedDepletion(Throwable throwable) {
+        then(throwable).as("second call")
+            .isInstanceOf(WunderBarException.class)
+            .hasMessage("expectation is depleted [Depletion(maxCallCount=1)] on call #2");
+    }
+
     @Test void shouldResolveNamedProductMethod() {
-        given(namedProducts.productById(productId)).willReturn(product);
+        given(namedProducts.productById(productId)).returns(product);
 
         var resolvedProduct = resolver.namedProduct(item);
 
@@ -84,7 +110,7 @@ abstract class ProductResolverTest {
     }
 
     @Test void shouldResolveProductGetter() {
-        given(productsGetter.getProduct(productId)).willReturn(product);
+        given(productsGetter.getProduct(productId)).returns(product);
 
         var resolvedProduct = resolver.productGetter(item);
 
@@ -93,8 +119,8 @@ abstract class ProductResolverTest {
 
     @Test void shouldUpdateProduct() {
         var newPrice = someInt();
-        given(products.product(productId)).willReturn(product);
-        given(products.patch(new Product().withId(productId).withPrice(newPrice))).willReturn(product.withPrice(newPrice));
+        given(products.product(productId)).returns(product);
+        given(products.patch(new Product().withId(productId).withPrice(newPrice))).returns(product.withPrice(newPrice));
         var preCheck = resolver.product(item);
         then(preCheck).usingRecursiveComparison().isEqualTo(product);
 
@@ -109,6 +135,16 @@ abstract class ProductResolverTest {
         var throwable = catchThrowable(() -> resolver.product(item));
 
         thenGraphQlError(throwable, "product-not-found", "product " + productId + " not found");
+    }
+
+    @Test void shouldFailToResolveSameUnknownProductTwice() {
+        given(products.product(productId)).willThrow(once(), new ProductNotFoundException(productId));
+
+        thenGraphQlError(catchThrowable(() -> resolver.product(item)), "product-not-found", "product " + productId + " not found");
+
+        var throwable = catchThrowable(() -> resolver.product(item));
+
+        thenFailedDepletion(throwable);
     }
 
     @Test void shouldFailToResolveForbiddenProduct() {
@@ -162,7 +198,7 @@ abstract class ProductResolverTest {
         @Test void shouldManuallyBuildProxy() {
             var proxy = createProxy(Products.class, Service.DEFAULT.withEndpoint(endpoint()));
             var givenProduct = Product.builder().id("proxy").name("some-product-name").build();
-            given(proxy.getStubbingProxy().product(givenProduct.getId())).willReturn(givenProduct);
+            given(proxy.getStubbingProxy().product(givenProduct.getId())).returns(givenProduct);
             resolver.products = proxy.getSutProxy();
 
             var resolvedProduct = resolver.product(new Item(givenProduct.getId()));
@@ -182,7 +218,7 @@ abstract class ProductResolverTest {
         }
 
         @Test void shouldGetProduct() {
-            given(restService.product(productId)).willReturn(product);
+            given(restService.product(productId)).returns(product);
 
             var response = gateway.product(item);
 
@@ -192,8 +228,8 @@ abstract class ProductResolverTest {
         @Test void shouldGetTwoProducts() {
             var givenProduct1 = Product.builder().id("r1").name("some-product-name1").build();
             var givenProduct2 = Product.builder().id("r2").name("some-product-name2").build();
-            given(restService.product(givenProduct1.id)).willReturn(givenProduct1);
-            given(restService.product(givenProduct2.id)).willReturn(givenProduct2);
+            given(restService.product(givenProduct1.id)).returns(givenProduct1);
+            given(restService.product(givenProduct2.id)).returns(givenProduct2);
 
             var response1 = gateway.product(new Item(givenProduct1.id));
             var response2 = gateway.product(new Item(givenProduct2.id));
@@ -230,7 +266,7 @@ abstract class ProductResolverTest {
             int newPrice = someInt();
             var patchedProduct = product.withPrice(newPrice);
             var patch = Product.builder().id(productId).price(newPrice).build();
-            given(restService.patch(patch)).willReturn(patchedProduct);
+            given(restService.patch(patch)).returns(patchedProduct);
 
             var updated = gateway.productWithPriceUpdate(item, newPrice);
 
@@ -269,9 +305,9 @@ abstract class ProductResolverTest {
         @Test void shouldFailToCallTheSameExpectedResponseBuilderTwice() {
             var givenProduct = Product.builder().id("x").build();
             var stub = given(products.product(givenProduct.getId()));
-            stub.willReturn(givenProduct);
+            stub.returns(givenProduct);
 
-            var throwable = catchThrowable(() -> stub.willReturn(givenProduct));
+            var throwable = catchThrowable(() -> stub.returns(givenProduct));
 
             then(throwable).hasMessage("Stubbing mismatch: call `given` exactly once on the response object of a proxy call");
         }
@@ -283,7 +319,7 @@ abstract class ProductResolverTest {
 
         @Test void shouldFindNestedService() {
             var givenProduct = Product.builder().id("y").build();
-            given(nestedProducts.product(givenProduct.getId())).willReturn(givenProduct);
+            given(nestedProducts.product(givenProduct.getId())).returns(givenProduct);
 
             var resolvedProduct = resolver.product(new Item(givenProduct.getId()));
 
@@ -297,7 +333,7 @@ abstract class ProductResolverTest {
 
         @Test void shouldFindNestedProxy() {
             var givenProduct = Product.builder().id("z").build();
-            given(products.product(givenProduct.getId())).willReturn(givenProduct);
+            given(products.product(givenProduct.getId())).returns(givenProduct);
 
             var resolvedProduct = nestedResolver.product(new Item(givenProduct.getId()));
 
@@ -317,42 +353,42 @@ abstract class ProductResolverTest {
         }
 
         @Test void shouldGetBoolean() {
-            given(stub.getBoolean()).willReturn(true);
+            given(stub.getBoolean()).returns(true);
             then(service.getBoolean()).isTrue();
         }
 
         @Test void shouldGetByte() {
-            given(stub.getByte()).willReturn((byte) 0x12);
+            given(stub.getByte()).returns((byte) 0x12);
             then(service.getByte()).isEqualTo((byte) 0x12);
         }
 
         @Test void shouldGetChar() {
-            given(stub.getChar()).willReturn('c');
+            given(stub.getChar()).returns('c');
             then(service.getChar()).isEqualTo('c');
         }
 
         @Test void shouldGetShort() {
-            given(stub.getShort()).willReturn((short) 0x12);
+            given(stub.getShort()).returns((short) 0x12);
             then(service.getShort()).isEqualTo((short) 0x12);
         }
 
         @Test void shouldGetInt() {
-            given(stub.getInt()).willReturn(0x12);
+            given(stub.getInt()).returns(0x12);
             then(service.getInt()).isEqualTo(0x12);
         }
 
         @Test void shouldGetLong() {
-            given(stub.getLong()).willReturn(0x12L);
+            given(stub.getLong()).returns(0x12L);
             then(service.getLong()).isEqualTo(0x12L);
         }
 
         @Test void shouldGetFloat() {
-            given(stub.getFloat()).willReturn(1.2f);
+            given(stub.getFloat()).returns(1.2f);
             then(service.getFloat()).isEqualTo(1.2f);
         }
 
         @Test void shouldGetDouble() {
-            given(stub.getDouble()).willReturn(1.2d);
+            given(stub.getDouble()).returns(1.2d);
             then(service.getDouble()).isEqualTo(1.2d);
         }
     }
