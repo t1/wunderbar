@@ -9,6 +9,7 @@ import org.junit.jupiter.api.DynamicNode;
 import org.junit.jupiter.api.TestFactory;
 import org.junit.jupiter.api.extension.RegisterExtension;
 import test.DummyServer;
+import test.NonCI;
 
 import java.net.URI;
 
@@ -19,6 +20,7 @@ import static com.github.t1.wunderbar.junit.provider.WunderBarTestFinder.findTes
 import static org.assertj.core.api.BDDSoftAssertions.thenSoftly;
 import static test.consumer.TestData.someId;
 
+@NonCI
 @WunderBarApiProvider(baseUri = "{endpoint()}")
 class FailingAT {
     @RegisterExtension DummyServer dummyServer = new DummyServer();
