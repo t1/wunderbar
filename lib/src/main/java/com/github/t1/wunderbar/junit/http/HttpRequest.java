@@ -8,7 +8,11 @@ import lombok.Getter;
 import lombok.Value;
 import lombok.With;
 
+import javax.json.Json;
 import javax.json.JsonObject;
+import javax.json.JsonObjectBuilder;
+import javax.json.JsonPatch;
+import javax.json.JsonPatchBuilder;
 import javax.json.JsonValue;
 import javax.json.bind.annotation.JsonbCreator;
 import javax.ws.rs.core.MediaType;
@@ -16,6 +20,9 @@ import java.net.URI;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Function;
+import java.util.regex.MatchResult;
+import java.util.regex.Pattern;
 
 import static com.github.t1.wunderbar.common.Utils.jsonNonAddDiff;
 import static com.github.t1.wunderbar.junit.http.HttpUtils.APPLICATION_JSON_UTF8;
@@ -23,6 +30,7 @@ import static com.github.t1.wunderbar.junit.http.HttpUtils.JSONB;
 import static com.github.t1.wunderbar.junit.http.HttpUtils.firstMediaType;
 import static com.github.t1.wunderbar.junit.http.HttpUtils.isCompatible;
 import static com.github.t1.wunderbar.junit.http.HttpUtils.optional;
+import static com.github.t1.wunderbar.junit.http.HttpUtils.read;
 import static javax.json.JsonValue.ValueType.OBJECT;
 import static javax.ws.rs.core.HttpHeaders.ACCEPT;
 import static javax.ws.rs.core.HttpHeaders.AUTHORIZATION;
@@ -82,7 +90,17 @@ public class HttpRequest {
                ((authorization == null) ? "" : AUTHORIZATION + ": " + authorization + "\n");
     }
 
-    public HttpRequest withFormattedBody() {return (isJson()) ? withBody(body().map(HttpUtils::formatJson).orElseThrow()) : this;}
+    public URI getUri() {return URI.create(uri);}
+
+    public String uri() {return uri;}
+
+    public MatchResult matchUri(String pattern) {return matchUri(Pattern.compile(pattern));}
+
+    public MatchResult matchUri(Pattern pattern) {
+        var matcher = pattern.matcher(uri());
+        if (!matcher.matches()) throw new IllegalArgumentException("expected uri to match " + pattern + " but was " + uri);
+        return matcher.toMatchResult(); // make immutable
+    }
 
     /**
      * Almost the same as <code>equals</code>, but
@@ -103,15 +121,15 @@ public class HttpRequest {
         return jsonNonAddDiff(this.jsonValue(), that.jsonValue()).findAny().isEmpty();
     }
 
-    public URI getUri() {return URI.create(uri);}
-
-    public String uri() {return uri;}
+    public HttpRequest withFormattedBody() {return (isJson()) ? withBody(body().map(HttpUtils::formatJson).orElseThrow()) : this;}
 
     public boolean hasBody() {return body != null;}
 
     public Optional<String> body() {return Optional.ofNullable(body);}
 
-    public Optional<JsonValue> getJsonBody() {return jsonValue.updateAndGet(this::createOrGetJsonValue);}
+    public Optional<JsonValue> json() {return jsonValue.updateAndGet(this::createOrGetJsonValue);}
+
+    public <T> T as(Class<T> type) {return read(body, contentType, type);}
 
     public boolean isJson() {return hasBody() && isCompatible(APPLICATION_JSON_TYPE, contentType);}
 
@@ -122,13 +140,39 @@ public class HttpRequest {
         return (old == null) ? body().map(HttpUtils::readJson) : old;
     }
 
-    public JsonValue jsonValue() {return getJsonBody().orElseThrow();}
+    public JsonValue jsonValue() {return json().orElseThrow();}
 
     public JsonObject jsonObject() {return jsonValue().asJsonObject();}
 
     public boolean has(String field) {return isJsonObject() && jsonObject().containsKey(field);}
 
-    public JsonValue get(String pointer) {return jsonObject().getValue("/" + pointer);}
+    public JsonValue get(String pointer) {
+        if (!pointer.startsWith("/")) pointer = "/" + pointer;
+        return jsonObject().getValue(pointer);
+    }
+
+    public HttpRequest patch(Function<JsonPatchBuilder, JsonPatchBuilder> patch) {return with(patch.apply(Json.createPatchBuilder()));}
+
+    public HttpRequest with(JsonPatchBuilder patch) {return with(patch.build());}
+
+    public HttpRequest with(JsonPatch patch) {return with(patch.apply(jsonObject()));}
+
+    public HttpRequest with(Function<JsonObjectBuilder, JsonObjectBuilder> mapper) {
+        return with(mapper.apply(getObjectBuilder()).build());
+    }
+
+    private JsonObjectBuilder getObjectBuilder() {
+        if (hasBody()) {
+            assert isJsonObject();
+            return Json.createObjectBuilder(jsonObject());
+        } else {
+            return Json.createObjectBuilder();
+        }
+    }
+
+    public HttpRequest with(JsonValue body) {
+        return withBody(body.toString());
+    }
 
     @SuppressWarnings("unused")
     public static class HttpRequestBuilder {

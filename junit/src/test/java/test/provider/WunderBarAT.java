@@ -18,7 +18,7 @@ import java.net.URI;
 import static com.github.t1.wunderbar.junit.provider.WunderBarTestFinder.findTestsIn;
 
 @WunderBarApiProvider(baseUri = "{endpoint()}")
-class ConsumerDrivenAT {
+class WunderBarAT {
     @RegisterExtension DummyServer dummyServer = new DummyServer();
     @RegisterExtension ExpectationsExtension expectations = new ExpectationsExtension();
 

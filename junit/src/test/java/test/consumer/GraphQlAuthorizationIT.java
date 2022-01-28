@@ -27,13 +27,24 @@ class GraphQlAuthorizationIT {
         "URI: /graphql\n" +
         "Accept: " + APPLICATION_JSON_UTF8 + "\n" +
         "Content-Type: " + APPLICATION_JSON_UTF8 + "\n";
-    private static final String AUTHORIZED_GRAPHQL_REQUEST_HEADERS =
-        UNAUTHORIZED_GRAPHQL_REQUEST_HEADERS +
-        "Authorization: Dummy authorization\n";
     @SuppressWarnings("SpellCheckingInspection")
-    private static final String DUMMY_CREDENTIALS = "Basic ZHVtbXktdXNlcm5hbWU6ZHVtbXktcGFzc3dvcmQ=";  // dummy-username:dummy-password
-    private static final String DUMMY_TOKEN = "Bearer dummy-token";
+    private static final String BASIC_AUTH = "Basic ZHVtbXktdXNlcm5hbWU6ZHVtbXktcGFzc3dvcmQ=";  // dummy-username:dummy-password
+    private static final String BEARER_AUTH = // a JWT token with upn 'dummy-token'
+        "Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9" +
+        "." +
+        "eyJ1cG4iOiJkdW1teS10b2tlbiIsImlhdCI6MTY0MzM4MjEwMiwiZXhwIjoxNjQzMzgyNDAyLCJqdGkiOiIwZGQzNGY5NC0zYjcx" +
+        "LTRkNGUtOGRhYi05YjRkMGM5YTk1YmYifQ" +
+        "." +
+        "csZZbXCFPOdLKj5XOj1nUcyBvmKL3MOSGRK279rGnxgH51eWVppN6aGq3r6LPaQ9isNXgj3Z5FhQLguPe8NNO1LejsXo2Eq6xED4" +
+        "LnAfFh3aZQON7Wfphm3Jz97y2TcSjxwfKDQ-jUvfa-wjKuIyFYyfi4MqndDJ5lsXF9V4snAS38Ei4aqfDLpTQfzK22-C6Ryp7skn" +
+        "M3owxFMDv6eOo5oGCnajGsQpkna2RKFINCPzSqRH7_tAWT-RVlK-qGIzyThdBxQIofMw67Hi3UF-oHAiLzSDS9XqgahvFSWASaVG" +
+        "tLtbnWTztXBYScEnXz3zPdZ7Fxp_xamcIOf30GthfA";
 
+
+    private static String authorizedGraphQLRequestHeaders(String dummyUserName) {
+        return UNAUTHORIZED_GRAPHQL_REQUEST_HEADERS +
+               "Authorization: Dummy " + dummyUserName + "\n";
+    }
 
     @AfterAll static void afterAll() {
         AFTER_ALL_CHECKS.forEach(Runnable::run);
@@ -83,7 +94,7 @@ class GraphQlAuthorizationIT {
 
             then(resolvedProduct).usingRecursiveComparison().isEqualTo(givenProduct);
             then(writtenHeader("shouldGenerateAndRestoreCredentialsProperties", "SystemPropertyCredentialsGenerator"))
-                .hasContent(AUTHORIZED_GRAPHQL_REQUEST_HEADERS);
+                .hasContent(authorizedGraphQLRequestHeaders("original-username"));
             then(System.getProperty(propName + "username")).isEqualTo("original-username"); // not changed
             then(System.getProperty(propName + "password")).isEqualTo("original-password"); // not changed
         }
@@ -117,7 +128,7 @@ class GraphQlAuthorizationIT {
 
             then(resolvedProduct).usingRecursiveComparison().isEqualTo(givenProduct);
             then(writtenHeader("shouldGenerateAndRestoreCredentials", "MethodCredentialsGenerator"))
-                .hasContent(AUTHORIZED_GRAPHQL_REQUEST_HEADERS);
+                .hasContent(authorizedGraphQLRequestHeaders("dummy-username"));
             then(System.getProperty(propName + "username")).isEqualTo("dummy-username");
             then(System.getProperty(propName + "password")).isEqualTo("dummy-password");
             AFTER_ALL_CHECKS.add(() -> {
@@ -137,7 +148,7 @@ class GraphQlAuthorizationIT {
 
             then(resolvedProduct).usingRecursiveComparison().isEqualTo(givenProduct);
             then(writtenHeader("shouldGenerateAndRestoreNullCredentials", "MethodCredentialsGenerator"))
-                .hasContent(AUTHORIZED_GRAPHQL_REQUEST_HEADERS);
+                .hasContent(authorizedGraphQLRequestHeaders("dummy-username"));
             then(System.getProperty(propName + "username")).isEqualTo("dummy-username");
             then(System.getProperty(propName + "password")).isEqualTo("dummy-password");
             AFTER_ALL_CHECKS.add(() -> {
@@ -170,7 +181,7 @@ class GraphQlAuthorizationIT {
 
             then(resolvedProduct).usingRecursiveComparison().isEqualTo(givenProduct);
             then(writtenHeader("shouldGenerateAndRestoreInterfaceCredentials", "InterfaceCredentialsGenerator"))
-                .hasContent(AUTHORIZED_GRAPHQL_REQUEST_HEADERS);
+                .hasContent(authorizedGraphQLRequestHeaders("dummy-username"));
             then(System.getProperty(propName + "username")).isEqualTo("dummy-username");
             then(System.getProperty(propName + "password")).isEqualTo("dummy-password");
             AFTER_ALL_CHECKS.add(() -> {
@@ -184,7 +195,7 @@ class GraphQlAuthorizationIT {
 
 
     @GraphQLClientApi
-    @Header(name = "Authorization", constant = DUMMY_CREDENTIALS)
+    @Header(name = "Authorization", constant = BASIC_AUTH)
     interface AuthorizedInterfaceHeaderProducts {
         Product product(String id);
     }
@@ -201,7 +212,7 @@ class GraphQlAuthorizationIT {
 
             then(resolvedProduct).usingRecursiveComparison().isEqualTo(givenProduct);
             then(writtenHeader("shouldGenerateAndRestoreInterfaceHeaderCredentials", "InterfaceHeaderCredentialsGenerator"))
-                .hasContent(AUTHORIZED_GRAPHQL_REQUEST_HEADERS);
+                .hasContent(authorizedGraphQLRequestHeaders("dummy-username"));
         }
     }
 
@@ -217,19 +228,19 @@ class GraphQlAuthorizationIT {
 
         @Test void shouldGenerateAndRestoreParameterHeaderCredentials() {
             var givenProduct = Product.builder().id("am").build();
-            given(products.product(DUMMY_CREDENTIALS, givenProduct.getId())).returns(givenProduct);
+            given(products.product(BASIC_AUTH, givenProduct.getId())).returns(givenProduct);
 
-            var resolvedProduct = products.product(DUMMY_CREDENTIALS, givenProduct.getId());
+            var resolvedProduct = products.product(BASIC_AUTH, givenProduct.getId());
 
             then(resolvedProduct).usingRecursiveComparison().isEqualTo(givenProduct);
             then(writtenHeader("shouldGenerateAndRestoreParameterHeaderCredentials", "ParameterHeaderCredentialsGenerator"))
-                .hasContent(AUTHORIZED_GRAPHQL_REQUEST_HEADERS);
+                .hasContent(authorizedGraphQLRequestHeaders("dummy-username"));
         }
     }
 
 
     @GraphQLClientApi
-    @Header(name = "Authorization", constant = DUMMY_TOKEN)
+    @Header(name = "Authorization", constant = BEARER_AUTH)
     interface AuthorizedInterfaceTokenHeaderProducts {
         Product product(String id);
     }
@@ -246,7 +257,7 @@ class GraphQlAuthorizationIT {
 
             then(resolvedProduct).usingRecursiveComparison().isEqualTo(givenProduct);
             then(writtenHeader("shouldGenerateAndRestoreInterfaceTokenHeaderCredentials", "InterfaceTokenHeaderCredentialsGenerator"))
-                .hasContent(AUTHORIZED_GRAPHQL_REQUEST_HEADERS);
+                .hasContent(authorizedGraphQLRequestHeaders("dummy-token"));
         }
     }
 

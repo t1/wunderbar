@@ -55,10 +55,12 @@ public class HttpClient {
     }
 
     private HttpResponse convert(java.net.http.HttpResponse<String> response) {
+        var body = response.body();
+        if (body != null && body.isEmpty()) body = null;
         return HttpResponse.builder()
             .status(Status.fromStatusCode(response.statusCode()))
             .contentType(contentType(response))
-            .body(response.body())
+            .body(body)
             .build();
     }
 

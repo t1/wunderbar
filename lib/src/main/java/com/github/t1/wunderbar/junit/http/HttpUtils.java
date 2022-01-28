@@ -33,9 +33,9 @@ public class HttpUtils {
     /** <code>application/json;charset=utf-8</code> */
     public static final MediaType APPLICATION_JSON_UTF8 = APPLICATION_JSON_TYPE.withCharset("utf-8");
     public static final MediaType PROBLEM_DETAIL_TYPE = MediaType.valueOf("application/problem+json;charset=utf-8");
-    public static final Jsonb JSON = JsonbBuilder.create(new JsonbConfig().withAdapters(new StatusTypeAdapter(), new MediaTypeAdapter()));
-
-    static final Jsonb JSONB = JsonbBuilder.create(new JsonbConfig().withFormatting(true));
+    public static final Jsonb JSONB = JsonbBuilder.create(new JsonbConfig()
+        .withFormatting(true)
+        .withAdapters(new StatusTypeAdapter(), new MediaTypeAdapter()));
 
     static Charset charset(MediaType contentType) {
         var charsetName = (contentType == null) ? null : contentType.getParameters().get(CHARSET_PARAMETER);
@@ -55,10 +55,6 @@ public class HttpUtils {
         return Optional.ofNullable(properties.getProperty(method, null));
     }
 
-    static JsonValue toJson(String string) {
-        return ((string == null) || string.isEmpty()) ? JsonValue.NULL : Json.createReader(new StringReader(string)).read();
-    }
-
     public static String formatJson(String json) {
         if (json == null || json.isBlank()) return json;
 
@@ -68,18 +64,24 @@ public class HttpUtils {
     }
 
     public static <T> T fromJson(JsonValue jsonValue, Class<T> type) {
-        return (jsonValue == null) ? null : JSON.fromJson(jsonValue.toString(), type);
+        return (jsonValue == null) ? null : JSONB.fromJson(jsonValue.toString(), type);
     }
 
     public static JsonObjectBuilder fromJson(String json) {
         return Json.createObjectBuilder(readJson(json).asJsonObject());
     }
 
-    public static JsonValue readJson(Object object) {return readJson(JSON.toJson(object));}
+    public static <T> T read(String string, MediaType contentType, Class<T> type) {
+        if (isCompatible(APPLICATION_JSON_TYPE, contentType)) return JSONB.fromJson(string, type);
+        throw new UnsupportedOperationException("unsupported content-type " + contentType);
+    }
+
+    public static JsonValue readJson(Object object) {return readJson(JSONB.toJson(object));}
 
     public static JsonValue readJson(String json) {
         try {
-            return Json.createReader(new StringReader(json)).readValue();
+            return ((json == null) || json.isEmpty()) ? JsonValue.NULL :
+                Json.createReader(new StringReader(json)).readValue();
         } catch (JsonParsingException e) {
             var offset = (int) e.getLocation().getStreamOffset();
             var pre = (offset < 0) ? "" : json.substring(0, offset);
@@ -99,9 +101,11 @@ public class HttpUtils {
 
     public static String toFlatString(JsonValue jsonValue) {
         if (jsonValue == null || JsonValue.NULL.equals(jsonValue)) return "null";
-        var string = (jsonValue instanceof JsonString) ? ((JsonString) jsonValue).getString() : jsonValue.toString();
+        var string = (jsonValue instanceof JsonString) ? jsonString(jsonValue) : jsonValue.toString();
         return string.replace("\n", " ").replace("\"", "");
     }
+
+    public static String jsonString(JsonValue value) {return (value == null) ? null : ((JsonString) value).getString();}
 
     public static String errorCode(Throwable exception) {
         var code = String.join("-", splitCamel(exception.getClass().getSimpleName())).toLowerCase(ROOT);
@@ -136,5 +140,10 @@ public class HttpUtils {
     private static String getSubtypeOrSuffix(MediaType mediaType) {
         var subtype = mediaType.getSubtype();
         return subtype.contains("+") ? subtype.substring(subtype.indexOf('+') + 1) : subtype;
+    }
+
+    /** The username (upn) in a JWT token string. Careful: this fails terribly with invalid tokens */
+    public static String jwtUpn(String token) {
+        return readJson(base64decode(token.split("\\.", 3)[1])).asJsonObject().getString("upn");
     }
 }

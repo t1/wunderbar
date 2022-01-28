@@ -8,6 +8,8 @@ import lombok.With;
 import javax.json.Json;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
+import javax.json.JsonPatch;
+import javax.json.JsonPatchBuilder;
 import javax.json.JsonValue;
 import javax.json.bind.annotation.JsonbCreator;
 import javax.json.bind.annotation.JsonbTypeAdapter;
@@ -23,9 +25,11 @@ import java.util.function.Function;
 
 import static com.github.t1.wunderbar.junit.http.HttpUtils.APPLICATION_JSON_UTF8;
 import static com.github.t1.wunderbar.junit.http.HttpUtils.JSONB;
+import static com.github.t1.wunderbar.junit.http.HttpUtils.PROBLEM_DETAIL_TYPE;
 import static com.github.t1.wunderbar.junit.http.HttpUtils.fromJson;
 import static com.github.t1.wunderbar.junit.http.HttpUtils.isCompatible;
 import static com.github.t1.wunderbar.junit.http.HttpUtils.optional;
+import static com.github.t1.wunderbar.junit.http.HttpUtils.read;
 import static com.github.t1.wunderbar.junit.http.HttpUtils.readJson;
 import static javax.json.JsonValue.ValueType.OBJECT;
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON_TYPE;
@@ -56,7 +60,7 @@ public class HttpResponse {
         this.body = body;
     }
 
-    @Override public String toString() {return (headerProperties() + (body == null ? "" : body)).trim();}
+    @Override public String toString() {return (headerProperties() + body).trim();}
 
     public String headerProperties() {
         return "" +
@@ -66,13 +70,19 @@ public class HttpResponse {
 
     public String getStatusString() {return status.getStatusCode() + " " + status.getReasonPhrase();}
 
+    public boolean isProblemDetail() {
+        return hasBody() && PROBLEM_DETAIL_TYPE.isCompatible(getContentType());
+    }
+
     public HttpResponse withFormattedBody() {return (isJson()) ? withBody(body().map(HttpUtils::formatJson).orElseThrow()) : this;}
 
     public boolean hasBody() {return body != null;}
 
     public Optional<String> body() {return Optional.ofNullable(body);}
 
-    public Optional<JsonValue> getJsonBody() {return jsonValue.updateAndGet(this::createOrGetJsonValue);}
+    public Optional<JsonValue> json() {return jsonValue.updateAndGet(this::createOrGetJsonValue);}
+
+    public <T> T as(Class<T> type) {return read(body, contentType, type);}
 
     public boolean isJson() {return hasBody() && isCompatible(APPLICATION_JSON_TYPE, contentType);}
 
@@ -83,24 +93,37 @@ public class HttpResponse {
         return (old == null) ? body().map(HttpUtils::readJson) : old;
     }
 
-    public JsonValue jsonValue() {return getJsonBody().orElseThrow();}
+    public JsonValue jsonValue() {return json().orElseThrow();}
 
     public JsonObject jsonObject() {return jsonValue().asJsonObject();}
 
-    public boolean has(String field) {
-        return isJsonObject() && jsonObject().containsKey(field);
-    }
+    public boolean has(String field) {return isJsonObject() && jsonObject().containsKey(field);}
 
     public JsonValue get(String pointer) {
-        return jsonObject().getValue("/" + pointer);
+        if (!pointer.startsWith("/")) pointer = "/" + pointer;
+        return jsonObject().getValue(pointer);
     }
 
-    public HttpResponse withJsonObject(Function<JsonObjectBuilder, JsonObjectBuilder> mapper) {
-        assert isJsonObject();
-        return withJsonBody(mapper.apply(Json.createObjectBuilder(jsonObject())).build());
+    public HttpResponse patch(Function<JsonPatchBuilder, JsonPatchBuilder> patch) {return with(patch.apply(Json.createPatchBuilder()));}
+
+    public HttpResponse with(JsonPatchBuilder patch) {return with(patch.build());}
+
+    public HttpResponse with(JsonPatch patch) {return with(patch.apply(jsonObject()));}
+
+    public HttpResponse with(Function<JsonObjectBuilder, JsonObjectBuilder> mapper) {
+        return with(mapper.apply(getObjectBuilder()).build());
     }
 
-    public HttpResponse withJsonBody(JsonValue body) {
+    private JsonObjectBuilder getObjectBuilder() {
+        if (hasBody()) {
+            assert isJsonObject();
+            return Json.createObjectBuilder(jsonObject());
+        } else {
+            return Json.createObjectBuilder();
+        }
+    }
+
+    public HttpResponse with(JsonValue body) {
         return withBody(body.toString());
     }
 

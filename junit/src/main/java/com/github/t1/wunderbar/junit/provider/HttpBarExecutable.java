@@ -1,5 +1,6 @@
 package com.github.t1.wunderbar.junit.provider;
 
+import com.github.t1.wunderbar.junit.WunderBarException;
 import com.github.t1.wunderbar.junit.http.HttpClient;
 import com.github.t1.wunderbar.junit.http.HttpInteraction;
 import com.github.t1.wunderbar.junit.http.HttpRequest;
@@ -29,9 +30,12 @@ class HttpBarExecutable implements Executable {
         System.out.println("==================== start " + test);
         extension.beforeDynamicTestMethods.forEach(consumer -> consumer.accept(interactions));
 
-        for (var interaction : interactions)
+        for (var interaction : interactions) {
+            System.out.println("=> execute " + interaction.getNumber() + " of " + test.getInteractionCount());
             new Execution(interaction).run();
+        }
 
+        System.out.println("=> cleanup " + test);
         extension.afterDynamicTestMethods.forEach(consumer -> consumer.accept(interactions));
     }
 
@@ -41,11 +45,12 @@ class HttpBarExecutable implements Executable {
 
         private void run() {
             extension.beforeInteractionMethods.forEach(this::applyInteractionMethods);
-            System.out.println("-- request " + expected.getNumber() + ":\n" + expected.getRequest() + "\n");
+            var numbering = expected.getNumber() + "/" + test.getInteractionCount();
+            System.out.println("-- actual request " + numbering + ":\n" + expected.getRequest() + "\n");
 
-            HttpResponse actual = httpClient.send(expected.getRequest());
+            HttpResponse actual = httpClient.send(expected.getRequest()).withFormattedBody();
 
-            System.out.println("-- actual response " + expected.getNumber() + ":\n" + actual + "\n");
+            System.out.println("-- actual response " + numbering + ":\n" + actual + "\n");
             extension.afterInteractionMethods.forEach(consumer -> consumer.apply(expected));
             var onErrorParams = new OnInteractionErrorParams(expected, actual);
             extension.onInteractionErrorMethods.forEach(consumer -> consumer.accept(onErrorParams));
@@ -54,8 +59,9 @@ class HttpBarExecutable implements Executable {
         private void applyInteractionMethods(Function<HttpInteraction, Object> consumer) {
             var result = consumer.apply(expected);
             if (result instanceof HttpInteraction) expected = (HttpInteraction) result;
-            if (result instanceof HttpRequest) expected = expected.withRequest((HttpRequest) result);
-            if (result instanceof HttpResponse) expected = expected.withResponse((HttpResponse) result);
+            else if (result instanceof HttpRequest) expected = expected.withRequest((HttpRequest) result);
+            else if (result instanceof HttpResponse) expected = expected.withResponse((HttpResponse) result);
+            else if (result != null) throw new WunderBarException("unexpected return type " + result.getClass()); // TODO test (+ null)
         }
     }
 }

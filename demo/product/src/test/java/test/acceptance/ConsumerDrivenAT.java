@@ -13,6 +13,7 @@ import io.smallrye.graphql.client.typesafe.api.GraphQLClientApi;
 import io.smallrye.graphql.client.typesafe.api.Header;
 import io.smallrye.graphql.client.typesafe.api.TypesafeGraphQLClientBuilder;
 import lombok.Data;
+import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.eclipse.microprofile.graphql.Mutation;
 import org.eclipse.microprofile.graphql.NonNull;
@@ -22,9 +23,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestFactory;
 import test.tools.QuarkusService;
 
-import javax.json.bind.Jsonb;
-import javax.json.bind.JsonbBuilder;
-import javax.ws.rs.core.Response.Status;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -33,6 +31,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.regex.Pattern;
 
+import static com.github.t1.wunderbar.junit.http.HttpUtils.jsonString;
 import static com.github.t1.wunderbar.junit.provider.WunderBarBDDAssertions.then;
 import static com.github.t1.wunderbar.junit.provider.WunderBarTestFinder.findTestsIn;
 import static com.github.t1.wunderbar.junit.provider.WunderBarTestFinder.findTestsInArtifact;
@@ -58,20 +57,19 @@ class ConsumerDrivenAT {
         "Ud5OKaRU33AapZ2GSSKASfOkzshzw_y5G_e5-VqCXo5asspIYwSNzFy9JcA65JWhBttyepOPUx4Kmp3Eb5V9f-2rpfNGQbyHNh7rY" +
         "BpeLrnViaaVe_3wW4QKiAX17gncNf6nLWO-pH8_qlLcaWqBNrIBauA_YqrZT4kUcyb0uFz06hSThGiJliUS2KiZratjj3YvGj8X8_" +
         "ikqc7Tm_xldxlX_D5IHyuhNNe4sVppXDko7fQMw";
-    private static final Authorization WRITER = Authorization.valueOf(JWT);
+
+    private static final List<String> createdProductIds = new ArrayList<>();
 
     private final Backdoor backdoor = TypesafeGraphQLClientBuilder.newBuilder().endpoint(GRAPHQL_ENDPOINT).build(Backdoor.class);
-    private final List<String> created = new ArrayList<>();
+    private Authorization authorization;
 
     /** We use this backdoor to set up and tear down the test data */
     @GraphQLClientApi
     @SuppressWarnings("UnusedReturnValue")
     @Header(name = "Authorization", constant = JWT)
     private interface Backdoor {
-        @Query boolean exists(@NonNull String id);
+        @Query Product maybeProduct(@NonNull String id);
         @Mutation @NonNull Product store(@NonNull Product product);
-        // @Mutation @NonNull Product update(@NonNull Product patch);
-        @Mutation @NonNull Product forbid(@NonNull String productId);
         @Mutation Product delete(@NonNull String productId);
     }
 
@@ -95,6 +93,8 @@ class ConsumerDrivenAT {
     }
 
     @TestFactory DynamicNode demoOrderConsumerTests() {
+        authorization = Authorization.valueOf(JWT); // use real credentials
+        // if there were different bar files, we might use different credentials
         return findTestsIn("../order/target/wunder.bar");
     }
 
@@ -121,17 +121,17 @@ class ConsumerDrivenAT {
 
 
     @AfterDynamicTest void removeAllTestData() {
-        created.forEach(backdoor::delete);
-        created.clear();
+        createdProductIds.forEach(backdoor::delete);
+        createdProductIds.clear();
     }
 
     /**
      * We provide a REST as well as a GraphQL service. To make our setup code simpler, we make it specific to the technology.
      * In this case the business logic is really simple, but if you have more complex setup logic, there may be better options.
      *
-     * @return the request with the <code>Authorization</code> header set to the {@link #WRITER}, when necessary
+     * @return the request with the <code>Authorization</code> header set, when necessary
      */
-    @BeforeInteraction HttpRequest createTestData(HttpInteraction interaction) {
+    @BeforeInteraction HttpInteraction createTestData(HttpInteraction interaction) {
         var request = interaction.getRequest();
         var isGraphQL = request.getUri().getPath().equals("/graphql");
         log.info("create test data for " + (isGraphQL ? "graphql" : "rest") + " interaction " + interaction.getNumber() + ": "
@@ -140,132 +140,137 @@ class ConsumerDrivenAT {
             ? new GraphQlSetUp(interaction)
             : new RestSetUp(interaction);
 
+        request = setup.getRequest();
+        request = authorized(request, isGraphQL, setup.getNeedsAuth());
+
+        return interaction
+            .withRequest(request.withFormattedBody())
+            .withResponse(setup.getResponse());
+    }
+
+    private HttpRequest authorized(HttpRequest request, boolean isGraphQL, boolean needsAuth) {
         var isAuthorized = request.getAuthorization() != null;
         // How can you specify for an MP RestClient that one method needs authentication, but another one doesn't?
         // With MP GraphQL Client that's trivial, e.g. with an `@AuthorizationHeader` annotation.
-        if (isGraphQL && setup.needsAuth() && !isAuthorized) throw new RuntimeException("expected request to be authorized");
-        if (isAuthorized && !setup.needsAuth()) throw new RuntimeException("expected request NOT to be authorized");
-        return setup.needsAuth() ? request.withAuthorization(WRITER) : request;
+        if (isGraphQL && needsAuth && !isAuthorized) throw new RuntimeException("expected request to be authorized");
+        if (isAuthorized && !needsAuth) throw new RuntimeException("expected request NOT to be authorized");
+        return needsAuth ? request.withAuthorization(authorization) : request;
     }
 
 
-    private void create(Product product) {
-        created.add(product.getId());
-        backdoor.store(product);
+    private Product create(Product product) {
+        log.debug("create product {}", product);
+        var createdProduct = backdoor.store(product);
+        log.debug("created product {}", createdProduct);
+        createdProductIds.add(createdProduct.getId());
+        log.debug("created product ids {}", createdProductIds);
+        return createdProduct;
     }
 
     private void createForbiddenProduct(String id) {
-        create(Product.builder().id(id).build());
-        backdoor.forbid(id);
+        create(Product.builder().id(id).forbidden(true).build());
     }
 
-    private void checkExists(String id) {
-        then(backdoor.exists(id))
-            .describedAs("product " + id + " does not yet exist; request the _old_ state before you request an update")
-            .isTrue();
+    private Product checkExists() {
+        var message = "the consumer has to request the _old_ state before requesting an update";
+        then(ConsumerDrivenAT.createdProductIds).as(message).hasSize(1);
+        var id = createdProductIds.get(0);
+        var product = backdoor.maybeProduct(id);
+        then(product).describedAs("product " + id + " does not yet exist; " + message).isNotNull();
+        return product;
     }
 
     private void doNothing() {}
 
     private interface SetUp {
-        boolean needsAuth();
+        Boolean getNeedsAuth();
+        HttpRequest getRequest();
+        HttpResponse getResponse();
     }
 
+    @Getter
     private class RestSetUp implements SetUp {
         private final HttpRequest request;
         private final HttpResponse response;
-        private boolean needsAuth;
+        private final Boolean needsAuth;
 
         private RestSetUp(HttpInteraction interaction) {
             this.request = interaction.getRequest();
             this.response = interaction.getResponse();
-
-            setup();
+            this.needsAuth = setup();
         }
 
-        @Override public boolean needsAuth() {return needsAuth;}
-
-        private void setup() {
-            switch (expectedStatus()) {
+        private boolean setup() {
+            switch (response.getStatus().toEnum()) {
                 case OK:
-                    switch (requestMethod()) {
+                    switch (request.getMethod()) {
                         case "GET":
-                            create(expectedProduct());
-                            this.needsAuth = false;
-                            return;
+                            create(response.as(Product.class));
+                            return false;
                         case "PATCH":
-                            checkExists(expectedProduct().getId());
-                            this.needsAuth = true;
-                            return;
+                            checkExists();
+                            return true;
                         default:
-                            throw new RuntimeException("unsupported method " + requestMethod());
+                            throw new RuntimeException("unsupported method " + request.getMethod());
                     }
                 case FORBIDDEN:
-                    createForbiddenProduct(requestedProductId());
-                    this.needsAuth = false;
-                    return;
+                    createForbiddenProduct(request.matchUri("/rest/products/(.*)").group(1));
+                    return false;
                 case NOT_FOUND:
                     doNothing();
-                    this.needsAuth = false;
-                    return;
+                    return false;
                 default:
-                    throw new RuntimeException("unsupported status " + expectedStatus());
+                    throw new RuntimeException("unsupported status " + response.getStatus());
             }
-        }
-
-        private Status expectedStatus() {return response.getStatus().toEnum();}
-
-        private String requestMethod() {return request.getMethod();}
-
-        private Product expectedProduct() {
-            return JSONB.fromJson(response.body().orElseThrow(), Product.class);
-        }
-
-        private String requestedProductId() {
-            var requestedPath = request.getUri().getPath();
-            var requiredPathPrefix = "/rest/products/";
-            if (!requestedPath.startsWith(requiredPathPrefix))
-                throw new RuntimeException("expected path to start with `" + requiredPathPrefix + "` but was: " + requestedPath);
-            return requestedPath.substring(requiredPathPrefix.length());
         }
     }
 
 
+    @Getter
     private class GraphQlSetUp implements SetUp {
-        private boolean needsAuth;
-
+        private HttpRequest request;
+        private HttpResponse response;
+        private final Boolean needsAuth;
         private final GraphQlResponse graphQlResponse;
 
         private GraphQlSetUp(HttpInteraction interaction) {
-            HttpResponse response = interaction.getResponse();
-            this.graphQlResponse = JSONB.fromJson(response.body().orElseThrow(), GraphQlResponse.class);
-            setup();
+            this.request = interaction.getRequest();
+            this.response = interaction.getResponse();
+            this.graphQlResponse = response.as(GraphQlResponse.class);
+            this.needsAuth = setup();
         }
 
-        @Override public boolean needsAuth() {return needsAuth;}
-
-        private void setup() {
-            var code = expectedErrorCode().or(this::dataName).orElseThrow();
-            switch (code) {
+        private boolean setup() {
+            var operation = expectedErrorCode().or(this::dataName).orElseThrow();
+            switch (operation) {
                 case "product":
                     create(graphQlResponse.data.product);
-                    this.needsAuth = false;
-                    return;
+                    return false;
                 case "update":
-                    checkExists(graphQlResponse.data.update.getId());
-                    this.needsAuth = true;
-                    return;
+                    patchExisting();
+                    return true;
                 case "product-forbidden":
-                    createForbiddenProduct(expectedForbiddenProductId());
-                    this.needsAuth = false;
-                    return;
+                    createForbiddenProduct(jsonString(request.get("/variables/id")));
+                    return false;
                 case "product-not-found":
                     doNothing();
-                    this.needsAuth = false;
-                    return;
+                    return false;
                 default:
-                    throw new RuntimeException("unsupported code: " + code);
+                    throw new RuntimeException("unsupported code: " + operation);
             }
+        }
+
+        private void create(Product product) {
+            product.setId(null); // don't use the id from the consumer... the service will generate one
+            var created = ConsumerDrivenAT.this.create(product);
+            request = request.patch(patch -> patch.replace("/variables/id", created.getId()));
+            response = response.patch(patch -> patch.replace("/data/product/id", created.getId()));
+        }
+
+        private void patchExisting() {
+            var existing = checkExists();
+            request = request.patch(patch -> patch.replace("/variables/patch/id", existing.getId()));
+            response = response.patch(patch -> patch.replace("/data/update/id", existing.getId()));
         }
 
         private Optional<String> expectedErrorCode() {
@@ -276,14 +281,6 @@ class ConsumerDrivenAT {
         }
 
         private Optional<String> dataName() {return Optional.of(graphQlResponse.data.product != null ? "product" : "update");}
-
-        private String expectedForbiddenProductId() {
-            var message = graphQlResponse.errors.get(0).getMessage();
-            var pattern = Pattern.compile("product (?<id>.+) is forbidden");
-            var matcher = pattern.matcher(message);
-            then(matcher.matches()).isTrue();
-            return matcher.group("id");
-        }
     }
 
     public static @Data class GraphQlResponse {
@@ -304,6 +301,4 @@ class ConsumerDrivenAT {
     public static @Data class GraphQlErrorExtensions {
         String code;
     }
-
-    private static final Jsonb JSONB = JsonbBuilder.create();
 }

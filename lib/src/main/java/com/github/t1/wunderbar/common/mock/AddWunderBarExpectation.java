@@ -2,18 +2,15 @@ package com.github.t1.wunderbar.common.mock;
 
 import com.github.t1.wunderbar.junit.http.HttpRequest;
 import com.github.t1.wunderbar.junit.http.HttpResponse;
+import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
 
 import javax.json.Json;
-import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
 
-import static com.github.t1.wunderbar.common.Utils.prefix;
 import static com.github.t1.wunderbar.common.mock.GraphQLResponseBuilder.graphQLResponse;
-import static com.github.t1.wunderbar.junit.http.HttpUtils.fromJson;
-import static com.github.t1.wunderbar.junit.http.HttpUtils.toFlatString;
 
 @Slf4j
 @ToString @EqualsAndHashCode(callSuper = true)
@@ -25,25 +22,14 @@ class AddWunderBarExpectation extends GraphQLMockExpectation {
     }
 
     @Override public HttpResponse handle(HttpRequest request) {
-        var variables = request.get("variables").asJsonObject();
+        var variables = request.as(Body.class).getVariables();
         var expectation = addExpectation(variables);
         return graphQLResponse().with(builder -> expectationResponse(builder, expectation)).build();
     }
 
-    private WunderBarMockExpectation addExpectation(JsonObject variables) {
+    private WunderBarMockExpectation addExpectation(Variables variables) {
         log.debug("add expectation: {}", variables);
-
-        var request = fromJson(variables.getJsonObject("request"), HttpRequest.class);
-        log.debug("request:\n{}", prefix("    ", request.toString()));
-
-        var depletion = variables.getJsonObject("depletion");
-        log.debug("depletion: {}", toFlatString(depletion));
-        var maxCallCount = depletion.getInt("maxCallCount");
-
-        var response = fromJson(variables.getJsonObject("response"), HttpResponse.class);
-        log.debug("response:\n{}", prefix("    ", response.toString()));
-
-        return MockService.addExpectation(request, maxCallCount, response);
+        return MockService.addExpectation(variables.request, variables.depletion.maxCallCount, variables.response);
     }
 
     private static void expectationResponse(JsonObjectBuilder builder, WunderBarMockExpectation expectation) {
@@ -51,5 +37,21 @@ class AddWunderBarExpectation extends GraphQLMockExpectation {
             .add("addWunderBarExpectation", Json.createObjectBuilder()
                 .add("status", "ok")
                 .add("id", expectation.getId())));
+    }
+
+    public static @Data class Body {
+        String query;
+        Variables variables;
+        String operationName;
+    }
+
+    public static @Data class Variables {
+        HttpRequest request;
+        Depletion depletion;
+        HttpResponse response;
+    }
+
+    public static @Data class Depletion {
+        int maxCallCount;
     }
 }

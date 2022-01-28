@@ -27,7 +27,6 @@ import java.util.stream.Stream;
 import java.util.stream.Stream.Builder;
 
 import static com.github.t1.wunderbar.common.Utils.invoke;
-import static com.github.t1.wunderbar.junit.http.HttpUtils.PROBLEM_DETAIL_TYPE;
 import static com.github.t1.wunderbar.junit.http.HttpUtils.isCompatible;
 import static com.github.t1.wunderbar.junit.provider.WunderBarBDDAssertions.then;
 
@@ -150,6 +149,8 @@ class WunderBarApiProviderJUnitExtension implements Extension, BeforeEachCallbac
 
     @Override public void afterEach(ExtensionContext context) {
         afterDynamicTestMethods.clear();
+        afterInteractionMethods.clear();
+        beforeInteractionMethods.clear();
         beforeDynamicTestMethods.clear();
         this.settings = null;
         this.context = null;
@@ -178,9 +179,9 @@ class WunderBarApiProviderJUnitExtension implements Extension, BeforeEachCallbac
         }
 
         private JsonValue body(HttpResponse response) {
-            if (PROBLEM_DETAIL_TYPE.isCompatible(response.getContentType()))
+            if (response.isProblemDetail())
                 response = removeVolatileProblemDetails(response);
-            return response.getJsonBody().orElse(JsonValue.NULL);
+            return response.json().orElse(JsonValue.NULL);
         }
 
         /**
@@ -188,7 +189,7 @@ class WunderBarApiProviderJUnitExtension implements Extension, BeforeEachCallbac
          * and explicitly allowed to change between calls; don't check those
          */
         private HttpResponse removeVolatileProblemDetails(HttpResponse response) {
-            return response.withFormattedBody().withJsonObject(body -> {
+            return response.withFormattedBody().with(body -> {
                 body.remove("title");
                 body.remove("detail");
                 return body;

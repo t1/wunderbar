@@ -5,6 +5,7 @@ import lombok.Value;
 
 import static com.github.t1.wunderbar.junit.http.HttpUtils.base64;
 import static com.github.t1.wunderbar.junit.http.HttpUtils.base64decode;
+import static com.github.t1.wunderbar.junit.http.HttpUtils.jwtUpn;
 import static java.util.Locale.ROOT;
 
 public interface Authorization {
@@ -28,15 +29,16 @@ public interface Authorization {
 
     /** The credentials as used for the http <code>Authorization</code> header */
     String toHeader();
+    Dummy toDummy();
 
     @Value class Dummy implements Authorization {
-        public static final Dummy INSTANCE = new Dummy("authorization");
+        String username;
 
-        private Dummy(String credentials) {assert "authorization" .equals(credentials);}
-
-        @Override public String toString() {return "Dummy authorization";}
+        @Override public String toString() {return "Dummy " + username;}
 
         @Override public String toHeader() {throw new UnsupportedOperationException();}
+
+        @Override public Dummy toDummy() {return this;}
     }
 
     @AllArgsConstructor
@@ -51,9 +53,11 @@ public interface Authorization {
             this.password = split[1];
         }
 
-        @Override public String toString() {return "Basic " + base64(":");}
+        @Override public String toString() {return "Basic " + username + ":<hidden>";}
 
         @Override public String toHeader() {return "Basic " + base64(username + ":" + password);}
+
+        @Override public Dummy toDummy() {return new Dummy(username);}
     }
 
     @Value class Bearer implements Authorization {
@@ -62,5 +66,7 @@ public interface Authorization {
         @Override public String toString() {return "Bearer token";}
 
         @Override public String toHeader() {return "Bearer " + token;}
+
+        @Override public Dummy toDummy() {return new Dummy(jwtUpn(token));}
     }
 }

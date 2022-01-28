@@ -8,7 +8,7 @@ import javax.json.JsonObject;
 
 @RequiredArgsConstructor @EqualsAndHashCode(callSuper = true)
 abstract class GraphQLMockExpectation extends WunderBarMockExpectation {
-    private final String query;
+    private final String expectedQuery;
 
     @Override public boolean matches(HttpRequest request) {
         return matchesGraphQl(request);
@@ -22,6 +22,6 @@ abstract class GraphQLMockExpectation extends WunderBarMockExpectation {
 
     private boolean matchesQuery(JsonObject body) {
         return body.containsKey("query")
-               && body.getString("query").equals(query);
+               && body.getString("query").equals(expectedQuery);
     }
 }

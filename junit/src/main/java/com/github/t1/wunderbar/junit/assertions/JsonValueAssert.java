@@ -1,6 +1,9 @@
 package com.github.t1.wunderbar.junit.assertions;
 
+import com.github.t1.wunderbar.junit.http.HttpUtils;
 import org.assertj.core.api.AbstractAssert;
+import org.assertj.core.api.AbstractStringAssert;
+import org.assertj.core.api.InstanceOfAssertFactories;
 import org.assertj.core.api.InstanceOfAssertFactory;
 
 import javax.json.Json;
@@ -48,11 +51,11 @@ public class JsonValueAssert<SELF extends JsonValueAssert<SELF, ACTUAL>, ACTUAL 
                "    actual: " + patch.get("value");
     }
 
-    public JsonObjectAssert<?, ?> asObject() {return isObject().asInstanceOf(JSON_OBJECT);}
+    public JsonObjectAssert<?, ?> isObject() {return isType(OBJECT).asInstanceOf(JSON_OBJECT);}
 
-    public JsonValueAssert<SELF, ACTUAL> isObject() {return isType(OBJECT);}
-
-    public JsonValueAssert<SELF, ACTUAL> isString() {return isType(STRING);}
+    public AbstractStringAssert<?> isJsonString() {
+        return isType(STRING).extracting(HttpUtils::jsonString, InstanceOfAssertFactories.STRING);
+    }
 
     public JsonValueAssert<SELF, ACTUAL> isType(ValueType expected) {
         then(actual.getValueType()).isEqualTo(expected);

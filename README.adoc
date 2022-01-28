@@ -134,7 +134,7 @@ For a fully running example, see the demo https://github.com/t1/wunderbar/blob/m
 [#credentials]
 == Credentials
 
-`bar` files never contain the value of a real `Authorization` header.
+`bar` files never contain the secrets of a real `Authorization` header (they used to say that the username was a secret, too, but when you use good passwords (i.e. really random and long enough), this is not necessary any more, but it make life much easier to see the username).
 They could contain arbitrary values for integration tests, but they don't add any benefit; for system tests, the interactions would even contain real credentials.
 So WunderBar only writes dummy values instead.
 
