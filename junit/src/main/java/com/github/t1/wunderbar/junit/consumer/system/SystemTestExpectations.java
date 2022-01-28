@@ -111,14 +111,22 @@ public class SystemTestExpectations<T> implements WunderBarExpectations<T> {
 
     private void addExpectation() {
         log.debug("add expectation to mock service");
-        this.didAddExpectations = true;
-        var stubbingResult = mock.addWunderBarExpectation(
-            currentInteraction.getRequest().withFormattedBody(),
-            currentExpectation.getDepletion(),
-            currentInteraction.getResponse());
+        var stubbingResult = addWunderBarExpectation();
         log.debug("---------- add expectation and stubbing done -> {}", stubbingResult);
         if (stubbingResult == null || !"ok".equals(stubbingResult.getStatus()))
             throw new WunderBarException("unexpected response from adding expectation to mock server: " + stubbingResult);
+        this.didAddExpectations = true;
+    }
+
+    private WunderBarStubbingResult addWunderBarExpectation() {
+        try {
+            return mock.addWunderBarExpectation(
+                currentInteraction.getRequest().withFormattedBody(),
+                currentExpectation.getDepletion(),
+                currentInteraction.getResponse());
+        } catch (Exception e) {
+            throw new WunderBarException("failed to add expectation to mock server; maybe it's a real service", e);
+        }
     }
 
     private HttpResponse handleStubRequest(HttpRequest request) {

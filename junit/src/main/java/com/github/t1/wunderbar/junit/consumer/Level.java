@@ -35,13 +35,13 @@ public enum Level {
 
     /**
      * There are two options:
-     * <p>
-     * 1) Call a real service, so you can explore the behavior of an existing API.
-     * Building expectations with {@link WunderbarExpectationBuilder#given given} doesn't make any sense in this case
-     * and will result in premature calls to the service.
-     * This may be irritating, but we can't distinguish these calls from valid ones.
-     * <p>
-     * 2) Call an already installed <code>wunderbar-mock-server</code>.
+     * <ol>
+     * <li> Call a real service, so you can explore the behavior of an existing API.
+     * Building expectations with {@link WunderbarExpectationBuilder#given given} doesn't make any sense in this case,
+     * as the service probably won't understand the <code>addWunderBarExpectation</code> et.al. queries
+     * that WunderBar uses to manage the expectations.
+     *
+     * <li> Call a pre-installed <code>wunderbar-mock-server</code>.
      * How you do this and how you configure your service to call the mock-server is out of the scope of WunderBar.
      * <p>
      * Use the {@link Service#endpoint()} to configure where the service or mock-service run.

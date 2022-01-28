@@ -34,7 +34,7 @@
                                 <artifact>
                                     <file>target/wunder.bar</file>
                                     <type>bar</type>
-                                    <classifier>bar</classifier>
+                                    <classifier>products</classifier>
                                 </artifact>
                             </artifacts>
                         </configuration>
