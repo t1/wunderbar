@@ -3,7 +3,6 @@ package com.github.t1.wunderbar.junit.http;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 
-import javax.json.JsonValue;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response.Status;
 import java.io.IOException;
@@ -16,7 +15,6 @@ import java.time.Duration;
 import static com.github.t1.wunderbar.junit.http.HttpUtils.charset;
 import static java.net.http.HttpClient.Redirect.NORMAL;
 import static java.net.http.HttpRequest.BodyPublishers.noBody;
-import static java.net.http.HttpResponse.BodySubscribers.mapping;
 import static javax.ws.rs.core.HttpHeaders.ACCEPT;
 import static javax.ws.rs.core.HttpHeaders.AUTHORIZATION;
 import static javax.ws.rs.core.HttpHeaders.CONTENT_TYPE;
@@ -31,18 +29,11 @@ public class HttpClient {
 
     private final URI baseUri;
 
-    private BodyHandler<JsonValue> ofJson() {
-        return (responseInfo) -> {
-            var charset = charset(responseInfo.headers().firstValue(CONTENT_TYPE).map(MediaType::valueOf).orElse(null));
-            return mapping(BodySubscribers.ofString(charset), HttpUtils::toJson);
-        };
-    }
-
     @SneakyThrows({IOException.class, InterruptedException.class})
     public HttpResponse send(HttpRequest request) {
         var httpRequest = convert(request);
 
-        var httpResponse = HTTP.send(httpRequest, ofJson());
+        var httpResponse = HTTP.send(httpRequest, bodyHandler());
 
         return convert(httpResponse);
     }
@@ -58,7 +49,12 @@ public class HttpClient {
         return builder.build();
     }
 
-    private HttpResponse convert(java.net.http.HttpResponse<?> response) {
+    private BodyHandler<String> bodyHandler() {
+        return (responseInfo) -> BodySubscribers.ofString(
+            charset(responseInfo.headers().firstValue(CONTENT_TYPE).map(MediaType::valueOf).orElse(null)));
+    }
+
+    private HttpResponse convert(java.net.http.HttpResponse<String> response) {
         return HttpResponse.builder()
             .status(Status.fromStatusCode(response.statusCode()))
             .contentType(contentType(response))
