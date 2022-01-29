@@ -123,9 +123,7 @@ public class HttpResponse {
         }
     }
 
-    public HttpResponse with(JsonValue body) {
-        return withBody(body.toString());
-    }
+    public HttpResponse with(JsonValue body) {return withBody(body.toString());}
 
     public Response toJaxRs() {
         return Response.status(getStatus()).type(getContentType()).entity(getBody()).build();

@@ -170,9 +170,7 @@ public class HttpRequest {
         }
     }
 
-    public HttpRequest with(JsonValue body) {
-        return withBody(body.toString());
-    }
+    public HttpRequest with(JsonValue body) {return withBody(body.toString());}
 
     @SuppressWarnings("unused")
     public static class HttpRequestBuilder {
