@@ -98,7 +98,6 @@ class OrderMockST {
         .price(1599)
         .build();
 
-    @Slow
     @Test void shouldGetOrder() {
         given(products.product(PRODUCT_ID)).returns(product);
 
