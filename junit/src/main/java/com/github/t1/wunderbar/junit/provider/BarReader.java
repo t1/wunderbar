@@ -14,6 +14,7 @@ import java.io.StringReader;
 import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 import java.util.Properties;
@@ -32,6 +33,7 @@ abstract class BarReader {
 
     Stream<Test> tests() {
         return treeEntries()
+            .sorted()
             .distinct() // remove duplicates for all the files for one test
             .map(TreeEntry::toTest);
     }
@@ -76,11 +78,16 @@ abstract class BarReader {
     }
 
 
-    @Value static class TreeEntry {
+    @Value static class TreeEntry implements Comparable<TreeEntry> {
         @NonNull Path path;
         int number;
         @NonNull URI uri;
 
         private Test toTest() {return new Test(path, number, uri);}
+
+        @Override public int compareTo(@NonNull TreeEntry that) {return COMPARATOR.compare(this, that);}
+
+        private static final Comparator<TreeEntry> COMPARATOR = Comparator.comparing(TreeEntry::getUri)
+            .thenComparing(TreeEntry::getNumber);
     }
 }

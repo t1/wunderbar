@@ -266,6 +266,32 @@ class SetupTeardownAT {
         then(called).containsExactly(
             "BeforeEach",
 
+            "---------------------------------------- shouldGetHealth [with 1 tests]",
+            "BeforeDynamicTest",
+            "BeforeDynamicTest interactions:[/1:401]:shouldGetHealth",
+            "BeforeDynamicTest interactions:[/1:401, /99:200]:shouldGetHealth",
+            "BeforeDynamicTest requests:[/2, /100]:shouldGetHealth",
+            "BeforeDynamicTest responses:[402, 201]:shouldGetHealth",
+
+            "BeforeInteraction",
+            "BeforeInteraction interaction:/3:403:shouldGetHealth[1/1]",
+            "BeforeInteraction request:/4:shouldGetHealth",
+            "BeforeInteraction response:404:shouldGetHealth",
+
+            "AfterInteraction",
+            "AfterInteraction interaction:/5:405:shouldGetHealth[1/1]",
+            "AfterInteraction interaction:/4:406:shouldGetHealth[1/1]",
+            "AfterInteraction actual:405:shouldGetHealth[1/1]",
+
+            "OnInteractionError interaction:/4:406:request:/4:response:406:actual:406:errors:[]:shouldGetHealth[1/1]",
+
+            "AfterDynamicTest interactions:[/2:402]:shouldGetHealth [with 1 tests]",
+            "AfterDynamicTest requests:[/2]:shouldGetHealth",
+            "AfterDynamicTest responses:[402]:shouldGetHealth",
+            "AfterDynamicTest actuals:[406]:shouldGetHealth",
+            "AfterDynamicTest",
+            "---------------------------------------- done shouldGetHealth [with 1 tests]",
+            "",
             "---------------------------------------- shouldGetHealthTwice [with 2 tests]",
             "BeforeDynamicTest",
             "BeforeDynamicTest interactions:[/1:401, /1:401]:shouldGetHealthTwice",
@@ -305,32 +331,6 @@ class SetupTeardownAT {
             "AfterDynamicTest actuals:[406, 406]:shouldGetHealthTwice",
             "AfterDynamicTest",
             "---------------------------------------- done shouldGetHealthTwice [with 2 tests]",
-            "",
-            "---------------------------------------- shouldGetHealth [with 1 tests]",
-            "BeforeDynamicTest",
-            "BeforeDynamicTest interactions:[/1:401]:shouldGetHealth",
-            "BeforeDynamicTest interactions:[/1:401, /99:200]:shouldGetHealth",
-            "BeforeDynamicTest requests:[/2, /100]:shouldGetHealth",
-            "BeforeDynamicTest responses:[402, 201]:shouldGetHealth",
-
-            "BeforeInteraction",
-            "BeforeInteraction interaction:/3:403:shouldGetHealth[1/1]",
-            "BeforeInteraction request:/4:shouldGetHealth",
-            "BeforeInteraction response:404:shouldGetHealth",
-
-            "AfterInteraction",
-            "AfterInteraction interaction:/5:405:shouldGetHealth[1/1]",
-            "AfterInteraction interaction:/4:406:shouldGetHealth[1/1]",
-            "AfterInteraction actual:405:shouldGetHealth[1/1]",
-
-            "OnInteractionError interaction:/4:406:request:/4:response:406:actual:406:errors:[]:shouldGetHealth[1/1]",
-
-            "AfterDynamicTest interactions:[/2:402]:shouldGetHealth [with 1 tests]",
-            "AfterDynamicTest requests:[/2]:shouldGetHealth",
-            "AfterDynamicTest responses:[402]:shouldGetHealth",
-            "AfterDynamicTest actuals:[406]:shouldGetHealth",
-            "AfterDynamicTest",
-            "---------------------------------------- done shouldGetHealth [with 1 tests]",
             "",
             "AfterEach");
     }
