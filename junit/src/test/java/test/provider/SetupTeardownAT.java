@@ -10,6 +10,8 @@ import com.github.t1.wunderbar.junit.provider.BeforeDynamicTest;
 import com.github.t1.wunderbar.junit.provider.BeforeInteraction;
 import com.github.t1.wunderbar.junit.provider.OnInteractionError;
 import com.github.t1.wunderbar.junit.provider.WunderBarApiProvider;
+import com.github.t1.wunderbar.junit.provider.WunderBarExecution;
+import com.github.t1.wunderbar.junit.provider.WunderBarExecutions;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
@@ -44,9 +46,9 @@ class SetupTeardownAT {
 
     @BeforeAll static void beforeAll() {
         expectations.add(
-            HttpRequest.builder().uri("/4").build(),
+            HttpRequest.builder().uri("/3").build(),
             3,
-            HttpResponse.builder().status(400).with("status", "3").build());
+            HttpResponse.builder().status(400).with("status", "UP").build());
     }
 
 
@@ -54,29 +56,33 @@ class SetupTeardownAT {
 
 
     @Order(1)
-    @BeforeDynamicTest void beforeDynamicTest(DynamicNode test) {
-        called.add("---------------------------------------- " + test.getDisplayName());
-        called(BeforeDynamicTest.class);
+    @BeforeDynamicTest void beforeDynamicTest(WunderBarExecutions executions) {
+        called.add("---------------------------------------- " + executions);
     }
 
     @Order(2)
-    @BeforeDynamicTest List<HttpInteraction> beforeDynamicTest(List<HttpInteraction> list) {
-        list = list.stream().map(this::incInteraction).collect(toList());
-        called(BeforeDynamicTest.class, "interactions", interactionInfos(list));
-        return list;
+    @BeforeDynamicTest void beforeDynamicTest() {
+        called(BeforeDynamicTest.class);
     }
 
     @Order(3)
-    @BeforeDynamicTest List<HttpRequest> beforeDynamicTestWithRequests(List<HttpRequest> list) {
-        list = list.stream().map(this::incUri).collect(toList());
-        called(BeforeDynamicTest.class, "requests", requestUris(list));
+    @BeforeDynamicTest List<HttpInteraction> beforeDynamicTest(List<HttpInteraction> list, WunderBarExecutions executions) {
+        list = list.stream().map(this::incInteraction).collect(toList());
+        called(BeforeDynamicTest.class, "interactions", interactionInfos(list), executions.getDisplayName());
         return list;
     }
 
     @Order(4)
-    @BeforeDynamicTest List<HttpResponse> beforeDynamicTestWithResponses(List<HttpResponse> list) {
+    @BeforeDynamicTest List<HttpRequest> beforeDynamicTestWithRequests(List<HttpRequest> list, WunderBarExecutions executions) {
+        list = list.stream().map(this::incUri).collect(toList());
+        called(BeforeDynamicTest.class, "requests", requestUris(list), executions.getDisplayName());
+        return list;
+    }
+
+    @Order(5)
+    @BeforeDynamicTest List<HttpResponse> beforeDynamicTestWithResponses(List<HttpResponse> list, WunderBarExecutions executions) {
         list = list.stream().map(this::incStatus).collect(toList());
-        called(BeforeDynamicTest.class, "responses", responseStatus(list));
+        called(BeforeDynamicTest.class, "responses", responseStatus(list), executions.getDisplayName());
         return list;
     }
 
@@ -85,23 +91,23 @@ class SetupTeardownAT {
     @BeforeInteraction void beforeInteraction() {called(BeforeInteraction.class);}
 
     @Order(2)
-    @BeforeInteraction HttpInteraction beforeInteraction(HttpInteraction interaction) {
+    @BeforeInteraction HttpInteraction beforeInteraction(HttpInteraction interaction, WunderBarExecution execution) {
         interaction = incInteraction(interaction);
-        called(BeforeInteraction.class, "interaction", interaction.getRequest().getUri(), interaction.getResponse().getStatusCode());
+        called(BeforeInteraction.class, "interaction", interaction.getRequest().getUri(), interaction.getResponse().getStatusCode(), execution);
         return interaction;
     }
 
     @Order(3)
-    @BeforeInteraction HttpRequest beforeInteraction(HttpRequest request) {
+    @BeforeInteraction HttpRequest beforeInteraction(HttpRequest request, WunderBarExecution execution) {
         request = incUri(request);
-        called(BeforeInteraction.class, "request", request.getUri());
+        called(BeforeInteraction.class, "request", request.getUri(), execution.getDisplayName());
         return request;
     }
 
     @Order(4)
-    @BeforeInteraction HttpResponse beforeInteraction(HttpResponse response) {
+    @BeforeInteraction HttpResponse beforeInteraction(HttpResponse response, WunderBarExecution execution) {
         response = incStatus(response);
-        called(BeforeInteraction.class, "response", response.getStatusCode());
+        called(BeforeInteraction.class, "response", response.getStatusCode(), execution.getDisplayName());
         return response;
     }
 
@@ -110,8 +116,8 @@ class SetupTeardownAT {
     @AfterInteraction void afterInteraction() {called(AfterInteraction.class);}
 
     @Order(2)
-    @AfterInteraction HttpResponse afterInteraction(HttpRequest request, HttpResponse response) {
-        called(AfterInteraction.class, "interaction", request.getUri(), response.getStatusCode());
+    @AfterInteraction HttpResponse afterInteraction(HttpRequest request, HttpResponse response, WunderBarExecution execution) {
+        called(AfterInteraction.class, "interaction", request.getUri(), response.getStatusCode(), execution);
         return response;//TODO why not incStatus(response);
     }
 
@@ -121,18 +127,27 @@ class SetupTeardownAT {
 
 
     @Order(1)
-    @AfterDynamicTest void afterDynamicTest(List<HttpInteraction> list) {called(AfterDynamicTest.class, "interactions", interactionInfos(list));}
+    @AfterDynamicTest void afterDynamicTest(List<HttpInteraction> list, WunderBarExecutions executions) {
+        called(AfterDynamicTest.class, "interactions", interactionInfos(list), executions);
+    }
 
     @Order(2)
-    @AfterDynamicTest void afterDynamicTestWithRequests(List<HttpRequest> list) {called(AfterDynamicTest.class, "requests", requestUris(list));}
+    @AfterDynamicTest void afterDynamicTestWithRequests(List<HttpRequest> list, WunderBarExecutions executions) {
+        called(AfterDynamicTest.class, "requests", requestUris(list), executions.getDisplayName());
+    }
 
     @Order(3)
-    @AfterDynamicTest void afterDynamicTestWithResponses(List<HttpResponse> list) {called(AfterDynamicTest.class, "responses", responseStatus(list));}
+    @AfterDynamicTest void afterDynamicTestWithResponses(List<HttpResponse> list, WunderBarExecutions executions) {
+        called(AfterDynamicTest.class, "responses", responseStatus(list), executions.getDisplayName());
+    }
 
     @Order(4)
-    @AfterDynamicTest void afterDynamicTest() {
-        called(AfterDynamicTest.class);
-        called.add("---------------------------------------- done");
+    @AfterDynamicTest void afterDynamicTest() {called(AfterDynamicTest.class);}
+
+    @Order(5)
+    @AfterDynamicTest void afterDynamicTest(WunderBarExecutions executions) {
+        called.add("---------------------------------------- done " + executions);
+        called.add("");
     }
 
 
@@ -192,62 +207,62 @@ class SetupTeardownAT {
         then(called).containsExactly(
             "BeforeEach",
 
-            "---------------------------------------- shouldGetHealthTwice",
+            "---------------------------------------- shouldGetHealthTwice [with 2 tests]",
             "BeforeDynamicTest",
-            "BeforeDynamicTest interactions:[/1:401, /1:401]",
-            "BeforeDynamicTest requests:[/2, /2]",
-            "BeforeDynamicTest responses:[402, 402]",
+            "BeforeDynamicTest interactions:[/1:401, /1:401]:shouldGetHealthTwice",
+            "BeforeDynamicTest requests:[/2, /2]:shouldGetHealthTwice",
+            "BeforeDynamicTest responses:[402, 402]:shouldGetHealthTwice",
 
             // 1/2
             "BeforeInteraction",
-            "BeforeInteraction interaction:/3:403",
-            "BeforeInteraction request:/4",
-            "BeforeInteraction response:404",
+            "BeforeInteraction interaction:/3:403:shouldGetHealthTwice[1/2]",
+            "BeforeInteraction request:/3:shouldGetHealthTwice",
+            "BeforeInteraction response:403:shouldGetHealthTwice",
 
             "AfterInteraction",
-            "AfterInteraction interaction:/4:404",
+            "AfterInteraction interaction:/3:403:shouldGetHealthTwice[1/2]",
 
             "OnInteractionError",
 
             // 2/2
             "BeforeInteraction",
-            "BeforeInteraction interaction:/3:403",
-            "BeforeInteraction request:/4",
-            "BeforeInteraction response:404",
+            "BeforeInteraction interaction:/3:403:shouldGetHealthTwice[2/2]",
+            "BeforeInteraction request:/3:shouldGetHealthTwice",
+            "BeforeInteraction response:403:shouldGetHealthTwice",
 
             "AfterInteraction",
-            "AfterInteraction interaction:/4:404",
+            "AfterInteraction interaction:/3:403:shouldGetHealthTwice[2/2]",
 
             "OnInteractionError",
 
-            "AfterDynamicTest interactions:[/2:402, /2:402]",
-            "AfterDynamicTest requests:[/2, /2]",
-            "AfterDynamicTest responses:[402, 402]",
+            "AfterDynamicTest interactions:[/2:402, /2:402]:shouldGetHealthTwice [with 2 tests]",
+            "AfterDynamicTest requests:[/2, /2]:shouldGetHealthTwice",
+            "AfterDynamicTest responses:[402, 402]:shouldGetHealthTwice",
             "AfterDynamicTest",
-            "---------------------------------------- done",
-
-            "---------------------------------------- shouldGetHealth",
+            "---------------------------------------- done shouldGetHealthTwice [with 2 tests]",
+            "",
+            "---------------------------------------- shouldGetHealth [with 1 tests]",
             "BeforeDynamicTest",
-            "BeforeDynamicTest interactions:[/1:401]",
-            "BeforeDynamicTest requests:[/2]",
-            "BeforeDynamicTest responses:[402]",
+            "BeforeDynamicTest interactions:[/1:401]:shouldGetHealth",
+            "BeforeDynamicTest requests:[/2]:shouldGetHealth",
+            "BeforeDynamicTest responses:[402]:shouldGetHealth",
 
             "BeforeInteraction",
-            "BeforeInteraction interaction:/3:403",
-            "BeforeInteraction request:/4",
-            "BeforeInteraction response:404",
+            "BeforeInteraction interaction:/3:403:shouldGetHealth[1/1]",
+            "BeforeInteraction request:/3:shouldGetHealth",
+            "BeforeInteraction response:403:shouldGetHealth",
 
             "AfterInteraction",
-            "AfterInteraction interaction:/4:404",
+            "AfterInteraction interaction:/3:403:shouldGetHealth[1/1]",
 
             "OnInteractionError",
 
-            "AfterDynamicTest interactions:[/2:402]",
-            "AfterDynamicTest requests:[/2]",
-            "AfterDynamicTest responses:[402]",
+            "AfterDynamicTest interactions:[/2:402]:shouldGetHealth [with 1 tests]",
+            "AfterDynamicTest requests:[/2]:shouldGetHealth",
+            "AfterDynamicTest responses:[402]:shouldGetHealth",
             "AfterDynamicTest",
-            "---------------------------------------- done",
-
+            "---------------------------------------- done shouldGetHealth [with 1 tests]",
+            "",
             "AfterEach");
     }
 }

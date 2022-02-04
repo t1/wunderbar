@@ -5,9 +5,8 @@ import com.github.t1.wunderbar.junit.WunderBarException;
 import com.github.t1.wunderbar.junit.http.HttpInteraction;
 import com.github.t1.wunderbar.junit.http.HttpRequest;
 import com.github.t1.wunderbar.junit.http.HttpResponse;
-import com.github.t1.wunderbar.junit.provider.WunderBarTestFinder.Test;
+import com.github.t1.wunderbar.junit.provider.WunderBarApiProviderJUnitExtension.Execution;
 import lombok.RequiredArgsConstructor;
-import org.junit.jupiter.api.DynamicNode;
 
 import java.lang.reflect.Method;
 
@@ -16,32 +15,32 @@ class BeforeInteractionMethodHandler {
     private final Object instance;
     private final Method method;
 
-    HttpInteraction invoke(Test test, HttpInteraction interaction) {
-        var node = test.toDynamicNode(t -> BeforeDynamicTestMethodHandler::dummyExecutable);
-        Object[] args = args(node, interaction);
+    void invoke(Execution execution) {
+        Object[] args = args(execution);
         var result = Utils.invoke(instance, method, args);
-        return apply(result, interaction);
+        apply(result, execution);
     }
 
-    private Object[] args(DynamicNode node, HttpInteraction interaction) {
+    private Object[] args(Execution execution) {
         var args = new Object[method.getParameterCount()];
         for (int i = 0; i < args.length; i++) {
-            if (method.getParameters()[i].getType().equals(HttpInteraction.class))
-                args[i] = interaction;
-            else if (method.getParameters()[i].getType().equals(HttpRequest.class))
-                args[i] = interaction.getRequest();
-            else if (method.getParameters()[i].getType().equals(HttpResponse.class))
-                args[i] = interaction.getResponse();
+            Class<?> type = method.getParameters()[i].getType();
+            if (type.equals(HttpInteraction.class))
+                args[i] = execution.getExpected();
+            else if (type.equals(HttpRequest.class))
+                args[i] = execution.getExpected().getRequest();
+            else if (type.equals(HttpResponse.class))
+                args[i] = execution.getExpected().getResponse();
+            else if (type.equals(WunderBarExecution.class))
+                args[i] = execution;
             else throw new WunderBarException("invalid argument type for parameter " + i + " of " + method);
         }
         return args;
     }
 
-    private HttpInteraction apply(Object result, HttpInteraction interaction) {
-        if (result instanceof HttpInteraction) return (HttpInteraction) result;
-        else if (result instanceof HttpRequest) return interaction.withRequest((HttpRequest) result);
-        else if (result instanceof HttpResponse) return interaction.withResponse((HttpResponse) result);
-        else if (result == null) return interaction; // void
-        throw new WunderBarException("unexpected return type " + result.getClass()); // TODO test (+ null)
+    private void apply(Object result, Execution execution) {
+        if (result instanceof HttpRequest) execution.expect(interaction -> interaction.withRequest((HttpRequest) result));
+        else if (result instanceof HttpResponse) execution.expect(interaction -> interaction.withResponse((HttpResponse) result));
+        else if (result != null && !(result instanceof HttpInteraction)) throw new WunderBarException("unexpected return type " + result.getClass()); // TODO test
     }
 }

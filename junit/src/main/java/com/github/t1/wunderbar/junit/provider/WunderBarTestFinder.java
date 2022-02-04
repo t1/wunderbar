@@ -15,6 +15,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.function.Function;
 
+import static com.github.t1.wunderbar.junit.provider.WunderBarApiProviderJUnitExtension.createExecutable;
 import static java.util.stream.Collectors.joining;
 import static org.junit.jupiter.api.DynamicContainer.dynamicContainer;
 import static org.junit.jupiter.api.DynamicTest.dynamicTest;
@@ -155,8 +156,10 @@ public class WunderBarTestFinder {
 
         @Override public String toString() {return path + " [" + interactionCount + "] in " + uri;}
 
+        public String getDisplayName() {return path.getFileName().toString();}
+
         @Override public DynamicNode toDynamicNode(Function<Test, Executable> executableFactory) {
-            return dynamicTest(path.getFileName().toString(), uri, executableFactory.apply(this));
+            return dynamicTest(getDisplayName(), uri, executableFactory.apply(this));
         }
     }
 
@@ -169,7 +172,7 @@ public class WunderBarTestFinder {
 
         // indirection with null is necessary, as we can't access `this` in the constructor chain to build the default factory
         this.executableFactory = (executableFactory == null)
-            ? test -> new HttpBarExecutable(bar.interactionsFor(test), test)
+            ? test -> createExecutable(bar.interactionsFor(test), test)
             : executableFactory;
 
         scanTests();

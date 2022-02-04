@@ -4,6 +4,7 @@ import com.github.t1.wunderbar.common.Utils;
 import com.github.t1.wunderbar.junit.WunderBarException;
 import com.github.t1.wunderbar.junit.http.HttpInteraction;
 import com.github.t1.wunderbar.junit.http.HttpResponse;
+import com.github.t1.wunderbar.junit.provider.WunderBarApiProviderJUnitExtension.Execution;
 import lombok.RequiredArgsConstructor;
 import lombok.Value;
 import org.assertj.core.api.BDDSoftAssertions;
@@ -33,8 +34,8 @@ class OnInteractionErrorMethodHandler {
     private final Object instance;
     private final Method method;
 
-    public void invoke(HttpInteraction expected, HttpResponse actual) {
-        var params = new OnInteractionErrorParams(expected, actual);
+    public void invoke(Execution execution) {
+        var params = new OnInteractionErrorParams(execution);
         Object[] args = args(params);
         Utils.invoke(instance, method, args);
     }
@@ -51,6 +52,8 @@ class OnInteractionErrorMethodHandler {
                 args[i] = params.getAssertions();
             else if (type.equals(OnInteractionErrorParams.class))
                 args[i] = params;
+            else if (type.equals(WunderBarExecution.class))
+                args[i] = params.getExecution();
             else throw new WunderBarException("invalid argument type " + type + " for parameter " + i + " of " + method);
         }
         return args;
@@ -59,13 +62,15 @@ class OnInteractionErrorMethodHandler {
     private static void defaultOnInteractionError(OnInteractionErrorParams params) {params.assertions.assertAll();}
 
     static @Value class OnInteractionErrorParams {
+        Execution execution;
         HttpInteraction expected;
         HttpResponse actual;
         BDDSoftAssertions assertions = new BDDSoftAssertions();
 
-        OnInteractionErrorParams(HttpInteraction expected, HttpResponse actual) {
-            this.expected = expected;
-            this.actual = actual;
+        OnInteractionErrorParams(Execution execution) {
+            this.execution = execution;
+            this.expected = execution.getExpected();
+            this.actual = execution.getActual();
             checkResponse(actual, expected.getResponse());
         }
 
