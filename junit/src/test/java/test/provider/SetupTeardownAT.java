@@ -4,6 +4,7 @@ import com.github.t1.wunderbar.common.mock.MockService;
 import com.github.t1.wunderbar.junit.http.HttpInteraction;
 import com.github.t1.wunderbar.junit.http.HttpRequest;
 import com.github.t1.wunderbar.junit.http.HttpResponse;
+import com.github.t1.wunderbar.junit.provider.ActualHttpResponse;
 import com.github.t1.wunderbar.junit.provider.AfterDynamicTest;
 import com.github.t1.wunderbar.junit.provider.AfterInteraction;
 import com.github.t1.wunderbar.junit.provider.BeforeDynamicTest;
@@ -139,8 +140,15 @@ class SetupTeardownAT {
 
     @Order(2)
     @AfterInteraction HttpResponse afterInteraction(HttpRequest request, HttpResponse response, WunderBarExecution execution) {
+        response = incStatus(response);
         called(AfterInteraction.class, "interaction", request.getUri(), response.getStatusCode(), execution);
-        return response;//TODO why not incStatus(response);
+        return response;
+    }
+
+    @Order(3)
+    @AfterInteraction ActualHttpResponse afterInteraction(ActualHttpResponse actual, WunderBarExecution execution) {
+        called(AfterInteraction.class, "actual", actual.getValue().getStatusCode(), execution);
+        return actual.map(this::incStatus);
     }
 
 
@@ -164,9 +172,15 @@ class SetupTeardownAT {
     }
 
     @Order(4)
-    @AfterDynamicTest void afterDynamicTest() {called(AfterDynamicTest.class);}
+    @AfterDynamicTest void afterDynamicTestWithActuals(List<ActualHttpResponse> actuals, WunderBarExecutions executions) {
+        called(AfterDynamicTest.class, "actuals", responseStatus(actuals.stream().map(ActualHttpResponse::getValue).collect(toList())),
+            executions.getDisplayName());
+    }
 
     @Order(5)
+    @AfterDynamicTest void afterDynamicTest() {called(AfterDynamicTest.class);}
+
+    @Order(6)
     @AfterDynamicTest void afterDynamicTest(WunderBarExecutions executions) {
         called.add("---------------------------------------- done " + executions);
         called.add("");
@@ -243,7 +257,8 @@ class SetupTeardownAT {
             "BeforeInteraction response:403:shouldGetHealthTwice",
 
             "AfterInteraction",
-            "AfterInteraction interaction:/3:403:shouldGetHealthTwice[1/2]",
+            "AfterInteraction interaction:/3:404:shouldGetHealthTwice[1/2]",
+            "AfterInteraction actual:400:shouldGetHealthTwice[1/2]",
 
             "OnInteractionError",
 
@@ -254,13 +269,15 @@ class SetupTeardownAT {
             "BeforeInteraction response:403:shouldGetHealthTwice",
 
             "AfterInteraction",
-            "AfterInteraction interaction:/3:403:shouldGetHealthTwice[2/2]",
+            "AfterInteraction interaction:/3:404:shouldGetHealthTwice[2/2]",
+            "AfterInteraction actual:400:shouldGetHealthTwice[2/2]",
 
             "OnInteractionError",
 
             "AfterDynamicTest interactions:[/2:402, /2:402]:shouldGetHealthTwice [with 2 tests]",
             "AfterDynamicTest requests:[/2, /2]:shouldGetHealthTwice",
             "AfterDynamicTest responses:[402, 402]:shouldGetHealthTwice",
+            "AfterDynamicTest actuals:[401, 401]:shouldGetHealthTwice",
             "AfterDynamicTest",
             "---------------------------------------- done shouldGetHealthTwice [with 2 tests]",
             "",
@@ -277,13 +294,15 @@ class SetupTeardownAT {
             "BeforeInteraction response:403:shouldGetHealth",
 
             "AfterInteraction",
-            "AfterInteraction interaction:/3:403:shouldGetHealth[1/1]",
+            "AfterInteraction interaction:/3:404:shouldGetHealth[1/1]",
+            "AfterInteraction actual:400:shouldGetHealth[1/1]",
 
             "OnInteractionError",
 
             "AfterDynamicTest interactions:[/2:402]:shouldGetHealth [with 1 tests]",
             "AfterDynamicTest requests:[/2]:shouldGetHealth",
             "AfterDynamicTest responses:[402]:shouldGetHealth",
+            "AfterDynamicTest actuals:[401]:shouldGetHealth",
             "AfterDynamicTest",
             "---------------------------------------- done shouldGetHealth [with 1 tests]",
             "",

@@ -79,7 +79,7 @@ public class HttpRequest {
         this.body = body;
     }
 
-    @Override public String toString() {return (headerProperties() + "\n" + body().orElse("")).trim();}
+    @Override public String toString() {return (method + " " + uri + "\n" + body().orElse("")).trim();}
 
     public String headerProperties() {
         return "" +

@@ -28,11 +28,12 @@ class AfterDynamicTestMethodHandler {
                 args[i] = executions.getInteractions();
             else if (typeName.equals("java.util.List<" + HttpRequest.class.getName() + ">"))
                 args[i] = executions.getExpectedRequests();
+            else if (typeName.equals("java.util.List<" + ActualHttpResponse.class.getName() + ">"))
+                args[i] = executions.getActualResponses();
             else if (typeName.equals("java.util.List<" + HttpResponse.class.getName() + ">"))
                 args[i] = executions.getExpectedResponses();
             else if (method.getParameters()[i].getType().equals(WunderBarExecutions.class))
                 args[i] = executions;
-                // TODO List<ActualHttpResponse>
             else throw new WunderBarException("invalid argument type for parameter " + i + " of " + method);
         }
         return args;

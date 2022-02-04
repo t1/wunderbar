@@ -143,6 +143,7 @@ class WunderBarApiProviderJUnitExtension implements Extension, BeforeEachCallbac
     private static class HttpBarExecutable implements Executable, Executions {
         @Getter @Setter private List<HttpInteraction> interactions;
         @Getter private final Test test;
+        private final List<HttpResponse> actualResponses = new ArrayList<>();
 
         private final WunderBarApiProviderJUnitExtension extension = INSTANCE;
         private final HttpClient httpClient = new HttpClient(extension.baseUri());
@@ -157,14 +158,17 @@ class WunderBarApiProviderJUnitExtension implements Extension, BeforeEachCallbac
             System.out.println("==================== start " + test);
             extension.beforeDynamicTestMethods.forEach(handler -> handler.invoke(this));
 
-            var actuals = new ArrayList<HttpResponse>();
             for (HttpInteraction interaction : interactions) {
                 System.out.println("=> execute " + interaction.getNumber() + " of " + test.getInteractionCount());
-                actuals.add(new ExecutionImpl(interaction).run());
+                actualResponses.add(new ExecutionImpl(interaction).run());
             }
 
             System.out.println("=> cleanup " + test);
             extension.afterDynamicTestMethods.forEach(consumer -> consumer.invoke(this));
+        }
+
+        @Override public List<ActualHttpResponse> getActualResponses() {
+            return actualResponses.stream().map(ActualHttpResponse::new).collect(toList());
         }
 
         private class ExecutionImpl implements Execution {
@@ -209,6 +213,9 @@ class WunderBarApiProviderJUnitExtension implements Extension, BeforeEachCallbac
         default <T> List<T> mapExpectedResponses(Function<HttpInteraction, T> function) {
             return getInteractions().stream().map(function).collect(toList());
         }
+
+        List<ActualHttpResponse> getActualResponses();
+
 
         void setInteractions(List<HttpInteraction> interactions);
     }
