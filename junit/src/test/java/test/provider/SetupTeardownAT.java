@@ -33,9 +33,12 @@ import static com.github.t1.wunderbar.junit.provider.WunderBarTestFinder.findTes
 import static java.lang.Integer.parseInt;
 import static java.util.stream.Collectors.joining;
 import static java.util.stream.Collectors.toList;
+import static javax.ws.rs.core.Response.Status.CREATED;
 
 @WunderBarApiProvider(baseUri = "{endpoint()}")
 class SetupTeardownAT {
+    private static final HttpInteraction DUMMY_INTERACTION = new HttpInteraction(99, HttpRequest.builder().uri("/99").build(), HttpResponse.builder().body("bar").build());
+
     @RegisterExtension static DummyServer dummyServer = new DummyServer();
     @RegisterExtension static ExpectationsExtension expectations = new ExpectationsExtension();
 
@@ -73,16 +76,35 @@ class SetupTeardownAT {
     }
 
     @Order(4)
+    @BeforeDynamicTest List<HttpInteraction> addDummyInteraction(List<HttpInteraction> list, WunderBarExecutions executions) {
+        list.add(DUMMY_INTERACTION);
+        called(BeforeDynamicTest.class, "interactions", interactionInfos(list), executions.getDisplayName());
+        return list;
+    }
+
+    @Order(5)
     @BeforeDynamicTest List<HttpRequest> beforeDynamicTestWithRequests(List<HttpRequest> list, WunderBarExecutions executions) {
         list = list.stream().map(this::incUri).collect(toList());
         called(BeforeDynamicTest.class, "requests", requestUris(list), executions.getDisplayName());
         return list;
     }
 
-    @Order(5)
+    @Order(6)
     @BeforeDynamicTest List<HttpResponse> beforeDynamicTestWithResponses(List<HttpResponse> list, WunderBarExecutions executions) {
         list = list.stream().map(this::incStatus).collect(toList());
         called(BeforeDynamicTest.class, "responses", responseStatus(list), executions.getDisplayName());
+        return list;
+    }
+
+    @Order(7)
+    @BeforeDynamicTest List<HttpInteraction> removeDummyInteraction(List<HttpInteraction> list, WunderBarExecutions executions) {
+        var last = list.get(list.size() - 1);
+        then(last.getNumber()).isEqualTo(DUMMY_INTERACTION.getNumber());
+        then(last.getRequest()).hasUriEndingWith("/100"); // one inc
+        then(last.getResponse()).asString().isEqualTo(DUMMY_INTERACTION.getResponse().getBody());
+        then(last.getResponse()).hasStatus(CREATED); // one inc
+        then(last.getResponse()).hasStatus(201); // one inc
+        list.remove(last);
         return list;
     }
 
@@ -210,8 +232,9 @@ class SetupTeardownAT {
             "---------------------------------------- shouldGetHealthTwice [with 2 tests]",
             "BeforeDynamicTest",
             "BeforeDynamicTest interactions:[/1:401, /1:401]:shouldGetHealthTwice",
-            "BeforeDynamicTest requests:[/2, /2]:shouldGetHealthTwice",
-            "BeforeDynamicTest responses:[402, 402]:shouldGetHealthTwice",
+            "BeforeDynamicTest interactions:[/1:401, /1:401, /99:200]:shouldGetHealthTwice",
+            "BeforeDynamicTest requests:[/2, /2, /100]:shouldGetHealthTwice",
+            "BeforeDynamicTest responses:[402, 402, 201]:shouldGetHealthTwice",
 
             // 1/2
             "BeforeInteraction",
@@ -244,8 +267,9 @@ class SetupTeardownAT {
             "---------------------------------------- shouldGetHealth [with 1 tests]",
             "BeforeDynamicTest",
             "BeforeDynamicTest interactions:[/1:401]:shouldGetHealth",
-            "BeforeDynamicTest requests:[/2]:shouldGetHealth",
-            "BeforeDynamicTest responses:[402]:shouldGetHealth",
+            "BeforeDynamicTest interactions:[/1:401, /99:200]:shouldGetHealth",
+            "BeforeDynamicTest requests:[/2, /100]:shouldGetHealth",
+            "BeforeDynamicTest responses:[402, 201]:shouldGetHealth",
 
             "BeforeInteraction",
             "BeforeInteraction interaction:/3:403:shouldGetHealth[1/1]",
