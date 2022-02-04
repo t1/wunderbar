@@ -17,7 +17,8 @@ class AfterDynamicTestMethodHandler {
 
     void invoke(Executions executions) {
         Object[] args = args(executions);
-        Utils.invoke(instance, method, args);
+        var result = Utils.invoke(instance, method, args);
+        if (result != null) throw new WunderBarException("unexpected return type " + result.getClass()); // TODO test
     }
 
     private Object[] args(Executions executions) {
@@ -28,10 +29,10 @@ class AfterDynamicTestMethodHandler {
                 args[i] = executions.getInteractions();
             else if (typeName.equals("java.util.List<" + HttpRequest.class.getName() + ">"))
                 args[i] = executions.getExpectedRequests();
-            else if (typeName.equals("java.util.List<" + ActualHttpResponse.class.getName() + ">"))
-                args[i] = executions.getActualResponses();
             else if (typeName.equals("java.util.List<" + HttpResponse.class.getName() + ">"))
                 args[i] = executions.getExpectedResponses();
+            else if (typeName.equals("java.util.List<" + ActualHttpResponse.class.getName() + ">"))
+                args[i] = executions.getActualResponses();
             else if (method.getParameters()[i].getType().equals(WunderBarExecutions.class))
                 args[i] = executions;
             else throw new WunderBarException("invalid argument type for parameter " + i + " of " + method);

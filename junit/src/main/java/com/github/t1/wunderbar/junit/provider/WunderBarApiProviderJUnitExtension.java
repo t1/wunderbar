@@ -149,7 +149,11 @@ class WunderBarApiProviderJUnitExtension implements Extension, BeforeEachCallbac
         private final HttpClient httpClient = new HttpClient(extension.baseUri());
 
         @Override public String toString() {
-            return getDisplayName() + " [with " + test.getInteractionCount() + " tests]";
+            return getDisplayName() + " [with " + getInteractionCount() + " tests]";
+        }
+
+        @Override public int getInteractionCount() {
+            return test.getInteractionCount();
         }
 
         @Override public String getDisplayName() {return test.getDisplayName();}
@@ -180,10 +184,14 @@ class WunderBarApiProviderJUnitExtension implements Extension, BeforeEachCallbac
             }
 
             @Override public String toString() {
-                return getDisplayName() + "[" + expected.getNumber() + "/" + test.getInteractionCount() + "]";
+                return getDisplayName() + "[" + getInteractionNumber() + "/" + getInteractionCount() + "]";
             }
 
             @Override public String getDisplayName() {return test.getDisplayName();}
+
+            @Override public int getInteractionNumber() {return expected.getNumber();}
+
+            @Override public int getInteractionCount() {return test.getInteractionCount();}
 
             private HttpResponse run() {
                 extension.beforeInteractionMethods.forEach(handler -> handler.invoke(this));

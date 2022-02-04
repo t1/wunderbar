@@ -43,6 +43,6 @@ class AfterInteractionMethodHandler {
     private void apply(Execution execution, Object result) {
         if (result instanceof HttpResponse) execution.expect(interaction -> interaction.withResponse((HttpResponse) result));
         else if (result instanceof ActualHttpResponse) execution.setActual(((ActualHttpResponse) result).getValue());
-        else if (result != null) throw new WunderBarException("unexpected return type " + result.getClass()); // TODO test (+ null)
+        else if (result != null) throw new WunderBarException("unexpected return type " + result.getClass()); // TODO test
     }
 }

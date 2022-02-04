@@ -14,6 +14,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.List;
 import java.util.stream.Stream;
 
 import static java.util.stream.Collectors.joining;
@@ -28,6 +29,10 @@ public @Internal class Utils {
         method.setAccessible(true);
         try {
             return method.invoke(instance, args);
+        } catch (IllegalArgumentException e) {
+            if ("argument type mismatch".equals(e.getMessage()))
+                throw new IllegalArgumentException(method + " doesn't like these argument types:" + argumentTypes(args), e);
+            throw e;
         } catch (InvocationTargetException e) {
             if (e.getTargetException() instanceof RuntimeException)
                 throw (RuntimeException) e.getTargetException();
@@ -35,6 +40,10 @@ public @Internal class Utils {
                 throw (AssertionError) e.getTargetException();
             throw e;
         }
+    }
+
+    private static List<String> argumentTypes(Object[] args) {
+        return Stream.of(args).map(Object::getClass).map(Class::getSimpleName).collect(toList());
     }
 
     @SneakyThrows(IOException.class)

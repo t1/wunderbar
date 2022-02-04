@@ -39,8 +39,9 @@ class BeforeInteractionMethodHandler {
     }
 
     private void apply(Object result, Execution execution) {
-        if (result instanceof HttpRequest) execution.expect(interaction -> interaction.withRequest((HttpRequest) result));
+        if (result instanceof HttpInteraction) execution.expect(interaction -> (HttpInteraction) result);
+        else if (result instanceof HttpRequest) execution.expect(interaction -> interaction.withRequest((HttpRequest) result));
         else if (result instanceof HttpResponse) execution.expect(interaction -> interaction.withResponse((HttpResponse) result));
-        else if (result != null && !(result instanceof HttpInteraction)) throw new WunderBarException("unexpected return type " + result.getClass()); // TODO test
+        else if (result != null) throw new WunderBarException("unexpected return type " + result.getClass()); // TODO test
     }
 }

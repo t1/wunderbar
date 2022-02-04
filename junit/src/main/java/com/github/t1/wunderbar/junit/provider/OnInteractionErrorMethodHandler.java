@@ -3,6 +3,7 @@ package com.github.t1.wunderbar.junit.provider;
 import com.github.t1.wunderbar.common.Utils;
 import com.github.t1.wunderbar.junit.WunderBarException;
 import com.github.t1.wunderbar.junit.http.HttpInteraction;
+import com.github.t1.wunderbar.junit.http.HttpRequest;
 import com.github.t1.wunderbar.junit.http.HttpResponse;
 import com.github.t1.wunderbar.junit.provider.WunderBarApiProviderJUnitExtension.Execution;
 import lombok.RequiredArgsConstructor;
@@ -24,11 +25,13 @@ class OnInteractionErrorMethodHandler {
 
     static {
         try {
-            DEFAULT_ON_INTERACTION_ERROR = OnInteractionErrorMethodHandler.class.getDeclaredMethod("defaultOnInteractionError", OnInteractionErrorParams.class);
+            DEFAULT_ON_INTERACTION_ERROR = OnInteractionErrorMethodHandler.class.getDeclaredMethod("defaultOnInteractionError", BDDSoftAssertions.class);
         } catch (NoSuchMethodException e) {
             throw new UnsupportedOperationException();
         }
     }
+
+    private static void defaultOnInteractionError(BDDSoftAssertions assertions) {assertions.assertAll();}
 
 
     private final Object instance;
@@ -37,7 +40,8 @@ class OnInteractionErrorMethodHandler {
     public void invoke(Execution execution) {
         var params = new OnInteractionErrorParams(execution);
         Object[] args = args(params);
-        Utils.invoke(instance, method, args);
+        var result = Utils.invoke(instance, method, args);
+        if (result != null) throw new WunderBarException("unexpected return type " + result.getClass()); // TODO test
     }
 
     private Object[] args(OnInteractionErrorParams params) {
@@ -45,13 +49,15 @@ class OnInteractionErrorMethodHandler {
         for (int i = 0; i < args.length; i++) {
             Class<?> type = method.getParameters()[i].getType();
             if (type.equals(HttpInteraction.class))
-                args[i] = params.getExpected();
+                args[i] = params.execution.getExpected();
+            else if (type.equals(HttpRequest.class))
+                args[i] = params.execution.getExpected().getRequest();
             else if (type.equals(HttpResponse.class))
-                args[i] = params.getActual();
+                args[i] = params.execution.getExpected().getResponse();
+            else if (type.equals(ActualHttpResponse.class))
+                args[i] = new ActualHttpResponse(params.execution.getActual());
             else if (type.equals(BDDSoftAssertions.class))
                 args[i] = params.getAssertions();
-            else if (type.equals(OnInteractionErrorParams.class))
-                args[i] = params;
             else if (type.equals(WunderBarExecution.class))
                 args[i] = params.getExecution();
             else throw new WunderBarException("invalid argument type " + type + " for parameter " + i + " of " + method);
@@ -59,22 +65,18 @@ class OnInteractionErrorMethodHandler {
         return args;
     }
 
-    private static void defaultOnInteractionError(OnInteractionErrorParams params) {params.assertions.assertAll();}
-
     static @Value class OnInteractionErrorParams {
         Execution execution;
-        HttpInteraction expected;
-        HttpResponse actual;
         BDDSoftAssertions assertions = new BDDSoftAssertions();
 
         OnInteractionErrorParams(Execution execution) {
             this.execution = execution;
-            this.expected = execution.getExpected();
-            this.actual = execution.getActual();
-            checkResponse(actual, expected.getResponse());
+            checkResponse();
         }
 
-        private void checkResponse(HttpResponse actual, HttpResponse expected) {
+        private void checkResponse() {
+            var expected = execution.getExpected().getResponse();
+            var actual = execution.getActual();
             assertions.then(actual.getStatusString()).describedAs("status").isEqualTo(expected.getStatusString());
             assertions.then(isCompatible(actual.getContentType(), expected.getContentType()))
                 .describedAs("Content-Type: " + actual.getContentType() + " to be compatible to " + expected.getContentType())
