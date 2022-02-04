@@ -20,13 +20,13 @@ class ExpectationsExtension implements Extension {
             .variables(Json.createObjectBuilder().add("id", id).build())
             .operationName("product")
             .build(), 1, response);
-        log.debug("[GraphQL] generated expectation id {}", expectation.getId());
+        log.debug("[GraphQL] generated expectation id {} for product {}", expectation.getId(), id);
     }
 
     public void addRestProduct(String id, HttpResponse response) {
         var request = HttpRequest.builder().uri("/rest/products/" + id).build();
         var expectation = add(request, 1, response);
-        log.debug("[REST] generated expectation id {}", expectation.getId());
+        log.debug("[REST] generated expectation id {} for {}", expectation.getId(), request.getUri());
     }
 
     public WunderBarMockExpectation add(HttpRequest request, int maxCallCount, HttpResponse response) {

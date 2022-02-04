@@ -7,8 +7,8 @@ import javax.json.JsonObject;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Response.StatusType;
 
+import static com.github.t1.wunderbar.junit.assertions.WunderBarBDDAssertions.then;
 import static com.github.t1.wunderbar.junit.http.HttpUtils.readJson;
-import static com.github.t1.wunderbar.junit.provider.WunderBarBDDAssertions.then;
 
 /**
  * Assertions about a {@link WebApplicationException} that contains a

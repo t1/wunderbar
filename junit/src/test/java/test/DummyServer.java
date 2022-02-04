@@ -12,13 +12,13 @@ import java.net.URI;
 
 /** this server would normally be a real server running somewhere */
 public class DummyServer implements Extension, AfterAllCallback {
-    private static final HttpServer SERVER = new HttpServer(DummyServer::handle);
+    private final HttpServer server = new HttpServer(DummyServer::handle);
 
     public URI baseUri() {
-        return SERVER.baseUri();
+        return server.baseUri();
     }
 
     private static HttpResponse handle(HttpRequest request) {return new MockService().service(request);}
 
-    @Override public void afterAll(ExtensionContext context) {SERVER.stop();}
+    @Override public void afterAll(ExtensionContext context) {server.stop();}
 }

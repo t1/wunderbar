@@ -3,7 +3,7 @@ package com.github.t1.wunderbar.junit.assertions;
 import com.github.t1.wunderbar.junit.http.HttpRequest;
 import org.assertj.core.api.AbstractAssert;
 
-import static com.github.t1.wunderbar.junit.provider.WunderBarBDDAssertions.then;
+import static com.github.t1.wunderbar.junit.assertions.WunderBarBDDAssertions.then;
 
 /**
  * AssertJ assertion on {@link HttpRequest}

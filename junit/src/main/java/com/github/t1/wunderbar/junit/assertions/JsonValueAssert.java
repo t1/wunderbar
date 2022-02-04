@@ -14,7 +14,7 @@ import javax.json.JsonValue.ValueType;
 
 import static com.github.t1.wunderbar.common.Utils.jsonNonAddDiff;
 import static com.github.t1.wunderbar.junit.assertions.JsonValueAssert.JsonObjectAssert.JSON_OBJECT;
-import static com.github.t1.wunderbar.junit.provider.WunderBarBDDAssertions.then;
+import static com.github.t1.wunderbar.junit.assertions.WunderBarBDDAssertions.then;
 import static java.util.stream.Collectors.toList;
 import static javax.json.JsonValue.ValueType.OBJECT;
 import static javax.json.JsonValue.ValueType.STRING;
@@ -78,7 +78,7 @@ public class JsonValueAssert<SELF extends JsonValueAssert<SELF, ACTUAL>, ACTUAL 
         }
 
         public JsonObjectAssert<SELF, ACTUAL> hasField(String name) {
-            then(actual.containsKey(name)).describedAs("there's a field %s in %s", name, actual.keySet()).isTrue();
+            then(actual.containsKey(name)).describedAs("expected a field '%s' but has only %s", name, actual.keySet()).isTrue();
             return this;
         }
 

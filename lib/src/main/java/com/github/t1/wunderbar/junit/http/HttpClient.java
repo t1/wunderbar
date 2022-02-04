@@ -1,15 +1,14 @@
 package com.github.t1.wunderbar.junit.http;
 
 import lombok.RequiredArgsConstructor;
-import lombok.SneakyThrows;
 
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response.Status;
-import java.io.IOException;
 import java.net.URI;
 import java.net.http.HttpRequest.BodyPublishers;
-import java.net.http.HttpResponse.BodyHandler;
+import java.net.http.HttpResponse.BodySubscriber;
 import java.net.http.HttpResponse.BodySubscribers;
+import java.net.http.HttpResponse.ResponseInfo;
 import java.time.Duration;
 
 import static com.github.t1.wunderbar.junit.http.HttpUtils.charset;
@@ -29,11 +28,10 @@ public class HttpClient {
 
     private final URI baseUri;
 
-    @SneakyThrows({IOException.class, InterruptedException.class})
     public HttpResponse send(HttpRequest request) {
         var httpRequest = convert(request);
 
-        var httpResponse = HTTP.send(httpRequest, bodyHandler());
+        var httpResponse = send(httpRequest);
 
         return convert(httpResponse);
     }
@@ -49,9 +47,17 @@ public class HttpClient {
         return builder.build();
     }
 
-    private BodyHandler<String> bodyHandler() {
-        return (responseInfo) -> BodySubscribers.ofString(
-            charset(responseInfo.headers().firstValue(CONTENT_TYPE).map(MediaType::valueOf).orElse(null)));
+    private java.net.http.HttpResponse<String> send(java.net.http.HttpRequest httpRequest) {
+        try {
+            return HTTP.send(httpRequest, HttpClient::bodyHandler);
+        } catch (Exception e) {
+            throw new RuntimeException("failed to send http request to " + baseUri);
+        }
+    }
+
+    private static BodySubscriber<String> bodyHandler(ResponseInfo responseInfo) {
+        var charset = charset(responseInfo.headers().firstValue(CONTENT_TYPE).map(MediaType::valueOf).orElse(null));
+        return BodySubscribers.ofString(charset);
     }
 
     private HttpResponse convert(java.net.http.HttpResponse<String> response) {

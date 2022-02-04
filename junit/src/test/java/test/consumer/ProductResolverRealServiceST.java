@@ -16,8 +16,8 @@ import test.consumer.ProductResolver.Products;
 
 import java.util.Map;
 
+import static com.github.t1.wunderbar.junit.assertions.WunderBarBDDAssertions.then;
 import static com.github.t1.wunderbar.junit.consumer.WunderbarExpectationBuilder.given;
-import static com.github.t1.wunderbar.junit.provider.WunderBarBDDAssertions.then;
 import static org.assertj.core.api.Assertions.catchThrowable;
 import static test.consumer.TestData.someProduct;
 

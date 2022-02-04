@@ -9,8 +9,8 @@ import test.DummyServer;
 import test.consumer.ProductResolver.Item;
 import test.consumer.ProductResolver.Products;
 
+import static com.github.t1.wunderbar.junit.assertions.WunderBarBDDAssertions.then;
 import static com.github.t1.wunderbar.junit.consumer.WunderbarExpectationBuilder.given;
-import static com.github.t1.wunderbar.junit.provider.WunderBarBDDAssertions.then;
 import static test.consumer.TestData.someProduct;
 
 @SuppressWarnings({"removal", "deprecated"})

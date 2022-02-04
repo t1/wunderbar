@@ -70,6 +70,14 @@ public class HttpResponse {
 
     public String getStatusString() {return status.getStatusCode() + " " + status.getReasonPhrase();}
 
+    public int getStatusCode() {return status.getStatusCode();}
+
+    public HttpResponse withStatusCode(int statusCode) {
+        var status = Status.fromStatusCode(statusCode);
+        if (status == null) throw new IllegalArgumentException("undefined status code " + statusCode);
+        return withStatus(status);
+    }
+
     public boolean isProblemDetail() {
         return hasBody() && PROBLEM_DETAIL_TYPE.isCompatible(getContentType());
     }

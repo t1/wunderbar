@@ -26,6 +26,7 @@ import java.net.URI;
 
 import static com.github.t1.wunderbar.junit.assertions.GraphQLClientExceptionAssert.GRAPHQL_CLIENT_EXCEPTION;
 import static com.github.t1.wunderbar.junit.assertions.ProblemDetailsAssert.PROBLEM_DETAILS;
+import static com.github.t1.wunderbar.junit.assertions.WunderBarBDDAssertions.then;
 import static com.github.t1.wunderbar.junit.consumer.Service.DEFAULT_ENDPOINT;
 import static com.github.t1.wunderbar.junit.consumer.Technology.GRAPHQL;
 import static com.github.t1.wunderbar.junit.consumer.Technology.REST;
@@ -34,7 +35,6 @@ import static com.github.t1.wunderbar.junit.consumer.WunderbarExpectationBuilder
 import static com.github.t1.wunderbar.junit.consumer.WunderbarExpectationBuilder.createService;
 import static com.github.t1.wunderbar.junit.consumer.WunderbarExpectationBuilder.given;
 import static com.github.t1.wunderbar.junit.consumer.WunderbarExpectationBuilder.once;
-import static com.github.t1.wunderbar.junit.provider.WunderBarBDDAssertions.then;
 import static javax.ws.rs.core.Response.Status.FORBIDDEN;
 import static javax.ws.rs.core.Response.Status.INTERNAL_SERVER_ERROR;
 import static javax.ws.rs.core.Response.Status.NOT_FOUND;

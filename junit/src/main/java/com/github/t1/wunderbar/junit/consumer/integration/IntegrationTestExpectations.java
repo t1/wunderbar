@@ -9,7 +9,6 @@ import com.github.t1.wunderbar.junit.consumer.WunderbarExpectationBuilder;
 import com.github.t1.wunderbar.junit.http.HttpRequest;
 import com.github.t1.wunderbar.junit.http.HttpResponse;
 import com.github.t1.wunderbar.junit.http.HttpServer;
-import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 
 import java.lang.reflect.Method;
@@ -24,7 +23,7 @@ public @Internal class IntegrationTestExpectations<T> implements WunderBarExpect
     private final BarWriter bar;
     private final Technology technology;
     private final List<HttpServiceExpectation> expectations = new ArrayList<>();
-    @Getter private final HttpServer server;
+    private final HttpServer server;
 
     private HttpServiceExpectation currentExpectation;
 

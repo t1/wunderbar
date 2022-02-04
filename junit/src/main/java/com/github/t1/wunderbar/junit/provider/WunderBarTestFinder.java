@@ -1,7 +1,7 @@
 package com.github.t1.wunderbar.junit.provider;
 
-import com.github.t1.wunderbar.junit.WunderBarException;
 import com.github.t1.wunderbar.common.Internal;
+import com.github.t1.wunderbar.junit.WunderBarException;
 import lombok.NonNull;
 import lombok.Value;
 import lombok.extern.slf4j.Slf4j;
@@ -169,7 +169,7 @@ public class WunderBarTestFinder {
 
         // indirection with null is necessary, as we can't access `this` in the constructor chain to build the default factory
         this.executableFactory = (executableFactory == null)
-            ? test -> HttpBarExecutable.of(bar, test)
+            ? test -> new HttpBarExecutable(bar.interactionsFor(test), test)
             : executableFactory;
 
         scanTests();

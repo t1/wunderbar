@@ -4,6 +4,7 @@ import io.undertow.Undertow;
 import io.undertow.server.HttpServerExchange;
 import lombok.NonNull;
 import lombok.SneakyThrows;
+import lombok.extern.slf4j.Slf4j;
 
 import java.net.InetSocketAddress;
 import java.net.URI;
@@ -17,9 +18,11 @@ import static io.undertow.util.Headers.ACCEPT;
 import static io.undertow.util.Headers.AUTHORIZATION;
 import static io.undertow.util.Headers.CONTENT_TYPE;
 
+@Slf4j
 public class HttpServer {
     private final Function<HttpRequest, HttpResponse> handler;
     private final Undertow server;
+    private final int port;
 
     public HttpServer(@NonNull Function<HttpRequest, HttpResponse> handler) {
         this(0, handler);
@@ -28,15 +31,23 @@ public class HttpServer {
     public HttpServer(int port, @NonNull Function<HttpRequest, HttpResponse> handler) {
         this.handler = handler;
         this.server = start(port);
+        this.port = port();
+        log.debug("server started on port " + baseUri().getPort());
     }
 
     private Undertow start(int port) {
         Undertow server = Undertow.builder()
-            .addHttpListener(port, LOCALHOST)
+            .addHttpListener(port, "localhost")
             .setHandler(this::aroundInvoke)
             .build();
         server.start();
         return server;
+    }
+
+    private int port() {
+        var listener = server.getListenerInfo().get(0);
+        var address = (InetSocketAddress) listener.getAddress();
+        return address.getPort();
     }
 
     private void aroundInvoke(HttpServerExchange exchange) {
@@ -51,7 +62,7 @@ public class HttpServer {
 
         var response = handler.apply(request);
 
-        exchange.setStatusCode(response.getStatus().getStatusCode());
+        exchange.setStatusCode(response.getStatusCode());
         exchange.getResponseHeaders().put(CONTENT_TYPE, response.getContentType().toString());
         response.body().ifPresent(body ->
             exchange.getResponseSender().send(body, charset(response.getContentType())));
@@ -67,15 +78,10 @@ public class HttpServer {
         return Optional.ofNullable(body.getAcquire());
     }
 
-    public URI baseUri() {
-        var listener = server.getListenerInfo().get(0);
-        var address = (InetSocketAddress) listener.getAddress();
-        return URI.create(listener.getProtcol() + "://" + LOCALHOST + ":" + address.getPort());
-    }
+    public URI baseUri() {return URI.create("http://localhost:" + port);}
 
     public void stop() {
         server.stop();
+        log.debug("server stopped on port " + port);
     }
-
-    private static final String LOCALHOST = "localhost";
 }
