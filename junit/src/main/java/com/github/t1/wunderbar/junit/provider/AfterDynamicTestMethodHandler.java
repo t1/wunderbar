@@ -11,8 +11,7 @@ class AfterDynamicTestMethodHandler extends AbstractDynamicTestMethodHandler {
     }
 
     @Override protected Object arg(Executions executions, String typeName) {
-        if (typeName.equals("java.util.List<" + ActualHttpResponse.class.getName() + ">"))
-            return executions.getActualResponses();
+        if (typeName.equals("java.util.List<" + ActualHttpResponse.class.getName() + ">")) return executions.getActualResponses();
         else return super.arg(executions, typeName);
     }
 

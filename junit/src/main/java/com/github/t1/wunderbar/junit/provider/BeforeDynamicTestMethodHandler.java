@@ -23,11 +23,9 @@ class BeforeDynamicTestMethodHandler extends AbstractDynamicTestMethodHandler {
             var list = (List<?>) result;
             if (list.isEmpty()) executions.setInteractions(emptyList());
             else if (list.get(0) instanceof HttpInteraction) executions.setInteractions((List<HttpInteraction>) list);
-            else if (list.get(0) instanceof HttpRequest) {
-                replaceInteractions(executions, (List<HttpRequest>) list, HttpInteraction::withRequest);
-            } else if (list.get(0) instanceof HttpResponse) {
-                replaceInteractions(executions, (List<HttpResponse>) list, HttpInteraction::withResponse);
-            } else throw new WunderBarException("unexpected list return type " + result.getClass()); // TODO test
+            else if (list.get(0) instanceof HttpRequest) replaceInteractions(executions, (List<HttpRequest>) list, HttpInteraction::withRequest);
+            else if (list.get(0) instanceof HttpResponse) replaceInteractions(executions, (List<HttpResponse>) list, HttpInteraction::withResponse);
+            else throw new WunderBarException("unexpected list return type " + result.getClass()); // TODO test
         } else if (result != null) throw new WunderBarException("unexpected return type " + result.getClass()); // TODO test
     }
 
