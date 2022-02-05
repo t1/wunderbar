@@ -1,42 +1,22 @@
 package com.github.t1.wunderbar.junit.provider;
 
-import com.github.t1.wunderbar.common.Utils;
 import com.github.t1.wunderbar.junit.WunderBarException;
-import com.github.t1.wunderbar.junit.http.HttpInteraction;
-import com.github.t1.wunderbar.junit.http.HttpRequest;
-import com.github.t1.wunderbar.junit.http.HttpResponse;
 import com.github.t1.wunderbar.junit.provider.WunderBarApiProviderJUnitExtension.Executions;
-import lombok.RequiredArgsConstructor;
 
 import java.lang.reflect.Method;
 
-@RequiredArgsConstructor
-class AfterDynamicTestMethodHandler {
-    private final Object instance;
-    private final Method method;
-
-    void invoke(Executions executions) {
-        Object[] args = args(executions);
-        var result = Utils.invoke(instance, method, args);
-        if (result != null) throw new WunderBarException("unexpected return type " + result.getClass()); // TODO test
+class AfterDynamicTestMethodHandler extends AbstractDynamicTestMethodHandler {
+    public AfterDynamicTestMethodHandler(Object instance, Method method) {
+        super(instance, method);
     }
 
-    private Object[] args(Executions executions) {
-        var args = new Object[method.getParameterCount()];
-        for (int i = 0; i < args.length; i++) {
-            var typeName = method.getParameters()[i].getParameterizedType().getTypeName();
-            if (typeName.equals("java.util.List<" + HttpInteraction.class.getName() + ">"))
-                args[i] = executions.getInteractions();
-            else if (typeName.equals("java.util.List<" + HttpRequest.class.getName() + ">"))
-                args[i] = executions.getExpectedRequests();
-            else if (typeName.equals("java.util.List<" + HttpResponse.class.getName() + ">"))
-                args[i] = executions.getExpectedResponses();
-            else if (typeName.equals("java.util.List<" + ActualHttpResponse.class.getName() + ">"))
-                args[i] = executions.getActualResponses();
-            else if (method.getParameters()[i].getType().equals(WunderBarExecutions.class))
-                args[i] = executions;
-            else throw new WunderBarException("invalid argument type for parameter " + i + " of " + method);
-        }
-        return args;
+    @Override protected Object arg(Executions executions, String typeName) {
+        if (typeName.equals("java.util.List<" + ActualHttpResponse.class.getName() + ">"))
+            return executions.getActualResponses();
+        else return super.arg(executions, typeName);
+    }
+
+    @Override protected void apply(Object result, Executions executions) {
+        if (result != null) throw new WunderBarException("unexpected return type " + result.getClass()); // TODO test
     }
 }
