@@ -9,6 +9,9 @@ import org.junit.jupiter.api.extension.BeforeEachCallback;
 import org.junit.jupiter.api.extension.Extension;
 import org.junit.jupiter.api.extension.ExtensionContext;
 import org.junit.jupiter.api.extension.ExtensionContext.Store.CloseableResource;
+import org.junit.jupiter.api.extension.ParameterContext;
+import org.junit.jupiter.api.extension.ParameterResolutionException;
+import org.junit.jupiter.api.extension.ParameterResolver;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Constructor;
@@ -45,7 +48,7 @@ import static java.util.stream.Collectors.toList;
 import static org.junit.jupiter.api.extension.ExtensionContext.Namespace.GLOBAL;
 
 @Slf4j
-class WunderBarApiConsumerJUnitExtension implements Extension, BeforeEachCallback, AfterEachCallback {
+class WunderBarApiConsumerJUnitExtension implements Extension, BeforeEachCallback, AfterEachCallback, ParameterResolver {
     static WunderBarApiConsumerJUnitExtension INSTANCE;
     private static boolean initialized = false;
     static final Map<String, BarWriter> BAR_WRITERS = new LinkedHashMap<>();
@@ -256,6 +259,16 @@ class WunderBarApiConsumerJUnitExtension implements Extension, BeforeEachCallbac
         proxies.stream()
             .filter(proxy -> proxy.isAssignableTo(field))
             .forEach(proxy -> setField(instance, field, proxy.getSutProxy()));
+    }
+
+
+    @Override public boolean supportsParameter(ParameterContext parameterContext, ExtensionContext extensionContext) throws ParameterResolutionException {
+        return Level.class.equals(parameterContext.getParameter().getType()) || parameterContext.isAnnotated(Some.class);
+    }
+
+    @Override public Object resolveParameter(ParameterContext parameterContext, ExtensionContext extensionContext) throws ParameterResolutionException {
+        if (Level.class.equals(parameterContext.getParameter().getType())) return level();
+        return TestData.resolveParameter(parameterContext, extensionContext);
     }
 
 

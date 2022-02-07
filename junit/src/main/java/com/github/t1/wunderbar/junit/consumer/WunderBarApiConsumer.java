@@ -13,6 +13,12 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
  * fields. Also manages the <code>bar</code> files written.
  * <p>
  * When you have {@link org.junit.jupiter.api.Nested Nested} tests, the annotation closest to the test determines the configuration.
+ * <p>
+ * It also provides additional {@link org.junit.jupiter.api.extension.ParameterResolver parameters} for your tests:
+ * <ul>
+ * <li>The actual {@link Level}: mainly useful for testing WunderBar itself.
+ * <li>Parameters annotated as {@link Some} (see there for details).
+ * </ul>
  *
  * @see WunderbarExpectationBuilder#given
  */

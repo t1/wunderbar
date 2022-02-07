@@ -1,5 +1,6 @@
 package test.consumer;
 
+import com.github.t1.wunderbar.junit.consumer.Level;
 import com.github.t1.wunderbar.junit.consumer.Service;
 import com.github.t1.wunderbar.junit.consumer.Technology;
 import com.github.t1.wunderbar.junit.consumer.WunderBarApiConsumer;
@@ -21,8 +22,10 @@ import static org.assertj.core.api.BDDAssertions.then;
 import static test.consumer.ProductResolverIT.WithConfigKeyGenerator.TEST_CONFIG_KEY;
 import static test.consumer.ProductResolverIT.WithConfigKeyGenerator.WITH_CONFIG_KEY_BAR;
 
-@WunderBarApiConsumer
+/** {@link WunderBarApiConsumer} with <code>level = AUTO</code> is inherited */
 class ProductResolverIT extends ProductResolverTest {
+    @Test void testLevelShouldBeIntegration(Level level) {then(level).isEqualTo(INTEGRATION);}
+
     void verifyBaseUri(URI baseUri, Technology technology) {then(baseUri.toString()).startsWith("http://localhost:");}
 
     @WunderBarApiConsumer(level = INTEGRATION)

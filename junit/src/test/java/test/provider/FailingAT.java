@@ -22,10 +22,10 @@ import java.util.List;
 import static com.github.t1.wunderbar.common.mock.GraphQLResponseBuilder.graphQLResponse;
 import static com.github.t1.wunderbar.common.mock.GraphQLResponseBuilder.graphQlError;
 import static com.github.t1.wunderbar.junit.assertions.WunderBarBDDAssertions.then;
+import static com.github.t1.wunderbar.junit.consumer.TestData.someId;
 import static com.github.t1.wunderbar.junit.provider.WunderBarTestFinder.findTestsIn;
 import static org.assertj.core.api.Assertions.catchThrowable;
 import static org.assertj.core.api.BDDSoftAssertions.thenSoftly;
-import static test.consumer.TestData.someId;
 
 @NonCI
 @WunderBarApiProvider(baseUri = "{endpoint()}")

@@ -2,6 +2,7 @@ package test.consumer;
 
 import com.github.t1.wunderbar.junit.WunderBarException;
 import com.github.t1.wunderbar.junit.consumer.Service;
+import com.github.t1.wunderbar.junit.consumer.Some;
 import com.github.t1.wunderbar.junit.consumer.SystemUnderTest;
 import com.github.t1.wunderbar.junit.consumer.Technology;
 import com.github.t1.wunderbar.junit.consumer.WunderBarApiConsumer;
@@ -39,7 +40,6 @@ import static javax.ws.rs.core.Response.Status.FORBIDDEN;
 import static javax.ws.rs.core.Response.Status.INTERNAL_SERVER_ERROR;
 import static javax.ws.rs.core.Response.Status.NOT_FOUND;
 import static org.assertj.core.api.Assertions.catchThrowable;
-import static test.consumer.TestData.someInt;
 import static test.consumer.TestData.someProduct;
 
 @WunderBarApiConsumer
@@ -117,8 +117,7 @@ abstract class ProductResolverTest {
         then(resolvedProduct).usingRecursiveComparison().isEqualTo(product);
     }
 
-    @Test void shouldUpdateProduct() {
-        var newPrice = someInt();
+    @Test void shouldUpdateProduct(@Some int newPrice) {
         given(products.product(productId)).returns(product);
         given(products.patch(new Product().withId(productId).withPrice(newPrice))).returns(product.withPrice(newPrice));
         var preCheck = resolver.product(item);
@@ -262,8 +261,7 @@ abstract class ProductResolverTest {
             thenRestError(throwable, NOT_FOUND, "not-found", "product " + productId + " not found");
         }
 
-        @Test void shouldPatchProduct() {
-            int newPrice = someInt();
+        @Test void shouldPatchProduct(@Some int newPrice) {
             var patchedProduct = product.withPrice(newPrice);
             var patch = Product.builder().id(productId).price(newPrice).build();
             given(restService.patch(patch)).returns(patchedProduct);

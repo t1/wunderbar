@@ -202,3 +202,5 @@ Both in REST and GraphQL and on all test levels.
 
 If you have further questions, don't hesitate to ask questions on Stack Overflow tagged with https://stackoverflow.com/questions/tagged/wunderbar[wunderbar].
 Contributions are also very welcome, of course: start discussions, open issues, add comments, share it online or offline, and if you like it, give it a star on GitHub, please 😁
+
+// TODO document `@Some`
