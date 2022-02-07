@@ -6,6 +6,10 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
 
 /**
  * You can use this annotation on a method to, e.g., clean up the data of a single interaction.
+ * <p>
+ * If there are several methods annotated as {@link AfterInteraction}, their execution order is not defined;
+ * but you can use the {@link org.junit.jupiter.api.Order} annotation to specify the order explicitly.
+ * <p>
  * The annotated method can optionally take parameters of these types:
  * <ul>
  * <li><code>{@link com.github.t1.wunderbar.junit.http.HttpInteraction HttpInteraction}: expected interaction</code>,

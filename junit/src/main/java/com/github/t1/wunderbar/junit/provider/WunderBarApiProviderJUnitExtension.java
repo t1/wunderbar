@@ -30,6 +30,7 @@ import java.util.stream.Stream.Builder;
 
 import static com.github.t1.wunderbar.junit.provider.OnInteractionErrorMethodHandler.DEFAULT_ON_INTERACTION_ERROR;
 import static java.util.stream.Collectors.toList;
+import static java.util.stream.Collectors.toUnmodifiableList;
 
 class WunderBarApiProviderJUnitExtension implements Extension, BeforeEachCallback, AfterEachCallback {
     static WunderBarApiProviderJUnitExtension INSTANCE;
@@ -137,16 +138,15 @@ class WunderBarApiProviderJUnitExtension implements Extension, BeforeEachCallbac
         INSTANCE = null;
     }
 
-    public static Executable createExecutable(List<HttpInteraction> interactions, Test test) {return new HttpBarExecutable(interactions, test);}
+    Executable createExecutable(List<HttpInteraction> interactions, Test test) {return new HttpBarExecutable(interactions, test);}
 
     @AllArgsConstructor
-    private static class HttpBarExecutable implements Executable, Executions {
+    private class HttpBarExecutable implements Executable, Executions {
         @Getter @Setter private List<HttpInteraction> interactions;
         @Getter private final Test test;
         private final List<HttpResponse> actualResponses = new ArrayList<>();
 
-        private final WunderBarApiProviderJUnitExtension extension = INSTANCE;
-        private final HttpClient httpClient = new HttpClient(extension.baseUri());
+        private final HttpClient httpClient = new HttpClient(baseUri());
 
         @Override public String toString() {
             return getDisplayName() + " [with " + getInteractionCount() + " tests]";
@@ -160,7 +160,7 @@ class WunderBarApiProviderJUnitExtension implements Extension, BeforeEachCallbac
 
         @Override public void execute() {
             System.out.println("==================== start " + test);
-            extension.beforeDynamicTestMethods.forEach(handler -> handler.invoke(this));
+            beforeDynamicTestMethods.forEach(handler -> handler.invoke(this));
 
             for (HttpInteraction interaction : interactions) {
                 System.out.println("=> execute " + interaction.getNumber() + " of " + test.getInteractionCount());
@@ -168,7 +168,7 @@ class WunderBarApiProviderJUnitExtension implements Extension, BeforeEachCallbac
             }
 
             System.out.println("=> cleanup " + test);
-            extension.afterDynamicTestMethods.forEach(consumer -> consumer.invoke(this));
+            afterDynamicTestMethods.forEach(consumer -> consumer.invoke(this));
         }
 
         @Override public List<ActualHttpResponse> getActualResponses() {
@@ -194,15 +194,15 @@ class WunderBarApiProviderJUnitExtension implements Extension, BeforeEachCallbac
             @Override public int getInteractionCount() {return test.getInteractionCount();}
 
             private HttpResponse run() {
-                extension.beforeInteractionMethods.forEach(handler -> handler.invoke(this));
+                beforeInteractionMethods.forEach(handler -> handler.invoke(this));
                 var numbering = expected.getNumber() + "/" + test.getInteractionCount();
                 System.out.println("-- actual request " + numbering + ":\n" + expected.getRequest() + "\n");
 
                 this.actual = httpClient.send(expected.getRequest()).withFormattedBody();
 
                 System.out.println("-- actual response " + numbering + ":\n" + actual + "\n");
-                extension.afterInteractionMethods.forEach(consumer -> consumer.invoke(this));
-                extension.onInteractionErrorMethods.forEach(consumer -> consumer.invoke(this));
+                afterInteractionMethods.forEach(consumer -> consumer.invoke(this));
+                onInteractionErrorMethods.forEach(consumer -> consumer.invoke(this));
 
                 return actual;
             }
@@ -219,7 +219,7 @@ class WunderBarApiProviderJUnitExtension implements Extension, BeforeEachCallbac
         default List<HttpResponse> getExpectedResponses() {return mapExpectedResponses(HttpInteraction::getResponse);}
 
         default <T> List<T> mapExpectedResponses(Function<HttpInteraction, T> function) {
-            return getInteractions().stream().map(function).collect(toList());
+            return getInteractions().stream().map(function).collect(toUnmodifiableList());
         }
 
         List<ActualHttpResponse> getActualResponses();

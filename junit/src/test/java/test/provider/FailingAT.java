@@ -1,6 +1,11 @@
 package test.provider;
 
+import com.github.t1.wunderbar.junit.http.HttpInteraction;
+import com.github.t1.wunderbar.junit.http.HttpRequest;
+import com.github.t1.wunderbar.junit.http.HttpResponse;
+import com.github.t1.wunderbar.junit.provider.AfterDynamicTest;
 import com.github.t1.wunderbar.junit.provider.AfterInteraction;
+import com.github.t1.wunderbar.junit.provider.BeforeDynamicTest;
 import com.github.t1.wunderbar.junit.provider.BeforeInteraction;
 import com.github.t1.wunderbar.junit.provider.OnInteractionError;
 import com.github.t1.wunderbar.junit.provider.WunderBarApiProvider;
@@ -12,11 +17,13 @@ import test.DummyServer;
 import test.NonCI;
 
 import java.net.URI;
+import java.util.List;
 
 import static com.github.t1.wunderbar.common.mock.GraphQLResponseBuilder.graphQLResponse;
 import static com.github.t1.wunderbar.common.mock.GraphQLResponseBuilder.graphQlError;
 import static com.github.t1.wunderbar.junit.assertions.WunderBarBDDAssertions.then;
 import static com.github.t1.wunderbar.junit.provider.WunderBarTestFinder.findTestsIn;
+import static org.assertj.core.api.Assertions.catchThrowable;
 import static org.assertj.core.api.BDDSoftAssertions.thenSoftly;
 import static test.consumer.TestData.someId;
 
@@ -29,12 +36,63 @@ class FailingAT {
     @SuppressWarnings("unused")
     URI endpoint() {return dummyServer.baseUri();}
 
+    @BeforeDynamicTest void shouldFailBeforeToModifyPassedInteractions(List<HttpInteraction> interactions) {
+        var throwable = catchThrowable(() -> interactions.remove(0));
+
+        then(throwable).isInstanceOf(UnsupportedOperationException.class);
+    }
+
+    @BeforeDynamicTest void shouldFailBeforeToModifyPassedRequests(List<HttpRequest> requests) {
+        var throwable = catchThrowable(() -> requests.remove(0));
+
+        then(throwable).isInstanceOf(UnsupportedOperationException.class);
+    }
+
+    @BeforeDynamicTest void shouldFailBeforeToModifyPassedResponses(List<HttpResponse> responses) {
+        var throwable = catchThrowable(() -> responses.remove(0));
+
+        then(throwable).isInstanceOf(UnsupportedOperationException.class);
+    }
+
+    // @BeforeDynamicTest // we can't check for the exception thrown
+    @SuppressWarnings("unused")
+    List<HttpRequest> shouldFailToReturnOneLessRequest(List<HttpRequest> requests) {
+        var stackTrace = Thread.currentThread().getStackTrace(); // TODO create helpful stack trace
+        return requests.subList(0, requests.size() - 1);
+    }
+
+    // @BeforeDynamicTest // we can't check for the exception thrown
+    @SuppressWarnings("unused")
+    List<HttpResponse> shouldFailToReturnOneLessResponse(List<HttpResponse> responses) {
+        return responses.subList(0, responses.size() - 1);
+    }
+
     @BeforeInteraction void setup() {
         expectations.addGraphQLProduct(someId(), graphQLResponse().build());
         expectations.addGraphQLProduct("unexpected-fail", graphQlError("unexpected-fail", "product unexpected-fail fails unexpectedly"));
     }
 
     @AfterInteraction void cleanup() {expectations.cleanup();}
+
+
+    @AfterDynamicTest void shouldFailAfterToModifyPassedInteractions(List<HttpInteraction> interactions) {
+        var throwable = catchThrowable(() -> interactions.remove(0));
+
+        then(throwable).isInstanceOf(UnsupportedOperationException.class);
+    }
+
+    @AfterDynamicTest void shouldFailAfterToModifyPassedRequests(List<HttpRequest> requests) {
+        var throwable = catchThrowable(() -> requests.remove(0));
+
+        then(throwable).isInstanceOf(UnsupportedOperationException.class);
+    }
+
+    @AfterDynamicTest void shouldFailAfterToModifyPassedResponses(List<HttpResponse> responses) {
+        var throwable = catchThrowable(() -> responses.remove(0));
+
+        then(throwable).isInstanceOf(UnsupportedOperationException.class);
+    }
+
 
     @TestFactory DynamicNode failingConsumerTests() {
         return findTestsIn("src/test/resources/failing-wunder-bar");

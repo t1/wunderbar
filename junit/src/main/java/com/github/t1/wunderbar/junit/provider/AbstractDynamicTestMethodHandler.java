@@ -9,6 +9,7 @@ import com.github.t1.wunderbar.junit.provider.WunderBarApiProviderJUnitExtension
 import lombok.RequiredArgsConstructor;
 
 import java.lang.reflect.Method;
+import java.lang.reflect.Type;
 
 @RequiredArgsConstructor
 abstract class AbstractDynamicTestMethodHandler {
@@ -18,7 +19,7 @@ abstract class AbstractDynamicTestMethodHandler {
     void invoke(Executions executions) {
         var args = args(executions);
         var result = Utils.invoke(instance, method, args);
-        apply(result, executions);
+        apply(method.getGenericReturnType(), result, executions);
     }
 
     private Object[] args(Executions executions) {
@@ -40,8 +41,12 @@ abstract class AbstractDynamicTestMethodHandler {
             return executions.getExpectedResponses();
         else if (typeName.equals(WunderBarExecutions.class.getName()))
             return executions;
-        else throw new WunderBarException("unsupported argument type " + typeName + " of " + method);
+        else throw wunderBarException("unsupported argument type " + typeName);
     }
 
-    protected abstract void apply(Object result, Executions executions);
+    protected abstract void apply(Type returnType, Object result, Executions executions);
+
+    protected WunderBarException wunderBarException(String message) {
+        return new WunderBarException(message);
+    }
 }

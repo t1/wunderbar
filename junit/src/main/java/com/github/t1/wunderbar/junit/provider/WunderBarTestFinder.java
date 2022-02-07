@@ -15,7 +15,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.function.Function;
 
-import static com.github.t1.wunderbar.junit.provider.WunderBarApiProviderJUnitExtension.createExecutable;
 import static java.util.stream.Collectors.joining;
 import static org.junit.jupiter.api.DynamicContainer.dynamicContainer;
 import static org.junit.jupiter.api.DynamicTest.dynamicTest;
@@ -172,7 +171,7 @@ public class WunderBarTestFinder {
 
         // indirection with null is necessary, as we can't access `this` in the constructor chain to build the default factory
         this.executableFactory = (executableFactory == null)
-            ? test -> createExecutable(bar.interactionsFor(test), test)
+            ? test -> WunderBarApiProviderJUnitExtension.INSTANCE.createExecutable(bar.interactionsFor(test), test)
             : executableFactory;
 
         scanTests();

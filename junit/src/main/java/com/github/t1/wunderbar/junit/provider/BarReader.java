@@ -21,7 +21,7 @@ import java.util.Properties;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
-import static java.util.stream.Collectors.toList;
+import static java.util.stream.Collectors.toUnmodifiableList;
 
 abstract class BarReader {
     @SneakyThrows(IOException.class)
@@ -46,7 +46,7 @@ abstract class BarReader {
     public List<HttpInteraction> interactionsFor(Test test) {
         return IntStream.rangeClosed(1, test.getInteractionCount())
             .mapToObj(n -> new HttpInteraction(n, request(test, n), response(test, n)))
-            .collect(toList());
+            .collect(toUnmodifiableList());
     }
 
     private HttpRequest request(Test test, int n) {return HttpRequest.from(requestHeaders(test, n), requestBody(test, n));}

@@ -6,8 +6,13 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
 
 /**
  * JUnit-Jupiter calls {@link org.junit.jupiter.api.BeforeEach BeforeEach} and {@link org.junit.jupiter.api.AfterEach AfterEach}
- * methods only once before/after a {@link org.junit.jupiter.api.TestFactory TestFactory}.
- * You can use this annotation on a method to, e.g., clean up the data you need in your service to comply with the requirements.
+ * methods only once before/after a {@link org.junit.jupiter.api.TestFactory TestFactory}, i.e. once per <code>bar</code> file.
+ * In contrast, WunderBar runs methods annotated as {@link AfterDynamicTest} after every test within a <code>bar</code> file.
+ * (and {@link AfterInteraction} methods after every interaction within one test; see there for details).
+ * You can use this annotation on a method to, e.g., clean up the data you need in your service to comply with the test.
+ * <p>
+ * If there are several methods annotated as {@link AfterDynamicTest}, their execution order is not defined;
+ * but you can use the {@link org.junit.jupiter.api.Order} annotation to specify the order explicitly.
  * <p>
  * The annotated method can optionally take parameters of these types:
  * <ul>

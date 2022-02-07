@@ -10,6 +10,9 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
  * testing WunderBar itself; to clean things up, use {@link AfterInteraction}, which is called
  * directly before an {@link OnInteractionError} methods.
  * <p>
+ * If there are several methods annotated as {@link OnInteractionError}, their execution order is not defined;
+ * but you can use the {@link org.junit.jupiter.api.Order} annotation to specify the order explicitly.
+ * <p>
  * The annotated method can take any of these parameters:
  * <ul>
  * <li>{@link com.github.t1.wunderbar.junit.http.HttpInteraction HttpInteraction}: the expected request and response
