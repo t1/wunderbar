@@ -40,7 +40,6 @@ import static javax.ws.rs.core.Response.Status.FORBIDDEN;
 import static javax.ws.rs.core.Response.Status.INTERNAL_SERVER_ERROR;
 import static javax.ws.rs.core.Response.Status.NOT_FOUND;
 import static org.assertj.core.api.Assertions.catchThrowable;
-import static test.consumer.TestData.someProduct;
 
 @WunderBarApiConsumer
 abstract class ProductResolverTest {
@@ -64,17 +63,13 @@ abstract class ProductResolverTest {
         Object call();
     }
 
-    @Some String productId;
-    Product product;
+    @Some(of = SomeProduct.class) Product product;
     Item item;
 
-    @BeforeEach void setUpVariables() {
-        product = someProduct().withId(productId);
-        item = new Item(productId);
-    }
+    @BeforeEach void setUpVariables() {item = new Item(product.id);}
 
     @Test void shouldResolveProduct() {
-        given(products.product(productId)).returns(product);
+        given(products.product(product.id)).returns(product);
 
         var resolvedProduct = resolver.product(item);
 
@@ -82,7 +77,7 @@ abstract class ProductResolverTest {
     }
 
     @Test void shouldResolveProductWithWillReturn() {
-        given(products.product(productId)).willReturn(product);
+        given(products.product(product.id)).willReturn(product);
 
         var resolvedProduct = resolver.product(item);
 
@@ -90,7 +85,7 @@ abstract class ProductResolverTest {
     }
 
     @Test void shouldFailToResolveProductTwice() {
-        given(products.product(productId)).returns(once(), product);
+        given(products.product(product.id)).returns(once(), product);
         given(products.product("not-actually-called")).returns(Product.builder().id("unreachable").build());
 
         then(resolver.product(item)).as("first call").usingRecursiveComparison().isEqualTo(product);
@@ -107,7 +102,7 @@ abstract class ProductResolverTest {
     }
 
     @Test void shouldResolveNamedProductMethod() {
-        given(namedProducts.productById(productId)).returns(product);
+        given(namedProducts.productById(product.id)).returns(product);
 
         var resolvedProduct = resolver.namedProduct(item);
 
@@ -115,7 +110,7 @@ abstract class ProductResolverTest {
     }
 
     @Test void shouldResolveProductGetter() {
-        given(productsGetter.getProduct(productId)).returns(product);
+        given(productsGetter.getProduct(product.id)).returns(product);
 
         var resolvedProduct = resolver.productGetter(item);
 
@@ -123,8 +118,8 @@ abstract class ProductResolverTest {
     }
 
     @Test void shouldUpdateProduct(@Some int newPrice) {
-        given(products.product(productId)).returns(product);
-        given(products.patch(new Product().withId(productId).withPrice(newPrice))).returns(product.withPrice(newPrice));
+        given(products.product(product.id)).returns(product);
+        given(products.patch(new Product().withId(product.id).withPrice(newPrice))).returns(product.withPrice(newPrice));
         var preCheck = resolver.product(item);
         then(preCheck).usingRecursiveComparison().isEqualTo(product);
 
@@ -134,17 +129,17 @@ abstract class ProductResolverTest {
     }
 
     @Test void shouldFailToResolveUnknownProduct() {
-        given(products.product(productId)).willThrow(new ProductNotFoundException(productId));
+        given(products.product(product.id)).willThrow(new ProductNotFoundException(product.id));
 
         var throwable = catchThrowable(() -> resolver.product(item));
 
-        thenGraphQlError(throwable, "product-not-found", "product " + productId + " not found");
+        thenGraphQlError(throwable, "product-not-found", "product " + product.id + " not found");
     }
 
     @Test void shouldFailToResolveSameUnknownProductTwice() {
-        given(products.product(productId)).willThrow(once(), new ProductNotFoundException(productId));
+        given(products.product(product.id)).willThrow(once(), new ProductNotFoundException(product.id));
 
-        thenGraphQlError(catchThrowable(() -> resolver.product(item)), "product-not-found", "product " + productId + " not found");
+        thenGraphQlError(catchThrowable(() -> resolver.product(item)), "product-not-found", "product " + product.id + " not found");
 
         var throwable = catchThrowable(() -> resolver.product(item));
 
@@ -152,11 +147,11 @@ abstract class ProductResolverTest {
     }
 
     @Test void shouldFailToResolveForbiddenProduct() {
-        given(products.product(productId)).willThrow(new ProductForbiddenException(productId));
+        given(products.product(product.id)).willThrow(new ProductForbiddenException(product.id));
 
         var throwable = catchThrowable(() -> resolver.product(item));
 
-        thenGraphQlError(throwable, "product-forbidden", "product " + productId + " is forbidden");
+        thenGraphQlError(throwable, "product-forbidden", "product " + product.id + " is forbidden");
     }
 
     protected void thenGraphQlError(Throwable throwable, String errorCode, String message) {
@@ -222,7 +217,7 @@ abstract class ProductResolverTest {
         }
 
         @Test void shouldGetProduct() {
-            given(restService.product(productId)).returns(product);
+            given(restService.product(product.id)).returns(product);
 
             var response = gateway.product(item);
 
@@ -243,7 +238,7 @@ abstract class ProductResolverTest {
         }
 
         @Test void shouldFailToGetFailingProduct() {
-            given(restService.product(productId)).willThrow(new IllegalStateException("some internal error"));
+            given(restService.product(product.id)).willThrow(new IllegalStateException("some internal error"));
 
             var throwable = catchThrowable(() -> gateway.product(item));
 
@@ -251,24 +246,24 @@ abstract class ProductResolverTest {
         }
 
         @Test void shouldFailToGetForbiddenProduct() {
-            given(restService.product(productId)).willThrow(new ForbiddenException("product " + productId + " is forbidden"));
+            given(restService.product(product.id)).willThrow(new ForbiddenException("product " + product.id + " is forbidden"));
 
             var throwable = catchThrowable(() -> gateway.product(item));
 
-            thenRestError(throwable, FORBIDDEN, "forbidden", "product " + productId + " is forbidden");
+            thenRestError(throwable, FORBIDDEN, "forbidden", "product " + product.id + " is forbidden");
         }
 
         @Test void shouldFailToGetUnknownProduct() {
-            given(restService.product(productId)).willThrow(new NotFoundException("product " + productId + " not found"));
+            given(restService.product(product.id)).willThrow(new NotFoundException("product " + product.id + " not found"));
 
             var throwable = catchThrowable(() -> gateway.product(item));
 
-            thenRestError(throwable, NOT_FOUND, "not-found", "product " + productId + " not found");
+            thenRestError(throwable, NOT_FOUND, "not-found", "product " + product.id + " not found");
         }
 
         @Test void shouldPatchProduct(@Some int newPrice) {
             var patchedProduct = product.withPrice(newPrice);
-            var patch = Product.builder().id(productId).price(newPrice).build();
+            var patch = Product.builder().id(product.id).price(newPrice).build();
             given(restService.patch(patch)).returns(patchedProduct);
 
             var updated = gateway.productWithPriceUpdate(item, newPrice);

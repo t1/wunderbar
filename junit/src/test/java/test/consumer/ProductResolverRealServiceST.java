@@ -19,7 +19,7 @@ import java.util.Map;
 import static com.github.t1.wunderbar.junit.assertions.WunderBarBDDAssertions.then;
 import static com.github.t1.wunderbar.junit.consumer.WunderbarExpectationBuilder.given;
 import static org.assertj.core.api.Assertions.catchThrowable;
-import static test.consumer.TestData.someProduct;
+import static test.consumer.SomeProduct.someProduct;
 
 @WunderBarApiConsumer
 class ProductResolverRealServiceST {

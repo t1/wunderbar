@@ -138,7 +138,7 @@ class WunderBarApiConsumerJUnitExtension implements Extension, BeforeEachCallbac
     }
 
     private void createSomeTestData(Field field) {
-        setField(instanceFor(field), field, TestData.some(field.getType()));
+        setField(instanceFor(field), field, resolveSome(field.getType(), field.getAnnotation(Some.class)));
     }
 
     private void createProxy(Field field) {
@@ -273,7 +273,15 @@ class WunderBarApiConsumerJUnitExtension implements Extension, BeforeEachCallbac
 
     @Override public Object resolveParameter(ParameterContext parameterContext, ExtensionContext extensionContext) throws ParameterResolutionException {
         if (Level.class.equals(parameterContext.getParameter().getType())) return level();
-        return TestData.some(parameterContext.getParameter().getType());
+        return resolveSome(parameterContext.getParameter().getType(), parameterContext.getParameter().getAnnotation(Some.class));
+    }
+
+    private Object resolveSome(Class<?> type, Some some) {
+        try {
+            return some.of().getDeclaredConstructor().newInstance().some(type);
+        } catch (ReflectiveOperationException e) {
+            throw new RuntimeException("can't resolve " + type + " from " + some, e);
+        }
     }
 
 

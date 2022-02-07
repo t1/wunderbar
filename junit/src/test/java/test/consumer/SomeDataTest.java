@@ -8,7 +8,7 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.UUID;
 
-import static com.github.t1.wunderbar.junit.consumer.TestData.testUuidFromInt;
+import static com.github.t1.wunderbar.junit.consumer.SomeBasics.testUuidFromInt;
 import static org.assertj.core.api.BDDAssertions.then;
 
 @WunderBarApiConsumer
