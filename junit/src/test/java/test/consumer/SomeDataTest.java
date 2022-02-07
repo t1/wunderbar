@@ -6,7 +6,9 @@ import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.util.UUID;
 
+import static com.github.t1.wunderbar.junit.consumer.TestData.testUuidFromInt;
 import static org.assertj.core.api.BDDAssertions.then;
 
 @WunderBarApiConsumer
@@ -39,4 +41,6 @@ class SomeDataTest {
     @Test void shouldProvideBigDecimal(@Some BigDecimal i) {then(i).isBetween(BigDecimal.ZERO, BigDecimal.valueOf(QUITE_BIG_INT));}
 
     @Test void shouldProvideString(@Some String string) {then(string).isNotNull().hasSizeBetween(1, 10);}
+
+    @Test void shouldProvideUUID(@Some UUID uuid) {then(uuid).isBetween(testUuidFromInt(0), testUuidFromInt(QUITE_BIG_INT));}
 }

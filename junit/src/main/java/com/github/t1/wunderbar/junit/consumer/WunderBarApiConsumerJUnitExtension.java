@@ -75,6 +75,7 @@ class WunderBarApiConsumerJUnitExtension implements Extension, BeforeEachCallbac
         this.bar = BAR_WRITERS.computeIfAbsent(settings.fileName(), this::createBar);
         if (bar != null) bar.setDirectory(testId);
 
+        forEachField(Some.class, this::createSomeTestData);
         forEachField(Service.class, this::createProxy);
         forEachField(SystemUnderTest.class, this::initSut);
 
@@ -134,6 +135,10 @@ class WunderBarApiConsumerJUnitExtension implements Extension, BeforeEachCallbac
         for (Class<?> c = instance.getClass(); c != null; c = c.getSuperclass())
             Stream.of(c.getDeclaredFields()).forEach(builder::add);
         return builder.build();
+    }
+
+    private void createSomeTestData(Field field) {
+        setField(instanceFor(field), field, TestData.some(field.getType()));
     }
 
     private void createProxy(Field field) {
@@ -268,7 +273,7 @@ class WunderBarApiConsumerJUnitExtension implements Extension, BeforeEachCallbac
 
     @Override public Object resolveParameter(ParameterContext parameterContext, ExtensionContext extensionContext) throws ParameterResolutionException {
         if (Level.class.equals(parameterContext.getParameter().getType())) return level();
-        return TestData.resolveParameter(parameterContext, extensionContext);
+        return TestData.some(parameterContext.getParameter().getType());
     }
 
 

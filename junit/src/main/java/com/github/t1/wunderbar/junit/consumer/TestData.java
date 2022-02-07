@@ -1,12 +1,11 @@
 package com.github.t1.wunderbar.junit.consumer;
 
 import com.github.t1.wunderbar.junit.WunderBarException;
-import org.junit.jupiter.api.extension.ExtensionContext;
-import org.junit.jupiter.api.extension.ParameterContext;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.Random;
+import java.util.UUID;
 
 /**
  * Generates random values, but tries to keep them positive and small, so they are easier to handle.
@@ -15,8 +14,7 @@ import java.util.Random;
 public class TestData {
     private static int nextInt = Math.abs(new Random().nextInt(9)); // just a bit of initial randomness
 
-    static Object resolveParameter(ParameterContext parameterContext, ExtensionContext extensionContext) {
-        Class<?> type = parameterContext.getParameter().getType();
+    static Object some(Class<?> type) {
         if (boolean.class.equals(type) || Boolean.class.equals(type)) return someBoolean();
         if (byte.class.equals(type) || Byte.class.equals(type)) return someByte();
         if (char.class.equals(type) || Character.class.equals(type)) return someChar();
@@ -28,7 +26,8 @@ public class TestData {
         if (double.class.equals(type) || Double.class.equals(type)) return someDouble();
         if (BigDecimal.class.equals(type)) return BigDecimal.valueOf(someInt());
         if (String.class.equals(type)) return someString();
-        throw new WunderBarException("don't know how to generate a random " + type);
+        if (UUID.class.equals(type)) return someUUID();
+        throw new WunderBarException("don't know how to generate a random " + type.getSimpleName());
     }
 
     public static boolean someBoolean() {return someInt() % 2 == 0;}
@@ -48,4 +47,12 @@ public class TestData {
     public static String someId() {return "id-" + someInt();}
 
     public static String someString() {return "string-" + someInt();}
+
+    public static UUID someUUID() {return testUuidFromInt(someInt());}
+
+
+    /** UUID useful for testing with all leading zeroes, except for the last part derived from the int */
+    public static UUID testUuidFromInt(int i) {
+        return UUID.fromString("00000000-0000-0000-0000-" + (100000000000L + i));
+    }
 }

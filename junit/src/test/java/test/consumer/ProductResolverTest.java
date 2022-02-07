@@ -64,9 +64,14 @@ abstract class ProductResolverTest {
         Object call();
     }
 
-    Product product = someProduct();
-    String productId = product.getId();
-    Item item = new Item(productId);
+    @Some String productId;
+    Product product;
+    Item item;
+
+    @BeforeEach void setUpVariables() {
+        product = someProduct().withId(productId);
+        item = new Item(productId);
+    }
 
     @Test void shouldResolveProduct() {
         given(products.product(productId)).returns(product);
