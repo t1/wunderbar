@@ -19,7 +19,7 @@
 
         <microprofile.version>4.0.1</microprofile.version>
         <smallrye-graphql.version>1.4.2</smallrye-graphql.version>
-        <slf4j.version>1.7.35</slf4j.version>
+        <slf4j.version>1.7.36</slf4j.version>
         <resteasy.version>4.7.5.Final</resteasy.version>
         <quarkus.version>2.7.0.Final</quarkus.version>
         <smallrye-context-propagation.version>1.2.2</smallrye-context-propagation.version>
