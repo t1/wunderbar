@@ -10,9 +10,6 @@ import java.net.URI;
 import java.net.URL;
 import java.util.UUID;
 
-import static com.github.t1.wunderbar.junit.consumer.SomeBasics.testUriFromInt;
-import static com.github.t1.wunderbar.junit.consumer.SomeBasics.testUrlFromInt;
-import static com.github.t1.wunderbar.junit.consumer.SomeBasics.testUuidFromInt;
 import static org.assertj.core.api.BDDAssertions.then;
 
 @WunderBarApiConsumer
@@ -38,15 +35,17 @@ class SomeBasicsTest {
 
     @Test void shouldProvideBigDecimal(@Some BigDecimal i) {then(i).isBetween(BigDecimal.ZERO, BigDecimal.valueOf(QUITE_BIG_INT));}
 
-    @Test void shouldProvideString(@Some String string) {then(string).isBetween("string-1000", "string-1009");}
+    @Test void shouldProvideString(@Some String string) {then(string).isBetween("string-00000", "string-99999");}
 
-    @Test void shouldProvideUUID(@Some UUID uuid) {then(uuid).isBetween(testUuidFromInt(0), testUuidFromInt(QUITE_BIG_INT));}
-
-    @Test void shouldProvideURI(@Some URI uri) {
-        then(uri.toString()).isBetween(testUriFromInt(0).toString(), testUriFromInt(QUITE_BIG_INT).toString());
+    @Test void shouldProvideUUID(@Some UUID uuid) {
+        then(uuid).isBetween(UUID.fromString("00000000-0000-0000-0000-000000000000"), UUID.fromString("00000000-0000-0000-0000-000000099999"));
     }
 
-    @Test void shouldProvideURL(@Some URL uri) {
-        then(uri.toString()).isBetween(testUrlFromInt(0).toString(), testUrlFromInt(QUITE_BIG_INT).toString());
+    @Test void shouldProvideURI(@Some URI uri) {
+        then(uri.toString()).isBetween("https://example.nowhere/path-0000000", "https://example.nowhere/path-99999");
+    }
+
+    @Test void shouldProvideURL(@Some URL url) {
+        then(url.toString()).isBetween("https://example.nowhere/path-0000000", "https://example.nowhere/path-99999");
     }
 }

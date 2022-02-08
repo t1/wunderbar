@@ -73,26 +73,16 @@ public class SomeBasics implements SomeData {
 
     public static double someDouble() {return Double.parseDouble("0." + someInt());}
 
-    public static String someId() {return "id-" + someInt();}
+    public static String someId() {return String.format("id-%05d", someInt());}
 
-    public static String someString() {return "string-" + someInt();}
+    public static String someString() {return String.format("string-%05d", someInt());}
 
-    public static UUID someUUID() {return testUuidFromInt(someInt());}
-
-    public static URI someURI() {return testUriFromInt(someInt());}
-
-    public static URL someURL() {return testUrlFromInt(someInt());}
-
-
-    /** UUID useful for testing with all leading zeroes, except for the last part derived from the int */
-    public static UUID testUuidFromInt(int i) {
-        return UUID.fromString("00000000-0000-0000-0000-" + (100000000000L + i));
+    public static UUID someUUID() {
+        return UUID.fromString(String.format("00000000-0000-0000-0000-%012d", someInt()));
     }
 
-    /** URI useful for testing, derived from the int */
-    public static URI testUriFromInt(int i) {return URI.create(String.format("https://example.nowhere/path-%07d", i));}
+    public static URI someURI() {return URI.create(String.format("https://example.nowhere/path-%07d", someInt()));}
 
-    /** URL useful for testing, derived from the int */
     @SneakyThrows(MalformedURLException.class)
-    public static URL testUrlFromInt(int i) {return testUriFromInt(i).toURL();}
+    public static URL someURL() {return someURI().toURL();}
 }
