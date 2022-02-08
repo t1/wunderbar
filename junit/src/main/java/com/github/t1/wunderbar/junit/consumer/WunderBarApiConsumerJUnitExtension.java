@@ -1,5 +1,6 @@
 package com.github.t1.wunderbar.junit.consumer;
 
+import com.github.t1.wunderbar.junit.Register;
 import com.github.t1.wunderbar.junit.WunderBarException;
 import io.smallrye.graphql.client.typesafe.api.GraphQLClientApi;
 import lombok.SneakyThrows;
@@ -35,6 +36,7 @@ import java.util.stream.Stream.Builder;
 
 import static com.github.t1.wunderbar.common.Utils.getField;
 import static com.github.t1.wunderbar.common.Utils.setField;
+import static com.github.t1.wunderbar.junit.JunitUtils.ORDER;
 import static com.github.t1.wunderbar.junit.consumer.Level.AUTO;
 import static com.github.t1.wunderbar.junit.consumer.Level.INTEGRATION;
 import static com.github.t1.wunderbar.junit.consumer.Level.SYSTEM;
@@ -62,6 +64,7 @@ class WunderBarApiConsumerJUnitExtension implements Extension, BeforeEachCallbac
     private BarWriter bar;
     private Instant start;
     private final List<Proxy<?>> proxies = new ArrayList<>();
+    private final List<SomeData> dataGenerators = new ArrayList<>();
 
     @Override public void beforeEach(ExtensionContext context) {
         INSTANCE = this;
@@ -75,6 +78,8 @@ class WunderBarApiConsumerJUnitExtension implements Extension, BeforeEachCallbac
         this.bar = BAR_WRITERS.computeIfAbsent(settings.fileName(), this::createBar);
         if (bar != null) bar.setDirectory(testId);
 
+        forEachField(Register.class, this::register);
+        dataGenerators.add(new SomeBasics());
         forEachField(Some.class, this::createSomeTestData);
         forEachField(Service.class, this::createProxy);
         forEachField(SystemUnderTest.class, this::initSut);
@@ -127,7 +132,13 @@ class WunderBarApiConsumerJUnitExtension implements Extension, BeforeEachCallbac
         context.getRequiredTestInstances().getAllInstances().stream()
             .flatMap(this::allFields)
             .filter(field -> field.isAnnotationPresent(annotationType))
+            .sorted(ORDER)
             .forEach(action);
+    }
+
+    private void register(Field field) {
+        var generator = (SomeData) getOrInitField(field);
+        dataGenerators.add(generator);
     }
 
     private Stream<Field> allFields(Object instance) {
@@ -138,7 +149,7 @@ class WunderBarApiConsumerJUnitExtension implements Extension, BeforeEachCallbac
     }
 
     private void createSomeTestData(Field field) {
-        setField(instanceFor(field), field, resolveSome(field.getType(), field.getAnnotation(Some.class)));
+        setField(instanceFor(field), field, resolveSome(field.getType()));
     }
 
     private void createProxy(Field field) {
@@ -247,11 +258,15 @@ class WunderBarApiConsumerJUnitExtension implements Extension, BeforeEachCallbac
     }
 
     private void initSut(Field sutField) {
+        Object systemUnderTest = getOrInitField(sutField);
+        injectProxiesIntoSut(systemUnderTest);
+    }
+
+    private Object getOrInitField(Field sutField) {
         var testInstance = instanceFor(sutField);
         if (getField(testInstance, sutField) == null)
             setField(testInstance, sutField, newInstance(sutField));
-        var systemUnderTest = getField(testInstance, sutField);
-        injectProxiesIntoSut(systemUnderTest);
+        return getField(testInstance, sutField);
     }
 
     private void injectProxiesIntoSut(Object systemUnderTest) {
@@ -273,15 +288,14 @@ class WunderBarApiConsumerJUnitExtension implements Extension, BeforeEachCallbac
 
     @Override public Object resolveParameter(ParameterContext parameterContext, ExtensionContext extensionContext) throws ParameterResolutionException {
         if (Level.class.equals(parameterContext.getParameter().getType())) return level();
-        return resolveSome(parameterContext.getParameter().getType(), parameterContext.getParameter().getAnnotation(Some.class));
+        return resolveSome(parameterContext.getParameter().getType());
     }
 
-    private Object resolveSome(Class<?> type, Some some) {
-        try {
-            return some.of().getDeclaredConstructor().newInstance().some(type);
-        } catch (ReflectiveOperationException e) {
-            throw new RuntimeException("can't resolve " + type + " from " + some, e);
-        }
+    private Object resolveSome(Class<?> type) {
+        var generator = dataGenerators.stream()
+            .filter(gen -> gen.canGenerate(type))
+            .findFirst().orElseThrow();
+        return generator.some(type);
     }
 
 

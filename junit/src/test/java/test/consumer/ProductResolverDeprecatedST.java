@@ -1,5 +1,6 @@
 package test.consumer;
 
+import com.github.t1.wunderbar.junit.Register;
 import com.github.t1.wunderbar.junit.consumer.Service;
 import com.github.t1.wunderbar.junit.consumer.Some;
 import com.github.t1.wunderbar.junit.consumer.SystemUnderTest;
@@ -21,6 +22,7 @@ class ProductResolverDeprecatedST {
     @SystemUnderTest ProductResolver resolver;
 
     @RegisterExtension DummyServer dummyServer = new DummyServer();
+    @Register SomeProduct productGenerator;
 
     boolean endpointCalled = false;
 
@@ -30,7 +32,7 @@ class ProductResolverDeprecatedST {
         return dummyServer.baseUri() + "/graphql";
     }
 
-    @Test void shouldResolveProductFromFunctionEndpoint(@Some(of = SomeProduct.class) Product product) {
+    @Test void shouldResolveProductFromFunctionEndpoint(@Some Product product) {
         given(products.product(product.getId())).returns(product);
 
         var resolvedProduct = resolver.product(new Item(product.getId()));

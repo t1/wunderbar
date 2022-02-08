@@ -6,8 +6,11 @@ import test.consumer.ProductResolver.Product;
 import static com.github.t1.wunderbar.junit.consumer.SomeBasics.someInt;
 
 public class SomeProduct implements SomeData {
+    @Override public boolean canGenerate(Class<?> type) {
+        return Product.class.equals(type);
+    }
+
     @Override public <T> T some(Class<T> type) {
-        assert type == Product.class;
         return type.cast(someProduct());
     }
 

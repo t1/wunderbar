@@ -6,6 +6,7 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.Random;
 import java.util.UUID;
+import java.util.function.Supplier;
 
 /**
  * Generates random values, but tries to keep them positive and small, so they are easier to handle.
@@ -14,21 +15,31 @@ import java.util.UUID;
 public class SomeBasics implements SomeData {
     private static int nextInt = Math.abs(new Random().nextInt(9)); // just a bit of initial randomness
 
-    @SuppressWarnings("unchecked")
+    @Override public boolean canGenerate(Class<?> type) {
+        return generator(type) != null;
+    }
+
     public <T> T some(Class<T> type) {
-        if (boolean.class.equals(type) || Boolean.class.equals(type)) return (T) someBoolean();
-        if (byte.class.equals(type) || Byte.class.equals(type)) return (T) someByte();
-        if (char.class.equals(type) || Character.class.equals(type)) return (T) someChar();
-        if (short.class.equals(type) || Short.class.equals(type)) return (T) someShort();
-        if (int.class.equals(type) || Integer.class.equals(type)) return (T) someInt();
-        if (long.class.equals(type) || Long.class.equals(type)) return (T) someLong();
-        if (BigInteger.class.equals(type)) return (T) BigInteger.valueOf(someInt());
-        if (float.class.equals(type) || Float.class.equals(type)) return (T) someFloat();
-        if (double.class.equals(type) || Double.class.equals(type)) return (T) someDouble();
-        if (BigDecimal.class.equals(type)) return (T) BigDecimal.valueOf(someInt());
-        if (String.class.equals(type)) return (T) someString();
-        if (UUID.class.equals(type)) return (T) someUUID();
-        throw new WunderBarException("don't know how to generate a random " + type.getSimpleName());
+        var generator = generator(type);
+        if (generator == null) throw new WunderBarException("don't know how to generate a random " + type.getSimpleName());
+        return generator.get();
+    }
+
+    @SuppressWarnings("unchecked")
+    private <T> Supplier<T> generator(Class<T> type) {
+        if (boolean.class.equals(type) || Boolean.class.equals(type)) return () -> (T) someBoolean();
+        if (byte.class.equals(type) || Byte.class.equals(type)) return () -> (T) someByte();
+        if (char.class.equals(type) || Character.class.equals(type)) return () -> (T) someChar();
+        if (short.class.equals(type) || Short.class.equals(type)) return () -> (T) someShort();
+        if (int.class.equals(type) || Integer.class.equals(type)) return () -> (T) someInt();
+        if (long.class.equals(type) || Long.class.equals(type)) return () -> (T) someLong();
+        if (BigInteger.class.equals(type)) return () -> (T) BigInteger.valueOf(someInt());
+        if (float.class.equals(type) || Float.class.equals(type)) return () -> (T) someFloat();
+        if (double.class.equals(type) || Double.class.equals(type)) return () -> (T) someDouble();
+        if (BigDecimal.class.equals(type)) return () -> (T) BigDecimal.valueOf(someInt());
+        if (String.class.equals(type)) return () -> (T) someString();
+        if (UUID.class.equals(type)) return () -> (T) someUUID();
+        return null;
     }
 
     public static Boolean someBoolean() {return someInt() % 2 == 0;}

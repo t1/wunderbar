@@ -10,7 +10,6 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.SneakyThrows;
-import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.extension.AfterEachCallback;
 import org.junit.jupiter.api.extension.BeforeEachCallback;
 import org.junit.jupiter.api.extension.Extension;
@@ -21,13 +20,13 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.net.URI;
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.List;
 import java.util.function.Function;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
 import java.util.stream.Stream.Builder;
 
+import static com.github.t1.wunderbar.junit.JunitUtils.ORDER;
 import static com.github.t1.wunderbar.junit.provider.OnInteractionErrorMethodHandler.DEFAULT_ON_INTERACTION_ERROR;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toUnmodifiableList;
@@ -104,9 +103,6 @@ class WunderBarApiProviderJUnitExtension implements Extension, BeforeEachCallbac
                 .forEach(builder::add);
         return builder.build();
     }
-
-    private static final Comparator<Method> ORDER = Comparator.comparingInt(method ->
-        method.isAnnotationPresent(Order.class) ? method.getAnnotation(Order.class).value() : Order.DEFAULT);
 
 
     URI baseUri() {

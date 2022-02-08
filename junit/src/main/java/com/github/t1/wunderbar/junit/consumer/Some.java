@@ -10,7 +10,4 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
  * TODO document
  */
 @Retention(RUNTIME)
-public @interface Some {
-    /** The generator to use; defaults to a generator for {@link SomeBasics some basic types}. */
-    Class<? extends SomeData> of() default SomeBasics.class;
-}
+public @interface Some {}

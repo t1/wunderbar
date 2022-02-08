@@ -1,5 +1,6 @@
 package test.consumer;
 
+import com.github.t1.wunderbar.junit.Register;
 import com.github.t1.wunderbar.junit.WunderBarException;
 import com.github.t1.wunderbar.junit.consumer.Service;
 import com.github.t1.wunderbar.junit.consumer.Some;
@@ -50,6 +51,12 @@ abstract class ProductResolverTest {
 
     String endpoint() {return DEFAULT_ENDPOINT;}
 
+    @Register SomeProduct productGenerator;
+    @Some Product product;
+    Item item;
+
+    @BeforeEach void setUpVariables() {item = new Item(product.id);}
+
     @Nested class UnrecognizableTechnologies {
         @Test void shouldFailToRecognizeTechnology() {
             var throwable = catchThrowable(() -> createService(UnrecognizableTechnologyService.class));
@@ -62,11 +69,6 @@ abstract class ProductResolverTest {
         @SuppressWarnings("unused")
         Object call();
     }
-
-    @Some(of = SomeProduct.class) Product product;
-    Item item;
-
-    @BeforeEach void setUpVariables() {item = new Item(product.id);}
 
     @Test void shouldResolveProduct() {
         given(products.product(product.id)).returns(product);
