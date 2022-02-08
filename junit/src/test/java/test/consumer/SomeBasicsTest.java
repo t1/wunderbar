@@ -6,13 +6,17 @@ import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.net.URI;
+import java.net.URL;
 import java.util.UUID;
 
+import static com.github.t1.wunderbar.junit.consumer.SomeBasics.testUriFromInt;
+import static com.github.t1.wunderbar.junit.consumer.SomeBasics.testUrlFromInt;
 import static com.github.t1.wunderbar.junit.consumer.SomeBasics.testUuidFromInt;
 import static org.assertj.core.api.BDDAssertions.then;
 
 @WunderBarApiConsumer
-class SomeDataTest {
+class SomeBasicsTest {
     /** We don't want to generate really random numbers; they should be rather small to be easier to handle. */
     private static final int QUITE_BIG_INT = Short.MAX_VALUE;
 
@@ -43,4 +47,12 @@ class SomeDataTest {
     @Test void shouldProvideString(@Some String string) {then(string).isNotNull().hasSizeBetween(1, 10);}
 
     @Test void shouldProvideUUID(@Some UUID uuid) {then(uuid).isBetween(testUuidFromInt(0), testUuidFromInt(QUITE_BIG_INT));}
+
+    @Test void shouldProvideURI(@Some URI uri) {
+        then(uri.toString()).isBetween(testUriFromInt(0).toString(), testUriFromInt(QUITE_BIG_INT).toString());
+    }
+
+    @Test void shouldProvideURL(@Some URL uri) {
+        then(uri.toString()).isBetween(testUrlFromInt(0).toString(), testUrlFromInt(QUITE_BIG_INT).toString());
+    }
 }

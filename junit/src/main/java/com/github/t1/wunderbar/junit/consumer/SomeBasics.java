@@ -1,9 +1,13 @@
 package com.github.t1.wunderbar.junit.consumer;
 
 import com.github.t1.wunderbar.junit.WunderBarException;
+import lombok.SneakyThrows;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URL;
 import java.util.Random;
 import java.util.UUID;
 import java.util.function.Supplier;
@@ -39,6 +43,8 @@ public class SomeBasics implements SomeData {
         if (BigDecimal.class.equals(type)) return () -> (T) BigDecimal.valueOf(someInt());
         if (String.class.equals(type)) return () -> (T) someString();
         if (UUID.class.equals(type)) return () -> (T) someUUID();
+        if (URI.class.equals(type)) return () -> (T) someURI();
+        if (URL.class.equals(type)) return () -> (T) someURL();
         return null;
     }
 
@@ -64,9 +70,20 @@ public class SomeBasics implements SomeData {
 
     public static UUID someUUID() {return testUuidFromInt(someInt());}
 
+    public static URI someURI() {return testUriFromInt(someInt());}
+
+    public static URL someURL() {return testUrlFromInt(someInt());}
+
 
     /** UUID useful for testing with all leading zeroes, except for the last part derived from the int */
     public static UUID testUuidFromInt(int i) {
         return UUID.fromString("00000000-0000-0000-0000-" + (100000000000L + i));
     }
+
+    /** URI useful for testing, derived from the int */
+    public static URI testUriFromInt(int i) {return URI.create(String.format("https://example.nowhere/path-%07d", i));}
+
+    /** URL useful for testing, derived from the int */
+    @SneakyThrows(MalformedURLException.class)
+    public static URL testUrlFromInt(int i) {return testUriFromInt(i).toURL();}
 }
