@@ -13,11 +13,23 @@ import java.util.UUID;
 import java.util.function.Supplier;
 
 /**
- * Generates random values, but tries to keep them positive and small, so they are easier to handle.
- * Generally, it's better to use the {@link Some @Some} annotation.
+ * Generates random values, but tries to keep them positive, unique, and small, so they are as easy to handle as possible.
+ * These prerequisites are not achievable for booleans and bytes, as they would overflow too fast.
+ * <p>
+ * The default offset is 1000, i.e. the first value generated will start between 1000 and 1009.
+ * <p>
+ * Generally, it's better to use the {@link Some @Some} annotation than the <code>some...</code> methods defined here.
  */
 public class SomeBasics implements SomeData {
-    private static int nextInt = Math.abs(new Random().nextInt(9)); // just a bit of initial randomness
+    private static int nextInt;
+
+    static {reset();}
+
+    public static void reset() {reset(1000);}
+
+    public static void reset(int offset) {
+        nextInt = offset + Math.abs(new Random().nextInt(10)); // just a bit of initial randomness
+    }
 
     @Override public boolean canGenerate(Class<?> type) {
         return generator(type) != null;
@@ -31,38 +43,35 @@ public class SomeBasics implements SomeData {
 
     @SuppressWarnings("unchecked")
     private <T> Supplier<T> generator(Class<T> type) {
-        if (boolean.class.equals(type) || Boolean.class.equals(type)) return () -> (T) someBoolean();
-        if (byte.class.equals(type) || Byte.class.equals(type)) return () -> (T) someByte();
-        if (char.class.equals(type) || Character.class.equals(type)) return () -> (T) someChar();
-        if (short.class.equals(type) || Short.class.equals(type)) return () -> (T) someShort();
-        if (int.class.equals(type) || Integer.class.equals(type)) return () -> (T) someInt();
-        if (long.class.equals(type) || Long.class.equals(type)) return () -> (T) someLong();
+        if (char.class.equals(type) || Character.class.equals(type)) return () -> (T) (Character) someChar();
+        if (short.class.equals(type) || Short.class.equals(type)) return () -> (T) (Short) someShort();
+        if (int.class.equals(type) || Integer.class.equals(type)) return () -> (T) (Integer) someInt();
+        if (long.class.equals(type) || Long.class.equals(type)) return () -> (T) (Long) someLong();
         if (BigInteger.class.equals(type)) return () -> (T) BigInteger.valueOf(someInt());
-        if (float.class.equals(type) || Float.class.equals(type)) return () -> (T) someFloat();
-        if (double.class.equals(type) || Double.class.equals(type)) return () -> (T) someDouble();
+
+        if (float.class.equals(type) || Float.class.equals(type)) return () -> (T) (Float) someFloat();
+        if (double.class.equals(type) || Double.class.equals(type)) return () -> (T) (Double) someDouble();
         if (BigDecimal.class.equals(type)) return () -> (T) BigDecimal.valueOf(someInt());
+
         if (String.class.equals(type)) return () -> (T) someString();
         if (UUID.class.equals(type)) return () -> (T) someUUID();
         if (URI.class.equals(type)) return () -> (T) someURI();
         if (URL.class.equals(type)) return () -> (T) someURL();
+
         return null;
     }
 
-    public static Boolean someBoolean() {return someInt() % 2 == 0;}
+    public static char someChar() {return Character.toChars(someInt())[0];}
 
-    public static Byte someByte() {return (byte) (someInt() % Byte.MAX_VALUE);}
+    public static short someShort() {return (short) someInt();}
 
-    public static Character someChar() {return Character.toChars(someInt())[0];}
+    public static int someInt() {return nextInt++;}
 
-    public static Short someShort() {return (short) (someInt() % Short.MAX_VALUE);}
+    public static long someLong() {return someInt();}
 
-    public static Integer someInt() {return nextInt++;}
+    public static float someFloat() {return Float.parseFloat("1." + someInt());}
 
-    public static Long someLong() {return Long.valueOf(someInt());}
-
-    public static Float someFloat() {return Float.parseFloat("1." + someInt());}
-
-    public static Double someDouble() {return Double.parseDouble("0." + someInt());}
+    public static double someDouble() {return Double.parseDouble("0." + someInt());}
 
     public static String someId() {return "id-" + someInt();}
 

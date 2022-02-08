@@ -20,13 +20,7 @@ class SomeBasicsTest {
     /** We don't want to generate really random numbers; they should be rather small to be easier to handle. */
     private static final int QUITE_BIG_INT = Short.MAX_VALUE;
 
-    @Test void shouldProvidePrimitiveBoolean(@Some boolean b) {then(b).isNotNull();}
-
-    @Test void shouldProvideBigBoolean(@Some Boolean b) {then(b).isNotNull();}
-
     @Test void shouldProvideShort(@Some short i) {then(i).isBetween((short) 0, (short) QUITE_BIG_INT);}
-
-    @Test void shouldProvideByte(@Some byte i) {then(i).isBetween((byte) 0, Byte.MAX_VALUE);}
 
     @Test void shouldProvideChar(@Some char i) {then(i).isBetween((char) 0, Character.MAX_VALUE);}
 
@@ -44,7 +38,7 @@ class SomeBasicsTest {
 
     @Test void shouldProvideBigDecimal(@Some BigDecimal i) {then(i).isBetween(BigDecimal.ZERO, BigDecimal.valueOf(QUITE_BIG_INT));}
 
-    @Test void shouldProvideString(@Some String string) {then(string).isNotNull().hasSizeBetween(1, 10);}
+    @Test void shouldProvideString(@Some String string) {then(string).isBetween("string-1000", "string-1009");}
 
     @Test void shouldProvideUUID(@Some UUID uuid) {then(uuid).isBetween(testUuidFromInt(0), testUuidFromInt(QUITE_BIG_INT));}
 

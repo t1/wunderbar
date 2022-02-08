@@ -70,6 +70,7 @@ class WunderBarApiConsumerJUnitExtension implements Extension, BeforeEachCallbac
         INSTANCE = this;
         if (!initialized) init(context);
 
+        SomeBasics.reset();
         this.context = context;
         this.testId = testId();
         this.settings = findSettings();
