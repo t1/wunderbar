@@ -1,14 +1,16 @@
 package test.consumer;
 
+import com.github.t1.wunderbar.junit.Register;
 import com.github.t1.wunderbar.junit.WunderBarException;
 import com.github.t1.wunderbar.junit.consumer.Service;
+import com.github.t1.wunderbar.junit.consumer.Some;
 import com.github.t1.wunderbar.junit.consumer.SystemUnderTest;
 import com.github.t1.wunderbar.junit.consumer.WunderBarApiConsumer;
 import com.github.t1.wunderbar.junit.consumer.integration.GraphQlResponse;
 import com.github.t1.wunderbar.junit.http.HttpRequest;
 import com.github.t1.wunderbar.junit.http.HttpResponse;
 import com.github.t1.wunderbar.junit.http.HttpServer;
-import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import test.consumer.ProductResolver.Item;
 import test.consumer.ProductResolver.Product;
@@ -19,43 +21,42 @@ import java.util.Map;
 import static com.github.t1.wunderbar.junit.assertions.WunderBarBDDAssertions.then;
 import static com.github.t1.wunderbar.junit.consumer.WunderbarExpectationBuilder.given;
 import static org.assertj.core.api.Assertions.catchThrowable;
-import static test.consumer.SomeProduct.someProduct;
 
 @WunderBarApiConsumer
 class ProductResolverRealServiceST {
     @Service(endpoint = "{endpoint()}") Products products;
     @SystemUnderTest ProductResolver resolver;
 
-    private static final Product PRODUCT = someProduct();
-    private static final String PRODUCT_ID = PRODUCT.getId();
+    @Register SomeProduct generator;
+    @Some Product product;
 
-    private static final HttpServer SERVER = new HttpServer(ProductResolverRealServiceST::handle);
+    private final HttpServer server = new HttpServer(this::handle);
 
-    private static HttpResponse handle(HttpRequest request) {
+    private HttpResponse handle(HttpRequest request) {
         then(request).isGraphQL()
             .hasQuery("query product($id: String!) { product(id: $id) {id name price} }")
-            .hasVariable("id", PRODUCT_ID);
+            .hasVariable("id", product.id);
         return HttpResponse.builder()
             .body(GraphQlResponse.builder()
-                .data(Map.of("product", PRODUCT))
+                .data(Map.of("product", product))
                 .build())
             .build();
     }
 
-    @AfterAll
-    static void afterAll() {SERVER.stop();}
+    @AfterEach
+    void afterAll() {server.stop();}
 
     @SuppressWarnings("unused")
-    String endpoint() {return SERVER.baseUri() + "/{technology}";}
+    String endpoint() {return server.baseUri() + "/{technology}";}
 
     @Test void shouldCallSutProxy() {
-        var resolvedProduct = resolver.product(new Item(PRODUCT_ID));
+        var resolvedProduct = resolver.product(new Item(product.id));
 
-        then(resolvedProduct).usingRecursiveComparison().isEqualTo(PRODUCT);
+        then(resolvedProduct).usingRecursiveComparison().isEqualTo(product);
     }
 
     @Test void shouldFailToCallStub() {
-        var throwable = catchThrowable(() -> given(products.product(PRODUCT_ID)).returns(PRODUCT));
+        var throwable = catchThrowable(() -> given(products.product(product.id)).returns(product));
 
         then(throwable).isInstanceOf(WunderBarException.class)
             .hasMessageStartingWith("failed to add expectation to mock server");

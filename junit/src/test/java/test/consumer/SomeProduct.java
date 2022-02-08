@@ -11,11 +11,8 @@ public class SomeProduct implements SomeData {
     }
 
     @Override public <T> T some(Class<T> type) {
-        return type.cast(someProduct());
-    }
-
-    static Product someProduct() {
         var id = someInt();
-        return Product.builder().id("#" + id).name("product " + id).price(1000 + id).build();
+        var product = Product.builder().id("#" + id).name("product " + id).price(1000 + id).build();
+        return type.cast(product);
     }
 }
