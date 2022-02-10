@@ -7,9 +7,12 @@ import javax.json.Json;
 import javax.json.JsonStructure;
 import javax.json.JsonValue;
 import java.io.IOException;
+import java.lang.reflect.AnnotatedElement;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Member;
 import java.lang.reflect.Method;
+import java.lang.reflect.Parameter;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Arrays;
@@ -98,5 +101,13 @@ public @Internal class Utils {
             Arrays.stream(string.split("\n"))
                 .map(line -> prefix + line)
                 .collect(joining("\n"));
+    }
+
+    /** {@link AnnotatedElement} doesn't declare a <code>getName</code> method, although most implementations do. */
+    public static String name(AnnotatedElement annotatedElement) {
+        if (annotatedElement instanceof Class) return ((Class<?>) annotatedElement).getName();
+        if (annotatedElement instanceof Member) return ((Member) annotatedElement).getName();
+        if (annotatedElement instanceof Parameter) return ((Parameter) annotatedElement).getName();
+        return null;
     }
 }

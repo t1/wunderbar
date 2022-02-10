@@ -3,6 +3,7 @@ package com.github.t1.wunderbar.junit.consumer;
 import com.github.t1.wunderbar.junit.WunderBarException;
 import lombok.SneakyThrows;
 
+import java.lang.reflect.AnnotatedElement;
 import java.lang.reflect.Type;
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -30,11 +31,11 @@ public class SomeBasics implements SomeData {
 
     public static void reset(int start) {nextInt = start;}
 
-    @Override public boolean canGenerate(Type type) {
+    @Override public boolean canGenerate(Some some, Type type, AnnotatedElement location) {
         return generator(type) != null;
     }
 
-    public <T> T some(Type type) {
+    @Override public <T> T some(Some some, Type type, AnnotatedElement location) {
         Supplier<T> generator = generator(type);
         if (generator == null) throw new WunderBarException("don't know how to generate a random " + type);
         return generator.get();

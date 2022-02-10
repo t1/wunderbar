@@ -1,5 +1,6 @@
 package com.github.t1.wunderbar.junit.consumer;
 
+import java.lang.reflect.AnnotatedElement;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.function.Predicate;
@@ -13,7 +14,7 @@ public interface SomeData {
      * with a {@link ParameterizedType#getRawType() raw type} <code>List</code>
      * and a {@link ParameterizedType#getActualTypeArguments() type argument list} of <code>[String]</code>
      */
-    boolean canGenerate(Type type);
+    boolean canGenerate(Some some, Type type, AnnotatedElement location);
 
     /**
      * Generate that value. The type could be a generic type, e.g.
@@ -22,9 +23,9 @@ public interface SomeData {
      * with a {@link ParameterizedType#getRawType() raw type} <code>List</code>
      * and a {@link ParameterizedType#getActualTypeArguments() type argument list} of <code>[String]</code>
      */
-    <T> T some(Type type);
+    <T> T some(Some some, Type type, AnnotatedElement location);
 
-    /** a helper method for cases where the type of {@link #some(Type)} is a parameterized (generics) type */
+    /** a helper method for cases where the type of {@link #some(Some, Type, AnnotatedElement)} is a parameterized (generics) type */
     static boolean ifParameterized(Type type, Predicate<ParameterizedType> predicate) {
         if (type instanceof ParameterizedType) return predicate.test((ParameterizedType) type);
         else return false;

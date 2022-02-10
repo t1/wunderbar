@@ -1,5 +1,6 @@
 package com.github.t1.wunderbar.junit.consumer;
 
+import javax.enterprise.util.AnnotationLiteral;
 import java.lang.annotation.Retention;
 
 import static java.lang.annotation.RetentionPolicy.RUNTIME;
@@ -10,4 +11,13 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
  * your own {@link SomeData generators}.
  */
 @Retention(RUNTIME)
-public @interface Some {}
+public @interface Some {
+    /** A list of "tags" passed to {@link SomeData custom generators} for fine-control, e.g. <code>invalid</code>. */
+    String[] value() default {};
+
+    Some LITERAL = new SomeLiteral();
+
+    final class SomeLiteral extends AnnotationLiteral<Some> implements Some {
+        @Override public String[] value() {return new String[0];}
+    }
+}

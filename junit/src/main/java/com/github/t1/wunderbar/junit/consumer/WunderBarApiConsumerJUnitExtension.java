@@ -15,6 +15,7 @@ import org.junit.jupiter.api.extension.ParameterResolutionException;
 import org.junit.jupiter.api.extension.ParameterResolver;
 
 import java.lang.annotation.Annotation;
+import java.lang.reflect.AnnotatedElement;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
@@ -70,19 +71,19 @@ class WunderBarApiConsumerJUnitExtension implements Extension, BeforeEachCallbac
     private final SomeGenerator someGenerator = new SomeGenerator() {
         private int depth = 0;
 
-        @Override public <T> T generate(Type type, String location) {
+        @Override public Object generate(Some some, Type type, AnnotatedElement location) {
             var generator = dataGenerators.stream()
-                .filter(gen -> gen.canGenerate(type))
+                .filter(gen -> gen.canGenerate(some, type, location))
                 .findFirst().orElseThrow(() -> new WunderBarException("no generator registered for " + type + " at " + location));
-            T value = generate(type, generator);
+            var value = generate(some, type, location, generator);
             log.debug("generated {} for {}", value, location);
             return value;
         }
 
-        private <T> T generate(Type type, SomeData generator) {
+        private <T> T generate(Some some, Type type, AnnotatedElement location, SomeData generator) {
             if (++depth > 1000) throw new WunderBarException("it seems to be an infinite loop when generating " + type);
             try {
-                return generator.some(type);
+                return generator.some(some, type, location);
             } finally {
                 depth--;
             }
@@ -173,7 +174,7 @@ class WunderBarApiConsumerJUnitExtension implements Extension, BeforeEachCallbac
     }
 
     private void createSomeTestData(Field field) {
-        setField(instanceFor(field), field, someGenerator.generate(field.getGenericType(), "field " + field));
+        setField(instanceFor(field), field, someGenerator.generate(field.getAnnotation(Some.class), field.getGenericType(), field));
     }
 
     private void createProxy(Field field) {
@@ -314,9 +315,10 @@ class WunderBarApiConsumerJUnitExtension implements Extension, BeforeEachCallbac
     }
 
     @Override public Object resolveParameter(ParameterContext parameterContext, ExtensionContext extensionContext) throws ParameterResolutionException {
-        if (Level.class.equals(parameterContext.getParameter().getType())) return level();
-        if (SomeGenerator.class.equals(parameterContext.getParameter().getType())) return someGenerator;
-        return someGenerator.generate(parameterContext.getParameter().getParameterizedType(), "parameter " + parameterContext.getParameter());
+        var parameter = parameterContext.getParameter();
+        if (Level.class.equals(parameter.getType())) return level();
+        if (SomeGenerator.class.equals(parameter.getType())) return someGenerator;
+        return someGenerator.generate(parameter.getAnnotation(Some.class), parameter.getParameterizedType(), parameter);
     }
 
 
