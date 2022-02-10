@@ -16,8 +16,9 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
  * <p>
  * It also provides additional {@link org.junit.jupiter.api.extension.ParameterResolver parameters} for your tests:
  * <ul>
- * <li>The actual {@link Level}: mainly useful for testing WunderBar itself.
  * <li>Parameters annotated as {@link Some} (see there for details).
+ * <li>{@link SomeGenerator} to generate dynamic test data.
+ * <li>The actual {@link Level}: mainly useful for testing WunderBar itself.
  * </ul>
  *
  * @see WunderbarExpectationBuilder#given

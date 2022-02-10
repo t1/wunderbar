@@ -3,46 +3,45 @@ package com.github.t1.wunderbar.junit.consumer;
 import com.github.t1.wunderbar.junit.WunderBarException;
 import lombok.SneakyThrows;
 
+import java.lang.reflect.Type;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
-import java.util.Random;
 import java.util.UUID;
 import java.util.function.Supplier;
 
 /**
- * Generates random values, but tries to keep them positive, unique, and small, so they are as easy to handle as possible.
+ * Generates random values, but tries to keep them small, positive, and unique, so they are as easy to handle as possible.
+ * The default starting point is 1000, so the generated values won't interfere with constants in your code.
  * These prerequisites are not achievable for booleans and bytes, as they would overflow too fast.
  * <p>
- * The default offset is 1000, i.e. the first value generated will start between 1000 and 1009.
- * <p>
- * Generally, it's better to use the {@link Some @Some} annotation than the <code>some...</code> methods defined here.
+ * You can change the starting point by calling {@link #reset(int)}, e.g. in a {@link org.junit.jupiter.api.BeforeEach} method.
  */
 public class SomeBasics implements SomeData {
+    public static final int DEFAULT_START = 1000;
+
     private static int nextInt;
 
     static {reset();}
 
-    public static void reset() {reset(1000);}
+    public static void reset() {reset(DEFAULT_START);}
 
-    public static void reset(int offset) {
-        nextInt = offset + Math.abs(new Random().nextInt(10)); // just a bit of initial randomness
-    }
+    public static void reset(int start) {nextInt = start;}
 
-    @Override public boolean canGenerate(Class<?> type) {
+    @Override public boolean canGenerate(Type type) {
         return generator(type) != null;
     }
 
-    public <T> T some(Class<T> type) {
-        var generator = generator(type);
-        if (generator == null) throw new WunderBarException("don't know how to generate a random " + type.getSimpleName());
+    public <T> T some(Type type) {
+        Supplier<T> generator = generator(type);
+        if (generator == null) throw new WunderBarException("don't know how to generate a random " + type);
         return generator.get();
     }
 
     @SuppressWarnings("unchecked")
-    private <T> Supplier<T> generator(Class<T> type) {
+    private <T> Supplier<T> generator(Type type) {
         if (char.class.equals(type) || Character.class.equals(type)) return () -> (T) (Character) someChar();
         if (short.class.equals(type) || Short.class.equals(type)) return () -> (T) (Short) someShort();
         if (int.class.equals(type) || Integer.class.equals(type)) return () -> (T) (Integer) someInt();
@@ -61,28 +60,30 @@ public class SomeBasics implements SomeData {
         return null;
     }
 
-    public static char someChar() {return Character.toChars(someInt())[0];}
+    private static char someChar() {return Character.toChars(someInt())[0];}
 
-    public static short someShort() {return (short) someInt();}
+    private static short someShort() {return (short) someInt();}
 
-    public static int someInt() {return nextInt++;}
+    private static int someInt() {
+        if (nextInt >= Short.MAX_VALUE)
+            throw new IllegalStateException("too many values generated (we want to prevent a overflow causing non-unique value)");
+        return nextInt++;
+    }
 
-    public static long someLong() {return someInt();}
+    private static long someLong() {return someInt();}
 
-    public static float someFloat() {return Float.parseFloat("1." + someInt());}
+    private static float someFloat() {return Float.parseFloat(someInt() + ".1");}
 
-    public static double someDouble() {return Double.parseDouble("0." + someInt());}
+    private static double someDouble() {return Double.parseDouble(someInt() + ".2");}
 
-    public static String someId() {return String.format("id-%05d", someInt());}
+    private static String someString() {return String.format("string-%05d", someInt());}
 
-    public static String someString() {return String.format("string-%05d", someInt());}
-
-    public static UUID someUUID() {
+    private static UUID someUUID() {
         return UUID.fromString(String.format("00000000-0000-0000-0000-%012d", someInt()));
     }
 
-    public static URI someURI() {return URI.create(String.format("https://example.nowhere/path-%07d", someInt()));}
+    private static URI someURI() {return URI.create(String.format("https://example.nowhere/path-%07d", someInt()));}
 
     @SneakyThrows(MalformedURLException.class)
-    public static URL someURL() {return someURI().toURL();}
+    private static URL someURL() {return someURI().toURL();}
 }

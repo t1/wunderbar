@@ -18,6 +18,7 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.lang.reflect.Type;
 import java.net.URI;
 import java.nio.file.Path;
 import java.time.Duration;
@@ -65,6 +66,28 @@ class WunderBarApiConsumerJUnitExtension implements Extension, BeforeEachCallbac
     private Instant start;
     private final List<Proxy<?>> proxies = new ArrayList<>();
     private final List<SomeData> dataGenerators = new ArrayList<>();
+
+    private final SomeGenerator someGenerator = new SomeGenerator() {
+        private int depth = 0;
+
+        @Override public <T> T generate(Type type, String location) {
+            var generator = dataGenerators.stream()
+                .filter(gen -> gen.canGenerate(type))
+                .findFirst().orElseThrow(() -> new WunderBarException("no generator registered for " + type + " at " + location));
+            T value = generate(type, generator);
+            log.debug("generated {} for {}", value, location);
+            return value;
+        }
+
+        private <T> T generate(Type type, SomeData generator) {
+            if (++depth > 1000) throw new WunderBarException("it seems to be an infinite loop when generating " + type);
+            try {
+                return generator.some(type);
+            } finally {
+                depth--;
+            }
+        }
+    };
 
     @Override public void beforeEach(ExtensionContext context) {
         INSTANCE = this;
@@ -150,7 +173,7 @@ class WunderBarApiConsumerJUnitExtension implements Extension, BeforeEachCallbac
     }
 
     private void createSomeTestData(Field field) {
-        setField(instanceFor(field), field, resolveSome(field.getType()));
+        setField(instanceFor(field), field, someGenerator.generate(field.getGenericType(), "field " + field));
     }
 
     private void createProxy(Field field) {
@@ -284,19 +307,16 @@ class WunderBarApiConsumerJUnitExtension implements Extension, BeforeEachCallbac
 
 
     @Override public boolean supportsParameter(ParameterContext parameterContext, ExtensionContext extensionContext) throws ParameterResolutionException {
-        return Level.class.equals(parameterContext.getParameter().getType()) || parameterContext.isAnnotated(Some.class);
+        Class<?> parameterType = parameterContext.getParameter().getType();
+        return Level.class.equals(parameterType) ||
+               SomeGenerator.class.equals(parameterType) ||
+               parameterContext.isAnnotated(Some.class);
     }
 
     @Override public Object resolveParameter(ParameterContext parameterContext, ExtensionContext extensionContext) throws ParameterResolutionException {
         if (Level.class.equals(parameterContext.getParameter().getType())) return level();
-        return resolveSome(parameterContext.getParameter().getType());
-    }
-
-    private Object resolveSome(Class<?> type) {
-        var generator = dataGenerators.stream()
-            .filter(gen -> gen.canGenerate(type))
-            .findFirst().orElseThrow();
-        return generator.some(type);
+        if (SomeGenerator.class.equals(parameterContext.getParameter().getType())) return someGenerator;
+        return someGenerator.generate(parameterContext.getParameter().getParameterizedType(), "parameter " + parameterContext.getParameter());
     }
 
 
@@ -318,9 +338,19 @@ class WunderBarApiConsumerJUnitExtension implements Extension, BeforeEachCallbac
     private long duration() {return (start == null) ? -1 : Duration.between(start, Instant.now()).get(NANOS) / 1_000_000L;}
 
     @SneakyThrows(ReflectiveOperationException.class)
-    private static Object newInstance(Field field) {
-        Constructor<?> constructor = field.getType().getDeclaredConstructor();
-        constructor.setAccessible(true);
-        return constructor.newInstance();
+    private Object newInstance(Field field) {
+        Object[] args = {};
+        Constructor<?> found = null;
+        for (Constructor<?> constructor : field.getType().getDeclaredConstructors()) {
+            if (constructor.getParameterCount() == 0) found = constructor;
+            if (constructor.getParameterCount() == 1 && SomeGenerator.class.equals(constructor.getParameterTypes()[0])) {
+                found = constructor;
+                args = new Object[]{someGenerator};
+                break;
+            }
+        }
+        if (found == null) throw new WunderBarException("no matching constructor found for field " + field);
+        found.setAccessible(true);
+        return found.newInstance(args);
     }
 }
