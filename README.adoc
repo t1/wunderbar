@@ -8,7 +8,8 @@ Code-first, low ceremony https://martinfowler.com/articles/consumerDrivenContrac
 
 Let's pick that apart:
 
-"code-first": there's a lot of debate about designing APIs schema-first (a.k.a. api-first) vs. code-first.
+"code-first": there's a lot of debate about designing APIs schema-first (a.k.a.
+API-first) vs. code-first.
 I absolutely agree that (not only for public APIs) it's very important to design APIs in a consistent and easily approachable way.
 I even think that it's actually more important to capture the real use-cases of real consumers of an API.
 It's just way too easy to design something that looks good as a schema but is clumsy to use in practice.
@@ -148,11 +149,11 @@ class ConsumerDrivenAT {
 There are several ways to load `bar` files; e.g., you can also load them from maven coordinates.
 See the public methods in the https://github.com/t1/wunderbar/blob/trunk/junit/src/main/java/com/github/t1/wunderbar/junit/provider/WunderBarTestFinder.java[`WunderBarTestFinder`] class for details.
 
-The requirements will be more specific than your service, but that's a good thing: thankfully, your service will be lenient in some cases; e.g. it accepts different content type encodings.
-In this way, a client can change some details of its technical requirements, e.g. by requesting a different encoding or even content type; as long as your service supports it, the tests continue to pass.
+The requirements will be more specific than your service, but that's a good thing: thankfully, your service will be lenient in some cases; e.g. it accepts different content type encodings, like `ISO-8859-1` or `utf-8`.
+In this way, a client can change some details of its technical requirements, e.g. by requesting a different encoding or even content type (e.g. `json` instead of `xml`); as long as your service supports it, the tests continue to pass.
 And if it doesn't support it, it will show up as soon as the new version of the bar file runs.
 
-If the test data in your service is static and matches precisely the expectations of your clients/consumers, that's it!
+If the test data in your service is static and matches the expectations of your clients/consumers, that's it!
 But to be honest, managing test data is generally a nastily complex issue, and WunderBar can help, but can't make it go away completely.
 
 === Managing Test Data (Provider)
@@ -166,7 +167,7 @@ In both cases, the consumers may even generate the test data randomly (which has
 This all means that you'll have to set up (and maybe clean up) data in your service to match the consumers' requirements, i.e. mostly putting the expected response into your system.
 You can do so by using some mutating APIs of your service, or by storing and deleting the data directly into your database, or by defining an extra test backdoor API for your service:
 either way, you'll need do this kind of test setup before every test in the BAR (and maybe some cleanup thereafter).
-Just define a method, annotated as https://github.com/t1/wunderbar/blob/trunk/junit/src/main/java/com/github/t1/wunderbar/junit/provider/BeforeInteraction.java[`@BeforeInteraction`]footnote:[JUnit invokes the standard JUnit `@Before/AfterEach` methods only once for every test method, not for every test in a `DynamicNode`. WunderBar also calls methods annotated as https://github.com/t1/wunderbar/blob/trunk/junit/src/main/java/com/github/t1/wunderbar/junit/provider/BeforeDynamicTest.java[`@BeforeDynamicTest`] / https://github.com/t1/wunderbar/blob/trunk/junit/src/main/java/com/github/t1/wunderbar/junit/provider/AfterDynamicTest.java[`@AfterDynamicTest`]; the difference is that, in some cases, there can be several subsequent interactions in one dynamic test.], taking a single parameter https://github.com/t1/wunderbar/blob/trunk/lib/src/main/java/com/github/t1/wunderbar/junit/http/HttpRequest.java[`HttpRequest`], https://github.com/t1/wunderbar/blob/trunk/lib/src/main/java/com/github/t1/wunderbar/junit/http/HttpResponse.java[`HttpResponse`], or https://github.com/t1/wunderbar/blob/trunk/lib/src/main/java/com/github/t1/wunderbar/junit/http/HttpInteraction.java[`HttpInteraction`] (which basically just bundles a request with response).
+To do so, just define a method, annotated as https://github.com/t1/wunderbar/blob/trunk/junit/src/main/java/com/github/t1/wunderbar/junit/provider/BeforeInteraction.java[`@BeforeInteraction`]footnote:[JUnit invokes the standard JUnit `@Before/AfterEach` methods only once for every test method, not for every test in a `DynamicNode`. WunderBar also calls methods annotated as https://github.com/t1/wunderbar/blob/trunk/junit/src/main/java/com/github/t1/wunderbar/junit/provider/BeforeDynamicTest.java[`@BeforeDynamicTest`] / https://github.com/t1/wunderbar/blob/trunk/junit/src/main/java/com/github/t1/wunderbar/junit/provider/AfterDynamicTest.java[`@AfterDynamicTest`]; the difference is that, in some cases, there can be several subsequent interactions in one dynamic test.], taking a single parameter https://github.com/t1/wunderbar/blob/trunk/lib/src/main/java/com/github/t1/wunderbar/junit/http/HttpRequest.java[`HttpRequest`], https://github.com/t1/wunderbar/blob/trunk/lib/src/main/java/com/github/t1/wunderbar/junit/http/HttpResponse.java[`HttpResponse`], or https://github.com/t1/wunderbar/blob/trunk/lib/src/main/java/com/github/t1/wunderbar/junit/http/HttpInteraction.java[`HttpInteraction`] (which basically just bundles a request and response).
 
 In addition to storing the data, you can also return an `HttpInteraction`, `HttpRequest`, or `HttpResponse` from your method to modify the interaction, e.g. to replace the dummy credentials from the bar file (xref:credentials[see below]) with real credentials.
 There are a bunch of convenient methods in the https://github.com/t1/wunderbar/blob/trunk/lib/src/main/java/com/github/t1/wunderbar/junit/http/HttpRequest.java[`HttpRequest`] and https://github.com/t1/wunderbar/blob/trunk/lib/src/main/java/com/github/t1/wunderbar/junit/http/HttpResponse.java[`HttpResponse`] classes to help here.
@@ -176,7 +177,7 @@ You can't return a request here any more (as it's already done), but you can als
 This is useful to, e.g., replace the originally expected id with the id actually generated by a database sequence for this test run.
 
 You can also filter the tests to actually run, by annotating a method as https://github.com/t1/wunderbar/blob/trunk/junit/src/main/java/com/github/t1/wunderbar/junit/provider/BeforeDynamicTest.java[`@BeforeDynamicTest`], and returning the `List<HttpInteraction>` with tests removed as you wish.
-You could even add your own, e.g. by duplicating and modifying an exising one.
+You could even add your own, e.g. by duplicating and modifying an existing one.
 
 Writing your acceptance tests in this way makes testing more robust, as you don't have to agree with the consumers of your APIs on any volatile and intransparent assumptions about the test data, e.g. what ids or data fields result in what behavior.
 For a fully running example, see the demo https://github.com/t1/wunderbar/blob/main/demo/product/src/test/java/test/acceptance/ConsumerDrivenAT.java[ConsumerDrivenAT].
@@ -231,9 +232,14 @@ To go one step further than integration tests, you can use the test level `SYSTE
 This means that you actually deploy your service to a full environment, often called 'dev stage'.
 Then your service needs to call a running instance of the target systems' API.
 WunderBar provides the https://search.maven.org/artifact/com.github.t1/wunderbar.mock.server[`wunderbar-mock-server`] `war` artifact that you can deploy so your system under test service can reach it and configure your service to do so; no code changes needed.
-Configure the `@Service#endpoint` to the address of this mock service If you call a `given` on the stub that's injected into your test, WunderBar prepares this
+Configure the `@Service#endpoint` to the address of this mock service.
+If you call a `given` on the stub that's injected into your test, WunderBar prepares this
+
+// TODO finish documentation
 
 You can use system-level tests to test a real system, as long as you only test with the data that exists in that service, as calling `given` will try
+
+// TODO finish documentation
 
 == Documentation
 
