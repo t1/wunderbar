@@ -52,15 +52,17 @@ public @Internal class Utils {
     @SneakyThrows(IOException.class)
     public static void deleteRecursive(Path path) {
         if (Files.exists(path)) {
-            var list = Files.walk(path).collect(toList());
-            Collections.reverse(list);
-            list.forEach(p -> {
-                try {
-                    Files.delete(p);
-                } catch (IOException e) {
-                    throw new RuntimeException("can't delete " + p, e);
-                }
-            });
+            try (var files = Files.walk(path)) {
+                var list = files.collect(toList());
+                Collections.reverse(list);
+                list.forEach(p -> {
+                    try {
+                        Files.delete(p);
+                    } catch (IOException e) {
+                        throw new RuntimeException("can't delete " + p, e);
+                    }
+                });
+            }
         }
     }
 
@@ -83,6 +85,14 @@ public @Internal class Utils {
         field.set(instance, value);
     }
 
+    /** {@link AnnotatedElement} doesn't declare a <code>getName</code> method, although most implementations do. */
+    public static String name(AnnotatedElement annotatedElement) {
+        if (annotatedElement instanceof Class) return ((Class<?>) annotatedElement).getName();
+        if (annotatedElement instanceof Member) return ((Member) annotatedElement).getName();
+        if (annotatedElement instanceof Parameter) return ((Parameter) annotatedElement).getName();
+        return null;
+    }
+
     public static Stream<JsonValue> jsonNonAddDiff(JsonValue expected, JsonValue actual) {
         if (expected.getValueType() != actual.getValueType()) {
             expected = Json.createObjectBuilder().add("diff-dummy", expected).build();
@@ -101,13 +111,5 @@ public @Internal class Utils {
             Arrays.stream(string.split("\n"))
                 .map(line -> prefix + line)
                 .collect(joining("\n"));
-    }
-
-    /** {@link AnnotatedElement} doesn't declare a <code>getName</code> method, although most implementations do. */
-    public static String name(AnnotatedElement annotatedElement) {
-        if (annotatedElement instanceof Class) return ((Class<?>) annotatedElement).getName();
-        if (annotatedElement instanceof Member) return ((Member) annotatedElement).getName();
-        if (annotatedElement instanceof Parameter) return ((Parameter) annotatedElement).getName();
-        return null;
     }
 }

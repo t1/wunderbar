@@ -13,7 +13,7 @@ import org.assertj.core.api.BDDSoftAssertions;
 import org.junit.jupiter.api.DynamicNode;
 import org.junit.jupiter.api.TestFactory;
 import org.junit.jupiter.api.extension.RegisterExtension;
-import test.DummyServer;
+import test.MockServer;
 import test.NonCI;
 
 import java.net.URI;
@@ -28,11 +28,11 @@ import static org.assertj.core.api.BDDSoftAssertions.thenSoftly;
 @NonCI
 @WunderBarApiProvider(baseUri = "{endpoint()}")
 class FailingAT {
-    @RegisterExtension DummyServer dummyServer = new DummyServer();
+    @RegisterExtension static MockServer mockServer = new MockServer();
     @RegisterExtension ExpectationsExtension expectations = new ExpectationsExtension();
 
     @SuppressWarnings("unused")
-    URI endpoint() {return dummyServer.baseUri();}
+    URI endpoint() {return mockServer.baseUri();}
 
     @BeforeDynamicTest void shouldFailBeforeToModifyPassedInteractions(List<HttpInteraction> interactions) {
         var throwable = catchThrowable(() -> interactions.remove(0));

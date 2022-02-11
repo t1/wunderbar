@@ -35,4 +35,19 @@ public interface SomeGenerator {
         Field field = container.getDeclaredField(fieldName);
         return (T) generate(field.getAnnotation(Some.class), field.getGenericType(), field);
     }
+
+    /**
+     * Find the location where this value was generated for
+     *
+     * @throws com.github.t1.wunderbar.junit.WunderBarException if the generator passed <code>null</code> as the location,
+     *                                                          or that value was not generated via {@link Some}.
+     */
+    AnnotatedElement location(Object value);
+
+    /**
+     * Find the {@link Some} used to generate that value
+     *
+     * @throws com.github.t1.wunderbar.junit.WunderBarException if that value was not generated via {@link Some}.
+     */
+    Some findSomeFor(Object value);
 }

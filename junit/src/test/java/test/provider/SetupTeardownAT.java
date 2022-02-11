@@ -22,7 +22,7 @@ import org.junit.jupiter.api.DynamicNode;
 import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.TestFactory;
 import org.junit.jupiter.api.extension.RegisterExtension;
-import test.DummyServer;
+import test.MockServer;
 
 import java.lang.annotation.Annotation;
 import java.net.URI;
@@ -41,11 +41,11 @@ import static javax.ws.rs.core.Response.Status.CREATED;
 class SetupTeardownAT {
     private static final HttpInteraction DUMMY_INTERACTION = new HttpInteraction(99, HttpRequest.builder().uri("/99").build(), HttpResponse.builder().body("bar").build());
 
-    @RegisterExtension static DummyServer dummyServer = new DummyServer();
+    @RegisterExtension static MockServer mockServer = new MockServer();
     @RegisterExtension static ExpectationsExtension expectations = new ExpectationsExtension();
 
     @SuppressWarnings("unused")
-    static URI endpoint() {return dummyServer.baseUri();}
+    static URI endpoint() {return mockServer.baseUri();}
 
     static List<String> called = new ArrayList<>();
 

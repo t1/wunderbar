@@ -10,6 +10,7 @@ import java.util.List;
 
 import static com.github.t1.wunderbar.common.Utils.prefix;
 import static java.util.Collections.unmodifiableList;
+import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
 
 @Slf4j
 public class MockService {
@@ -56,7 +57,7 @@ public class MockService {
         if (expectation == null) {
             var message = "no matching expectation found";
             log.debug(message);
-            return ProblemDetails.builder().detail(message).build().toResponse();
+            return ProblemDetails.builder().status(BAD_REQUEST).detail(message).build().toResponse();
         }
         var response = expectation.handle(request);
         if (!expectation.moreInvocationsAllowed()) {

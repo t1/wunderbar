@@ -29,7 +29,7 @@ import static org.assertj.core.api.Assertions.catchThrowable;
 import static org.assertj.core.api.BDDAssertions.then;
 
 @WunderBarApiConsumer
-class SomeBasicsTest {
+class SomeGeneratorTest {
     /** We don't want to generate really random numbers; they should be rather small to be easier to handle. */
     private static final int QUITE_SMALL_INT = SomeBasics.DEFAULT_START;
     private static final int QUITE_BIG_INT = Short.MAX_VALUE;
@@ -97,9 +97,27 @@ class SomeBasicsTest {
 
 
     // ---------------------------------------------------- custom data
-    @Test void shouldGenerateCustomData(@Some("valid") CustomData data) {
-        then(data).hasToString("SomeBasicsTest.CustomData(foo=valid-data-string-01000, bar=SomeBasicsTest.Custom(wrapped=1), " +
-                               "generic=SomeBasicsTest.CustomGeneric(wrapped=string-01001))");
+    @Test void shouldGenerateCustomData(@Some("valid") CustomData data, SomeGenerator generator) throws Exception {
+        then(generator.location(data)).isEqualTo(SomeGeneratorTest.class.getDeclaredMethod("shouldGenerateCustomData", CustomData.class, SomeGenerator.class).getParameters()[0]);
+        then(generator.findSomeFor(data).value()).containsExactly("valid");
+
+        then(data).hasToString("SomeGeneratorTest.CustomData(foo=valid-data-string-01000, bar=SomeGeneratorTest.Custom(wrapped=1), " +
+                               "generic=SomeGeneratorTest.CustomGeneric(wrapped=string-01001))");
+
+        then(generator.location(new Custom(1))).isEqualTo(CustomData.class.getDeclaredField("bar"));
+        then(generator.location("string-01001")).isEqualTo(CustomGeneric.class.getDeclaredField("wrapped"));
+    }
+
+    @Test void shouldFailToGenerateNullValue(SomeGenerator generator) {
+        var throwable = catchThrowable(() -> generator.generate(Some.LITERAL.withTags("generate-null"), CustomData.class, null));
+
+        then(throwable).isInstanceOf(WunderBarException.class).hasMessageStartingWith("the generator generated a null value: " + CustomDataGenerator.class.getName());
+    }
+
+    @Test void shouldFailToFindForeignValue(SomeGenerator generator) {
+        var throwable = catchThrowable(() -> generator.location("xxx"));
+
+        then(throwable).isInstanceOf(WunderBarException.class).hasMessage("this value was not generated via the WunderBar @Some annotation: xxx");
     }
 
     private static @Data @Builder class CustomData {
@@ -126,8 +144,9 @@ class SomeBasicsTest {
         @Override public CustomData some(Some some, Type type, AnnotatedElement location) {
             assert some.value().length == 1;
             var tag = some.value()[0];
+            if ("generate-null".equals(tag)) return null;
             return CustomData.builder()
-                .foo(tag + "-" + name(location) + "-" + generator.generate(String.class))
+                .foo(tag + "-" + name(location) + "-" + generator.generate(CustomData.class, "foo"))
                 .bar(generator.generate(CustomData.class, "bar"))
                 .generic(generator.generate(CustomData.class, "generic"))
                 .build();

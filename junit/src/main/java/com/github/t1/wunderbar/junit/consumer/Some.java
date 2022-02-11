@@ -1,5 +1,10 @@
 package com.github.t1.wunderbar.junit.consumer;
 
+import lombok.EqualsAndHashCode;
+import lombok.Value;
+import lombok.With;
+import lombok.experimental.Accessors;
+
 import javax.enterprise.util.AnnotationLiteral;
 import java.lang.annotation.Retention;
 
@@ -15,9 +20,12 @@ public @interface Some {
     /** A list of "tags" passed to {@link SomeData custom generators} for fine-control, e.g. <code>invalid</code>. */
     String[] value() default {};
 
-    Some LITERAL = new SomeLiteral();
+    SomeLiteral LITERAL = new SomeLiteral(new String[0]);
 
-    final class SomeLiteral extends AnnotationLiteral<Some> implements Some {
-        @Override public String[] value() {return new String[0];}
+    @Value @With @Accessors(fluent = true) @EqualsAndHashCode(callSuper = true, onlyExplicitlyIncluded = true)
+    class SomeLiteral extends AnnotationLiteral<Some> implements Some {
+        String[] value;
+
+        public SomeLiteral withTags(String... values) {return withValue(values);}
     }
 }

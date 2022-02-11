@@ -5,7 +5,7 @@ import com.github.t1.wunderbar.junit.consumer.Technology;
 import com.github.t1.wunderbar.junit.consumer.WunderBarApiConsumer;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
-import test.DummyServer;
+import test.MockServer;
 
 import java.net.URI;
 
@@ -16,12 +16,12 @@ import static org.assertj.core.api.BDDAssertions.then;
 class ProductResolverST extends ProductResolverTest {
     @Test void testLevelShouldBeSystem(Level level) {then(level).isEqualTo(SYSTEM);}
 
-    @RegisterExtension DummyServer dummyServer = new DummyServer();
+    @RegisterExtension MockServer mockServer = new MockServer();
 
-    String endpoint() {return dummyServer.baseUri() + "/{technology}";}
+    String endpoint() {return mockServer.baseUri() + "/{technology}";}
 
     @Override void verifyBaseUri(URI baseUri, Technology technology) {
-        then(baseUri).isEqualTo(dummyServer.baseUri().resolve("/" + technology.path()));
+        then(baseUri).isEqualTo(mockServer.baseUri().resolve("/" + technology.path()));
     }
 
     @Override protected void thenFailedDepletion(Throwable throwable) {

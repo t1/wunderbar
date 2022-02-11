@@ -10,7 +10,7 @@ import com.github.t1.wunderbar.junit.provider.WunderBarApiProvider;
 import org.junit.jupiter.api.DynamicNode;
 import org.junit.jupiter.api.TestFactory;
 import org.junit.jupiter.api.extension.RegisterExtension;
-import test.DummyServer;
+import test.MockServer;
 
 import javax.json.Json;
 import javax.ws.rs.ForbiddenException;
@@ -33,11 +33,11 @@ import static org.junit.jupiter.api.Assertions.fail;
  */
 @WunderBarApiProvider(baseUri = "{endpoint()}")
 class WunderBarAT {
-    @RegisterExtension DummyServer dummyServer = new DummyServer();
+    @RegisterExtension static MockServer mockServer = new MockServer();
     @RegisterExtension ExpectationsExtension expectations = new ExpectationsExtension();
 
     @SuppressWarnings("unused")
-    URI endpoint() {return dummyServer.baseUri();}
+    URI endpoint() {return mockServer.baseUri();}
 
     @BeforeInteraction HttpRequest prepareRequest(HttpRequest request) {
         var productId = request.matchUri("/rest/products/(.*)").group(1);
