@@ -7,4 +7,6 @@ public @Value @With class HttpInteraction {
     int number;
     HttpRequest request;
     HttpResponse response;
+
+    @Override public String toString() {return "HttpInteraction#" + number + "\n" + request + "\n\n" + response;}
 }

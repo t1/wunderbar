@@ -130,6 +130,10 @@ public class WunderbarExpectationBuilder<T> {
         }
     }
 
+    /**
+     * Disables recording for one stub call, e.g. when testing the error handling in your consumer code,
+     * so this interaction is not an expected behavior of the API provider.
+     */
     public WunderbarExpectationBuilder<T> withoutRecording() {
         if (buildingExpectation == null) throw new StubbingMismatchException();
         buildingExpectation.setRecording(false);

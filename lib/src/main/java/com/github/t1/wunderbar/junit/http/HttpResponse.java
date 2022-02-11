@@ -26,6 +26,7 @@ import java.util.function.Function;
 import static com.github.t1.wunderbar.junit.http.HttpUtils.APPLICATION_JSON_UTF8;
 import static com.github.t1.wunderbar.junit.http.HttpUtils.JSONB;
 import static com.github.t1.wunderbar.junit.http.HttpUtils.PROBLEM_DETAIL_TYPE;
+import static com.github.t1.wunderbar.junit.http.HttpUtils.formatJson;
 import static com.github.t1.wunderbar.junit.http.HttpUtils.fromJson;
 import static com.github.t1.wunderbar.junit.http.HttpUtils.isCompatible;
 import static com.github.t1.wunderbar.junit.http.HttpUtils.optional;
@@ -131,7 +132,7 @@ public class HttpResponse {
         }
     }
 
-    public HttpResponse with(JsonValue body) {return withBody(body.toString());}
+    public HttpResponse with(JsonValue body) {return withBody(formatJson(body));}
 
     public Response toJaxRs() {
         return Response.status(getStatus()).type(getContentType()).entity(getBody()).build();

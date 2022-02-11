@@ -28,6 +28,7 @@ import static com.github.t1.wunderbar.common.Utils.jsonNonAddDiff;
 import static com.github.t1.wunderbar.junit.http.HttpUtils.APPLICATION_JSON_UTF8;
 import static com.github.t1.wunderbar.junit.http.HttpUtils.JSONB;
 import static com.github.t1.wunderbar.junit.http.HttpUtils.firstMediaType;
+import static com.github.t1.wunderbar.junit.http.HttpUtils.formatJson;
 import static com.github.t1.wunderbar.junit.http.HttpUtils.isCompatible;
 import static com.github.t1.wunderbar.junit.http.HttpUtils.optional;
 import static com.github.t1.wunderbar.junit.http.HttpUtils.read;
@@ -170,7 +171,7 @@ public class HttpRequest {
         }
     }
 
-    public HttpRequest with(JsonValue body) {return withBody(body.toString());}
+    public HttpRequest with(JsonValue body) {return withBody(formatJson(body));}
 
     @SuppressWarnings("unused")
     public static class HttpRequestBuilder {
