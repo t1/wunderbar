@@ -115,9 +115,11 @@ class SomeGeneratorTest {
     }
 
     @Test void shouldFailToFindForeignValue(SomeGenerator generator) {
-        var throwable = catchThrowable(() -> generator.location("xxx"));
+        var uuid = UUID.randomUUID();
 
-        then(throwable).isInstanceOf(WunderBarException.class).hasMessage("this value was not generated via the WunderBar @Some annotation: xxx");
+        var throwable = catchThrowable(() -> generator.location(uuid));
+
+        then(throwable).isInstanceOf(WunderBarException.class).hasMessage("this value was not generated via the WunderBar @Some annotation: " + uuid);
     }
 
     private static @Data @Builder class CustomData {
