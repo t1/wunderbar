@@ -23,7 +23,6 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
 import java.lang.reflect.Type;
 import java.net.URI;
-import java.nio.file.Path;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
@@ -186,11 +185,15 @@ class WunderBarApiConsumerJUnitExtension implements Extension, BeforeEachCallbac
 
     private BarWriter createBar(String fileName) {
         if (fileName.equals(NONE)) return null;
-        var archiveComment = Path.of(System.getProperty("user.dir")).getFileName().toString();
+        var archiveComment = archiveComment();
         log.info("create bar [{}] in {}", archiveComment, fileName);
         var writer = BarWriter.to(fileName);
         writer.setComment(archiveComment);
         return writer;
+    }
+
+    private String archiveComment() {
+        return "level: " + level();
     }
 
     private void forEachField(Class<? extends Annotation> annotationType, Consumer<Field> action) {
@@ -351,6 +354,7 @@ class WunderBarApiConsumerJUnitExtension implements Extension, BeforeEachCallbac
         Class<?> parameterType = parameterContext.getParameter().getType();
         return Level.class.equals(parameterType) ||
                SomeGenerator.class.equals(parameterType) ||
+               BarWriter.class.equals(parameterType) || // this is intentionally not documented
                parameterContext.isAnnotated(Some.class);
     }
 
@@ -358,6 +362,7 @@ class WunderBarApiConsumerJUnitExtension implements Extension, BeforeEachCallbac
         var parameter = parameterContext.getParameter();
         if (Level.class.equals(parameter.getType())) return level();
         if (SomeGenerator.class.equals(parameter.getType())) return someGenerator;
+        if (BarWriter.class.equals(parameter.getType())) return bar;
         return someGenerator.generate(parameter.getAnnotation(Some.class), parameter.getParameterizedType(), parameter);
     }
 

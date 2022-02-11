@@ -130,6 +130,12 @@ public class WunderbarExpectationBuilder<T> {
         }
     }
 
+    public WunderbarExpectationBuilder<T> withoutRecording() {
+        if (buildingExpectation == null) throw new StubbingMismatchException();
+        buildingExpectation.setRecording(false);
+        return this;
+    }
+
     private static class StubbingMismatchException extends WunderBarException {
         private StubbingMismatchException() {super("Stubbing mismatch: call `given` exactly once on the response object of a proxy call");}
     }

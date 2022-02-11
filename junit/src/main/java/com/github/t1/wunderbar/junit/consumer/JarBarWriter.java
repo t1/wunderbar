@@ -29,10 +29,10 @@ class JarBarWriter extends BarWriter {
         return "Bar[" + comment + ":" + path + " : " + directory + " : " + counters + ']';
     }
 
-    @Override protected int count() {
+    @Override public AtomicInteger counter() {
         if (directory == null)
             throw new IllegalStateException("must set directory before calling save: " + this);
-        return counters.computeIfAbsent(directory, i -> new AtomicInteger()).getAndIncrement();
+        return counters.computeIfAbsent(directory, dir -> new AtomicInteger(0));
     }
 
     @SneakyThrows(IOException.class)
@@ -58,5 +58,5 @@ class JarBarWriter extends BarWriter {
     }
 
     @Override @SneakyThrows(IOException.class)
-    public void close() { if (archive != null) archive.close(); }
+    public void close() {if (archive != null) archive.close();}
 }

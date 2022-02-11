@@ -5,11 +5,15 @@ import lombok.Setter;
 import lombok.SneakyThrows;
 
 import java.io.IOException;
-import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Pattern;
 
 import static com.github.t1.wunderbar.common.Utils.deleteRecursive;
+import static java.nio.file.Files.createDirectories;
+import static java.nio.file.Files.exists;
+import static java.nio.file.Files.list;
+import static java.nio.file.Files.writeString;
 
 class DirectoryBarWriter extends BarWriter {
     @Getter private final Path path;
@@ -23,18 +27,21 @@ class DirectoryBarWriter extends BarWriter {
 
     private Path currentDir() {return path.resolve(directory);}
 
+    @Override public AtomicInteger counter() {return new AtomicInteger(currentCount());}
+
     @SneakyThrows(IOException.class)
-    @Override protected int count() {
+    private int currentCount() {
         if (directory == null)
             throw new IllegalStateException("must set directory before calling save: " + this);
-        if (Files.isDirectory(currentDir()))
-            return Files.list(currentDir()).mapToInt(this::fileNumber).max().orElse(0);
-        return 0;
+        if (!exists(currentDir())) return 0;
+        try (var files = list(currentDir())) {
+            return files.mapToInt(this::fileNumber).max().orElse(0);
+        }
     }
 
     private int fileNumber(Path path) {
         var fileName = path.getFileName().toString();
-        var matcher = Pattern.compile("(?<number>[0-9]+) .*").matcher(fileName);
+        var matcher = Pattern.compile("(?<number>\\d+) .*").matcher(fileName);
         if (!matcher.matches()) return 0;
         return Integer.parseInt(matcher.group("number"));
     }
@@ -43,7 +50,12 @@ class DirectoryBarWriter extends BarWriter {
     @Override protected void write(String fileName, String content) {
         var filePath = path.resolve(fileName);
         assert filePath.getParent().equals(currentDir());
-        Files.createDirectories(currentDir());
-        Files.writeString(filePath, content);
+        createDirectories(currentDir());
+        writeString(filePath, content);
+    }
+
+    @Override public void close() {
+        directory = "";
+        write("comment.txt", comment);
     }
 }

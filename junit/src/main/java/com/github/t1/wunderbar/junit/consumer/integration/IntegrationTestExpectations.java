@@ -62,7 +62,7 @@ public @Internal class IntegrationTestExpectations<T> implements WunderBarExpect
 
         var response = currentExpectation.handleRequest(request);
 
-        if (bar != null) bar.save(request, response);
+        if (bar != null && currentExpectation.isRecording()) bar.save(request, response);
 
         return response;
     }

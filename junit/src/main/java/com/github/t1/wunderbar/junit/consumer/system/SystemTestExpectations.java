@@ -50,7 +50,7 @@ public class SystemTestExpectations<T> implements WunderBarExpectations<T> {
         this.technology = technology;
         this.type = type;
         this.baseUri = baseUri;
-        this.filter = new BarFilter(bar);
+        this.filter = new BarFilter(bar, this::isRecording);
         this.api = buildApi();
         this.mock = new JaxRsTypesafeGraphQLClientBuilder().endpoint(mockEndpoint(baseUri)).build(WunderBarMockServerApi.class);
         this.stubServer = new HttpServer(this::handleStubRequest);
@@ -145,6 +145,11 @@ public class SystemTestExpectations<T> implements WunderBarExpectations<T> {
         }
         if (api instanceof Closeable) ((Closeable) api).close();
         log.debug("---------- cleanup done");
+    }
+
+    private Boolean isRecording() {
+        return currentExpectation == null || // i.e. this is a call to the SUT, so you can't say `withoutRecording`
+               currentExpectation.isRecording();
     }
 
     @GraphQLClientApi

@@ -1,8 +1,10 @@
 package com.github.t1.wunderbar.junit.consumer;
 
 import com.github.t1.wunderbar.common.Internal;
+import lombok.Getter;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import lombok.Setter;
 
 import java.lang.reflect.Method;
 import java.net.URI;
@@ -13,6 +15,7 @@ import static lombok.AccessLevel.PROTECTED;
 
 @RequiredArgsConstructor(access = PROTECTED)
 public abstract @Internal class WunderBarExpectation {
+    @Getter @Setter private boolean recording = true;
     protected final Method method;
     protected final Object[] args;
 

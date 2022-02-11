@@ -6,6 +6,7 @@ import com.github.t1.wunderbar.junit.http.HttpRequest;
 import com.github.t1.wunderbar.junit.http.HttpRequest.HttpRequestBuilder;
 import com.github.t1.wunderbar.junit.http.HttpResponse;
 import com.github.t1.wunderbar.junit.http.HttpResponse.HttpResponseBuilder;
+import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 
@@ -17,29 +18,28 @@ import javax.ws.rs.core.MediaType;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.net.URI;
+import java.util.function.Supplier;
 
 import static com.github.t1.wunderbar.junit.http.HttpUtils.formatJson;
 import static javax.ws.rs.core.HttpHeaders.AUTHORIZATION;
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON_TYPE;
 
 @Slf4j
+@RequiredArgsConstructor
 class BarFilter implements ClientRequestFilter, ClientResponseFilter {
     private final BarWriter bar;
+    private final Supplier<Boolean> recording;
     private Builder builder;
-
-    BarFilter(BarWriter bar) {
-        this.bar = bar;
-    }
 
     @Override public String toString() {return "BarFilter for " + bar;}
 
     @Override public void filter(ClientRequestContext requestContext) {
-        if (bar == null) return;
+        if (bar == null || !recording.get()) return;
         this.builder = new Builder(requestContext);
     }
 
     @Override public void filter(ClientRequestContext requestContext, ClientResponseContext responseContext) {
-        if (bar == null) return;
+        if (bar == null || !recording.get()) return;
         this.builder.add(responseContext);
         bar.save(builder.buildRequest(), builder.buildResponse());
         this.builder = null;

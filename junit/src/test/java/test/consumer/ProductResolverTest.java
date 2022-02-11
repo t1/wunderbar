@@ -2,6 +2,7 @@ package test.consumer;
 
 import com.github.t1.wunderbar.junit.Register;
 import com.github.t1.wunderbar.junit.WunderBarException;
+import com.github.t1.wunderbar.junit.consumer.BarWriter;
 import com.github.t1.wunderbar.junit.consumer.Service;
 import com.github.t1.wunderbar.junit.consumer.Some;
 import com.github.t1.wunderbar.junit.consumer.SystemUnderTest;
@@ -76,6 +77,16 @@ abstract class ProductResolverTest {
         var resolvedProduct = resolver.product(item);
 
         then(resolvedProduct).usingRecursiveComparison().isEqualTo(product);
+    }
+
+    @Test void shouldResolveProductWithoutRecording(BarWriter bar) {
+        var before = bar.counter().get();
+        given(products.product(product.id)).withoutRecording().returns(product);
+
+        var resolvedProduct = resolver.product(item);
+
+        then(resolvedProduct).usingRecursiveComparison().isEqualTo(product);
+        then(bar.counter().get()).isEqualTo(before);
     }
 
     @Test void shouldResolveProductWithWillReturn() {
