@@ -31,6 +31,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.regex.Pattern;
@@ -142,8 +143,7 @@ class WunderBarApiConsumerJUnitExtension implements Extension, BeforeEachCallbac
         this.bar = BAR_WRITERS.computeIfAbsent(settings.fileName(), this::createBar);
         if (bar != null) bar.setDirectory(testId);
 
-        forEachField(Register.class, this::register);
-        dataGenerators.add(new SomeBasics());
+        registerSomeDataGenerators();
         forEachField(Some.class, this::createSomeTestData);
         forEachField(Service.class, this::createProxy);
         forEachField(SystemUnderTest.class, this::initSut);
@@ -196,17 +196,28 @@ class WunderBarApiConsumerJUnitExtension implements Extension, BeforeEachCallbac
         return "level: " + level();
     }
 
+    private void registerSomeDataGenerators() {
+        extensionContexts()
+            .map(ExtensionContext::getElement)
+            .flatMap(Optional::stream)
+            .map(element -> element.getAnnotation(Register.class))
+            .filter(Objects::nonNull)
+            .flatMap(register -> Stream.of(register.value()))
+            .map(this::newInstance)
+            .forEach(dataGenerators::add);
+        dataGenerators.add(new SomeBasics());
+    }
+
+    private Stream<ExtensionContext> extensionContexts() {
+        return Stream.iterate(context, c -> c.getParent().isPresent(), c -> c.getParent().orElseThrow());
+    }
+
     private void forEachField(Class<? extends Annotation> annotationType, Consumer<Field> action) {
         context.getRequiredTestInstances().getAllInstances().stream()
             .flatMap(this::allFields)
             .filter(field -> field.isAnnotationPresent(annotationType))
             .sorted(ORDER)
             .forEach(action);
-    }
-
-    private void register(Field field) {
-        var generator = (SomeData) getOrInitField(field);
-        dataGenerators.add(generator);
     }
 
     private Stream<Field> allFields(Object instance) {
@@ -316,8 +327,7 @@ class WunderBarApiConsumerJUnitExtension implements Extension, BeforeEachCallbac
 
     private String testId() {
         var elements = new LinkedList<String>();
-        for (ExtensionContext c = context; c != context.getRoot() && c.getParent().isPresent(); c = c.getParent().get())
-            elements.push(c.getDisplayName().replaceAll("\\(\\)$", ""));
+        extensionContexts().forEach(c -> elements.push(c.getDisplayName().replaceAll("\\(\\)$", "")));
         return String.join("/", elements);
     }
 
@@ -333,7 +343,7 @@ class WunderBarApiConsumerJUnitExtension implements Extension, BeforeEachCallbac
     private Object getOrInitField(Field sutField) {
         var testInstance = instanceFor(sutField);
         if (getField(testInstance, sutField) == null)
-            setField(testInstance, sutField, newInstance(sutField));
+            setField(testInstance, sutField, newInstance(sutField.getType()));
         return getField(testInstance, sutField);
     }
 
@@ -386,10 +396,10 @@ class WunderBarApiConsumerJUnitExtension implements Extension, BeforeEachCallbac
     private long duration() {return (start == null) ? -1 : Duration.between(start, Instant.now()).get(NANOS) / 1_000_000L;}
 
     @SneakyThrows(ReflectiveOperationException.class)
-    private Object newInstance(Field field) {
+    private <T> T newInstance(Class<T> type) {
         Object[] args = {};
         Constructor<?> found = null;
-        for (Constructor<?> constructor : field.getType().getDeclaredConstructors()) {
+        for (Constructor<?> constructor : type.getDeclaredConstructors()) {
             if (constructor.getParameterCount() == 0) found = constructor;
             if (constructor.getParameterCount() == 1 && SomeGenerator.class.equals(constructor.getParameterTypes()[0])) {
                 found = constructor;
@@ -397,8 +407,8 @@ class WunderBarApiConsumerJUnitExtension implements Extension, BeforeEachCallbac
                 break;
             }
         }
-        if (found == null) throw new WunderBarException("no matching constructor found for field " + field);
+        if (found == null) throw new WunderBarException("no matching constructor found for " + type);
         found.setAccessible(true);
-        return found.newInstance(args);
+        return type.cast(found.newInstance(args));
     }
 }

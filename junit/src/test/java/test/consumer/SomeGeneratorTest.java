@@ -27,17 +27,17 @@ import java.util.UUID;
 import static com.github.t1.wunderbar.common.Utils.name;
 import static org.assertj.core.api.Assertions.catchThrowable;
 import static org.assertj.core.api.BDDAssertions.then;
+import static test.consumer.SomeGeneratorTest.CustomDataGenerator;
+import static test.consumer.SomeGeneratorTest.CustomGenerator;
+import static test.consumer.SomeGeneratorTest.CustomGenericGenerator;
+import static test.consumer.SomeGeneratorTest.InfiniteLoopGenerator;
 
 @WunderBarApiConsumer
+@Register({CustomDataGenerator.class, CustomGenerator.class, CustomGenericGenerator.class, InfiniteLoopGenerator.class})
 class SomeGeneratorTest {
     /** We don't want to generate really random numbers; they should be rather small to be easier to handle. */
     private static final int QUITE_SMALL_INT = SomeBasics.DEFAULT_START;
     private static final int QUITE_BIG_INT = Short.MAX_VALUE;
-
-    @Register CustomDataGenerator customData;
-    @Register CustomGenerator custom;
-    @Register CustomGenericGenerator genGen;
-    @Register InfiniteLoopGenerator infGen;
 
     @Test void shouldGenerateChar(@Some char i) {then(i).isBetween((char) QUITE_SMALL_INT, Character.MAX_VALUE);}
 
@@ -137,7 +137,7 @@ class SomeGeneratorTest {
     }
 
     @RequiredArgsConstructor
-    private static class CustomDataGenerator implements SomeData {
+    static class CustomDataGenerator implements SomeData {
         private final SomeGenerator generator;
 
         @Override public boolean canGenerate(Some some, Type type, AnnotatedElement location) {return CustomData.class.equals(type);}
@@ -155,7 +155,7 @@ class SomeGeneratorTest {
         }
     }
 
-    private static class CustomGenerator implements SomeData {
+    static class CustomGenerator implements SomeData {
         @Override public boolean canGenerate(Some some, Type type, AnnotatedElement location) {return Custom.class.equals(type);}
 
         @SuppressWarnings("unchecked")
@@ -165,7 +165,7 @@ class SomeGeneratorTest {
     }
 
     @RequiredArgsConstructor
-    private static class CustomGenericGenerator implements SomeData {
+    static class CustomGenericGenerator implements SomeData {
         private final SomeGenerator generator;
 
         @Override public boolean canGenerate(Some some, Type type, AnnotatedElement location) {
@@ -195,7 +195,7 @@ class SomeGeneratorTest {
     }
 
     @RequiredArgsConstructor
-    private static class InfiniteLoopGenerator implements SomeData {
+    static class InfiniteLoopGenerator implements SomeData {
         private final SomeGenerator generator;
 
         @Override public boolean canGenerate(Some some, Type type, AnnotatedElement location) {return InfiniteLoop.class.equals(type);}

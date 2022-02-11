@@ -17,12 +17,12 @@ import static com.github.t1.wunderbar.junit.consumer.WunderbarExpectationBuilder
 
 @SuppressWarnings({"removal", "deprecated"})
 @WunderBarApiConsumer(endpoint = "{deprecatedEndpoint()}")
+@Register(SomeProduct.class)
 class ProductResolverDeprecatedST {
     @Service Products products;
     @SystemUnderTest ProductResolver resolver;
 
     @RegisterExtension static MockServer mockServer = new MockServer();
-    @Register SomeProduct productGenerator;
 
     boolean endpointCalled = false;
 

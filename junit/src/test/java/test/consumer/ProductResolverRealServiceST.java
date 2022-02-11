@@ -23,11 +23,11 @@ import static com.github.t1.wunderbar.junit.consumer.WunderbarExpectationBuilder
 import static org.assertj.core.api.Assertions.catchThrowable;
 
 @WunderBarApiConsumer
+@Register(SomeProduct.class)
 class ProductResolverRealServiceST {
     @Service(endpoint = "{endpoint()}") Products products;
     @SystemUnderTest ProductResolver resolver;
 
-    @Register SomeProduct generator;
     @Some Product product;
 
     private final HttpServer server = new HttpServer(this::handle);

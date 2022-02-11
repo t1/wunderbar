@@ -44,6 +44,7 @@ import static javax.ws.rs.core.Response.Status.NOT_FOUND;
 import static org.assertj.core.api.Assertions.catchThrowable;
 
 @WunderBarApiConsumer
+@Register(SomeProduct.class)
 abstract class ProductResolverTest {
     @Service(endpoint = "{endpoint()}") Products products;
     @Service(endpoint = "{endpoint()}") NamedProducts namedProducts;
@@ -52,7 +53,6 @@ abstract class ProductResolverTest {
 
     String endpoint() {return DEFAULT_ENDPOINT;}
 
-    @Register SomeProduct productGenerator;
     @Some Product product;
     Item item;
 
