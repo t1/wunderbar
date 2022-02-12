@@ -122,10 +122,12 @@ class ProductResolverTest {
 
 Note how the `newPrice` parameter is used throughout the test.
 This makes it easier for the reader of your code to understand which test value is which.
-Sometimes, you'll want to provide some constant value; as they should be unique to the generated values, use values below 1000, which is where `@Some` will start counting from.
+Sometimes, you'll want to provide some constant value; as they should be unique to the generated values, use values below 1000, which is where `@Some` will start counting from by default.
 And the generator will fail, if you generate more than `Short.MAX_VALUE` = `32767` = `2^15^-1` = `0x7FFF` values.
 
 Out-of-the-box, you can generate the primitive types `char`, `short`, `int`, `long`, `float`, `double` (or their wrapper types `Integer`, etc.), and some basic types like `String` (see https://github.com/t1/wunderbar/blob/trunk/junit/src/main/java/com/github/t1/wunderbar/junit/consumer/SomeBasics[here] for the full list), but not `boolean` or `byte`, as their range is below the starting point 1000.
+You can change the starting point by calling `SomeBasics#reset`, e.g. in a `@BeforeEach`.
+
 To generate your own data, e.g., `@Some Product product`, you can register your own generator class: `@Register(SomeProduct.class)`, where `SomeProduct` implements https://github.com/t1/wunderbar/blob/trunk/junit/src/main/java/com/github/t1/wunderbar/junit/consumer/SomeData.java[`SomeData`].
 The `@Some` annotation takes an optional list of String tags that are passed to custom generators, along with the `AnnotatedElement` location, so it can fine-control what data it should generate, e.g. to generate `invalid` objects.
 

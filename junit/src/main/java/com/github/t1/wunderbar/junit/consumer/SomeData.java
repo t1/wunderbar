@@ -3,9 +3,12 @@ package com.github.t1.wunderbar.junit.consumer;
 import java.lang.reflect.AnnotatedElement;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
-import java.util.function.Predicate;
 
-/** A generator for {@link Some} test data (see there). */
+/**
+ * A generator for {@link Some} test data (see there).
+ * <p>
+ * If you only want to generate a single type in a generator, it's easier to extend {@link SomeSingleTypeData}.
+ */
 public interface SomeData {
     /**
      * Is this generator capable to generate values of this type? The type could be a generic type, e.g.
@@ -24,10 +27,4 @@ public interface SomeData {
      * and a {@link ParameterizedType#getActualTypeArguments() type argument list} of <code>[String]</code>
      */
     <T> T some(Some some, Type type, AnnotatedElement location);
-
-    /** a helper method for cases where the type of {@link #some(Some, Type, AnnotatedElement)} is a parameterized (generics) type */
-    static boolean ifParameterized(Type type, Predicate<ParameterizedType> predicate) {
-        if (type instanceof ParameterizedType) return predicate.test((ParameterizedType) type);
-        else return false;
-    }
 }

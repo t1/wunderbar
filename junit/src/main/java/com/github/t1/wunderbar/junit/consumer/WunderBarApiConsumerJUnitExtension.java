@@ -386,6 +386,7 @@ class WunderBarApiConsumerJUnitExtension implements Extension, BeforeEachCallbac
         proxies.forEach(Proxy::done);
         proxies.clear();
         generatedData.clear();
+        dataGenerators.clear();
 
         if (bar != null) bar.setDirectory(null);
         log.info("{} took {} ms", testId, duration);
