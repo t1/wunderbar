@@ -10,8 +10,21 @@ import java.math.BigInteger;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
+import java.time.Duration;
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.OffsetDateTime;
+import java.time.OffsetTime;
+import java.time.Period;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.UUID;
 import java.util.function.Supplier;
+
+import static com.github.t1.wunderbar.common.Utils.name;
+import static java.time.ZoneOffset.UTC;
 
 /**
  * Generates random values, but tries to keep them small, positive, and unique, so they are as easy to handle as possible.
@@ -22,6 +35,7 @@ import java.util.function.Supplier;
  */
 public class SomeBasics implements SomeData {
     public static final int DEFAULT_START = 1000;
+    public static final Instant START_INSTANT = ZonedDateTime.of(2000, 1, 1, 0, 0, 0, 0, UTC).toInstant();
 
     private static int nextInt;
 
@@ -32,17 +46,17 @@ public class SomeBasics implements SomeData {
     public static void reset(int start) {nextInt = start;}
 
     @Override public boolean canGenerate(Some some, Type type, AnnotatedElement location) {
-        return generator(type) != null;
+        return generator(some, type, location) != null;
     }
 
     @Override public <T> T some(Some some, Type type, AnnotatedElement location) {
-        Supplier<T> generator = generator(type);
+        Supplier<T> generator = generator(some, type, location);
         if (generator == null) throw new WunderBarException("don't know how to generate a random " + type);
         return generator.get();
     }
 
     @SuppressWarnings("unchecked")
-    private <T> Supplier<T> generator(Type type) {
+    private <T> Supplier<T> generator(Some some, Type type, AnnotatedElement location) {
         if (char.class.equals(type) || Character.class.equals(type)) return () -> (T) (Character) someChar();
         if (short.class.equals(type) || Short.class.equals(type)) return () -> (T) (Short) someShort();
         if (int.class.equals(type) || Integer.class.equals(type)) return () -> (T) (Integer) someInt();
@@ -53,10 +67,20 @@ public class SomeBasics implements SomeData {
         if (double.class.equals(type) || Double.class.equals(type)) return () -> (T) (Double) someDouble();
         if (BigDecimal.class.equals(type)) return () -> (T) BigDecimal.valueOf(someInt());
 
-        if (String.class.equals(type)) return () -> (T) someString();
+        if (String.class.equals(type)) return () -> (T) someString(some, location);
         if (UUID.class.equals(type)) return () -> (T) someUUID();
         if (URI.class.equals(type)) return () -> (T) someURI();
         if (URL.class.equals(type)) return () -> (T) someURL();
+
+        if (Instant.class.equals(type)) return () -> (T) someInstant();
+        if (LocalDate.class.equals(type)) return () -> (T) someLocalDate();
+        if (LocalDateTime.class.equals(type)) return () -> (T) someLocalDateTime();
+        if (ZonedDateTime.class.equals(type)) return () -> (T) someZonedDateTime();
+        if (OffsetDateTime.class.equals(type)) return () -> (T) someOffsetDateTime();
+        if (LocalTime.class.equals(type)) return () -> (T) someLocalTime();
+        if (OffsetTime.class.equals(type)) return () -> (T) someOffsetTime();
+        if (Duration.class.equals(type)) return () -> (T) someDuration();
+        if (Period.class.equals(type)) return () -> (T) somePeriod();
 
         return null;
     }
@@ -77,14 +101,33 @@ public class SomeBasics implements SomeData {
 
     private static double someDouble() {return Double.parseDouble(someInt() + ".2");}
 
-    private static String someString() {return String.format("string-%05d", someInt());}
-
-    private static UUID someUUID() {
-        return UUID.fromString(String.format("00000000-0000-0000-0000-%012d", someInt()));
+    private static String someString(Some some, AnnotatedElement location) {
+        String tags = (some == null || some.value().length == 0) ? "" : (String.join("-", some.value()) + "-");
+        return String.format("%s%s-%05d", tags, name(location), someInt());
     }
+
+    private static UUID someUUID() {return UUID.fromString(String.format("00000000-0000-0000-0000-%012d", someInt()));}
 
     private static URI someURI() {return URI.create(String.format("https://example.nowhere/path-%07d", someInt()));}
 
     @SneakyThrows(MalformedURLException.class)
     private static URL someURL() {return someURI().toURL();}
+
+    private static Instant someInstant() {return START_INSTANT.plusSeconds(someInt());}
+
+    private static LocalDate someLocalDate() {return LocalDate.ofInstant(START_INSTANT, ZoneId.systemDefault()).plusDays(someInt());}
+
+    private static LocalDateTime someLocalDateTime() {return LocalDateTime.ofInstant(START_INSTANT, ZoneId.systemDefault()).plusHours(someInt());}
+
+    private static ZonedDateTime someZonedDateTime() {return ZonedDateTime.ofInstant(START_INSTANT, ZoneId.systemDefault()).plusMinutes(someInt());}
+
+    private static OffsetDateTime someOffsetDateTime() {return OffsetDateTime.ofInstant(START_INSTANT, ZoneId.systemDefault()).plusDays(someInt());}
+
+    private static LocalTime someLocalTime() {return LocalTime.ofInstant(START_INSTANT, ZoneId.systemDefault()).plusSeconds(someInt());}
+
+    private static OffsetTime someOffsetTime() {return OffsetTime.ofInstant(START_INSTANT, ZoneId.systemDefault()).plusSeconds(someInt());}
+
+    private static Duration someDuration() {return Duration.ofSeconds(someInt());}
+
+    private static Period somePeriod() {return Period.ofDays(someInt());}
 }

@@ -33,7 +33,7 @@ public interface SomeGenerator {
     @SneakyThrows(ReflectiveOperationException.class)
     default <T> T generate(Class<?> container, String fieldName) {
         Field field = container.getDeclaredField(fieldName);
-        return (T) generate(field.getAnnotation(Some.class), field.getGenericType(), field);
+        return (T) generate(field.getAnnotatedType().getAnnotation(Some.class), field.getGenericType(), field);
     }
 
     /**

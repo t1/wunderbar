@@ -233,7 +233,11 @@ class WunderBarApiConsumerJUnitExtension implements Extension, BeforeEachCallbac
     }
 
     private void createSomeTestData(Field field) {
-        setField(instanceFor(field), field, someGenerator.generate(field.getAnnotation(Some.class), field.getGenericType(), field));
+        setField(instanceFor(field), field, someGenerator.generate(someAnnotationOn(field), field.getGenericType(), field));
+    }
+
+    private Some someAnnotationOn(Field field) {
+        return field.getAnnotatedType().getAnnotation(Some.class);
     }
 
     private void createProxy(Field field) {

@@ -18,7 +18,7 @@ import static lombok.AccessLevel.PRIVATE;
 @Getter @Setter @ToString @NoArgsConstructor
 @Builder(toBuilder = true) @AllArgsConstructor(access = PRIVATE)
 public class Order {
-    @NonNull @Id String id;
+    @Id String id;
     @NonNull LocalDate orderDate;
     @NonNull @Singular List<OrderItem> items;
 }

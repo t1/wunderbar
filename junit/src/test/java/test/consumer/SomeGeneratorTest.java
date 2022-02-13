@@ -24,10 +24,22 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.net.URI;
 import java.net.URL;
+import java.time.Duration;
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.OffsetDateTime;
+import java.time.OffsetTime;
+import java.time.Period;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.UUID;
+import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
 import static com.github.t1.wunderbar.common.Utils.name;
+import static com.github.t1.wunderbar.junit.consumer.SomeBasics.START_INSTANT;
 import static org.assertj.core.api.Assertions.catchThrowable;
 import static org.assertj.core.api.BDDAssertions.then;
 import static test.consumer.SomeGeneratorTest.CustomDataGenerator;
@@ -44,11 +56,16 @@ class SomeGeneratorTest {
     @Order(2) @Some int intField1;
     @Order(1) @Some int intField2;
     @Order(3) @Some int intField3;
+    @Some("value=3") Custom custom;
 
     @Test void shouldGenerateFieldsInOrder() {
         then(intField2).isEqualTo(1000);
         then(intField1).isEqualTo(1001);
         then(intField3).isEqualTo(1002);
+    }
+
+    @Test void shouldGenerateTaggedField() {
+        then(custom).isEqualTo(new Custom(3));
     }
 
     @Test void shouldGenerateChar(@Some char i) {then(i).isBetween((char) QUITE_SMALL_INT, Character.MAX_VALUE);}
@@ -106,8 +123,46 @@ class SomeGeneratorTest {
         then(url.toString()).isBetween("https://example.nowhere/path-0000000", "https://example.nowhere/path-99999");
     }
 
+    @Test void shouldGenerateInstant(@Some Instant instant) {then(instant).isBetween(START_INSTANT, START_INSTANT.plusSeconds(QUITE_BIG_INT));}
+
+    @Test void shouldGenerateLocalDate(@Some LocalDate localDate) {
+        var startLocalDate = LocalDate.ofInstant(START_INSTANT, ZoneId.systemDefault());
+        then(localDate).isBetween(startLocalDate, startLocalDate.plusDays(QUITE_BIG_INT));
+    }
+
+    @Test void shouldGenerateLocalDateTime(@Some LocalDateTime localDateTime) {
+        var startLocalDateTime = LocalDateTime.ofInstant(START_INSTANT, ZoneId.systemDefault());
+        then(localDateTime).isBetween(startLocalDateTime, startLocalDateTime.plusHours(QUITE_BIG_INT));
+    }
+
+    @Test void shouldGenerateZonedDateTime(@Some ZonedDateTime zonedDateTime) {
+        var startZonedDateTime = ZonedDateTime.ofInstant(START_INSTANT, ZoneId.systemDefault());
+        then(zonedDateTime).isBetween(startZonedDateTime, startZonedDateTime.plusMinutes(QUITE_BIG_INT));
+    }
+
+    @Test void shouldGenerateOffsetDateTime(@Some OffsetDateTime zonedDateTime) {
+        var startOffsetDateTime = OffsetDateTime.ofInstant(START_INSTANT, ZoneId.systemDefault());
+        then(zonedDateTime).isBetween(startOffsetDateTime, startOffsetDateTime.plusDays(QUITE_BIG_INT));
+    }
+
+    @Test void shouldGenerateLocalTime(@Some LocalTime localTime) {
+        var startLocalTime = LocalTime.ofInstant(START_INSTANT, ZoneId.systemDefault());
+        then(localTime).isBetween(startLocalTime, startLocalTime.plusSeconds(QUITE_BIG_INT));
+    }
+
+    @Test void shouldGenerateOffsetTime(@Some OffsetTime localTime) {
+        var startOffsetTime = OffsetTime.ofInstant(START_INSTANT, ZoneId.systemDefault());
+        then(localTime).isBetween(startOffsetTime, startOffsetTime.plusSeconds(QUITE_BIG_INT));
+    }
+
+    @Test void shouldGenerateDuration(@Some Duration duration) {then(duration).isBetween(Duration.ZERO, Duration.ofSeconds(QUITE_BIG_INT));}
+
+    // remember: period is not comparable!
+    @Test void shouldGeneratePeriod(@Some Period period) {then(period.getDays()).isBetween(0, QUITE_BIG_INT);}
+
+    // ---------------------------------------------------- custom generators
     @Register(CustomURI.class)
-    @Test void shouldGenerateCustomURL(@Some URI uri) {then(uri).hasToString("dummy-uri");}
+    @Test void shouldGenerateCustomURI(@Some URI uri) {then(uri).hasToString("dummy-uri");}
 
     static class CustomURI extends SomeSingleTypeData<URI> {
         @Override public URI some(Some some, Type type, AnnotatedElement location) {return URI.create("dummy-uri");}
@@ -157,8 +212,9 @@ class SomeGeneratorTest {
         then(generator.location(data)).isEqualTo(SomeGeneratorTest.class.getDeclaredMethod("shouldGenerateCustomData", CustomData.class, SomeGenerator.class).getParameters()[0]);
         then(generator.findSomeFor(data).value()).containsExactly("valid");
 
-        then(data.foo).startsWith("valid-data-string-");
+        then(data.foo).startsWith("valid-data-foo-");
         then(data.bar).isEqualTo(new Custom(1));
+        then(data.baz).startsWith("cool-baz-");
         then(data.gen).isEqualTo(new CustomGeneric<>(data.gen.wrapped));
         then(generator.location(data.foo.substring("valid-data-".length()))).isEqualTo(CustomData.class.getDeclaredField("foo"));
         then(generator.location(new Custom(1))).isEqualTo(CustomData.class.getDeclaredField("bar"));
@@ -182,6 +238,7 @@ class SomeGeneratorTest {
     private static @Data @Builder class CustomData {
         String foo;
         Custom bar;
+        @Some("cool") String baz;
         CustomGeneric<String> gen;
     }
 
@@ -202,8 +259,10 @@ class SomeGeneratorTest {
             var tag = some.value()[0];
             if ("generate-null".equals(tag)) return null;
             return CustomData.builder()
-                .foo(tag + "-" + name(location) + "-" + generator.generate(CustomData.class, "foo"))
+                .foo(tag + "-" + name(location) + "-" +
+                     generator.generate(CustomData.class, "foo"))
                 .bar(generator.generate(CustomData.class, "bar"))
+                .baz(generator.generate(CustomData.class, "baz"))
                 .gen(generator.generate(CustomData.class, "gen"))
                 .build();
         }
@@ -211,7 +270,14 @@ class SomeGeneratorTest {
 
     static class CustomGenerator extends SomeSingleTypeData<Custom> {
         @Override public Custom some(Some some, Type type, AnnotatedElement location) {
-            return Custom.builder().wrapped(1).build();
+            var wrapped = (some == null || some.value().length == 0) ? 1 : from(some.value()[0]);
+            return Custom.builder().wrapped(wrapped).build();
+        }
+
+        private int from(String tag) {
+            var matcher = Pattern.compile("value=(\\d+)").matcher(tag);
+            if (!matcher.matches()) throw new IllegalArgumentException("invalid @Some tag for Custom: " + tag);
+            return Integer.parseInt(matcher.group(1));
         }
     }
 

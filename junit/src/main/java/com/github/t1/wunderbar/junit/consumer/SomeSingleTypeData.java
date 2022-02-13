@@ -46,6 +46,7 @@ public abstract class SomeSingleTypeData<T> implements SomeData {
 
     private boolean matches(Some some) {
         if (this.some == null) return true;
+        if (some == null) return this.some.value().length == 0;
         var actual = Arrays.asList(some.value());
         return Stream.of(this.some.value()).allMatch(actual::contains);
     }
