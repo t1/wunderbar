@@ -68,7 +68,7 @@ public class HttpUtils {
     }
 
     public static JsonObjectBuilder fromJson(String json) {
-        return Json.createObjectBuilder(readJson(json).asJsonObject());
+        return (json == null) ? Json.createObjectBuilder() : Json.createObjectBuilder(readJson(json).asJsonObject());
     }
 
     public static <T> T read(String string, MediaType contentType, Class<T> type) {

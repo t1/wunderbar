@@ -4,7 +4,9 @@ import com.github.t1.wunderbar.demo.order.OrderItem;
 import com.github.t1.wunderbar.demo.order.Product;
 import com.github.t1.wunderbar.demo.order.ProductsResolver;
 import com.github.t1.wunderbar.demo.order.ProductsResolver.Products;
+import com.github.t1.wunderbar.junit.Register;
 import com.github.t1.wunderbar.junit.consumer.Service;
+import com.github.t1.wunderbar.junit.consumer.Some;
 import com.github.t1.wunderbar.junit.consumer.SystemUnderTest;
 import com.github.t1.wunderbar.junit.consumer.WunderBarApiConsumer;
 import com.github.t1.wunderbar.junit.http.Authorization;
@@ -13,18 +15,22 @@ import com.github.t1.wunderbar.junit.http.HttpResponse;
 import com.github.t1.wunderbar.junit.http.HttpServer;
 import io.smallrye.graphql.client.GraphQLClientException;
 import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import test.SomeProduct;
 
 import java.net.URI;
 
+import static com.github.t1.wunderbar.junit.http.HttpUtils.JSONB;
 import static org.assertj.core.api.Assertions.catchThrowableOfType;
 import static org.assertj.core.api.BDDAssertions.then;
 
 @WunderBarApiConsumer(fileName = "target/system-wunder.jar")
+@Register(SomeProduct.class)
 class ProductsResolverST {
     /** this server would normally be a real server running somewhere */
-    private static final HttpServer SERVER = new HttpServer(ProductsResolverST::handle);
+    private final HttpServer server = new HttpServer(this::handle);
 
     private static final String SYSTEM_TEST_USER = "system-test-user";
     private static final String SYSTEM_TEST_PASSWORD = "system-test-password";
@@ -32,7 +38,7 @@ class ProductsResolverST {
 
     static final String PRODUCTS_MP_GRAPHQL_CONFIG = Products.class.getName() + "/mp-graphql/";
 
-    static HttpResponse handle(HttpRequest request) {
+    HttpResponse handle(HttpRequest request) {
         assert request.getUri().toString().equals("/graphql") : "unexpected uri " + request.getUri();
         assert request.hasBody();
         var body = request.jsonValue().asJsonObject();
@@ -45,23 +51,19 @@ class ProductsResolverST {
 
         var response = HttpResponse.builder();
         var id = body.getJsonObject("variables").getString("id");
-        switch (id) {
-            case "existing-product-id":
-                response.body("{\"data\":{\"product\":{\"id\":\"" + id + "\", \"name\":\"some-product-name\", " +
-                              "\"description\":null, \"price\":1599}}}");
-                break;
-            case "forbidden-product-id":
-                response.body("{\"errors\": [\n" +
-                              "{\"extensions\": {\"code\": \"product-forbidden\"},\"message\": \"product " + id + " is forbidden\"}" +
-                              "]}\n");
-                break;
-            default:
-                response.body("{\"errors\": [\n" +
-                              "{\"extensions\": {\"code\": \"product-not-found\"},\"message\": \"product " + id + " not found\"}" +
-                              "]}\n");
-                break;
-        }
+        if (id.equals(existing.getId()))
+            response.body("{\"data\":{\"product\":" + JSONB.toJson(existing) + "}}");
+        else if (id.equals(forbidden.getId()))
+            response.body(error("product-forbidden", id, " is forbidden"));
+        else
+            response.body(error("product-not-found", id, " not found"));
         return response.build();
+    }
+
+    private String error(String code, String id, String messageSuffix) {
+        return "{\"errors\": [\n" +
+               "{\"extensions\": {\"code\": \"" + code + "\"},\"message\": \"product " + id + messageSuffix + "\"}" +
+               "]}\n";
     }
 
     private static boolean isMutation(String query) {return query.startsWith("mutation ");}
@@ -72,8 +74,9 @@ class ProductsResolverST {
         System.setProperty(PRODUCTS_MP_GRAPHQL_CONFIG + "password", SYSTEM_TEST_PASSWORD);
     }
 
+    @AfterEach void stopServer() {server.stop();}
+
     @AfterAll static void tearDown() {
-        SERVER.stop();
         System.clearProperty(PRODUCTS_MP_GRAPHQL_CONFIG + "username");
         System.clearProperty(PRODUCTS_MP_GRAPHQL_CONFIG + "password");
     }
@@ -83,32 +86,34 @@ class ProductsResolverST {
     @SystemUnderTest ProductsResolver resolver;
 
     @SuppressWarnings("unused")
-    static URI endpoint() {return SERVER.baseUri().resolve("/graphql");}
+    URI endpoint() {return server.baseUri().resolve("/graphql");}
 
-    private OrderItem item(String s) {return OrderItem.builder().productId(s).build();}
+    private OrderItem item(String id) {return OrderItem.builder().productId(id).build();}
+
+    @Some Product existing;
+    @Some Product forbidden;
 
     @Test void shouldResolveProduct() {
-        var resolvedProduct = resolver.product(item("existing-product-id"));
+        var resolvedProduct = resolver.product(item(existing.getId()));
 
-        then(resolvedProduct).usingRecursiveComparison().isEqualTo(
-            Product.builder().id("existing-product-id").name("some-product-name").price(15_99).build());
+        then(resolvedProduct).usingRecursiveComparison().isEqualTo(existing);
     }
 
     @Test void shouldFailToResolveUnknownProduct() {
-        var throwable = catchThrowableOfType(() -> resolver.product(item("unknown-product-id")), GraphQLClientException.class);
+        var throwable = catchThrowableOfType(() -> resolver.product(item("-1")), GraphQLClientException.class);
 
         then(throwable.getErrors()).hasSize(1);
         var error = throwable.getErrors().get(0);
-        then(error.getMessage()).isEqualTo("product unknown-product-id not found");
+        then(error.getMessage()).isEqualTo("product -1 not found");
         then(error.getCode()).isEqualTo("product-not-found");
     }
 
     @Test void shouldFailToResolveForbiddenProduct() {
-        var throwable = catchThrowableOfType(() -> resolver.product(item("forbidden-product-id")), GraphQLClientException.class);
+        var throwable = catchThrowableOfType(() -> resolver.product(item(forbidden.getId())), GraphQLClientException.class);
 
         then(throwable.getErrors()).hasSize(1);
         var error = throwable.getErrors().get(0);
-        then(error.getMessage()).isEqualTo("product forbidden-product-id is forbidden");
+        then(error.getMessage()).isEqualTo("product " + forbidden.getId() + " is forbidden");
         then(error.getCode()).isEqualTo("product-forbidden");
     }
 }

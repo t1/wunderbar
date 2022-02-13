@@ -15,14 +15,14 @@ import static com.github.t1.wunderbar.junit.http.HttpUtils.readJson;
  * <a href="https://datatracker.ietf.org/doc/html/rfc7807">RFC-7807 Problems Detail</a> body.
  */
 @SuppressWarnings("UnusedReturnValue")
-public class ProblemDetailsAssert<SELF extends ProblemDetailsAssert<SELF, ACTUAL>, ACTUAL extends WebApplicationException>
+public class WebApplicationExceptionAssert<SELF extends WebApplicationExceptionAssert<SELF, ACTUAL>, ACTUAL extends WebApplicationException>
     extends AbstractAssert<SELF, ACTUAL> {
-    public static final InstanceOfAssertFactory<WebApplicationException, ProblemDetailsAssert<?, ?>> PROBLEM_DETAILS
-        = new InstanceOfAssertFactory<>(WebApplicationException.class, ProblemDetailsAssert::new);
+    public static final InstanceOfAssertFactory<WebApplicationException, WebApplicationExceptionAssert<?, ?>> WEB_APPLICATION_EXCEPTION
+        = new InstanceOfAssertFactory<>(WebApplicationException.class, WebApplicationExceptionAssert::new);
 
-    protected ProblemDetailsAssert(ACTUAL actual) {this(actual, ProblemDetailsAssert.class);}
+    protected WebApplicationExceptionAssert(ACTUAL actual) {this(actual, WebApplicationExceptionAssert.class);}
 
-    protected ProblemDetailsAssert(ACTUAL actual, Class<?> selfType) {super(actual, selfType);}
+    protected WebApplicationExceptionAssert(ACTUAL actual, Class<?> selfType) {super(actual, selfType);}
 
     private JsonObject body;
 
@@ -33,6 +33,11 @@ public class ProblemDetailsAssert<SELF extends ProblemDetailsAssert<SELF, ACTUAL
 
     public SELF hasType(String expected) {
         then(body()).hasString("type", expected);
+        return myself;
+    }
+
+    public SELF hasTitle(String expected) {
+        then(body()).hasString("title", expected);
         return myself;
     }
 

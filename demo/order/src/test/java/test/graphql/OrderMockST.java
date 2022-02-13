@@ -12,7 +12,6 @@ import lombok.Singular;
 import lombok.experimental.SuperBuilder;
 import org.eclipse.microprofile.graphql.NonNull;
 import org.eclipse.microprofile.graphql.Query;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.Network;
 import org.testcontainers.junit.jupiter.Container;
@@ -23,7 +22,6 @@ import java.util.List;
 
 import static com.github.t1.wunderbar.demo.order.Orders.PRODUCT_ID;
 import static com.github.t1.wunderbar.junit.consumer.WunderBarApiConsumer.NONE;
-import static com.github.t1.wunderbar.junit.consumer.WunderbarExpectationBuilder.createService;
 import static com.github.t1.wunderbar.junit.consumer.WunderbarExpectationBuilder.given;
 import static org.assertj.core.api.BDDAssertions.then;
 import static org.testcontainers.containers.Network.newNetwork;
@@ -47,7 +45,7 @@ class OrderMockST {
         .withNetworkAliases("products")
         .withDeployment("../../mock/target/wunderbar-mock-server.war");
 
-    private static JeeContainer jeeContainer() {
+    @SuppressWarnings("resource") private static JeeContainer jeeContainer() {
         return new WildflyContainer("rdohna/wildfly", "25.0.1.Final-jdk11").withNetwork(NETWORK);
     }
 
@@ -82,15 +80,11 @@ class OrderMockST {
         @Query Product product(@NonNull String id);
     }
 
-    Products products;
-    Api api;
+    @Service(endpoint = "{endpoint()}") Products products;
+    Api api = TypesafeGraphQLClientBuilder.newBuilder().endpoint(ORDERS.baseUri() + "graphql").build(Api.class);
 
-    @BeforeEach
-    void setUp() {
-        this.products = createService(Products.class, Service.DEFAULT
-            .withEndpoint("http://localhost:" + PRODUCTS.getMappedPort(8080) + "/wunderbar-mock-server/graphql"));
-        this.api = TypesafeGraphQLClientBuilder.newBuilder().endpoint(ORDERS.baseUri() + "graphql").build(Api.class);
-    }
+    @SuppressWarnings("unused")
+    String endpoint() {return "http://localhost:" + PRODUCTS.getMappedPort(8080) + "/wunderbar-mock-server/graphql";}
 
     Product product = Product.builder()
         .id(PRODUCT_ID)

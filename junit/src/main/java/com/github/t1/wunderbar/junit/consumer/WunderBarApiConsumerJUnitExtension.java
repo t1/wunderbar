@@ -215,9 +215,14 @@ class WunderBarApiConsumerJUnitExtension implements Extension, BeforeEachCallbac
     private void forEachField(Class<? extends Annotation> annotationType, Consumer<Field> action) {
         context.getRequiredTestInstances().getAllInstances().stream()
             .flatMap(this::allFields)
-            .filter(field -> field.isAnnotationPresent(annotationType))
+            .filter(field -> isAnnotationPresent(field, annotationType))
             .sorted(ORDER)
             .forEach(action);
+    }
+
+    private boolean isAnnotationPresent(Field field, Class<? extends Annotation> annotationType) {
+        return field.isAnnotationPresent(annotationType) || // for normal annotations
+               field.getAnnotatedType().isAnnotationPresent(annotationType); // for TYPE_USE annotations (like Some)
     }
 
     private Stream<Field> allFields(Object instance) {
@@ -365,7 +370,7 @@ class WunderBarApiConsumerJUnitExtension implements Extension, BeforeEachCallbac
         return Level.class.equals(parameterType) ||
                SomeGenerator.class.equals(parameterType) ||
                BarWriter.class.equals(parameterType) || // this is intentionally not documented
-               parameterContext.isAnnotated(Some.class);
+               someAnnotation(parameterContext.getParameter()) != null;
     }
 
     @Override public Object resolveParameter(ParameterContext parameterContext, ExtensionContext extensionContext) throws ParameterResolutionException {
@@ -373,7 +378,14 @@ class WunderBarApiConsumerJUnitExtension implements Extension, BeforeEachCallbac
         if (Level.class.equals(parameter.getType())) return level();
         if (SomeGenerator.class.equals(parameter.getType())) return someGenerator;
         if (BarWriter.class.equals(parameter.getType())) return bar;
-        return someGenerator.generate(parameter.getAnnotation(Some.class), parameter.getParameterizedType(), parameter);
+        return someGenerator.generate(someAnnotation(parameter), parameter.getParameterizedType(), parameter);
+    }
+
+    private Some someAnnotation(Parameter parameter) {
+        // parameter#getDeclaredAnnotation, etc. is not sufficient for annotations with TYPE_USE (like `@Some`)
+        // see https://stackoverflow.com/questions/66241813/how-to-parse-java-annotation-in-generic-type
+        var annotatedTypes = parameter.getDeclaringExecutable().getAnnotatedParameterTypes();
+        return (annotatedTypes.length == 0) ? null : annotatedTypes[0].getDeclaredAnnotation(Some.class);
     }
 
 

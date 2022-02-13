@@ -21,7 +21,6 @@ import static java.util.function.Function.identity;
 @Path("/orders")
 public class Orders {
     public static final String PRODUCT_ID = "existing-product-id";
-    // public static final String PRODUCT_ID = "p-" + Math.abs(new Random().nextInt(9)); // just a bit of initial randomness
 
     private static final List<Order> ORDERS = List.of(
         Order.builder()

@@ -28,7 +28,7 @@ import java.lang.reflect.Proxy;
 import java.net.URI;
 
 import static com.github.t1.wunderbar.junit.assertions.GraphQLClientExceptionAssert.GRAPHQL_CLIENT_EXCEPTION;
-import static com.github.t1.wunderbar.junit.assertions.ProblemDetailsAssert.PROBLEM_DETAILS;
+import static com.github.t1.wunderbar.junit.assertions.WebApplicationExceptionAssert.WEB_APPLICATION_EXCEPTION;
 import static com.github.t1.wunderbar.junit.assertions.WunderBarBDDAssertions.then;
 import static com.github.t1.wunderbar.junit.consumer.Service.DEFAULT_ENDPOINT;
 import static com.github.t1.wunderbar.junit.consumer.Technology.GRAPHQL;
@@ -286,7 +286,7 @@ abstract class ProductResolverTest {
     }
 
     protected void thenRestError(Throwable throwable, StatusType status, String typeSuffix, String detail) {
-        then(throwable).asInstanceOf(PROBLEM_DETAILS)
+        then(throwable).asInstanceOf(WEB_APPLICATION_EXCEPTION)
             .hasStatus(status)
             .hasType("urn:problem-type:" + typeSuffix)
             .hasDetail(detail);

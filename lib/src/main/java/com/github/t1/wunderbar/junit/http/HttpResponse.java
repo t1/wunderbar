@@ -138,7 +138,7 @@ public class HttpResponse {
         return Response.status(getStatus()).type(getContentType()).entity(getBody()).build();
     }
 
-    @SuppressWarnings("unused")
+    @SuppressWarnings({"unused", "UnusedReturnValue"})
     public static class HttpResponseBuilder {
         public HttpResponseBuilder status(int status) {
             return status(Status.fromStatusCode(status));
@@ -179,6 +179,26 @@ public class HttpResponse {
 
         public HttpResponseBuilder body(String body) {
             this.body = body;
+            return this;
+        }
+
+        public HttpResponseBuilder problemType(String type) {
+            contentType(PROBLEM_DETAIL_TYPE);
+            return json("type", type);
+        }
+
+        public HttpResponseBuilder problemTitle(String title) {
+            contentType(PROBLEM_DETAIL_TYPE);
+            return json("title", title);
+        }
+
+        public HttpResponseBuilder problemDetail(String detail) {
+            contentType(PROBLEM_DETAIL_TYPE);
+            return json("detail", detail);
+        }
+
+        private HttpResponseBuilder json(String field, String string) {
+            body = fromJson(body).add(field, string).build().toString();
             return this;
         }
     }

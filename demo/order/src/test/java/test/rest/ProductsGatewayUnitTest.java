@@ -9,6 +9,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import test.SomeProduct;
 
 import javax.ws.rs.ForbiddenException;
 import javax.ws.rs.NotFoundException;
@@ -25,30 +26,30 @@ class ProductsGatewayUnitTest {
     @Mock ProductsRestClient products;
     @InjectMocks ProductsGateway gateway;
 
-    private static final String PRODUCT_ID = "some-product-id";
-    private static final OrderItem ITEM = OrderItem.builder().productId(PRODUCT_ID).build();
-    private static final Product PRODUCT = Product.builder().id(PRODUCT_ID).name("some-product-name").build();
+    Product product = SomeProduct.buildProduct("123");
+
+    OrderItem item() {return OrderItem.builder().productId(product.getId()).build();}
 
     @Test void shouldGetProduct() {
-        given(products.product(PRODUCT_ID)).willReturn(PRODUCT);
+        given(products.product(product.getId())).willReturn(product);
 
-        var response = gateway.product(ITEM);
+        var response = gateway.product(item());
 
-        then(response).usingRecursiveComparison().isEqualTo(PRODUCT);
+        then(response).usingRecursiveComparison().isEqualTo(product);
     }
 
     @Test void shouldFailToGetUnknownProduct() {
-        given(products.product(PRODUCT_ID)).willThrow(new NotFoundException());
+        given(products.product(product.getId())).willThrow(new NotFoundException());
 
-        var throwable = catchThrowableOfType(() -> gateway.product(ITEM), WebApplicationException.class);
+        var throwable = catchThrowableOfType(() -> gateway.product(item()), WebApplicationException.class);
 
         then(throwable.getResponse().getStatusInfo()).isEqualTo(NOT_FOUND);
     }
 
     @Test void shouldFailToGetForbiddenProduct() {
-        given(products.product(PRODUCT_ID)).willThrow(new ForbiddenException());
+        given(products.product(product.getId())).willThrow(new ForbiddenException());
 
-        var throwable = catchThrowableOfType(() -> gateway.product(ITEM), WebApplicationException.class);
+        var throwable = catchThrowableOfType(() -> gateway.product(item()), WebApplicationException.class);
 
         then(throwable.getResponse().getStatusInfo()).isEqualTo(FORBIDDEN);
     }

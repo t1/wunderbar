@@ -8,6 +8,7 @@ import org.assertj.core.api.BDDAssertions;
 
 import javax.json.JsonObject;
 import javax.json.JsonValue;
+import javax.ws.rs.WebApplicationException;
 
 /**
  * An extension for {@link BDDAssertions BDD assertj}
@@ -28,4 +29,6 @@ public class WunderBarBDDAssertions extends BDDAssertions {
     public static HttpRequestAssert<?, ?> then(HttpRequest request) {return new HttpRequestAssert<>(request);}
 
     public static HttpResponseAssert<?, ?> then(HttpResponse response) {return new HttpResponseAssert<>(response);}
+
+    public static WebApplicationExceptionAssert<?, ?> then(WebApplicationException response) {return new WebApplicationExceptionAssert<>(response);}
 }

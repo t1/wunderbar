@@ -4,84 +4,94 @@ import com.github.t1.wunderbar.demo.order.OrderItem;
 import com.github.t1.wunderbar.demo.order.Product;
 import com.github.t1.wunderbar.demo.order.ProductsGateway;
 import com.github.t1.wunderbar.demo.order.ProductsGateway.ProductsRestClient;
+import com.github.t1.wunderbar.junit.Register;
 import com.github.t1.wunderbar.junit.consumer.Service;
+import com.github.t1.wunderbar.junit.consumer.Some;
 import com.github.t1.wunderbar.junit.consumer.SystemUnderTest;
 import com.github.t1.wunderbar.junit.consumer.WunderBarApiConsumer;
 import com.github.t1.wunderbar.junit.http.HttpRequest;
 import com.github.t1.wunderbar.junit.http.HttpResponse;
 import com.github.t1.wunderbar.junit.http.HttpServer;
-import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
+import test.SomeProduct;
+import test.SomeProductId;
 
-import javax.ws.rs.WebApplicationException;
-import javax.ws.rs.core.MediaType;
 import java.net.URI;
+import java.nio.file.Path;
 
+import static com.github.t1.wunderbar.junit.assertions.WebApplicationExceptionAssert.WEB_APPLICATION_EXCEPTION;
+import static com.github.t1.wunderbar.junit.assertions.WunderBarBDDAssertions.then;
 import static javax.ws.rs.core.Response.Status.FORBIDDEN;
 import static javax.ws.rs.core.Response.Status.NOT_FOUND;
-import static org.assertj.core.api.Assertions.catchThrowableOfType;
-import static org.assertj.core.api.BDDAssertions.then;
+import static org.assertj.core.api.BDDAssertions.catchThrowable;
 
 @WunderBarApiConsumer(fileName = "target/system-wunder.jar")
+@Register({SomeProduct.class, SomeProductId.class})
 class ProductsGatewayST {
     /** this server would normally be a real server running somewhere */
-    private static final HttpServer SERVER = new HttpServer(ProductsGatewayST::handle);
-    private static final MediaType PROBLEM_DETAIL = MediaType.valueOf("application/problem+json;charset=utf-8");
+    private final HttpServer server = new HttpServer(this::handle);
 
-    static HttpResponse handle(HttpRequest request) {
+    HttpResponse handle(HttpRequest request) {
         var response = HttpResponse.builder();
-        switch (request.getUri().toString()) {
-            case "/rest/products/existing-product-id":
-                response.body("{\"id\":\"existing-product-id\", \"name\":\"some-product-name\"}");
-                break;
-            case "/rest/products/forbidden-product-id":
-                response.status(FORBIDDEN).contentType(PROBLEM_DETAIL).body(
-                    "{\n" +
-                    "    \"detail\": \"HTTP 403 Forbidden\",\n" +
-                    "    \"title\": \"ForbiddenException\",\n" +
-                    "    \"type\": \"urn:problem-type:forbidden\"\n" +
-                    "}\n");
-                break;
-            default:
-                response.status(NOT_FOUND).contentType(PROBLEM_DETAIL).body(
-                    "{\n" +
-                    "    \"detail\": \"HTTP 404 Not Found\",\n" +
-                    "    \"title\": \"NotFoundException\",\n" +
-                    "    \"type\": \"urn:problem-type:not-found\"\n" +
-                    "}\n");
+        var path = request.getUri().getPath();
+        then(path).startsWith("/rest/products/");
+        var id = Path.of(path).getFileName().toString();
+        if (id.equals(existing.getId())) {
+            response.body(existing);
+        } else if (id.equals(forbidden.getId())) {
+            response.status(FORBIDDEN)
+                .problemDetail("the product " + id + " is forbidden")
+                .problemTitle("ForbiddenException")
+                .problemType("urn:problem-type:forbidden");
+        } else {
+            response.status(NOT_FOUND)
+                .problemDetail("there is no product with the id " + id)
+                .problemTitle("NotFoundException")
+                .problemType("urn:problem-type:not-found");
         }
         return response.build();
     }
 
-    @AfterAll static void stop() {SERVER.stop();}
+    @AfterEach void stop() {server.stop();}
 
 
     @Service(endpoint = "{endpoint()}") ProductsRestClient products;
     @SystemUnderTest ProductsGateway gateway;
 
     @SuppressWarnings("unused")
-    static URI endpoint() {return SERVER.baseUri().resolve("/rest");}
+    URI endpoint() {return server.baseUri().resolve("/rest");}
 
     private static OrderItem item(String productId) {
         return OrderItem.builder().productId(productId).build();
     }
 
-    @Test void shouldGetProduct() {
-        var response = gateway.product(item("existing-product-id"));
+    @Some Product existing;
+    @Some Product forbidden;
 
-        then(response).usingRecursiveComparison().isEqualTo(
-            Product.builder().id("existing-product-id").name("some-product-name").build());
+    @Test void shouldGetProduct() {
+        var response = gateway.product(item(existing.getId()));
+
+        then(response).usingRecursiveComparison().isEqualTo(existing);
     }
 
-    @Test void shouldFailToGetUnknownProduct() {
-        var throwable = catchThrowableOfType(() -> gateway.product(item("unknown-product-id")), WebApplicationException.class);
+    @Test void shouldFailToGetUnknownProduct(@Some("product-id") String id) {
+        var throwable = catchThrowable(() -> gateway.product(item(id)));
 
-        then(throwable.getResponse().getStatusInfo()).isEqualTo(NOT_FOUND);
+        then(throwable).asInstanceOf(WEB_APPLICATION_EXCEPTION)
+            .hasStatus(NOT_FOUND)
+            .hasType("urn:problem-type:not-found")
+            .hasTitle("NotFoundException")
+            .hasDetail("there is no product with the id " + id);
     }
 
     @Test void shouldFailToGetForbiddenProduct() {
-        var throwable = catchThrowableOfType(() -> gateway.product(item("forbidden-product-id")), WebApplicationException.class);
+        var throwable = catchThrowable(() -> gateway.product(item(forbidden.getId())));
 
-        then(throwable.getResponse().getStatusInfo()).isEqualTo(FORBIDDEN);
+        then(throwable).asInstanceOf(WEB_APPLICATION_EXCEPTION)
+            .hasStatus(FORBIDDEN)
+            .hasType("urn:problem-type:forbidden")
+            .hasTitle("ForbiddenException")
+            .hasDetail("the product " + forbidden.getId() + " is forbidden");
     }
 }

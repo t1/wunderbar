@@ -65,7 +65,7 @@ public class Products {
     @RolesAllowed("Writer")
     @Mutation public @NonNull Product store(@NonNull Product product) {
         log.info("store({}) by {}", product, principal.getName());
-        if (product.id == null) product.id = "#" + nextId++;
+        if (product.id == null) product.id = "id-" + nextId++;
         PRODUCTS.put(product.id, product);
         log.info("-> {}", product);
         return product;

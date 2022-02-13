@@ -14,6 +14,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
 
 import java.lang.reflect.AnnotatedElement;
@@ -39,6 +40,16 @@ import static test.consumer.SomeGeneratorTest.CustomGenericGenerator;
 class SomeGeneratorTest {
     private static final int QUITE_SMALL_INT = SomeBasics.DEFAULT_START;
     private static final int QUITE_BIG_INT = Short.MAX_VALUE;
+
+    @Order(2) @Some int intField1;
+    @Order(1) @Some int intField2;
+    @Order(3) @Some int intField3;
+
+    @Test void shouldGenerateFieldsInOrder() {
+        then(intField2).isEqualTo(1000);
+        then(intField1).isEqualTo(1001);
+        then(intField3).isEqualTo(1002);
+    }
 
     @Test void shouldGenerateChar(@Some char i) {then(i).isBetween((char) QUITE_SMALL_INT, Character.MAX_VALUE);}
 
@@ -99,9 +110,14 @@ class SomeGeneratorTest {
     @Test void shouldGenerateCustomURL(@Some URI uri) {then(uri).hasToString("dummy-uri");}
 
     static class CustomURI extends SomeSingleTypeData<URI> {
-        @Override public URI some(Some some, Type type, AnnotatedElement location) {
-            return URI.create("dummy-uri");
-        }
+        @Override public URI some(Some some, Type type, AnnotatedElement location) {return URI.create("dummy-uri");}
+    }
+
+    @Register(CustomId.class)
+    @Test void shouldGenerateCustomId(@Some({"id", "unrelated"}) String id) {then(id).hasToString("custom-id");}
+
+    static class CustomId extends SomeSingleTypeData<@Some("id") String> {
+        @Override public String some(Some some, Type type, AnnotatedElement location) {return "custom-id";}
     }
 
     @Register(CustomInt.class)
@@ -141,11 +157,12 @@ class SomeGeneratorTest {
         then(generator.location(data)).isEqualTo(SomeGeneratorTest.class.getDeclaredMethod("shouldGenerateCustomData", CustomData.class, SomeGenerator.class).getParameters()[0]);
         then(generator.findSomeFor(data).value()).containsExactly("valid");
 
-        then(data).hasToString("SomeGeneratorTest.CustomData(foo=valid-data-string-01000, bar=SomeGeneratorTest.Custom(wrapped=1), " +
-                               "generic=SomeGeneratorTest.CustomGeneric(wrapped=string-01001))");
-
+        then(data.foo).startsWith("valid-data-string-");
+        then(data.bar).isEqualTo(new Custom(1));
+        then(data.gen).isEqualTo(new CustomGeneric<>(data.gen.wrapped));
+        then(generator.location(data.foo.substring("valid-data-".length()))).isEqualTo(CustomData.class.getDeclaredField("foo"));
         then(generator.location(new Custom(1))).isEqualTo(CustomData.class.getDeclaredField("bar"));
-        then(generator.location("string-01001")).isEqualTo(CustomGeneric.class.getDeclaredField("wrapped"));
+        then(generator.location(data.gen.wrapped)).isEqualTo(CustomGeneric.class.getDeclaredField("wrapped"));
     }
 
     @Test void shouldFailToGenerateNullValue(SomeGenerator generator) {
@@ -165,7 +182,7 @@ class SomeGeneratorTest {
     private static @Data @Builder class CustomData {
         String foo;
         Custom bar;
-        CustomGeneric<String> generic;
+        CustomGeneric<String> gen;
     }
 
     private static @Data @Builder class Custom {
@@ -187,7 +204,7 @@ class SomeGeneratorTest {
             return CustomData.builder()
                 .foo(tag + "-" + name(location) + "-" + generator.generate(CustomData.class, "foo"))
                 .bar(generator.generate(CustomData.class, "bar"))
-                .generic(generator.generate(CustomData.class, "generic"))
+                .gen(generator.generate(CustomData.class, "gen"))
                 .build();
         }
     }
@@ -219,9 +236,7 @@ class SomeGeneratorTest {
     }
 
     private static @Data @Builder class InfiniteLoop {
-        String foo;
-        int bar;
-        CustomGeneric<String> generic;
+        String dummy;
     }
 
     @RequiredArgsConstructor

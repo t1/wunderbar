@@ -4,46 +4,47 @@ import com.github.t1.wunderbar.demo.order.OrderItem;
 import com.github.t1.wunderbar.demo.order.Product;
 import com.github.t1.wunderbar.demo.order.ProductsResolver;
 import com.github.t1.wunderbar.demo.order.ProductsResolver.Products;
+import com.github.t1.wunderbar.junit.Register;
 import com.github.t1.wunderbar.junit.consumer.Service;
+import com.github.t1.wunderbar.junit.consumer.Some;
 import com.github.t1.wunderbar.junit.consumer.SystemUnderTest;
 import com.github.t1.wunderbar.junit.consumer.WunderBarApiConsumer;
 import io.smallrye.graphql.client.GraphQLClientException;
 import org.junit.jupiter.api.Test;
+import test.SomeProduct;
+import test.SomeProductId;
 
 import static com.github.t1.wunderbar.junit.consumer.WunderbarExpectationBuilder.given;
 import static org.assertj.core.api.Assertions.catchThrowableOfType;
 import static org.assertj.core.api.BDDAssertions.then;
 
 @WunderBarApiConsumer
+@Register({SomeProduct.class, SomeProductId.class})
 class ProductsResolverIT {
     @Service Products products;
     @SystemUnderTest ProductsResolver resolver;
 
-    @Test void shouldResolveProduct() {
-        var givenProduct = Product.builder().id("x").name("some-product-name").build();
-        given(products.product(givenProduct.getId())).returns(givenProduct);
+    @Test void shouldResolveProduct(@Some Product product) {
+        given(products.product(product.getId())).returns(product);
 
-        var resolvedProduct = resolver.product(item(givenProduct.getId()));
+        var resolvedProduct = resolver.product(item(product.getId()));
 
-        then(resolvedProduct).usingRecursiveComparison().isEqualTo(givenProduct);
+        then(resolvedProduct).usingRecursiveComparison().isEqualTo(product);
     }
 
-    @Test void shouldResolveTwoProducts() {
-        var givenProduct1 = Product.builder().id("x1").name("some-product-name 1").build();
-        var givenProduct2 = Product.builder().id("x2").name("some-product-name 2").build();
-        given(products.product(givenProduct1.getId())).returns(givenProduct1);
-        given(products.product(givenProduct2.getId())).returns(givenProduct2);
+    @Test void shouldResolveTwoProducts(@Some Product product1, @Some Product product2) {
+        given(products.product(product1.getId())).returns(product1);
+        given(products.product(product2.getId())).returns(product2);
 
-        var resolvedProduct1 = resolver.product(item(givenProduct1.getId()));
-        var resolvedProduct2 = resolver.product(item(givenProduct2.getId()));
+        var resolvedProduct1 = resolver.product(item(product1.getId()));
+        var resolvedProduct2 = resolver.product(item(product2.getId()));
 
-        then(resolvedProduct1).usingRecursiveComparison().isEqualTo(givenProduct1);
-        then(resolvedProduct2).usingRecursiveComparison().isEqualTo(givenProduct2);
+        then(resolvedProduct1).usingRecursiveComparison().isEqualTo(product1);
+        then(resolvedProduct2).usingRecursiveComparison().isEqualTo(product2);
     }
 
     /** before you mutate an existing object, make sure it exists in the unmodified state */
-    @Test void shouldUpdateExistingProductPrice() {
-        var product = Product.builder().id("p").name("some-product-name").price(15_99).build();
+    @Test void shouldUpdateExistingProductPrice(@Some Product product) {
         given(products.product(product.getId())).returns(product);
         given(products.update(new Product().withId(product.getId()).withPrice(12_99))).returns(product.withPrice(12_99));
 
@@ -55,31 +56,29 @@ class ProductsResolverIT {
         then(resolvedProduct).usingRecursiveComparison().isEqualTo(product.withPrice(12_99));
     }
 
-    @Test void shouldFailToResolveUnknownProduct() {
-        given(products.product("x")).willThrow(new ProductNotFoundException("x"));
+    @Test void shouldFailToResolveUnknownProduct(@Some("product-id") String id) {
+        given(products.product(id)).willThrow(new ProductNotFoundException(id));
 
-        var throwable = catchThrowableOfType(() -> resolver.product(item("x")), GraphQLClientException.class);
+        var throwable = catchThrowableOfType(() -> resolver.product(item(id)), GraphQLClientException.class);
 
         then(throwable.getErrors()).hasSize(1);
         var error = throwable.getErrors().get(0);
-        then(error.getMessage()).isEqualTo("product x not found");
+        then(error.getMessage()).isEqualTo("product " + id + " not found");
         then(error.getCode()).isEqualTo("product-not-found");
     }
 
-    @Test void shouldFailToResolveForbiddenProduct() {
-        given(products.product("x")).willThrow(new ProductForbiddenException("x"));
+    @Test void shouldFailToResolveForbiddenProduct(@Some("product-id") String id) {
+        given(products.product(id)).willThrow(new ProductForbiddenException(id));
 
-        var throwable = catchThrowableOfType(() -> resolver.product(item("x")), GraphQLClientException.class);
+        var throwable = catchThrowableOfType(() -> resolver.product(item(id)), GraphQLClientException.class);
 
         then(throwable.getErrors()).hasSize(1);
         var error = throwable.getErrors().get(0);
-        then(error.getMessage()).isEqualTo("product x is forbidden");
+        then(error.getMessage()).isEqualTo("product " + id + " is forbidden");
         then(error.getCode()).isEqualTo("product-forbidden");
     }
 
-    private OrderItem item(String x) {
-        return OrderItem.builder().productId(x).build();
-    }
+    private OrderItem item(String id) {return OrderItem.builder().productId(id).build();}
 
     private static class ProductNotFoundException extends RuntimeException {
         public ProductNotFoundException(String id) {super("product " + id + " not found");}
