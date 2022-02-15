@@ -28,7 +28,6 @@ import java.util.stream.Stream.Builder;
 
 import static com.github.t1.wunderbar.junit.JunitUtils.ORDER;
 import static com.github.t1.wunderbar.junit.provider.OnInteractionErrorMethodHandler.DEFAULT_ON_INTERACTION_ERROR;
-import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toUnmodifiableList;
 
 class WunderBarApiProviderJUnitExtension implements Extension, BeforeEachCallback, AfterEachCallback {
@@ -140,7 +139,7 @@ class WunderBarApiProviderJUnitExtension implements Extension, BeforeEachCallbac
     private class HttpBarExecutable implements Executable, Executions {
         @Getter @Setter private List<HttpInteraction> interactions;
         @Getter private final Test test;
-        private final List<HttpResponse> actualResponses = new ArrayList<>();
+        @Getter private final List<HttpResponse> actualResponses = new ArrayList<>();
 
         private final HttpClient httpClient = new HttpClient(baseUri());
 
@@ -165,10 +164,6 @@ class WunderBarApiProviderJUnitExtension implements Extension, BeforeEachCallbac
 
             System.out.println("=> cleanup " + test);
             afterDynamicTestMethods.forEach(consumer -> consumer.invoke(this));
-        }
-
-        @Override public List<ActualHttpResponse> getActualResponses() {
-            return actualResponses.stream().map(ActualHttpResponse::new).collect(toList());
         }
 
         private class ExecutionImpl implements Execution {
@@ -218,7 +213,7 @@ class WunderBarApiProviderJUnitExtension implements Extension, BeforeEachCallbac
             return getInteractions().stream().map(function).collect(toUnmodifiableList());
         }
 
-        List<ActualHttpResponse> getActualResponses();
+        List<HttpResponse> getActualResponses();
 
 
         void setInteractions(List<HttpInteraction> interactions);
@@ -229,6 +224,7 @@ class WunderBarApiProviderJUnitExtension implements Extension, BeforeEachCallbac
         HttpResponse getActual();
 
         void expect(Function<HttpInteraction, HttpInteraction> function);
+        @SuppressWarnings("DeprecatedIsStillUsed") @Deprecated
         void setActual(HttpResponse actual);
     }
 }

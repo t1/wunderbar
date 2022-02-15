@@ -9,6 +9,7 @@ import com.github.t1.wunderbar.junit.provider.WunderBarApiProviderJUnitExtension
 import lombok.RequiredArgsConstructor;
 
 import java.lang.reflect.Method;
+import java.lang.reflect.Parameter;
 import java.lang.reflect.Type;
 
 @RequiredArgsConstructor
@@ -24,15 +25,13 @@ abstract class AbstractDynamicTestMethodHandler {
 
     private Object[] args(Executions executions) {
         var args = new Object[method.getParameterCount()];
-        for (int i = 0; i < args.length; i++) {
-            var parameter = method.getParameters()[i];
-            var typeName = parameter.getParameterizedType().getTypeName();
-            args[i] = arg(executions, typeName);
-        }
+        for (int i = 0; i < args.length; i++)
+            args[i] = arg(executions, method.getParameters()[i]);
         return args;
     }
 
-    protected Object arg(Executions executions, String typeName) {
+    protected Object arg(Executions executions, Parameter parameter) {
+        var typeName = parameter.getParameterizedType().getTypeName();
         if (typeName.equals("java.util.List<" + HttpInteraction.class.getName() + ">"))
             return executions.getInteractions();
         else if (typeName.equals("java.util.List<" + HttpRequest.class.getName() + ">"))

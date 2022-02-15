@@ -8,6 +8,7 @@ import org.assertj.core.api.InstanceOfAssertFactory;
 
 import javax.json.Json;
 import javax.json.JsonObject;
+import javax.json.JsonPointer;
 import javax.json.JsonStructure;
 import javax.json.JsonValue;
 import javax.json.JsonValue.ValueType;
@@ -70,6 +71,15 @@ public class JsonValueAssert<SELF extends JsonValueAssert<SELF, ACTUAL>, ACTUAL 
         public JsonObjectAssert(ACTUAL actual) {this(actual, JsonObjectAssert.class);}
 
         protected JsonObjectAssert(ACTUAL actual, Class<?> selfType) {super(actual, selfType);}
+
+        public JsonObjectAssert<SELF, ACTUAL> has(String pointer, String expected) {
+            then(actual).at(pointer).isJsonString().isEqualTo(expected);
+            return this;
+        }
+
+        public JsonValueAssert<?, ?> at(String pointer) {return at(Json.createPointer(pointer));}
+
+        public JsonValueAssert<?, ?> at(JsonPointer pointer) {return then(pointer.getValue(actual));}
 
         public JsonObjectAssert<SELF, ACTUAL> hasString(String name, String expected) {
             hasField(name, STRING);

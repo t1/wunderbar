@@ -4,7 +4,7 @@ import com.github.t1.wunderbar.common.mock.MockService;
 import com.github.t1.wunderbar.junit.http.HttpInteraction;
 import com.github.t1.wunderbar.junit.http.HttpRequest;
 import com.github.t1.wunderbar.junit.http.HttpResponse;
-import com.github.t1.wunderbar.junit.provider.ActualHttpResponse;
+import com.github.t1.wunderbar.junit.provider.Actual;
 import com.github.t1.wunderbar.junit.provider.AfterDynamicTest;
 import com.github.t1.wunderbar.junit.provider.AfterInteraction;
 import com.github.t1.wunderbar.junit.provider.BeforeDynamicTest;
@@ -50,10 +50,11 @@ class SetupTeardownAT {
     static List<String> called = new ArrayList<>();
 
     @BeforeAll static void beforeAll() {
+        called.clear();
         expectations.add(
             HttpRequest.builder().uri("/4").build(),
             3,
-            HttpResponse.builder().status(405).with("status", "UP").build());
+            HttpResponse.builder().status(406).with("status", "UP").build());
     }
 
 
@@ -62,7 +63,7 @@ class SetupTeardownAT {
 
     @Order(1)
     @BeforeDynamicTest void beforeDynamicTest(WunderBarExecutions executions) {
-        called.add("---------------------------------------- " + executions);
+        called("---------------------------------------- " + executions);
     }
 
     @Order(2)
@@ -154,9 +155,9 @@ class SetupTeardownAT {
     }
 
     @Order(4)
-    @AfterInteraction ActualHttpResponse afterInteraction(ActualHttpResponse actual, WunderBarExecution execution) {
-        called(AfterInteraction.class, "actual", actual.getValue().getStatusCode(), execution);
-        return actual.map(this::incStatus);
+    @AfterInteraction HttpResponse afterInteraction(HttpResponse expected, @Actual HttpResponse actual, WunderBarExecution execution) {
+        called(AfterInteraction.class, "expected", expected.getStatusCode(), "actual", actual.getStatusCode(), execution);
+        return expected.withStatus(actual.getStatus());
     }
 
 
@@ -164,15 +165,15 @@ class SetupTeardownAT {
     @OnInteractionError void onInteractionError(
         HttpInteraction interaction,
         HttpRequest request,
-        HttpResponse response,
-        ActualHttpResponse actual,
+        HttpResponse expected,
+        @Actual HttpResponse actual,
         BDDSoftAssertions softly,
         WunderBarExecution execution) {
         called(OnInteractionError.class,
             "interaction", interaction.getRequest().getUri(), interaction.getResponse().getStatusCode(),
             "request", request.getUri(),
-            "response", response.getStatusCode(),
-            "actual", actual.getValue().getStatusCode(),
+            "expected", expected.getStatusCode(),
+            "actual", actual.getStatusCode(),
             "errors", softly.assertionErrorsCollected(),
             execution);
         softly.assertAll();
@@ -195,9 +196,8 @@ class SetupTeardownAT {
     }
 
     @Order(4)
-    @AfterDynamicTest void afterDynamicTestWithActuals(List<ActualHttpResponse> actuals, WunderBarExecutions executions) {
-        called(AfterDynamicTest.class, "actuals", responseStatus(actuals.stream().map(ActualHttpResponse::getValue).collect(toList())),
-            executions.getDisplayName());
+    @AfterDynamicTest void afterDynamicTestWithActuals(@Actual List<HttpResponse> actuals, WunderBarExecutions executions) {
+        called(AfterDynamicTest.class, "actuals", responseStatus(actuals), executions.getDisplayName());
     }
 
     @Order(5)
@@ -205,8 +205,8 @@ class SetupTeardownAT {
 
     @Order(6)
     @AfterDynamicTest void afterDynamicTest(WunderBarExecutions executions) {
-        called.add("---------------------------------------- done " + executions);
-        called.add("");
+        called("---------------------------------------- done " + executions);
+        called("");
     }
 
 
@@ -238,6 +238,10 @@ class SetupTeardownAT {
 
     private void called(Class<? extends Annotation> annotation, Object... args) {
         var value = (annotation.getSimpleName() + " " + Stream.of(args).map(Object::toString).collect(joining(":"))).trim();
+        called(value);
+    }
+
+    private void called(String value) {
         // System.out.println("# " + value);
         called.add(value);
     }
@@ -272,19 +276,19 @@ class SetupTeardownAT {
             "BeforeDynamicTest interactions:[/1:401, /99:200]:shouldGetHealth",
             "BeforeDynamicTest requests:[/2, /100]:shouldGetHealth",
             "BeforeDynamicTest responses:[402, 201]:shouldGetHealth",
-
+            // => execute 1 of 1
             "BeforeInteraction",
             "BeforeInteraction interaction:/3:403:shouldGetHealth[1/1]",
             "BeforeInteraction request:/4:shouldGetHealth",
             "BeforeInteraction response:404:shouldGetHealth",
-
+            // -- actual request 1/1:
             "AfterInteraction",
             "AfterInteraction interaction:/5:405:shouldGetHealth[1/1]",
             "AfterInteraction interaction:/4:406:shouldGetHealth[1/1]",
-            "AfterInteraction actual:405:shouldGetHealth[1/1]",
+            "AfterInteraction expected:406:actual:406:shouldGetHealth[1/1]",
 
-            "OnInteractionError interaction:/4:406:request:/4:response:406:actual:406:errors:[]:shouldGetHealth[1/1]",
-
+            "OnInteractionError interaction:/4:406:request:/4:expected:406:actual:406:errors:[]:shouldGetHealth[1/1]",
+            // => cleanup shouldGetHealth
             "AfterDynamicTest interactions:[/2:402]:shouldGetHealth [with 1 tests]",
             "AfterDynamicTest requests:[/2]:shouldGetHealth",
             "AfterDynamicTest responses:[402]:shouldGetHealth",
@@ -308,9 +312,9 @@ class SetupTeardownAT {
             "AfterInteraction",
             "AfterInteraction interaction:/5:405:shouldGetHealthTwice[1/2]",
             "AfterInteraction interaction:/4:406:shouldGetHealthTwice[1/2]",
-            "AfterInteraction actual:405:shouldGetHealthTwice[1/2]",
+            "AfterInteraction expected:406:actual:406:shouldGetHealthTwice[1/2]",
 
-            "OnInteractionError interaction:/4:406:request:/4:response:406:actual:406:errors:[]:shouldGetHealthTwice[1/2]",
+            "OnInteractionError interaction:/4:406:request:/4:expected:406:actual:406:errors:[]:shouldGetHealthTwice[1/2]",
 
             // 2/2
             "BeforeInteraction",
@@ -321,9 +325,9 @@ class SetupTeardownAT {
             "AfterInteraction",
             "AfterInteraction interaction:/5:405:shouldGetHealthTwice[2/2]",
             "AfterInteraction interaction:/4:406:shouldGetHealthTwice[2/2]",
-            "AfterInteraction actual:405:shouldGetHealthTwice[2/2]",
+            "AfterInteraction expected:406:actual:406:shouldGetHealthTwice[2/2]",
 
-            "OnInteractionError interaction:/4:406:request:/4:response:406:actual:406:errors:[]:shouldGetHealthTwice[2/2]",
+            "OnInteractionError interaction:/4:406:request:/4:expected:406:actual:406:errors:[]:shouldGetHealthTwice[2/2]",
 
             "AfterDynamicTest interactions:[/2:402, /2:402]:shouldGetHealthTwice [with 2 tests]",
             "AfterDynamicTest requests:[/2, /2]:shouldGetHealthTwice",

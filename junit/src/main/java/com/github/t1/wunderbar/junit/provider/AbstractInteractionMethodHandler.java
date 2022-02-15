@@ -9,6 +9,7 @@ import com.github.t1.wunderbar.junit.provider.WunderBarApiProviderJUnitExtension
 import lombok.RequiredArgsConstructor;
 
 import java.lang.reflect.Method;
+import java.lang.reflect.Parameter;
 
 @RequiredArgsConstructor
 abstract class AbstractInteractionMethodHandler {
@@ -24,13 +25,14 @@ abstract class AbstractInteractionMethodHandler {
     private Object[] args(Execution execution) {
         var args = new Object[method.getParameterCount()];
         for (int i = 0; i < args.length; i++) {
-            Class<?> type = method.getParameters()[i].getType();
-            args[i] = arg(execution, type);
+            Parameter parameter = method.getParameters()[i];
+            args[i] = arg(execution, parameter);
         }
         return args;
     }
 
-    protected Object arg(Execution execution, Class<?> type) {
+    protected Object arg(Execution execution, Parameter parameter) {
+        Class<?> type = parameter.getType();
         if (type.equals(HttpInteraction.class))
             return execution.getExpected();
         else if (type.equals(HttpRequest.class))

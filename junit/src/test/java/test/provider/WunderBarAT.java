@@ -3,7 +3,7 @@ package test.provider;
 import com.github.t1.wunderbar.junit.http.HttpRequest;
 import com.github.t1.wunderbar.junit.http.HttpResponse;
 import com.github.t1.wunderbar.junit.http.ProblemDetails;
-import com.github.t1.wunderbar.junit.provider.ActualHttpResponse;
+import com.github.t1.wunderbar.junit.provider.Actual;
 import com.github.t1.wunderbar.junit.provider.AfterInteraction;
 import com.github.t1.wunderbar.junit.provider.BeforeInteraction;
 import com.github.t1.wunderbar.junit.provider.WunderBarApiProvider;
@@ -28,7 +28,8 @@ import static org.junit.jupiter.api.Assertions.fail;
  * <li>The files request the URI with <code>expected-product-id</code> and expect that id in the response.
  * <li>We replace the URI with <code>requested-product-id</code> in {@link #prepareRequest(HttpRequest)}.
  * <li>We stub a response to return <code>generated-product-id</code> in {@link #prepareRequest(HttpRequest)}.
- * <li>We replace the <code>generated-product-id</code> back to <code>expected-product-id</code> in {@link #adjustResponse(HttpRequest, ActualHttpResponse)}.
+ * <li>We replace the <code>expected-product-id</code> in the expected response with the <code>generated-product-id</code>
+ * in {@link #adjustResponse(HttpRequest, HttpResponse, HttpResponse)}.
  * </ol>
  */
 @WunderBarApiProvider(baseUri = "{endpoint()}")
@@ -62,13 +63,12 @@ class WunderBarAT {
         return request;
     }
 
-    @AfterInteraction ActualHttpResponse adjustResponse(HttpRequest request, ActualHttpResponse actual) {
+    @AfterInteraction HttpResponse adjustResponse(HttpRequest request, HttpResponse expected, @Actual HttpResponse actual) {
         var productId = request.matchUri("/rest/products/(.*)").group(1);
         if (productId.equals("requested-product-id")) {
-            then(actual.getValue()).hasJson("id", "generated-product-id");
-            return actual.map(response -> response.patch(patch -> patch
-                .test("/id", "generated-product-id") // double check just for fun
-                .replace("/id", "existing-product-id")));
+            then(expected).has("/id", "existing-product-id");
+            then(actual).has("/id", "generated-product-id");
+            return expected.patch(patch -> patch.replace("/id", actual.get("/id")));
         } else return actual;
     }
 

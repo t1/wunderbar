@@ -38,4 +38,9 @@ public class HttpResponseAssert<SELF extends HttpResponseAssert<SELF, ACTUAL>, A
         isJsonObject().hasString(name, expected);
         return this;
     }
+
+    public HttpResponseAssert<SELF, ACTUAL> has(String pointer, String expected) {
+        isJsonObject().has(pointer, expected);
+        return this;
+    }
 }
