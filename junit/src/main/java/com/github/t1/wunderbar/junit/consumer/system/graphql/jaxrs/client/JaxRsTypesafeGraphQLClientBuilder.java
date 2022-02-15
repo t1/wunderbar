@@ -51,6 +51,10 @@ public class JaxRsTypesafeGraphQLClientBuilder implements TypesafeGraphQLClientB
         throw new UnsupportedOperationException();
     }
 
+    @Override public TypesafeGraphQLClientBuilder subscriptionInitializationTimeout(Integer integer) {
+        throw new UnsupportedOperationException();
+    }
+
     public TypesafeGraphQLClientBuilder register(Object component) {
         client().register(component);
         return this;
