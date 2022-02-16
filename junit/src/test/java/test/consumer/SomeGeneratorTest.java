@@ -59,22 +59,45 @@ class SomeGeneratorTest {
     @Some("value=3") Custom custom;
 
     @Test void shouldGenerateFieldsInOrder() {
-        then(intField2).isEqualTo(1000);
-        then(intField1).isEqualTo(1001);
-        then(intField3).isEqualTo(1002);
+        then(intField2).isEqualTo(100);
+        then(intField1).isEqualTo(101);
+        then(intField3).isEqualTo(102);
     }
 
     @Test void shouldGenerateTaggedField() {
         then(custom).isEqualTo(new Custom(3));
     }
 
+    @Test void shouldGeneratePrimitiveByte(@Some byte i) {then(i).isBetween((byte) QUITE_SMALL_INT, Byte.MAX_VALUE);}
+
+    @Test void shouldGenerateByte(@Some Byte i) {then(i).isBetween((byte) QUITE_SMALL_INT, Byte.MAX_VALUE);}
+
+    @Test void shouldFailToGenerateLargeByte(SomeGenerator gen) {
+        SomeBasics.reset(Byte.MAX_VALUE);
+        gen.generate(byte.class);
+
+        var throwable = catchThrowable(() -> gen.generate(byte.class));
+
+        then(throwable).isInstanceOf(ArithmeticException.class)
+            .hasMessageContaining("byte overflow");
+    }
+
     @Test void shouldGenerateChar(@Some char i) {then(i).isBetween((char) QUITE_SMALL_INT, Character.MAX_VALUE);}
 
     @Test void shouldGenerateCharacter(@Some Character i) {then(i).isBetween((char) QUITE_SMALL_INT, Character.MAX_VALUE);}
 
+    @Test void shouldFailToGenerateLargeChar(SomeGenerator gen) {
+        SomeBasics.reset(Character.MAX_VALUE);
+
+        var throwable = catchThrowable(() -> gen.generate(char.class));
+
+        then(throwable).isInstanceOf(IllegalStateException.class)
+            .hasMessageContaining("too many values generated");
+    }
+
     @Test void shouldGenerateShort(@Some short i) {then(i).isBetween((short) QUITE_SMALL_INT, (short) QUITE_BIG_INT);}
 
-    @Test void shouldFailToProvideLargeShort(SomeGenerator gen) {
+    @Test void shouldFailToGenerateLargeShort(SomeGenerator gen) {
         SomeBasics.reset(Integer.MAX_VALUE - 100);
 
         var throwable = catchThrowable(() -> gen.generate(short.class));
@@ -90,7 +113,7 @@ class SomeGeneratorTest {
             then(i).isBetween(QUITE_SMALL_INT, QUITE_BIG_INT));
     }
 
-    @Test void shouldFailToProvideLargeInt(SomeGenerator gen) {
+    @Test void shouldFailToGenerateLargeInt(SomeGenerator gen) {
         SomeBasics.reset(Integer.MAX_VALUE - 100);
 
         var throwable = catchThrowable(() -> gen.generate(int.class));
@@ -178,7 +201,7 @@ class SomeGeneratorTest {
     @Register(CustomInt.class)
     @Test void shouldGenerateCustomInt(@Some int i1, @Some Integer i2) {
         then(i1).isEqualTo(-100);
-        then(i2).isEqualTo(1000);
+        then(i2).isEqualTo(100);
     }
 
     static class CustomInt implements SomeData {
@@ -191,9 +214,9 @@ class SomeGeneratorTest {
     }
 
     @Nested class WithCustomStart {
-        @BeforeEach void initCounter() {SomeBasics.reset(100);}
+        @BeforeEach void initCounter() {SomeBasics.reset(200);}
 
-        @Test void shouldGenerateLowInt(@Some int custom) {then(custom).isEqualTo(100);}
+        @Test void shouldGenerateLowInt(@Some int custom) {then(custom).isEqualTo(200);}
     }
 
     @Register(NestedGenerator.class)

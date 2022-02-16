@@ -88,7 +88,7 @@ class WunderBarApiConsumerJUnitExtension implements Extension, BeforeEachCallbac
         }
 
         private <T> T generate(Some some, Type type, AnnotatedElement location, SomeData generator) {
-            if (++depth > 1000) throw new WunderBarException("it seems to be an infinite loop when generating " + type);
+            if (++depth > 100) throw new WunderBarException("it seems to be an infinite loop when generating " + type);
             try {
                 return generator.some(some, type, location);
             } finally {

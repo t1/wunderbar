@@ -28,13 +28,17 @@ import static java.time.ZoneOffset.UTC;
 
 /**
  * Generates random values, but tries to keep them small, positive, and unique, so they are as easy to handle as possible.
- * The default starting point is 1000, so the generated values won't interfere with constants in your code.
- * These prerequisites are not achievable for booleans and bytes, as they would overflow too fast.
+ * These prerequisites are not achievable for booleans, obviously.
+ * Strings, etc., also contain a numeric value to make them unique.
+ * The default starting point is 100, so you can use smaller constants in your code without interfering with the generated
+ * values. If you need bigger constants, you can change the starting point by calling {@link #reset(int)},
+ * e.g. in a {@link org.junit.jupiter.api.BeforeEach} method.
  * <p>
- * You can change the starting point by calling {@link #reset(int)}, e.g. in a {@link org.junit.jupiter.api.BeforeEach} method.
+ * Note that the <code>some...</code> methods are public, but the `@Some` annotation comes with superpowers:
+ * automatic logging, reset for every test, and most often a location that you can look up.
  */
 public class SomeBasics implements SomeData {
-    public static final int DEFAULT_START = 1000;
+    public static final int DEFAULT_START = 100;
     public static final Instant START_INSTANT = ZonedDateTime.of(2000, 1, 1, 0, 0, 0, 0, UTC).toInstant();
 
     private static int nextInt;
@@ -57,6 +61,7 @@ public class SomeBasics implements SomeData {
 
     @SuppressWarnings("unchecked")
     private <T> Supplier<T> generator(Some some, Type type, AnnotatedElement location) {
+        if (byte.class.equals(type) || Byte.class.equals(type)) return () -> (T) (Byte) someByte();
         if (char.class.equals(type) || Character.class.equals(type)) return () -> (T) (Character) someChar();
         if (short.class.equals(type) || Short.class.equals(type)) return () -> (T) (Short) someShort();
         if (int.class.equals(type) || Integer.class.equals(type)) return () -> (T) (Integer) someInt();
@@ -85,49 +90,55 @@ public class SomeBasics implements SomeData {
         return null;
     }
 
-    private static char someChar() {return Character.toChars(someInt())[0];}
+    static byte someByte() {
+        var value = someInt();
+        if ((byte) value != value) throw new ArithmeticException("byte overflow");
+        return (byte) value;
+    }
 
-    private static short someShort() {return (short) someInt();}
+    static char someChar() {return Character.toChars(someInt())[0];}
 
-    private static int someInt() {
+    static short someShort() {return (short) someInt();}
+
+    static int someInt() {
         if (nextInt >= Short.MAX_VALUE)
             throw new IllegalStateException("too many values generated (we want to prevent a overflow causing non-unique value)");
         return nextInt++;
     }
 
-    private static long someLong() {return someInt();}
+    static long someLong() {return someInt();}
 
-    private static float someFloat() {return Float.parseFloat(someInt() + ".1");}
+    static float someFloat() {return Float.parseFloat(someInt() + ".1");}
 
-    private static double someDouble() {return Double.parseDouble(someInt() + ".2");}
+    static double someDouble() {return Double.parseDouble(someInt() + ".2");}
 
-    private static String someString(Some some, AnnotatedElement location) {
+    static String someString(Some some, AnnotatedElement location) {
         String tags = (some == null || some.value().length == 0) ? "" : (String.join("-", some.value()) + "-");
         return String.format("%s%s-%05d", tags, name(location), someInt());
     }
 
-    private static UUID someUUID() {return UUID.fromString(String.format("00000000-0000-0000-0000-%012d", someInt()));}
+    static UUID someUUID() {return UUID.fromString(String.format("00000000-0000-0000-0000-%012d", someInt()));}
 
-    private static URI someURI() {return URI.create(String.format("https://example.nowhere/path-%07d", someInt()));}
+    static URI someURI() {return URI.create(String.format("https://example.nowhere/path-%07d", someInt()));}
 
     @SneakyThrows(MalformedURLException.class)
-    private static URL someURL() {return someURI().toURL();}
+    static URL someURL() {return someURI().toURL();}
 
-    private static Instant someInstant() {return START_INSTANT.plusSeconds(someInt());}
+    static Instant someInstant() {return START_INSTANT.plusSeconds(someInt());}
 
-    private static LocalDate someLocalDate() {return LocalDate.ofInstant(START_INSTANT, ZoneId.systemDefault()).plusDays(someInt());}
+    static LocalDate someLocalDate() {return LocalDate.ofInstant(START_INSTANT, ZoneId.systemDefault()).plusDays(someInt());}
 
-    private static LocalDateTime someLocalDateTime() {return LocalDateTime.ofInstant(START_INSTANT, ZoneId.systemDefault()).plusHours(someInt());}
+    static LocalDateTime someLocalDateTime() {return LocalDateTime.ofInstant(START_INSTANT, ZoneId.systemDefault()).plusHours(someInt());}
 
-    private static ZonedDateTime someZonedDateTime() {return ZonedDateTime.ofInstant(START_INSTANT, ZoneId.systemDefault()).plusMinutes(someInt());}
+    static ZonedDateTime someZonedDateTime() {return ZonedDateTime.ofInstant(START_INSTANT, ZoneId.systemDefault()).plusMinutes(someInt());}
 
-    private static OffsetDateTime someOffsetDateTime() {return OffsetDateTime.ofInstant(START_INSTANT, ZoneId.systemDefault()).plusDays(someInt());}
+    static OffsetDateTime someOffsetDateTime() {return OffsetDateTime.ofInstant(START_INSTANT, ZoneId.systemDefault()).plusDays(someInt());}
 
-    private static LocalTime someLocalTime() {return LocalTime.ofInstant(START_INSTANT, ZoneId.systemDefault()).plusSeconds(someInt());}
+    static LocalTime someLocalTime() {return LocalTime.ofInstant(START_INSTANT, ZoneId.systemDefault()).plusSeconds(someInt());}
 
-    private static OffsetTime someOffsetTime() {return OffsetTime.ofInstant(START_INSTANT, ZoneId.systemDefault()).plusSeconds(someInt());}
+    static OffsetTime someOffsetTime() {return OffsetTime.ofInstant(START_INSTANT, ZoneId.systemDefault()).plusSeconds(someInt());}
 
-    private static Duration someDuration() {return Duration.ofSeconds(someInt());}
+    static Duration someDuration() {return Duration.ofSeconds(someInt());}
 
-    private static Period somePeriod() {return Period.ofDays(someInt());}
+    static Period somePeriod() {return Period.ofDays(someInt());}
 }
