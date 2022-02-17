@@ -18,22 +18,27 @@ public interface SomeGenerator {
      * @param type     The type to be generated; sometimes a {@link java.lang.reflect.ParameterizedType}
      * @param location The annotated field or parameter; sometimes <code>null</code>
      */
-    Object generate(Some some, Type type, AnnotatedElement location);
+    <T> T generate(Some some, Type type, AnnotatedElement location);
 
     /**
      * Convenience overload with a default {@link Some}, a <code>null</code> location,
      * and a generic return type derived from the <code>Class&lt;T&gt;</code> type argument.
      * This is what most callers will need.
      */
-    @SuppressWarnings("unchecked")
-    default <T> T generate(Class<T> type) {return (T) generate(Some.LITERAL, type, null);}
+    default <T> T generate(Class<T> type) {return generate(Some.LITERAL, type, null);}
+
+    /**
+     * Convenience overload with a <code>Class&lt;T&gt;</code> type.
+     */
+    default <T> T generate(Some some, Class<T> type, AnnotatedElement location) {
+        return generate(some, (Type) type, location);
+    }
 
     /** Convenience overload for a field in a container class. */
-    @SuppressWarnings("unchecked")
     @SneakyThrows(ReflectiveOperationException.class)
     default <T> T generate(Class<?> container, String fieldName) {
         Field field = container.getDeclaredField(fieldName);
-        return (T) generate(field.getAnnotatedType().getAnnotation(Some.class), field.getGenericType(), field);
+        return generate(field.getAnnotatedType().getAnnotation(Some.class), field.getGenericType(), field);
     }
 
     /**

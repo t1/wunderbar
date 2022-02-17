@@ -76,6 +76,8 @@ public class HttpUtils {
         throw new UnsupportedOperationException("unsupported content-type " + contentType);
     }
 
+    public static String toJson(Object object) {return formatJson(readJson(object));}
+
     public static JsonValue readJson(Object object) {return readJson(JSONB.toJson(object));}
 
     public static JsonValue readJson(String json) {

@@ -44,6 +44,7 @@ class OnInteractionErrorMethodHandler {
         if (result != null) throw new WunderBarException("unexpected return type " + result.getClass()); // TODO test
     }
 
+    @SuppressWarnings("removal")
     private Object[] args(OnInteractionErrorParams params) {
         var args = new Object[method.getParameterCount()];
         for (int i = 0; i < args.length; i++) {

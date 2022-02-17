@@ -1,10 +1,11 @@
 package com.github.t1.wunderbar.junit.consumer;
 
+import com.github.t1.wunderbar.common.Internal;
 import com.github.t1.wunderbar.junit.Register;
 import com.github.t1.wunderbar.junit.WunderBarException;
 import io.smallrye.graphql.client.typesafe.api.GraphQLClientApi;
-import lombok.AllArgsConstructor;
 import lombok.SneakyThrows;
+import lombok.Value;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.extension.AfterEachCallback;
 import org.junit.jupiter.api.extension.BeforeEachCallback;
@@ -15,6 +16,7 @@ import org.junit.jupiter.api.extension.ParameterContext;
 import org.junit.jupiter.api.extension.ParameterResolutionException;
 import org.junit.jupiter.api.extension.ParameterResolver;
 
+import javax.json.bind.annotation.JsonbTypeSerializer;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.AnnotatedElement;
 import java.lang.reflect.Constructor;
@@ -57,6 +59,7 @@ import static org.junit.jupiter.api.extension.ExtensionContext.Namespace.GLOBAL;
 
 @Slf4j
 class WunderBarApiConsumerJUnitExtension implements Extension, BeforeEachCallback, AfterEachCallback, ParameterResolver {
+    /** We need to access this instance from the static methods in the {@link WunderbarExpectationBuilder} */
     static WunderBarApiConsumerJUnitExtension INSTANCE;
     private static boolean initialized = false;
     static final Map<String, BarWriter> BAR_WRITERS = new LinkedHashMap<>();
@@ -76,14 +79,15 @@ class WunderBarApiConsumerJUnitExtension implements Extension, BeforeEachCallbac
     private final SomeGenerator someGenerator = new SomeGenerator() {
         private int depth = 0;
 
-        @Override public Object generate(Some some, Type type, AnnotatedElement location) {
+        @Override public <T> T generate(Some some, Type type, AnnotatedElement location) {
             var generator = dataGenerators.stream()
                 .filter(gen -> gen.canGenerate(some, type, location))
                 .findFirst().orElseThrow(() -> new WunderBarException("no generator registered for " + type + " at " + location));
-            var value = generate(some, type, location, generator);
+            T value = generate(some, type, location, generator);
             if (value == null) throw new WunderBarException("the generator generated a null value: " + generator);
-            log.debug("generated {}{}", value, info(location));
-            generatedData.add(new GeneratedData(some, location, value));
+            var generatedData = new GeneratedData(some, location, value);
+            WunderBarApiConsumerJUnitExtension.this.generatedData.add(generatedData);
+            log.debug("generated {} {}", value, generatedData.getLocation());
             return value;
         }
 
@@ -96,36 +100,42 @@ class WunderBarApiConsumerJUnitExtension implements Extension, BeforeEachCallbac
             }
         }
 
-        private String info(AnnotatedElement location) {
-            if (location == null) return "";
-            return " for " + location.getClass().getSimpleName().toLowerCase(ROOT) + " " + name(location) + container(location);
-        }
-
-        private String container(AnnotatedElement location) {
-            if (location instanceof Field) return " in class " + ((Field) location).getDeclaringClass().getSimpleName();
-            if (location instanceof Parameter) {
-                var executable = ((Parameter) location).getDeclaringExecutable();
-                return " of method " + executable.getDeclaringClass().getSimpleName() + "#" + executable.getName();
-            }
-            return "";
-        }
-
-
         @Override public AnnotatedElement location(Object value) {return find(value).location;}
 
         @Override public Some findSomeFor(Object value) {return find(value).some;}
 
         private GeneratedData find(Object value) {
-            return generatedData.stream().filter(item -> item.value.equals(value)).findFirst()
+            return GeneratedData.find(generatedData, value)
                 .orElseThrow(() -> new WunderBarException("this value was not generated via the WunderBar @Some annotation: " + value));
         }
     };
 
-    @AllArgsConstructor
-    private static class GeneratedData {
-        private final Some some;
-        private final AnnotatedElement location;
-        private final Object value;
+    public static @Internal @Value class GeneratedData {
+        static Optional<GeneratedData> find(List<GeneratedData> list, Object value) {
+            return list.stream().filter(item -> item.value.equals(value)).findFirst();
+        }
+
+        @JsonbTypeSerializer(JsonbSomeSerializer.class)
+        Some some;
+        AnnotatedElement location;
+        Object value;
+
+        @SuppressWarnings("unused") // for json
+        public String getType() {return value.getClass().getName();}
+
+        public String getLocation() {
+            if (location == null) return "";
+            return location.getClass().getSimpleName().toLowerCase(ROOT) + " [" + name(location) + "] @" + container(location);
+        }
+
+        private static String container(AnnotatedElement location) {
+            if (location instanceof Field) return "class " + ((Field) location).getDeclaringClass().getSimpleName();
+            if (location instanceof Parameter) {
+                var executable = ((Parameter) location).getDeclaringExecutable();
+                return "method " + executable.getDeclaringClass().getSimpleName() + "#" + executable.getName();
+            }
+            return "";
+        }
 
         @Override public String toString() {return value + " -> " + some + ":" + location;}
     }
@@ -189,6 +199,7 @@ class WunderBarApiConsumerJUnitExtension implements Extension, BeforeEachCallbac
         log.info("create bar [{}] in {}", archiveComment, fileName);
         var writer = BarWriter.to(fileName);
         writer.setComment(archiveComment);
+        writer.setGeneratedData(generatedData);
         return writer;
     }
 
