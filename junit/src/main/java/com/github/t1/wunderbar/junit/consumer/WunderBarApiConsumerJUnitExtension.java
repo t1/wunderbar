@@ -74,7 +74,7 @@ class WunderBarApiConsumerJUnitExtension implements Extension, BeforeEachCallbac
     private Instant start;
     private final List<Proxy<?>> proxies = new ArrayList<>();
     private final List<SomeData> dataGenerators = new ArrayList<>();
-    private final List<GenerationPoint> generationPoints = new ArrayList<>();
+    private final List<GeneratedDataPoint> generatedDataPoints = new ArrayList<>();
 
     private final SomeGenerator someGenerator = new SomeGenerator() {
         private int depth = 0;
@@ -86,12 +86,12 @@ class WunderBarApiConsumerJUnitExtension implements Extension, BeforeEachCallbac
             T value = generate(some, type, location, generator);
             if (value == null) throw new WunderBarException(
                 "[" + generator + "] generated a null value" + ((location == null) ? "" : " for " + location));
-            GenerationPoint.find(generationPoints, value).ifPresent(data -> {
+            GeneratedDataPoint.find(generatedDataPoints, value).ifPresent(data -> {
                 throw new WunderBarException("[" + generator + "] generated a non-unique value for " + location + ". There's already " + data);
             });
-            var generationPoint = new GenerationPoint(some, location, value);
-            generationPoints.add(generationPoint);
-            log.debug("generated {} {}", value, generationPoint.getLocation());
+            var generatedDataPoint = new GeneratedDataPoint(some, location, value);
+            generatedDataPoints.add(generatedDataPoint);
+            log.debug("generated {} {}", value, generatedDataPoint.getLocation());
             return value;
         }
 
@@ -108,14 +108,14 @@ class WunderBarApiConsumerJUnitExtension implements Extension, BeforeEachCallbac
 
         @Override public Some findSomeFor(Object value) {return find(value).some;}
 
-        private GenerationPoint find(Object value) {
-            return GenerationPoint.find(generationPoints, value)
+        private GeneratedDataPoint find(Object value) {
+            return GeneratedDataPoint.find(generatedDataPoints, value)
                 .orElseThrow(() -> new WunderBarException("this value was not generated via the WunderBar @Some annotation: " + value));
         }
     };
 
-    public static @Internal @Value class GenerationPoint {
-        static Optional<GenerationPoint> find(List<GenerationPoint> list, Object value) {
+    public static @Internal @Value class GeneratedDataPoint {
+        static Optional<GeneratedDataPoint> find(List<GeneratedDataPoint> list, Object value) {
             return list.stream().filter(item -> item.value.equals(value)).findFirst();
         }
 
@@ -155,7 +155,10 @@ class WunderBarApiConsumerJUnitExtension implements Extension, BeforeEachCallbac
         log.info("==================== {} test: {}", level(), testId);
 
         this.bar = BAR_WRITERS.computeIfAbsent(settings.fileName(), this::createBar);
-        if (bar != null) bar.setDirectory(testId);
+        if (bar != null) {
+            bar.setGeneratedDataPoints(generatedDataPoints);
+            bar.setDirectory(testId);
+        }
 
         registerSomeDataGenerators();
         forEachField(Some.class, this::createSomeTestData);
@@ -203,7 +206,6 @@ class WunderBarApiConsumerJUnitExtension implements Extension, BeforeEachCallbac
         log.info("create bar [{}] in {}", archiveComment, fileName);
         var writer = BarWriter.to(fileName);
         writer.setComment(archiveComment);
-        writer.setGeneratedData(generationPoints);
         return writer;
     }
 
@@ -416,7 +418,7 @@ class WunderBarApiConsumerJUnitExtension implements Extension, BeforeEachCallbac
 
         proxies.forEach(Proxy::done);
         proxies.clear();
-        generationPoints.clear();
+        generatedDataPoints.clear();
         dataGenerators.clear();
 
         if (bar != null) bar.setDirectory(null);
