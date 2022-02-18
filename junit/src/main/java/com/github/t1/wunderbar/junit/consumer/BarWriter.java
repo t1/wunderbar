@@ -14,6 +14,7 @@ import java.io.Closeable;
 import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import static com.github.t1.wunderbar.junit.http.HttpUtils.readJson;
@@ -51,34 +52,36 @@ public @Internal abstract class BarWriter implements Closeable {
     private void write(String id, String direction, String body) {
         write(id + direction + "-body.json", body);
 
-        var variables = new HashMap<String, GeneratedDataPoint>();
-        new VariablesCollector("", readJson(body)).collect(variables);
+        var variables = new VariablesCollector(new HashMap<>(), "", readJson(body)).collect();
         if (!variables.isEmpty())
             write(id + direction + "-variables.json", toJson(variables));
     }
 
     @RequiredArgsConstructor
     private class VariablesCollector {
+        private final Map<String, GeneratedDataPoint> variables;
         private final String path;
         private final JsonValue json;
 
-        public void collect(HashMap<String, GeneratedDataPoint> variables) {
+        public Map<String, GeneratedDataPoint> collect() {
             switch (json.getValueType()) {
                 case STRING:
-                    put(variables, ((JsonString) json).getString());
+                    put(((JsonString) json).getString());
                     break;
                 case NUMBER:
-                    put(variables, ((JsonNumber) json).bigDecimalValue());
+                    put(((JsonNumber) json).bigDecimalValue());
                     break;
                 case OBJECT:
-                    json.asJsonObject().forEach((key, field) -> new VariablesCollector(path + "/" + key, field)
-                        .collect(variables));
+                    put(json.asJsonObject());
+                    json.asJsonObject().forEach((key, field) -> new VariablesCollector(variables, path + "/" + key, field)
+                        .collect());
                     break;
                 case ARRAY:
                     var array = json.asJsonArray();
+                    put(array);
                     for (int i = 0; i < array.size(); i++) {
-                        new VariablesCollector(path + "/" + i, array.get(i))
-                            .collect(variables);
+                        new VariablesCollector(variables, path + "/" + i, array.get(i))
+                            .collect();
                     }
                     break;
                 case NULL:
@@ -86,9 +89,10 @@ public @Internal abstract class BarWriter implements Closeable {
                 case FALSE:
                     break; // these values can't be unique
             }
+            return variables;
         }
 
-        private void put(HashMap<String, GeneratedDataPoint> variables, Object value) {
+        private void put(Object value) {
             GeneratedDataPoint.find(BarWriter.this.generatedDataPoints, value)
                 .ifPresent(generated -> variables.put(path, generated));
         }

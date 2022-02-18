@@ -5,10 +5,13 @@ import com.github.t1.wunderbar.junit.consumer.Service;
 import com.github.t1.wunderbar.junit.consumer.Some;
 import com.github.t1.wunderbar.junit.consumer.SystemUnderTest;
 import com.github.t1.wunderbar.junit.consumer.WunderBarApiConsumer;
+import org.eclipse.microprofile.graphql.NonNull;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import test.consumer.ProductResolver.Item;
 import test.consumer.ProductResolver.Product;
 import test.consumer.ProductResolver.Products;
+import test.consumer.ProductsGateway.ProductsRestClient;
 
 import javax.json.JsonValue;
 import java.io.File;
@@ -19,6 +22,7 @@ import java.nio.file.Path;
 import static com.github.t1.wunderbar.junit.consumer.WunderbarExpectationBuilder.given;
 import static com.github.t1.wunderbar.junit.http.HttpUtils.APPLICATION_JSON_UTF8;
 import static com.github.t1.wunderbar.junit.http.HttpUtils.readJson;
+import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
 import static org.assertj.core.api.Assertions.contentOf;
 import static org.assertj.core.api.BDDAssertions.then;
 import static org.assertj.core.api.BDDSoftAssertions.thenSoftly;
@@ -35,7 +39,7 @@ class ProductResolverDirIT {
     @Test void shouldResolveProduct(@Some Product product) {
         given(products.product(product.getId())).returns(product);
 
-        var resolvedProduct = resolver.product(Item.builder().productId(product.getId()).build());
+        var resolvedProduct = resolver.product(item(product.getId()));
 
         then(resolvedProduct).usingRecursiveComparison().isEqualTo(product);
         var prefix = "shouldResolveProduct(Product)/";
@@ -58,7 +62,7 @@ class ProductResolverDirIT {
                 "    \"/variables/id\": {" +
                 "        \"type\": \"java.lang.String\"," +
                 "        \"value\": \"" + product.id + "\"," +
-                "        \"location\": \"parameter [product] @method ProductResolverDirIT#shouldResolveProduct\"," +
+                "        \"location\": \"parameter [product] @method " + ProductResolverDirIT.class.getName() + "#shouldResolveProduct\"," +
                 "        \"some\": {" +
                 "            \"tags\": [\"id\"]" +
                 "        }" +
@@ -77,6 +81,26 @@ class ProductResolverDirIT {
                 "        }" +
                 "    }" +
                 "}"));
+            softly.then(jsonFile(prefix + "1 response-variables.json")).isEqualTo(readJson(
+                "{" +
+                "    \"/data/product\": {" +
+                "        \"some\": {\"tags\": []}," +
+                "        \"type\": \"test.consumer.ProductResolver$Product\"," +
+                "        \"location\": \"parameter [product] @method " + ProductResolverDirIT.class.getName() + "#shouldResolveProduct\"," +
+                "        \"value\": {\"id\": \"id-product-00100\", \"name\": \"product id-product-00100\", \"price\": 101}" +
+                "    }," +
+                "    \"/data/product/id\": {" +
+                "        \"some\": {\"tags\": [\"id\"]}," +
+                "        \"type\": \"java.lang.String\"," +
+                "        \"location\": \"parameter [product] @method " + ProductResolverDirIT.class.getName() + "#shouldResolveProduct\"," +
+                "        \"value\": \"id-product-00100\"" +
+                "    }," +
+                "    \"/data/product/price\": {" +
+                "        \"type\": \"java.lang.Integer\"," +
+                "        \"location\": \"field [price] @class " + Product.class.getName() + "\"," +
+                "        \"value\": 101" +
+                "    }" +
+                "}"));
         });
     }
 
@@ -84,8 +108,8 @@ class ProductResolverDirIT {
         given(products.product(product1.getId())).returns(product1);
         given(products.product(product2.getId())).returns(product2);
 
-        var resolvedProduct1 = resolver.product(Item.builder().productId(product1.getId()).build());
-        var resolvedProduct2 = resolver.product(Item.builder().productId(product2.getId()).build());
+        var resolvedProduct1 = resolver.product(item(product1.getId()));
+        var resolvedProduct2 = resolver.product(item(product2.getId()));
 
         then(resolvedProduct1).usingRecursiveComparison().isEqualTo(product1);
         then(resolvedProduct2).usingRecursiveComparison().isEqualTo(product2);
@@ -107,6 +131,8 @@ class ProductResolverDirIT {
     }
 
     private JsonValue jsonFile(String fileName) {return readJson(contentOf(barFile(fileName)));}
+
+    private Item item(@NonNull String productId) {return Item.builder().productId(productId).build();}
 
     private File barFile(String file) {
         return baseDir().resolve(file).toFile();

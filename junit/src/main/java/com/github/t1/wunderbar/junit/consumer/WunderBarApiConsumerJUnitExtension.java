@@ -16,6 +16,7 @@ import org.junit.jupiter.api.extension.ParameterContext;
 import org.junit.jupiter.api.extension.ParameterResolutionException;
 import org.junit.jupiter.api.extension.ParameterResolver;
 
+import javax.json.JsonValue;
 import javax.json.bind.annotation.JsonbTypeSerializer;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.AnnotatedElement;
@@ -52,6 +53,7 @@ import static com.github.t1.wunderbar.junit.consumer.Service.DEFAULT_ENDPOINT;
 import static com.github.t1.wunderbar.junit.consumer.Technology.GRAPHQL;
 import static com.github.t1.wunderbar.junit.consumer.Technology.REST;
 import static com.github.t1.wunderbar.junit.consumer.WunderBarApiConsumer.NONE;
+import static com.github.t1.wunderbar.junit.http.HttpUtils.readJson;
 import static java.time.temporal.ChronoUnit.NANOS;
 import static java.util.Locale.ROOT;
 import static java.util.stream.Collectors.toList;
@@ -89,7 +91,7 @@ class WunderBarApiConsumerJUnitExtension implements Extension, BeforeEachCallbac
             GeneratedDataPoint.find(generatedDataPoints, value).ifPresent(data -> {
                 throw new WunderBarException("[" + generator + "] generated a non-unique value for " + location + ". There's already " + data);
             });
-            var generatedDataPoint = new GeneratedDataPoint(some, location, value);
+            var generatedDataPoint = new GeneratedDataPoint(some, type(value), location, readJson(value));
             generatedDataPoints.add(generatedDataPoint);
             log.debug("generated {} {}", value, generatedDataPoint.getLocation());
             return value;
@@ -104,6 +106,8 @@ class WunderBarApiConsumerJUnitExtension implements Extension, BeforeEachCallbac
             }
         }
 
+        private <T> String type(T value) {return value.getClass().getName();}
+
         @Override public AnnotatedElement location(Object value) {return find(value).location;}
 
         @Override public Some findSomeFor(Object value) {return find(value).some;}
@@ -116,16 +120,15 @@ class WunderBarApiConsumerJUnitExtension implements Extension, BeforeEachCallbac
 
     public static @Internal @Value class GeneratedDataPoint {
         static Optional<GeneratedDataPoint> find(List<GeneratedDataPoint> list, Object value) {
-            return list.stream().filter(item -> item.value.equals(value)).findFirst();
+            var json = readJson(value);
+            return list.stream().filter(item -> item.value.equals(json)).findFirst();
         }
 
         @JsonbTypeSerializer(JsonbSomeSerializer.class)
         Some some;
+        String type;
         AnnotatedElement location;
-        Object value;
-
-        @SuppressWarnings("unused") // for json
-        public String getType() {return value.getClass().getName();}
+        JsonValue value;
 
         public String getLocation() {
             if (location == null) return "";
@@ -133,10 +136,10 @@ class WunderBarApiConsumerJUnitExtension implements Extension, BeforeEachCallbac
         }
 
         private static String container(AnnotatedElement location) {
-            if (location instanceof Field) return "class " + ((Field) location).getDeclaringClass().getSimpleName();
+            if (location instanceof Field) return "class " + ((Field) location).getDeclaringClass().getName();
             if (location instanceof Parameter) {
                 var executable = ((Parameter) location).getDeclaringExecutable();
-                return "method " + executable.getDeclaringClass().getSimpleName() + "#" + executable.getName();
+                return "method " + executable.getDeclaringClass().getName() + "#" + executable.getName();
             }
             return "";
         }

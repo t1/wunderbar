@@ -242,7 +242,7 @@ class SomeGeneratorTest {
         var throwable = catchThrowable(() -> generator.generate(String.class));
 
         then(throwable).isInstanceOf(WunderBarException.class)
-            .hasMessage("[fixed-generator] generated a non-unique value for null. There's already foo -> Some.SomeLiteral(value=[])");
+            .hasMessage("[fixed-generator] generated a non-unique value for null. There's already \"foo\" -> Some.SomeLiteral(value=[])");
     }
 
     static class SomeFixedStrings extends SomeSingleTypes<String> {
@@ -290,18 +290,18 @@ class SomeGeneratorTest {
         then(throwable).isInstanceOf(WunderBarException.class).hasMessage("this value was not generated via the WunderBar @Some annotation: " + uuid);
     }
 
-    private static @Data @Builder class CustomType {
+    public static @Data @Builder class CustomType {
         String foo;
         CustomWrapper bar;
         @Some("cool") String baz;
         CustomGeneric<String> gen;
     }
 
-    private static @Data @Builder class CustomWrapper {
+    public static @Data @Builder class CustomWrapper {
         int wrapped;
     }
 
-    private static @Data @Builder class CustomGeneric<T> {
+    public static @Data @Builder class CustomGeneric<T> {
         T wrapped;
     }
 
