@@ -53,7 +53,8 @@ public @Internal abstract class BarWriter implements Closeable {
 
         var variables = new HashMap<String, GenerationPoint>();
         new VariablesCollector("", readJson(body)).collect(variables);
-        write(id + direction + "-variables.json", toJson(variables));
+        if (!variables.isEmpty())
+            write(id + direction + "-variables.json", toJson(variables));
     }
 
     @RequiredArgsConstructor
