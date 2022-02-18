@@ -25,7 +25,7 @@ import static org.assertj.core.api.BDDSoftAssertions.thenSoftly;
 import static test.consumer.ProductResolverDirIT.DIR;
 
 @WunderBarApiConsumer(fileName = DIR)
-@Register(SomeProduct.class)
+@Register(SomeProducts.class)
 class ProductResolverDirIT {
     static final String DIR = "target/wunder-bar/";
 

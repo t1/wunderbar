@@ -18,7 +18,7 @@ import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
-import test.SomeProduct;
+import test.SomeProducts;
 
 import java.net.URI;
 
@@ -27,7 +27,7 @@ import static org.assertj.core.api.Assertions.catchThrowableOfType;
 import static org.assertj.core.api.BDDAssertions.then;
 
 @WunderBarApiConsumer(fileName = "target/system-wunder.jar")
-@Register(SomeProduct.class)
+@Register(SomeProducts.class)
 class ProductsResolverST {
     /** this server would normally be a real server running somewhere */
     private final HttpServer server = new HttpServer(this::handle);

@@ -11,15 +11,15 @@ import com.github.t1.wunderbar.junit.consumer.SystemUnderTest;
 import com.github.t1.wunderbar.junit.consumer.WunderBarApiConsumer;
 import io.smallrye.graphql.client.GraphQLClientException;
 import org.junit.jupiter.api.Test;
-import test.SomeProduct;
-import test.SomeProductId;
+import test.SomeProductIds;
+import test.SomeProducts;
 
 import static com.github.t1.wunderbar.junit.consumer.WunderbarExpectationBuilder.given;
 import static org.assertj.core.api.Assertions.catchThrowableOfType;
 import static org.assertj.core.api.BDDAssertions.then;
 
 @WunderBarApiConsumer
-@Register({SomeProduct.class, SomeProductId.class})
+@Register({SomeProducts.class, SomeProductIds.class})
 class ProductsResolverIT {
     @Service Products products;
     @SystemUnderTest ProductsResolver resolver;

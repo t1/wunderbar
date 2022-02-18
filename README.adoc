@@ -129,7 +129,7 @@ And the generator will fail, if you generate more than `Short.MAX_VALUE` = `3276
 Out-of-the-box, you can generate the primitive types `byte`, `char`, `short`, `int`, `long`, `float`, `double` (or their wrapper types `Integer`, etc.), and some basic types like `String`, `URI`, `LocalDateTime`, etc. (see https://github.com/t1/wunderbar/blob/trunk/junit/src/main/java/com/github/t1/wunderbar/junit/consumer/SomeBasics[here] for the full list), but obviously not `boolean`: they can hardly be considered unique.
 You can change the starting point by calling `SomeBasics#reset`, e.g. in a `@BeforeEach`.
 
-To generate your own data, e.g., `@Some Product product`, you can register your own generator class: `@Register(SomeProduct.class)`, where `SomeProduct` implements https://github.com/t1/wunderbar/blob/trunk/junit/src/main/java/com/github/t1/wunderbar/junit/consumer/SomeData.java[`SomeData`].
+To generate your own data, e.g., `@Some Product product`, you can register your own generator class: `@Register(SomeProducts.class)`, where `SomeProducts` implements https://github.com/t1/wunderbar/blob/trunk/junit/src/main/java/com/github/t1/wunderbar/junit/consumer/SomeData.java[`SomeData`].
 The `@Some` annotation takes an optional list of String tags that are passed to custom generators, along with the `AnnotatedElement` location, so it can fine-control what data it should generate, e.g. to generate `invalid` objects.
 
 You can inject an instance of `SomeGenerator` into your generator's constructor to generate other values you depend on, or to look up the location or tags of an actual value.

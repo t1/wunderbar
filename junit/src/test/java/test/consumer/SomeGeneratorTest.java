@@ -6,7 +6,7 @@ import com.github.t1.wunderbar.junit.consumer.Some;
 import com.github.t1.wunderbar.junit.consumer.SomeBasics;
 import com.github.t1.wunderbar.junit.consumer.SomeData;
 import com.github.t1.wunderbar.junit.consumer.SomeGenerator;
-import com.github.t1.wunderbar.junit.consumer.SomeSingleTypeData;
+import com.github.t1.wunderbar.junit.consumer.SomeSingleTypes;
 import com.github.t1.wunderbar.junit.consumer.WunderBarApiConsumer;
 import lombok.Builder;
 import lombok.Data;
@@ -42,13 +42,13 @@ import static com.github.t1.wunderbar.common.Utils.name;
 import static com.github.t1.wunderbar.junit.consumer.SomeBasics.START_INSTANT;
 import static org.assertj.core.api.Assertions.catchThrowable;
 import static org.assertj.core.api.BDDAssertions.then;
-import static test.consumer.SomeGeneratorTest.CustomDataGenerator;
-import static test.consumer.SomeGeneratorTest.CustomGenerator;
-import static test.consumer.SomeGeneratorTest.CustomGenericGenerator;
+import static test.consumer.SomeGeneratorTest.SomeCustomGenerics;
+import static test.consumer.SomeGeneratorTest.SomeCustomTypes;
+import static test.consumer.SomeGeneratorTest.SomeCustomWrappers;
 
 /** the fact that @Register is @Inherited is tested by the subclasses of the ProductResolverTest */
 @WunderBarApiConsumer
-@Register({CustomDataGenerator.class, CustomGenerator.class, CustomGenericGenerator.class})
+@Register({SomeCustomTypes.class, SomeCustomWrappers.class, SomeCustomGenerics.class})
 class SomeGeneratorTest {
     private static final int QUITE_SMALL_INT = SomeBasics.DEFAULT_START;
     private static final int QUITE_BIG_INT = Short.MAX_VALUE;
@@ -56,7 +56,7 @@ class SomeGeneratorTest {
     @Order(2) @Some int intField1;
     @Order(1) @Some int intField2;
     @Order(3) @Some int intField3;
-    @Some("value=3") Custom custom;
+    @Some("value=3") CustomWrapper customWrapper;
 
     @Test void shouldGenerateFieldsInOrder() {
         then(intField2).isEqualTo(100);
@@ -65,7 +65,7 @@ class SomeGeneratorTest {
     }
 
     @Test void shouldGenerateTaggedField() {
-        then(custom).isEqualTo(new Custom(3));
+        then(customWrapper).isEqualTo(new CustomWrapper(3));
     }
 
     @Test void shouldGeneratePrimitiveByte(@Some byte i) {then(i).isBetween((byte) QUITE_SMALL_INT, Byte.MAX_VALUE);}
@@ -184,33 +184,71 @@ class SomeGeneratorTest {
     @Test void shouldGeneratePeriod(@Some Period period) {then(period.getDays()).isBetween(0, QUITE_BIG_INT);}
 
     // ---------------------------------------------------- custom generators
-    @Register(CustomURI.class)
+    @Register(SomeCustomUris.class)
     @Test void shouldGenerateCustomURI(@Some URI uri) {then(uri).hasToString("dummy-uri");}
 
-    static class CustomURI extends SomeSingleTypeData<URI> {
+    static class SomeCustomUris extends SomeSingleTypes<URI> {
         @Override public URI some(Some some, Type type, AnnotatedElement location) {return URI.create("dummy-uri");}
     }
 
-    @Register(CustomId.class)
+    @Register(SomeCustomIds.class)
     @Test void shouldGenerateCustomId(@Some({"id", "unrelated"}) String id) {then(id).hasToString("custom-id");}
 
-    static class CustomId extends SomeSingleTypeData<@Some("id") String> {
+    static class SomeCustomIds extends SomeSingleTypes<@Some("id") String> {
         @Override public String some(Some some, Type type, AnnotatedElement location) {return "custom-id";}
     }
 
-    @Register(CustomInt.class)
+    @Register(SomeCustomPrimitiveIntegers.class)
     @Test void shouldGenerateCustomInt(@Some int i1, @Some Integer i2) {
-        then(i1).isEqualTo(-100);
+        then(i1).isBetween(-100, -10);
         then(i2).isEqualTo(100);
     }
 
-    static class CustomInt implements SomeData {
+    static class SomeCustomPrimitiveIntegers implements SomeData {
+        private int nextInt = -100;
+
         @Override public boolean canGenerate(Some some, Type type, AnnotatedElement location) {
             return int.class.equals(type); // not Integer here
         }
 
         @SuppressWarnings("unchecked")
-        @Override public Integer some(Some some, Type type, AnnotatedElement location) {return -100;}
+        @Override public Integer some(Some some, Type type, AnnotatedElement location) {return nextInt++;}
+    }
+
+    @Register(SomeNullStrings.class)
+    @Test void shouldFailToGenerateNullStringWithoutLocation(SomeGenerator generator) {
+        var throwable = catchThrowable(() -> generator.generate(String.class));
+
+        then(throwable).isInstanceOf(WunderBarException.class).hasMessage("[null-generator] generated a null value");
+    }
+
+    @Register(SomeNullStrings.class)
+    @Test void shouldFailToGenerateNullStringWithLocation(SomeGenerator generator) {
+        var throwable = catchThrowable(() -> generator.generate(Some.LITERAL, String.class, SomeGeneratorTest.class));
+
+        then(throwable).isInstanceOf(WunderBarException.class).hasMessage("[null-generator] generated a null value for " + SomeGeneratorTest.class);
+    }
+
+    static class SomeNullStrings extends SomeSingleTypes<String> {
+        @Override public String toString() {return "null-generator";}
+
+        @Override public String some(Some some, Type type, AnnotatedElement location) {return null;}
+    }
+
+    @Register(SomeFixedStrings.class)
+    @Test void shouldFailToGenerateDuplicateString(SomeGenerator generator) {
+        generator.generate(String.class);
+
+        var throwable = catchThrowable(() -> generator.generate(String.class));
+
+        then(throwable).isInstanceOf(WunderBarException.class)
+            .hasMessage("[fixed-generator] generated a non-unique value for null. There's already foo -> Some.SomeLiteral(value=[])");
+    }
+
+    static class SomeFixedStrings extends SomeSingleTypes<String> {
+        @Override public String toString() {return "fixed-generator";}
+
+        @Override public String some(Some some, Type type, AnnotatedElement location) {return "foo";}
     }
 
     @Nested class WithCustomStart {
@@ -219,35 +257,29 @@ class SomeGeneratorTest {
         @Test void shouldGenerateLowInt(@Some int custom) {then(custom).isEqualTo(200);}
     }
 
-    @Register(NestedGenerator.class)
+    @Register(SomeNestedIntegers.class)
     @Nested class WithNestedGenerator {
         @Test void shouldGenerateCustomInt(@Some Integer custom) {then(custom).isEqualTo(-1);}
     }
 
-    static class NestedGenerator extends SomeSingleTypeData<Integer> {
+    static class SomeNestedIntegers extends SomeSingleTypes<Integer> {
         @Override public Integer some(Some some, Type type, AnnotatedElement location) {
             return -1;
         }
     }
 
-    // ---------------------------------------------------- custom data
-    @Test void shouldGenerateCustomData(@Some("valid") CustomData data, SomeGenerator generator) throws Exception {
-        then(generator.location(data)).isEqualTo(SomeGeneratorTest.class.getDeclaredMethod("shouldGenerateCustomData", CustomData.class, SomeGenerator.class).getParameters()[0]);
+    // ---------------------------------------------------- custom types
+    @Test void shouldGenerateCustomData(@Some("valid") CustomType data, SomeGenerator generator) throws Exception {
+        then(generator.location(data)).isEqualTo(SomeGeneratorTest.class.getDeclaredMethod("shouldGenerateCustomData", CustomType.class, SomeGenerator.class).getParameters()[0]);
         then(generator.findSomeFor(data).value()).containsExactly("valid");
 
         then(data.foo).startsWith("valid-data-foo-");
-        then(data.bar).isEqualTo(new Custom(1));
+        then(data.bar).isEqualTo(new CustomWrapper(1));
         then(data.baz).startsWith("cool-baz-");
         then(data.gen).isEqualTo(new CustomGeneric<>(data.gen.wrapped));
-        then(generator.location(data.foo.substring("valid-data-".length()))).isEqualTo(CustomData.class.getDeclaredField("foo"));
-        then(generator.location(new Custom(1))).isEqualTo(CustomData.class.getDeclaredField("bar"));
+        then(generator.location(data.foo.substring("valid-data-".length()))).isEqualTo(CustomType.class.getDeclaredField("foo"));
+        then(generator.location(new CustomWrapper(1))).isEqualTo(CustomType.class.getDeclaredField("bar"));
         then(generator.location(data.gen.wrapped)).isEqualTo(CustomGeneric.class.getDeclaredField("wrapped"));
-    }
-
-    @Test void shouldFailToGenerateNullValue(SomeGenerator generator) {
-        var throwable = catchThrowable(() -> generator.generate(Some.LITERAL.withTags("generate-null"), CustomData.class, null));
-
-        then(throwable).isInstanceOf(WunderBarException.class).hasMessageStartingWith("the generator generated a null value: " + CustomDataGenerator.class.getName());
     }
 
     @Test void shouldFailToFindForeignValue(SomeGenerator generator) {
@@ -258,14 +290,14 @@ class SomeGeneratorTest {
         then(throwable).isInstanceOf(WunderBarException.class).hasMessage("this value was not generated via the WunderBar @Some annotation: " + uuid);
     }
 
-    private static @Data @Builder class CustomData {
+    private static @Data @Builder class CustomType {
         String foo;
-        Custom bar;
+        CustomWrapper bar;
         @Some("cool") String baz;
         CustomGeneric<String> gen;
     }
 
-    private static @Data @Builder class Custom {
+    private static @Data @Builder class CustomWrapper {
         int wrapped;
     }
 
@@ -274,27 +306,26 @@ class SomeGeneratorTest {
     }
 
     @RequiredArgsConstructor
-    static class CustomDataGenerator extends SomeSingleTypeData<CustomData> {
+    static class SomeCustomTypes extends SomeSingleTypes<CustomType> {
         private final SomeGenerator generator;
 
-        @Override public CustomData some(Some some, Type type, AnnotatedElement location) {
+        @Override public CustomType some(Some some, Type type, AnnotatedElement location) {
             assert some.value().length == 1;
             var tag = some.value()[0];
-            if ("generate-null".equals(tag)) return null;
-            return CustomData.builder()
+            return CustomType.builder()
                 .foo(tag + "-" + name(location) + "-" +
-                     generator.generate(CustomData.class, "foo"))
-                .bar(generator.generate(CustomData.class, "bar"))
-                .baz(generator.generate(CustomData.class, "baz"))
-                .gen(generator.generate(CustomData.class, "gen"))
+                     generator.generate(CustomType.class, "foo"))
+                .bar(generator.generate(CustomType.class, "bar"))
+                .baz(generator.generate(CustomType.class, "baz"))
+                .gen(generator.generate(CustomType.class, "gen"))
                 .build();
         }
     }
 
-    static class CustomGenerator extends SomeSingleTypeData<Custom> {
-        @Override public Custom some(Some some, Type type, AnnotatedElement location) {
+    static class SomeCustomWrappers extends SomeSingleTypes<CustomWrapper> {
+        @Override public CustomWrapper some(Some some, Type type, AnnotatedElement location) {
             var wrapped = (some == null || some.value().length == 0) ? 1 : from(some.value()[0]);
-            return Custom.builder().wrapped(wrapped).build();
+            return CustomWrapper.builder().wrapped(wrapped).build();
         }
 
         private int from(String tag) {
@@ -305,7 +336,7 @@ class SomeGeneratorTest {
     }
 
     @RequiredArgsConstructor
-    static class CustomGenericGenerator extends SomeSingleTypeData<CustomGeneric<?>> {
+    static class SomeCustomGenerics extends SomeSingleTypes<CustomGeneric<?>> {
         private final SomeGenerator generator;
 
         @SneakyThrows(ReflectiveOperationException.class)
@@ -317,7 +348,7 @@ class SomeGeneratorTest {
     }
 
     // ---------------------------------------------------- infinite loop
-    @Register(InfiniteLoopGenerator.class)
+    @Register(SomeInfiniteLoops.class)
     @Test void shouldFailToGenerateInfiniteLoop(SomeGenerator generator) {
         var throwable = catchThrowable(() -> generator.generate(InfiniteLoop.class));
 
@@ -329,7 +360,7 @@ class SomeGeneratorTest {
     }
 
     @RequiredArgsConstructor
-    static class InfiniteLoopGenerator extends SomeSingleTypeData<InfiniteLoop> {
+    static class SomeInfiniteLoops extends SomeSingleTypes<InfiniteLoop> {
         private final SomeGenerator generator;
 
         @Override public InfiniteLoop some(Some some, Type type, AnnotatedElement location) {

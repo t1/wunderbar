@@ -17,7 +17,7 @@ import static com.github.t1.wunderbar.junit.consumer.WunderbarExpectationBuilder
 
 @SuppressWarnings({"removal", "deprecated"})
 @WunderBarApiConsumer(endpoint = "{deprecatedEndpoint()}")
-@Register(SomeProduct.class)
+@Register(SomeProducts.class)
 class ProductResolverDeprecatedST {
     @Service Products products;
     @SystemUnderTest ProductResolver resolver;

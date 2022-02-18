@@ -6,7 +6,7 @@ import com.github.t1.wunderbar.junit.Register;
 import com.github.t1.wunderbar.junit.consumer.Service;
 import com.github.t1.wunderbar.junit.consumer.Some;
 import com.github.t1.wunderbar.junit.consumer.SomeGenerator;
-import com.github.t1.wunderbar.junit.consumer.SomeSingleTypeData;
+import com.github.t1.wunderbar.junit.consumer.SomeSingleTypes;
 import com.github.t1.wunderbar.junit.consumer.WunderBarApiConsumer;
 import io.smallrye.graphql.client.typesafe.api.GraphQLClientApi;
 import io.smallrye.graphql.client.typesafe.api.TypesafeGraphQLClientBuilder;
@@ -25,9 +25,9 @@ import org.testcontainers.containers.Network;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 import test.Slow;
-import test.SomeProductId;
-import test.graphql.OrderMockST.SomeMockProduct;
-import test.graphql.OrderMockST.SomeOrderInput;
+import test.SomeProductIds;
+import test.graphql.OrderMockST.SomeMockProducts;
+import test.graphql.OrderMockST.SomeOrderInputs;
 
 import java.lang.reflect.AnnotatedElement;
 import java.lang.reflect.Type;
@@ -42,7 +42,7 @@ import static org.testcontainers.containers.Network.newNetwork;
 @Slow
 @Testcontainers
 @WunderBarApiConsumer(fileName = NONE)
-@Register({SomeProductId.class, SomeMockProduct.class, SomeOrderInput.class})
+@Register({SomeProductIds.class, SomeMockProducts.class, SomeOrderInputs.class})
 class OrderMockST {
     private static final Network NETWORK = newNetwork();
 
@@ -128,7 +128,7 @@ class OrderMockST {
     String endpoint() {return "http://localhost:" + PRODUCTS.getMappedPort(8080) + "/wunderbar-mock-server/graphql";}
 
     @RequiredArgsConstructor
-    static class SomeMockProduct extends SomeSingleTypeData<MockProduct> {
+    static class SomeMockProducts extends SomeSingleTypes<MockProduct> {
         private final SomeGenerator generator;
 
         @Override public MockProduct some(Some some, Type type, AnnotatedElement location) {
@@ -142,7 +142,7 @@ class OrderMockST {
     }
 
     @RequiredArgsConstructor
-    static class SomeOrderInput extends SomeSingleTypeData<OrderInput> {
+    static class SomeOrderInputs extends SomeSingleTypes<OrderInput> {
         private final SomeGenerator generator;
 
         @Override public OrderInput some(Some some, Type type, AnnotatedElement location) {

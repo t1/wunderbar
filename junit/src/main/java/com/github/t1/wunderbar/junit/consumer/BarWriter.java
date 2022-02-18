@@ -1,7 +1,7 @@
 package com.github.t1.wunderbar.junit.consumer;
 
 import com.github.t1.wunderbar.common.Internal;
-import com.github.t1.wunderbar.junit.consumer.WunderBarApiConsumerJUnitExtension.GeneratedData;
+import com.github.t1.wunderbar.junit.consumer.WunderBarApiConsumerJUnitExtension.GenerationPoint;
 import com.github.t1.wunderbar.junit.http.HttpRequest;
 import com.github.t1.wunderbar.junit.http.HttpResponse;
 import lombok.RequiredArgsConstructor;
@@ -26,7 +26,7 @@ public @Internal abstract class BarWriter implements Closeable {
         return fileName.endsWith("/") ? new DirectoryBarWriter(path) : new JarBarWriter(path);
     }
 
-    @Setter private List<GeneratedData> generatedData = emptyList(); // this class won't change it
+    @Setter private List<GenerationPoint> generatedData = emptyList(); // this class won't change it
 
     @Override public String toString() {return getClass().getSimpleName() + ":" + getPath();}
 
@@ -50,7 +50,8 @@ public @Internal abstract class BarWriter implements Closeable {
 
     private void write(String id, String direction, String body) {
         write(id + direction + "-body.json", body);
-        var variables = new HashMap<String, GeneratedData>();
+
+        var variables = new HashMap<String, GenerationPoint>();
         new VariablesCollector("", readJson(body)).collect(variables);
         write(id + direction + "-variables.json", toJson(variables));
     }
@@ -60,7 +61,7 @@ public @Internal abstract class BarWriter implements Closeable {
         private final String path;
         private final JsonValue json;
 
-        public void collect(HashMap<String, GeneratedData> variables) {
+        public void collect(HashMap<String, GenerationPoint> variables) {
             switch (json.getValueType()) {
                 case STRING:
                     put(variables, ((JsonString) json).getString());
@@ -86,8 +87,8 @@ public @Internal abstract class BarWriter implements Closeable {
             }
         }
 
-        private void put(HashMap<String, GeneratedData> variables, Object value) {
-            GeneratedData.find(BarWriter.this.generatedData, value)
+        private void put(HashMap<String, GenerationPoint> variables, Object value) {
+            GenerationPoint.find(BarWriter.this.generatedData, value)
                 .ifPresent(generated -> variables.put(path, generated));
         }
     }

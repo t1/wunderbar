@@ -10,7 +10,7 @@ import com.github.t1.wunderbar.junit.consumer.Some;
 import com.github.t1.wunderbar.junit.consumer.SystemUnderTest;
 import com.github.t1.wunderbar.junit.consumer.WunderBarApiConsumer;
 import org.junit.jupiter.api.Test;
-import test.SomeProduct;
+import test.SomeProducts;
 
 import javax.ws.rs.ForbiddenException;
 import javax.ws.rs.NotFoundException;
@@ -23,7 +23,7 @@ import static org.assertj.core.api.Assertions.catchThrowableOfType;
 import static org.assertj.core.api.BDDAssertions.then;
 
 @WunderBarApiConsumer
-@Register(SomeProduct.class)
+@Register(SomeProducts.class)
 class ProductsGatewayIT {
     @Service ProductsRestClient products;
     @SystemUnderTest ProductsGateway gateway;

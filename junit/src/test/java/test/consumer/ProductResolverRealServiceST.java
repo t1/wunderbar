@@ -23,7 +23,7 @@ import static com.github.t1.wunderbar.junit.consumer.WunderbarExpectationBuilder
 import static org.assertj.core.api.Assertions.catchThrowable;
 
 @WunderBarApiConsumer
-@Register(SomeProduct.class)
+@Register(SomeProducts.class)
 class ProductResolverRealServiceST {
     @Service(endpoint = "{endpoint()}") Products products;
     @SystemUnderTest ProductResolver resolver;

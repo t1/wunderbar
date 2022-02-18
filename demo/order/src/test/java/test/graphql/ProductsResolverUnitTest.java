@@ -9,19 +9,19 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import test.SomeProduct;
 
 import static org.assertj.core.api.Assertions.catchThrowableOfType;
 import static org.assertj.core.api.BDDAssertions.then;
 import static org.mockito.BDDMockito.given;
+import static test.SomeProducts.someProduct;
 
 @ExtendWith(MockitoExtension.class)
 class ProductsResolverUnitTest {
     @Mock Products products;
     @InjectMocks ProductsResolver resolver;
 
-    Product product = SomeProduct.buildProduct("123");
-    Product other = SomeProduct.buildProduct("456");
+    Product product = someProduct("123");
+    Product other = someProduct("456");
 
     @Test void shouldResolveProduct() {
         given(products.product(product.getId())).willReturn(product);

@@ -7,7 +7,7 @@ import java.lang.reflect.Type;
 /**
  * A generator for {@link Some} test data (see there).
  * <p>
- * If you only want to generate a single type in your generator, it's easier to extend {@link SomeSingleTypeData}.
+ * If you only want to generate a single type in your generator, it's easier to extend {@link SomeSingleTypes}.
  */
 public interface SomeData {
     /**

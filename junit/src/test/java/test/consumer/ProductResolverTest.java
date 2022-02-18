@@ -44,7 +44,7 @@ import static javax.ws.rs.core.Response.Status.NOT_FOUND;
 import static org.assertj.core.api.Assertions.catchThrowable;
 
 @WunderBarApiConsumer
-@Register(SomeProduct.class)
+@Register(SomeProducts.class)
 abstract class ProductResolverTest {
     @Service(endpoint = "{endpoint()}") Products products;
     @Service(endpoint = "{endpoint()}") NamedProducts namedProducts;
@@ -57,19 +57,6 @@ abstract class ProductResolverTest {
     Item item;
 
     @BeforeEach void setUpVariables() {item = new Item(product.id);}
-
-    @Nested class UnrecognizableTechnologies {
-        @Test void shouldFailToRecognizeTechnology() {
-            var throwable = catchThrowable(() -> createService(UnrecognizableTechnologyService.class));
-
-            then(throwable).hasMessage("no technology recognized on " + UnrecognizableTechnologyService.class);
-        }
-    }
-
-    interface UnrecognizableTechnologyService {
-        @SuppressWarnings("unused")
-        Object call();
-    }
 
     @Test void shouldResolveProduct() {
         given(products.product(product.id)).returns(product);
@@ -171,6 +158,19 @@ abstract class ProductResolverTest {
         then(throwable).asInstanceOf(GRAPHQL_CLIENT_EXCEPTION)
             .hasErrorCode(errorCode)
             .withMessage(message);
+    }
+
+    @Nested class UnrecognizableTechnologies {
+        @Test void shouldFailToRecognizeTechnology() {
+            var throwable = catchThrowable(() -> createService(UnrecognizableTechnologyService.class));
+
+            then(throwable).hasMessage("no technology recognized on " + UnrecognizableTechnologyService.class);
+        }
+    }
+
+    interface UnrecognizableTechnologyService {
+        @SuppressWarnings("unused")
+        Object call();
     }
 
     abstract void verifyBaseUri(URI baseUri, Technology technology);

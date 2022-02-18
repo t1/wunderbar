@@ -14,8 +14,8 @@ import org.jboss.weld.junit5.EnableWeld;
 import org.jboss.weld.junit5.WeldInitiator;
 import org.jboss.weld.junit5.WeldSetup;
 import org.junit.jupiter.api.Test;
-import test.SomeProduct;
-import test.SomeProductId;
+import test.SomeProductIds;
+import test.SomeProducts;
 
 import javax.inject.Inject;
 
@@ -25,7 +25,7 @@ import static org.assertj.core.api.BDDAssertions.then;
 
 @WunderBarApiConsumer(fileName = "target/weld-wunder.jar")
 @EnableWeld
-@Register({SomeProduct.class, SomeProductId.class})
+@Register({SomeProducts.class, SomeProductIds.class})
 class ProductsResolverWeldIT {
     @Service Products products;
     @Inject ProductsResolver resolver;

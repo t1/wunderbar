@@ -14,8 +14,8 @@ import com.github.t1.wunderbar.junit.http.HttpResponse;
 import com.github.t1.wunderbar.junit.http.HttpServer;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
-import test.SomeProduct;
-import test.SomeProductId;
+import test.SomeProductIds;
+import test.SomeProducts;
 
 import java.net.URI;
 import java.nio.file.Path;
@@ -27,7 +27,7 @@ import static javax.ws.rs.core.Response.Status.NOT_FOUND;
 import static org.assertj.core.api.BDDAssertions.catchThrowable;
 
 @WunderBarApiConsumer(fileName = "target/system-wunder.jar")
-@Register({SomeProduct.class, SomeProductId.class})
+@Register({SomeProducts.class, SomeProductIds.class})
 class ProductsGatewayST {
     /** this server would normally be a real server running somewhere */
     private final HttpServer server = new HttpServer(this::handle);
