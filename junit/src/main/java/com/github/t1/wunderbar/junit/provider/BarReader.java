@@ -4,13 +4,13 @@ import com.github.t1.wunderbar.junit.WunderBarException;
 import com.github.t1.wunderbar.junit.http.HttpInteraction;
 import com.github.t1.wunderbar.junit.http.HttpRequest;
 import com.github.t1.wunderbar.junit.http.HttpResponse;
+import com.github.t1.wunderbar.junit.http.HttpUtils;
 import com.github.t1.wunderbar.junit.provider.WunderBarTestFinder.Test;
 import lombok.NonNull;
 import lombok.SneakyThrows;
 import lombok.Value;
 
 import java.io.IOException;
-import java.io.StringReader;
 import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -51,14 +51,14 @@ abstract class BarReader {
 
     private HttpRequest request(Test test, int n) {return HttpRequest.from(requestHeaders(test, n), requestBody(test, n));}
 
-    private Properties requestHeaders(Test test, int n) {return properties(read(test.getPath() + "/" + n + " request-headers.properties"));}
+    private Properties requestHeaders(Test test, int n) {return HttpUtils.properties(read(test.getPath() + "/" + n + " request-headers.properties"));}
 
     private Optional<String> requestBody(Test test, int n) {return optionalRead(test.getPath() + "/" + n + " request-body.json");}
 
 
     private HttpResponse response(Test test, int n) {return HttpResponse.from(responseHeaders(test, n), responseBody(test, n));}
 
-    private Properties responseHeaders(Test test, int n) {return properties(read(test.getPath() + "/" + n + " response-headers.properties"));}
+    private Properties responseHeaders(Test test, int n) {return HttpUtils.properties(read(test.getPath() + "/" + n + " response-headers.properties"));}
 
     private Optional<String> responseBody(Test test, int n) {return optionalRead(test.getPath() + "/" + n + " response-body.json");}
 
@@ -68,14 +68,6 @@ abstract class BarReader {
     }
 
     protected abstract Optional<String> optionalRead(String name);
-
-
-    @SneakyThrows(IOException.class)
-    private static Properties properties(String string) {
-        var properties = new Properties();
-        properties.load(new StringReader(string));
-        return properties;
-    }
 
 
     @Value static class TreeEntry implements Comparable<TreeEntry> {

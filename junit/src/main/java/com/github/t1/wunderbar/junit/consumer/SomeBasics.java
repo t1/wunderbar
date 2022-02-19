@@ -113,8 +113,8 @@ public class SomeBasics implements SomeData {
     static double someDouble() {return Double.parseDouble(someInt() + ".2");}
 
     static String someString(Some some, AnnotatedElement location) {
-        String tags = (some == null || some.value().length == 0) ? "" : (String.join("-", some.value()) + "-");
-        return String.format("%s%s-%05d", tags, name(location), someInt());
+        String tags = (some == null || some.value().length == 0) ? "" : ("-" + String.join("-", some.value()));
+        return String.format("%s%s-%05d", name(location), tags, someInt());
     }
 
     static UUID someUUID() {return UUID.fromString(String.format("00000000-0000-0000-0000-%012d", someInt()));}

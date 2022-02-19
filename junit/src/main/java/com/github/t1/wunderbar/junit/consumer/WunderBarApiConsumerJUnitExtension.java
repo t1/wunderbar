@@ -1,11 +1,9 @@
 package com.github.t1.wunderbar.junit.consumer;
 
-import com.github.t1.wunderbar.common.Internal;
 import com.github.t1.wunderbar.junit.Register;
 import com.github.t1.wunderbar.junit.WunderBarException;
 import io.smallrye.graphql.client.typesafe.api.GraphQLClientApi;
 import lombok.SneakyThrows;
-import lombok.Value;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.extension.AfterEachCallback;
 import org.junit.jupiter.api.extension.BeforeEachCallback;
@@ -16,8 +14,6 @@ import org.junit.jupiter.api.extension.ParameterContext;
 import org.junit.jupiter.api.extension.ParameterResolutionException;
 import org.junit.jupiter.api.extension.ParameterResolver;
 
-import javax.json.JsonValue;
-import javax.json.bind.annotation.JsonbTypeSerializer;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.AnnotatedElement;
 import java.lang.reflect.Constructor;
@@ -42,7 +38,6 @@ import java.util.stream.Stream;
 import java.util.stream.Stream.Builder;
 
 import static com.github.t1.wunderbar.common.Utils.getField;
-import static com.github.t1.wunderbar.common.Utils.name;
 import static com.github.t1.wunderbar.common.Utils.setField;
 import static com.github.t1.wunderbar.junit.JunitUtils.ORDER;
 import static com.github.t1.wunderbar.junit.consumer.Level.AUTO;
@@ -52,10 +47,7 @@ import static com.github.t1.wunderbar.junit.consumer.Level.UNIT;
 import static com.github.t1.wunderbar.junit.consumer.Service.DEFAULT_ENDPOINT;
 import static com.github.t1.wunderbar.junit.consumer.Technology.GRAPHQL;
 import static com.github.t1.wunderbar.junit.consumer.Technology.REST;
-import static com.github.t1.wunderbar.junit.consumer.WunderBarApiConsumer.NONE;
-import static com.github.t1.wunderbar.junit.http.HttpUtils.readJson;
 import static java.time.temporal.ChronoUnit.NANOS;
-import static java.util.Locale.ROOT;
 import static java.util.stream.Collectors.toList;
 import static org.junit.jupiter.api.extension.ExtensionContext.Namespace.GLOBAL;
 
@@ -91,7 +83,7 @@ class WunderBarApiConsumerJUnitExtension implements Extension, BeforeEachCallbac
             GeneratedDataPoint.find(generatedDataPoints, value).ifPresent(data -> {
                 throw new WunderBarException("[" + generator + "] generated a non-unique value for " + location + ". There's already " + data);
             });
-            var generatedDataPoint = new GeneratedDataPoint(some, type(value), location, readJson(value));
+            var generatedDataPoint = new GeneratedDataPoint(some, location, value);
             generatedDataPoints.add(generatedDataPoint);
             log.debug("generated {} {}", value, generatedDataPoint.getLocation());
             return value;
@@ -106,46 +98,15 @@ class WunderBarApiConsumerJUnitExtension implements Extension, BeforeEachCallbac
             }
         }
 
-        private <T> String type(T value) {return value.getClass().getName();}
+        @Override public AnnotatedElement location(Object value) {return find(value).getLocation();}
 
-        @Override public AnnotatedElement location(Object value) {return find(value).location;}
-
-        @Override public Some findSomeFor(Object value) {return find(value).some;}
+        @Override public Some findSomeFor(Object value) {return find(value).getSome();}
 
         private GeneratedDataPoint find(Object value) {
             return GeneratedDataPoint.find(generatedDataPoints, value)
                 .orElseThrow(() -> new WunderBarException("this value was not generated via the WunderBar @Some annotation: " + value));
         }
     };
-
-    public static @Internal @Value class GeneratedDataPoint {
-        static Optional<GeneratedDataPoint> find(List<GeneratedDataPoint> list, Object value) {
-            var json = readJson(value);
-            return list.stream().filter(item -> item.value.equals(json)).findFirst();
-        }
-
-        @JsonbTypeSerializer(JsonbSomeSerializer.class)
-        Some some;
-        String type;
-        AnnotatedElement location;
-        JsonValue value;
-
-        public String getLocation() {
-            if (location == null) return "";
-            return location.getClass().getSimpleName().toLowerCase(ROOT) + " [" + name(location) + "] @" + container(location);
-        }
-
-        private static String container(AnnotatedElement location) {
-            if (location instanceof Field) return "class " + ((Field) location).getDeclaringClass().getName();
-            if (location instanceof Parameter) {
-                var executable = ((Parameter) location).getDeclaringExecutable();
-                return "method " + executable.getDeclaringClass().getName() + "#" + executable.getName();
-            }
-            return "";
-        }
-
-        @Override public String toString() {return value + " -> " + some + ((location == null) ? "" : ":" + location);}
-    }
 
     @Override public void beforeEach(ExtensionContext context) {
         INSTANCE = this;
@@ -204,16 +165,8 @@ class WunderBarApiConsumerJUnitExtension implements Extension, BeforeEachCallbac
     }
 
     private BarWriter createBar(String fileName) {
-        if (fileName.equals(NONE)) return null;
-        var archiveComment = archiveComment();
-        log.info("create bar [{}] in {}", archiveComment, fileName);
-        var writer = BarWriter.to(fileName);
-        writer.setComment(archiveComment);
-        return writer;
-    }
-
-    private String archiveComment() {
-        return "level: " + level();
+        if (fileName.equals(WunderBarApiConsumer.NONE)) return null;
+        return BarWriter.to(fileName);
     }
 
     private void registerSomeDataGenerators() {

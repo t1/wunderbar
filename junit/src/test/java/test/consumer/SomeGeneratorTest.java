@@ -275,7 +275,7 @@ class SomeGeneratorTest {
 
         then(data.foo).startsWith("valid-data-foo-");
         then(data.bar).isEqualTo(new CustomWrapper(1));
-        then(data.baz).startsWith("cool-baz-");
+        then(data.baz).startsWith("baz-cool-");
         then(data.gen).isEqualTo(new CustomGeneric<>(data.gen.wrapped));
         then(generator.location(data.foo.substring("valid-data-".length()))).isEqualTo(CustomType.class.getDeclaredField("foo"));
         then(generator.location(new CustomWrapper(1))).isEqualTo(CustomType.class.getDeclaredField("bar"));

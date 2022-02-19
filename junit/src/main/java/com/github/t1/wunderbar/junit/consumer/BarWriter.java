@@ -1,30 +1,32 @@
 package com.github.t1.wunderbar.junit.consumer;
 
 import com.github.t1.wunderbar.common.Internal;
-import com.github.t1.wunderbar.junit.consumer.WunderBarApiConsumerJUnitExtension.GeneratedDataPoint;
 import com.github.t1.wunderbar.junit.http.HttpRequest;
 import com.github.t1.wunderbar.junit.http.HttpResponse;
-import lombok.RequiredArgsConstructor;
 import lombok.Setter;
+import lombok.extern.slf4j.Slf4j;
 
-import javax.json.JsonNumber;
-import javax.json.JsonString;
-import javax.json.JsonValue;
 import java.io.Closeable;
 import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
+import java.util.Optional;
+import java.util.Properties;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import static com.github.t1.wunderbar.junit.http.HttpUtils.readJson;
+import static com.github.t1.wunderbar.junit.http.HttpUtils.properties;
 import static com.github.t1.wunderbar.junit.http.HttpUtils.toJson;
 import static java.util.Collections.emptyList;
 
+@Slf4j
 public @Internal abstract class BarWriter implements Closeable {
     public static BarWriter to(String fileName) {
         Path path = Path.of(fileName);
-        return fileName.endsWith("/") ? new DirectoryBarWriter(path) : new JarBarWriter(path);
+        var archiveComment = "version: 1.1\n";
+        log.info("create bar [{}] in {}", archiveComment, fileName);
+        var barWriter = fileName.endsWith("/") ? new DirectoryBarWriter(path) : new JarBarWriter(path);
+        barWriter.setComment(archiveComment);
+        return barWriter;
     }
 
     @Setter private List<GeneratedDataPoint> generatedDataPoints = emptyList(); // this class won't change it
@@ -33,7 +35,7 @@ public @Internal abstract class BarWriter implements Closeable {
 
     public abstract Path getPath();
 
-    public abstract void setComment(String directory);
+    protected abstract void setComment(String directory);
 
     public abstract void setDirectory(String directory);
 
@@ -41,61 +43,34 @@ public @Internal abstract class BarWriter implements Closeable {
 
     public final void save(HttpRequest request, HttpResponse response) {
         String id = getDirectory() + "/" + counter().incrementAndGet() + " ";
+        writeRequestFiles(request, id);
+        writeResponseFiles(response, id);
+    }
+
+    private void writeRequestFiles(HttpRequest request, String id) {
         if (request.getAuthorization() != null) request = request.withAuthorization(request.getAuthorization().toDummy());
         write(id + "request-headers.properties", request.headerProperties());
-        request.body().ifPresent(body -> write(id, "request", body));
+        request.body().ifPresent(body -> writeBody(id + "request", body));
+        writeVariables(id + "request", request.body(), properties(request.headerProperties()));
+    }
 
+    private void writeResponseFiles(HttpResponse response, String id) {
         write(id + "response-headers.properties", response.headerProperties());
-        response.body().ifPresent(body -> write(id, "response", body));
+        response.body().ifPresent(body -> writeBody(id + "response", body));
+        writeVariables(id + "response", response.body(), properties(response.headerProperties()));
     }
 
-    private void write(String id, String direction, String body) {
-        write(id + direction + "-body.json", body);
+    private void writeBody(String fileNamePrefix, String body) {
+        write(fileNamePrefix + "-body.json", body);
+    }
 
-        var variables = new VariablesCollector(new HashMap<>(), "", readJson(body)).collect();
+    private void writeVariables(String fileNamePrefix, Optional<String> optionalBody, Properties headers) {
+        var variables = new HashMap<String, GeneratedDataPoint>();
+        var variablesCollector = new VariablesCollector(generatedDataPoints, variables, "");
+        optionalBody.ifPresent(variablesCollector::collectBody);
+        variablesCollector.collect(headers);
         if (!variables.isEmpty())
-            write(id + direction + "-variables.json", toJson(variables));
-    }
-
-    @RequiredArgsConstructor
-    private class VariablesCollector {
-        private final Map<String, GeneratedDataPoint> variables;
-        private final String path;
-        private final JsonValue json;
-
-        public Map<String, GeneratedDataPoint> collect() {
-            switch (json.getValueType()) {
-                case STRING:
-                    put(((JsonString) json).getString());
-                    break;
-                case NUMBER:
-                    put(((JsonNumber) json).bigDecimalValue());
-                    break;
-                case OBJECT:
-                    put(json.asJsonObject());
-                    json.asJsonObject().forEach((key, field) -> new VariablesCollector(variables, path + "/" + key, field)
-                        .collect());
-                    break;
-                case ARRAY:
-                    var array = json.asJsonArray();
-                    put(array);
-                    for (int i = 0; i < array.size(); i++) {
-                        new VariablesCollector(variables, path + "/" + i, array.get(i))
-                            .collect();
-                    }
-                    break;
-                case NULL:
-                case TRUE:
-                case FALSE:
-                    break; // these values can't be unique
-            }
-            return variables;
-        }
-
-        private void put(Object value) {
-            GeneratedDataPoint.find(BarWriter.this.generatedDataPoints, value)
-                .ifPresent(generated -> variables.put(path, generated));
-        }
+            write(fileNamePrefix + "-variables.json", toJson(variables));
     }
 
     public abstract AtomicInteger counter();

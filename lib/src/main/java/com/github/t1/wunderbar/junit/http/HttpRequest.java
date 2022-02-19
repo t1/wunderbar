@@ -2,9 +2,12 @@ package com.github.t1.wunderbar.junit.http;
 
 import com.github.t1.wunderbar.common.Internal;
 import com.github.t1.wunderbar.junit.http.Authorization.Dummy;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.NonNull;
 import lombok.Value;
 import lombok.With;
 
@@ -17,6 +20,8 @@ import javax.json.JsonValue;
 import javax.json.bind.annotation.JsonbCreator;
 import javax.ws.rs.core.MediaType;
 import java.net.URI;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.concurrent.atomic.AtomicReference;
@@ -32,6 +37,8 @@ import static com.github.t1.wunderbar.junit.http.HttpUtils.formatJson;
 import static com.github.t1.wunderbar.junit.http.HttpUtils.isCompatible;
 import static com.github.t1.wunderbar.junit.http.HttpUtils.optional;
 import static com.github.t1.wunderbar.junit.http.HttpUtils.read;
+import static java.util.Collections.unmodifiableList;
+import static java.util.stream.Collectors.joining;
 import static javax.json.JsonValue.ValueType.OBJECT;
 import static javax.ws.rs.core.HttpHeaders.ACCEPT;
 import static javax.ws.rs.core.HttpHeaders.AUTHORIZATION;
@@ -43,6 +50,7 @@ import static lombok.AccessLevel.NONE;
 public class HttpRequest {
     public static HttpRequest from(Properties properties, Optional<String> body) {
         var builder = HttpRequest.builder();
+        // FIXME #8 read all headers
         optional(properties, "Method").ifPresent(builder::method);
         optional(properties, "URI").ifPresent(builder::uri);
         optional(properties, ACCEPT).map(MediaType::valueOf).ifPresent(builder::accept);
@@ -59,7 +67,8 @@ public class HttpRequest {
     String uri;
     Authorization authorization;
     MediaType contentType;
-    MediaType accept;
+    List<MediaType> accept;
+    List<Header> headers;
     String body;
     /** internal, lazily converted json */
     @Getter(NONE) AtomicReference<Optional<JsonValue>> jsonValue = new AtomicReference<>();
@@ -69,14 +78,16 @@ public class HttpRequest {
         String uri,
         Authorization authorization,
         MediaType contentType,
-        MediaType accept,
+        List<MediaType> accept,
+        List<Header> headers,
         String body
     ) {
         this.method = (method == null) ? "GET" : method;
         this.uri = (uri == null) ? "/" : uri;
         this.contentType = (contentType == null) ? APPLICATION_JSON_UTF8 : contentType;
-        this.accept = (accept == null) ? APPLICATION_JSON_UTF8 : accept;
+        this.accept = (accept == null) ? List.of(APPLICATION_JSON_UTF8) : accept;
         this.authorization = authorization;
+        this.headers = headers;
         this.body = body;
     }
 
@@ -86,9 +97,11 @@ public class HttpRequest {
         return "" +
                "Method: " + method + "\n" +
                "URI: " + uri + "\n" +
-               ((accept == null) ? "" : ACCEPT + ": " + accept + "\n") +
+               ((accept == null) ? "" : ACCEPT + ": " + ((accept.size() == 1) ? accept.get(0)
+                   : accept.stream().map(MediaType::toString).collect(joining("; "))) + "\n") +
                ((contentType == null) ? "" : CONTENT_TYPE + ": " + contentType + "\n") +
-               ((authorization == null) ? "" : AUTHORIZATION + ": " + authorization + "\n");
+               ((authorization == null) ? "" : AUTHORIZATION + ": " + authorization + "\n") +
+               ((headers == null) ? "" : headers.stream().map(Header::toString).collect(joining("\n")) + "\n");
     }
 
     public URI getUri() {return URI.create(uri);}
@@ -112,8 +125,8 @@ public class HttpRequest {
         return this.method.equals(that.method)
                && this.uri.equals(that.uri)
                && (this.authorization == null || this.authorization.equals(that.authorization))
-               && (this.contentType == null || this.contentType.isCompatible(that.contentType))
-               && (this.accept == null || this.accept.isCompatible(that.accept))
+               && (this.contentType == null || isCompatible(this.contentType, that.contentType))
+               && (this.accept == null || isCompatible(this.accept, that.accept))
                && (this.body == null || matchesBody(that));
     }
 
@@ -173,6 +186,14 @@ public class HttpRequest {
 
     public HttpRequest with(JsonValue body) {return withBody(formatJson(body));}
 
+    @NoArgsConstructor(force = true) @AllArgsConstructor
+    public static @Value class Header {
+        @NonNull String name;
+        @NonNull List<String> values;
+
+        @Override public String toString() {return (values.isEmpty()) ? "" : name + ": " + String.join("; ", values);}
+    }
+
     @SuppressWarnings("unused")
     public static class HttpRequestBuilder {
         public HttpRequestBuilder uri(URI uri) {
@@ -194,11 +215,13 @@ public class HttpRequest {
         }
 
         public HttpRequestBuilder accept(String accept) {
-            return accept(firstMediaType(accept));
+            if (accept.startsWith("[") && accept.endsWith("]")) accept = accept.substring(1, accept.length() - 1);
+            return accept(MediaType.valueOf(accept));
         }
 
         public HttpRequestBuilder accept(MediaType accept) {
-            this.accept = accept;
+            if (this.accept == null) this.accept = new ArrayList<>();
+            this.accept.add(accept);
             return this;
         }
 
@@ -210,6 +233,26 @@ public class HttpRequest {
 
         public HttpRequestBuilder body(String body) {
             this.body = body;
+            return this;
+        }
+
+        public HttpRequestBuilder header(String name, List<String> values) {
+            switch (name) {
+                case AUTHORIZATION:
+                    assert values.size() == 1;
+                    authorization(Authorization.valueOf(values.get(0)));
+                    break;
+                case ACCEPT:
+                    values.forEach(this::accept);
+                    break;
+                case CONTENT_TYPE:
+                    assert values.size() == 1;
+                    contentType(values.get(0));
+                    break;
+                default:
+                    if (this.headers == null) this.headers = new ArrayList<>();
+                    this.headers.add(new Header(name, unmodifiableList(values)));
+            }
             return this;
         }
     }

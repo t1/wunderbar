@@ -56,6 +56,6 @@ class DirectoryBarWriter extends BarWriter {
 
     @Override public void close() {
         directory = "";
-        write("comment.txt", comment);
+        write("comment.yaml", comment);
     }
 }

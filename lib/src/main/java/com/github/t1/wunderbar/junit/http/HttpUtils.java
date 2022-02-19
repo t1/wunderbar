@@ -1,5 +1,6 @@
 package com.github.t1.wunderbar.junit.http;
 
+import lombok.SneakyThrows;
 import lombok.experimental.UtilityClass;
 
 import javax.json.Json;
@@ -14,10 +15,12 @@ import javax.json.stream.JsonParsingException;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.Response.StatusType;
+import java.io.IOException;
 import java.io.StringReader;
 import java.io.StringWriter;
 import java.nio.charset.Charset;
 import java.util.Base64;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Properties;
@@ -130,6 +133,18 @@ public class HttpUtils {
      *
      * @see <a href="https://datatracker.ietf.org/doc/html/rfc6838#section-4.2.8">RFC-6838</a>
      */
+    public static boolean isCompatible(List<MediaType> left, List<MediaType> right) {
+        for (MediaType thatType : left)
+            if (right.stream().anyMatch(a -> a.isCompatible(thatType)))
+                return true;
+        return false;
+    }
+
+    /**
+     * Like {@link MediaType#isCompatible(MediaType)}, but taking suffixes like <b><code>+json</code></b> into account.
+     *
+     * @see <a href="https://datatracker.ietf.org/doc/html/rfc6838#section-4.2.8">RFC-6838</a>
+     */
     public static boolean isCompatible(MediaType left, MediaType right) {
         if (left == null) return right == null;
         if (right == null) return false;
@@ -147,5 +162,12 @@ public class HttpUtils {
     /** The username (upn) in a JWT token string. Careful: this fails terribly with invalid tokens */
     public static String jwtUpn(String token) {
         return readJson(base64decode(token.split("\\.", 3)[1])).asJsonObject().getString("upn");
+    }
+
+    @SneakyThrows(IOException.class)
+    public static Properties properties(String string) {
+        var properties = new Properties();
+        properties.load(new StringReader(string));
+        return properties;
     }
 }

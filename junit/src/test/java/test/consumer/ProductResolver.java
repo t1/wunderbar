@@ -1,6 +1,7 @@
 package test.consumer;
 
 import io.smallrye.graphql.client.typesafe.api.GraphQLClientApi;
+import io.smallrye.graphql.client.typesafe.api.Header;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -30,6 +31,8 @@ class ProductResolver {
 
     Product product(@Source Item item) {return products.product(item.getProductId());}
 
+    Product product(String customHeader, @Source Item item) {return products.product(customHeader, item.getProductId());}
+
     Product namedProduct(@Source Item item) {return namedProducts.productById(item.getProductId());}
 
     Product productGetter(@Source Item item) {return productsGetter.getProduct(item.getProductId());}
@@ -42,6 +45,7 @@ class ProductResolver {
     @GraphQLClientApi(endpoint = "dummy")
     interface Products {
         Product product(@NonNull String id);
+        Product product(@Header String customHeader, @NonNull String id);
         Product patch(@NonNull Product patch);
     }
 

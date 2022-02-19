@@ -9,13 +9,12 @@ import lombok.extern.slf4j.Slf4j;
 import java.net.InetSocketAddress;
 import java.net.URI;
 import java.nio.charset.Charset;
+import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Function;
 
 import static com.github.t1.wunderbar.junit.http.HttpUtils.charset;
-import static io.undertow.util.Headers.ACCEPT;
-import static io.undertow.util.Headers.AUTHORIZATION;
 import static io.undertow.util.Headers.CONTENT_TYPE;
 
 @Slf4j
@@ -51,14 +50,7 @@ public class HttpServer {
     }
 
     private void aroundInvoke(HttpServerExchange exchange) {
-        var requestBuilder = HttpRequest.builder()
-            .method(exchange.getRequestMethod().toString())
-            .uri(URI.create(exchange.getRequestURI()))
-            .contentType(HttpUtils.firstMediaType(exchange.getRequestHeaders().getFirst(CONTENT_TYPE)))
-            .accept(HttpUtils.firstMediaType(exchange.getRequestHeaders().getFirst(ACCEPT)))
-            .authorization(Authorization.valueOf(exchange.getRequestHeaders().getFirst(AUTHORIZATION)));
-        readRequestBody(exchange).ifPresent(requestBuilder::body);
-        var request = requestBuilder.build();
+        HttpRequest request = buildRequest(exchange);
 
         var response = handler.apply(request);
 
@@ -66,6 +58,19 @@ public class HttpServer {
         exchange.getResponseHeaders().put(CONTENT_TYPE, response.getContentType().toString());
         response.body().ifPresent(body ->
             exchange.getResponseSender().send(body, charset(response.getContentType())));
+    }
+
+    private HttpRequest buildRequest(HttpServerExchange exchange) {
+        var requestBuilder = HttpRequest.builder()
+            .method(exchange.getRequestMethod().toString())
+            .uri(URI.create(exchange.getRequestURI()));
+
+        exchange.getRequestHeaders().forEach(headerValue ->
+            requestBuilder.header(headerValue.getHeaderName().toString(), List.of(headerValue.toArray())));
+
+        readRequestBody(exchange).ifPresent(requestBuilder::body);
+
+        return requestBuilder.build();
     }
 
     @SneakyThrows(InterruptedException.class)
