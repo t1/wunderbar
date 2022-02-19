@@ -1,15 +1,17 @@
 package com.github.t1.wunderbar.junit.provider;
 
 import com.github.t1.wunderbar.junit.WunderBarException;
+import com.github.t1.wunderbar.junit.http.Authorization;
+import com.github.t1.wunderbar.junit.http.Authorization.Dummy;
 import com.github.t1.wunderbar.junit.http.HttpInteraction;
 import com.github.t1.wunderbar.junit.http.HttpRequest;
 import com.github.t1.wunderbar.junit.http.HttpResponse;
-import com.github.t1.wunderbar.junit.http.HttpUtils;
 import com.github.t1.wunderbar.junit.provider.WunderBarTestFinder.Test;
 import lombok.NonNull;
 import lombok.SneakyThrows;
 import lombok.Value;
 
+import javax.ws.rs.core.MediaType;
 import java.io.IOException;
 import java.net.URI;
 import java.nio.file.Files;
@@ -21,7 +23,12 @@ import java.util.Properties;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
+import static com.github.t1.wunderbar.junit.http.HttpUtils.optional;
+import static com.github.t1.wunderbar.junit.http.HttpUtils.properties;
 import static java.util.stream.Collectors.toUnmodifiableList;
+import static javax.ws.rs.core.HttpHeaders.ACCEPT;
+import static javax.ws.rs.core.HttpHeaders.AUTHORIZATION;
+import static javax.ws.rs.core.HttpHeaders.CONTENT_TYPE;
 
 abstract class BarReader {
     @SneakyThrows(IOException.class)
@@ -49,16 +56,31 @@ abstract class BarReader {
             .collect(toUnmodifiableList());
     }
 
-    private HttpRequest request(Test test, int n) {return HttpRequest.from(requestHeaders(test, n), requestBody(test, n));}
+    private HttpRequest request(Test test, int n) {return request(requestHeaders(test, n), requestBody(test, n));}
 
-    private Properties requestHeaders(Test test, int n) {return HttpUtils.properties(read(test.getPath() + "/" + n + " request-headers.properties"));}
+    private static HttpRequest request(Properties properties, Optional<String> body) {
+        var builder = HttpRequest.builder();
+        // FIXME #8 read all headers
+        optional(properties, "Method").ifPresent(builder::method);
+        optional(properties, "URI").ifPresent(builder::uri);
+        optional(properties, ACCEPT).map(MediaType::valueOf).ifPresent(builder::accept);
+        optional(properties, CONTENT_TYPE).ifPresent(builder::contentType);
+        optional(properties, AUTHORIZATION).map(Authorization::valueOf).ifPresent(value -> {
+            assert value instanceof Dummy : "expected " + AUTHORIZATION + " header to be the dummy value!";
+            builder.authorization(value);
+        });
+        body.ifPresent(builder::body);
+        return builder.build();
+    }
+
+    private Properties requestHeaders(Test test, int n) {return properties(read(test.getPath() + "/" + n + " request-headers.properties"));}
 
     private Optional<String> requestBody(Test test, int n) {return optionalRead(test.getPath() + "/" + n + " request-body.json");}
 
 
     private HttpResponse response(Test test, int n) {return HttpResponse.from(responseHeaders(test, n), responseBody(test, n));}
 
-    private Properties responseHeaders(Test test, int n) {return HttpUtils.properties(read(test.getPath() + "/" + n + " response-headers.properties"));}
+    private Properties responseHeaders(Test test, int n) {return properties(read(test.getPath() + "/" + n + " response-headers.properties"));}
 
     private Optional<String> responseBody(Test test, int n) {return optionalRead(test.getPath() + "/" + n + " response-body.json");}
 
