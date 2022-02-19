@@ -13,6 +13,7 @@ import java.util.regex.Pattern;
 import java.util.stream.Stream;
 import java.util.zip.ZipEntry;
 
+import static com.github.t1.wunderbar.junit.http.HttpUtils.properties;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
 @Slf4j
@@ -47,9 +48,9 @@ class JarBarReader extends BarReader {
     }
 
     @Override String getDisplayName() {
-        var comment = jarFile.getComment();
+        var comment = properties(jarFile.getComment());
         var fileName = Path.of(jarFile.getName()).getFileName().toString();
-        return (comment == null) ? fileName : (comment + " [" + fileName + "]");
+        return fileName + Optional.ofNullable(comment.getProperty("version")).map(version -> " [v" + version + "]").orElse("");
     }
 
 

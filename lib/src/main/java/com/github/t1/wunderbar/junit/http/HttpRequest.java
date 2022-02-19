@@ -1,7 +1,6 @@
 package com.github.t1.wunderbar.junit.http;
 
 import com.github.t1.wunderbar.common.Internal;
-import com.github.t1.wunderbar.junit.http.Authorization.Dummy;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
@@ -23,7 +22,6 @@ import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.Properties;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Function;
 import java.util.regex.MatchResult;
@@ -35,7 +33,6 @@ import static com.github.t1.wunderbar.junit.http.HttpUtils.JSONB;
 import static com.github.t1.wunderbar.junit.http.HttpUtils.firstMediaType;
 import static com.github.t1.wunderbar.junit.http.HttpUtils.formatJson;
 import static com.github.t1.wunderbar.junit.http.HttpUtils.isCompatible;
-import static com.github.t1.wunderbar.junit.http.HttpUtils.optional;
 import static com.github.t1.wunderbar.junit.http.HttpUtils.read;
 import static java.util.Collections.unmodifiableList;
 import static java.util.stream.Collectors.joining;
@@ -48,21 +45,6 @@ import static lombok.AccessLevel.NONE;
 
 @Value @Builder @With @EqualsAndHashCode(exclude = "jsonValue")
 public class HttpRequest {
-    public static HttpRequest from(Properties properties, Optional<String> body) {
-        var builder = HttpRequest.builder();
-        // FIXME #8 read all headers
-        optional(properties, "Method").ifPresent(builder::method);
-        optional(properties, "URI").ifPresent(builder::uri);
-        optional(properties, ACCEPT).map(MediaType::valueOf).ifPresent(builder::accept);
-        optional(properties, CONTENT_TYPE).ifPresent(builder::contentType);
-        optional(properties, AUTHORIZATION).map(Authorization::valueOf).ifPresent(value -> {
-            assert value instanceof Dummy : "expected " + AUTHORIZATION + " header to be the dummy value!";
-            builder.authorization(value);
-        });
-        body.ifPresent(builder::body);
-        return builder.build();
-    }
-
     String method;
     String uri;
     Authorization authorization;
@@ -95,13 +77,15 @@ public class HttpRequest {
 
     public String headerProperties() {
         return "" +
-               "Method: " + method + "\n" +
-               "URI: " + uri + "\n" +
-               ((accept == null) ? "" : ACCEPT + ": " + ((accept.size() == 1) ? accept.get(0)
-                   : accept.stream().map(MediaType::toString).collect(joining("; "))) + "\n") +
+               ((accept == null) ? "" : ACCEPT + ": " + accept() + "\n") +
                ((contentType == null) ? "" : CONTENT_TYPE + ": " + contentType + "\n") +
                ((authorization == null) ? "" : AUTHORIZATION + ": " + authorization + "\n") +
                ((headers == null) ? "" : headers.stream().map(Header::toString).collect(joining("\n")) + "\n");
+    }
+
+    public String accept() {
+        return (accept.size() == 1) ? accept.get(0).toString()
+            : accept.stream().map(MediaType::toString).collect(joining("; "));
     }
 
     public URI getUri() {return URI.create(uri);}

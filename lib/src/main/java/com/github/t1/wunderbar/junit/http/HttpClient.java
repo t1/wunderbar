@@ -42,7 +42,7 @@ public class HttpClient {
             .uri(URI.create(baseUri + "" + request.getUri()))
             .method(request.getMethod(), request.body().map(BodyPublishers::ofString).orElse(noBody()))
             .header(CONTENT_TYPE, request.getContentType().toString())
-            .header(ACCEPT, request.getAccept().toString());
+            .header(ACCEPT, request.accept());
         if (request.getAuthorization() != null) builder.header(AUTHORIZATION, request.getAuthorization().toHeader());
         return builder.build();
     }

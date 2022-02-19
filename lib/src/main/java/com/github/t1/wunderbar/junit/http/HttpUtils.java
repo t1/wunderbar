@@ -54,7 +54,7 @@ public class HttpUtils {
         return Status.fromStatusCode(code);
     }
 
-    static Optional<String> optional(Properties properties, String method) {
+    public static Optional<String> optional(Properties properties, String method) {
         return Optional.ofNullable(properties.getProperty(method, null));
     }
 
@@ -167,7 +167,7 @@ public class HttpUtils {
     @SneakyThrows(IOException.class)
     public static Properties properties(String string) {
         var properties = new Properties();
-        properties.load(new StringReader(string));
+        if (string != null) properties.load(new StringReader(string));
         return properties;
     }
 }

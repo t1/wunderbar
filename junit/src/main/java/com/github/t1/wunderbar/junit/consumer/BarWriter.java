@@ -49,9 +49,13 @@ public @Internal abstract class BarWriter implements Closeable {
 
     private void writeRequestFiles(HttpRequest request, String id) {
         if (request.getAuthorization() != null) request = request.withAuthorization(request.getAuthorization().toDummy());
-        write(id + "request-headers.properties", request.headerProperties());
+        var headers =
+            "Method: " + request.getMethod() + "\n" +
+            "URI: " + request.getUri() + "\n" +
+            request.headerProperties();
+        write(id + "request-headers.properties", headers);
         request.body().ifPresent(body -> writeBody(id + "request", body));
-        writeVariables(id + "request", request.body(), properties(request.headerProperties()));
+        writeVariables(id + "request", request.body(), properties(headers));
     }
 
     private void writeResponseFiles(HttpResponse response, String id) {
