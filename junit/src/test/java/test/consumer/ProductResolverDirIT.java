@@ -3,6 +3,7 @@ package test.consumer;
 import com.github.t1.wunderbar.junit.Register;
 import com.github.t1.wunderbar.junit.consumer.Service;
 import com.github.t1.wunderbar.junit.consumer.Some;
+import com.github.t1.wunderbar.junit.consumer.SomeSingleTypes;
 import com.github.t1.wunderbar.junit.consumer.SystemUnderTest;
 import com.github.t1.wunderbar.junit.consumer.WunderBarApiConsumer;
 import org.eclipse.microprofile.graphql.NonNull;
@@ -16,6 +17,8 @@ import test.consumer.ProductsGateway.ProductsRestClient;
 import javax.json.JsonValue;
 import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.AnnotatedElement;
+import java.lang.reflect.Type;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Properties;
@@ -25,7 +28,6 @@ import static com.github.t1.wunderbar.junit.consumer.WunderbarExpectationBuilder
 import static com.github.t1.wunderbar.junit.http.HttpUtils.APPLICATION_JSON_UTF8;
 import static com.github.t1.wunderbar.junit.http.HttpUtils.properties;
 import static com.github.t1.wunderbar.junit.http.HttpUtils.readJson;
-import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
 import static org.assertj.core.api.Assertions.contentOf;
 import static test.consumer.ProductResolverDirIT.DIR;
 
@@ -61,18 +63,16 @@ class ProductResolverDirIT {
         then(jsonFile(prefix + "1 request-variables.json")).isEqualTo(readJson(
             "{" +
             "    \":custom-Header\": {" +
-            "        \"some\": {}," +
+            "        \"some\": {\"tags\": [\"header\"]}," +
             "        \"type\": \"java.lang.String\"," +
             "        \"location\": \"parameter [customHeader] @method " + methodName + "\"," +
             "        \"value\": \"" + customHeader + "\"" +
             "    }," +
             "    \"/variables/id\": {" +
+            "        \"some\": {\"tags\": [\"id\"]}," +
             "        \"type\": \"java.lang.String\"," +
-            "        \"value\": \"" + product.id + "\"," +
             "        \"location\": \"parameter [product] @method " + methodName + "\"," +
-            "        \"some\": {" +
-            "            \"tags\": [\"id\"]" +
-            "        }" +
+            "        \"value\": \"" + product.id + "\"" +
             "    }" +
             "}"));
         then(propertiesFile(prefix + "1 response-headers.properties"))
@@ -138,12 +138,10 @@ class ProductResolverDirIT {
         then(jsonFile(prefix + "1 request-variables.json")).isEqualTo(readJson(
             "{" +
             "    \"/variables/id\": {" +
+            "        \"some\": {\"tags\": [\"id\"]}," +
             "        \"type\": \"java.lang.String\"," +
-            "        \"value\": \"" + product.id + "\"," +
             "        \"location\": \"parameter [product] @method " + methodName + "\"," +
-            "        \"some\": {" +
-            "            \"tags\": [\"id\"]" +
-            "        }" +
+            "        \"value\": \"" + product.id + "\"" +
             "    }" +
             "}"));
     }
@@ -178,63 +176,59 @@ class ProductResolverDirIT {
         @Service ProductsRestClient restService;
         @SystemUnderTest ProductsGateway gateway;
 
-        @Test void shouldGetProduct(@Some Product product, @Some("header") String customHeader) {
+        @Register(SomeVendorContentTypeName.class)
+        @Test void shouldGetProduct(@Some Product product, @Some("header") String customHeader, @Some("vendor") String vendor) {
             given(restService.product(customHeader, product.id)).returns(product);
 
             var response = gateway.product(customHeader, item(product.getId()));
 
             then(response).usingRecursiveComparison().isEqualTo(product);
-            var prefix = "Rest/shouldGetProduct(Product, String)/";
+            var prefix = "Rest/shouldGetProduct(Product, String, String)/";
             then(propertiesFile(prefix + "1 request-headers.properties")).as("request headers")
                 .containsEntry("Method", "GET")
                 .containsEntry("URI", "/rest/products/product-id-00100")
-                .containsEntry("Accept", APPLICATION_JSON)
+                .containsEntry("Accept", "application/" + vendor + "+json;charset=utf-8")
                 .containsEntry("Content-Type", APPLICATION_JSON_UTF8.toString())
                 .containsEntry("Custom-Header", customHeader);
-            then(jsonFile(prefix + "1 request-variables.json")).as("request variables").isEqualTo(readJson(
+            then(jsonFile(prefix + "1 request-variables.json")).as("request variables").isEqualToIgnoringNewFields(readJson(
                 "{" +
                 "    \":URI:/rest/products/{}\": {" +
-                "        \"some\": {\"tags\": [\"id\"]}," +
-                "        \"type\": \"java.lang.String\"," +
-                "        \"location\": \"parameter [product] @method " + Rest.class.getName() + "#shouldGetProduct\"," +
                 "        \"value\": \"" + product.id + "\"" +
                 "    }," +
                 "    \":Custom-Header\": {" +
-                "        \"some\": {}," +
-                "        \"type\": \"java.lang.String\"," +
-                "        \"location\": \"parameter [customHeader] @method " + Rest.class.getName() + "#shouldGetProduct\"," +
+                "        \"some\": {\"tags\": [\"header\"]}," +
                 "        \"value\": \"" + customHeader + "\"" +
                 "    }" +
                 "}"));
-            then(contentOf(barFile(prefix + "1 response-headers.properties"))).as("response headers").isEqualTo(
-                "Status: 200 OK\n" +
-                "Content-Type: application/json;charset=utf-8\n");
+            then(propertiesFile(prefix + "1 response-headers.properties")).as("response headers")
+                .containsEntry("Status", "200 OK")
+                .containsEntry("Content-Type", "application/" + vendor + "+json;charset=utf-8");
             then(jsonFile(prefix + "1 response-body.json")).as("response body").isEqualTo(readJson(
                 "{" +
                 "    \"id\": \"" + product.id + "\"," +
                 "    \"name\": \"" + product.name + "\"," +
                 "    \"price\": " + product.price + "" +
                 "}"));
-            then(jsonFile(prefix + "1 response-variables.json")).as("response variables").isEqualTo(readJson(
+            then(jsonFile(prefix + "1 response-variables.json")).as("response variables").isEqualToIgnoringNewFields(readJson(
                 "{" +
+                "    \":Content-Type:application/{}+json;charset=utf-8\": {" +
+                "        \"some\": {\"tags\": [\"vendor\"]}," +
+                "        \"value\": \"" + vendor + "\"" +
+                "    }," +
                 "    \"\": {" +
-                "        \"some\": {}," +
-                "        \"type\": \"test.consumer.ProductResolver$Product\"," +
-                "        \"location\": \"parameter [product] @method " + ProductResolverDirIT.Rest.class.getName() + "#shouldGetProduct\"," +
                 "        \"value\": {\"id\": \"product-id-00100\", \"name\": \"product product-id-00100\", \"price\": 101}" +
                 "    }," +
                 "    \"/id\": {" +
-                "        \"some\": {\"tags\": [\"id\"]}," +
-                "        \"type\": \"java.lang.String\"," +
-                "        \"location\": \"parameter [product] @method " + ProductResolverDirIT.Rest.class.getName() + "#shouldGetProduct\"," +
                 "        \"value\": \"product-id-00100\"" +
                 "    }," +
                 "    \"/price\": {" +
-                "        \"type\": \"java.lang.Integer\"," +
-                "        \"location\": \"field [price] @class " + Product.class.getName() + "\"," +
                 "        \"value\": 101" +
                 "    }" +
                 "}"));
+        }
+
+        class SomeVendorContentTypeName extends SomeSingleTypes<@Some("vendor") String> {
+            @Override public String some(Some some, Type type, AnnotatedElement location) {return "vnd.product";}
         }
     }
 

@@ -362,8 +362,10 @@ class WunderBarApiConsumerJUnitExtension implements Extension, BeforeEachCallbac
         // parameter#getDeclaredAnnotation, etc. is not sufficient for annotations with TYPE_USE (like `@Some`)
         // see https://stackoverflow.com/questions/66241813/how-to-parse-java-annotation-in-generic-type
         var annotatedTypes = parameter.getDeclaringExecutable().getAnnotatedParameterTypes();
-        return (annotatedTypes.length == 0) ? null : annotatedTypes[0].getDeclaredAnnotation(Some.class);
+        return annotatedTypes[index(parameter)].getDeclaredAnnotation(Some.class);
     }
+
+    private static int index(Parameter parameter) {return getField(parameter, "index");}
 
 
     @Override public void afterEach(ExtensionContext context) {
@@ -390,15 +392,27 @@ class WunderBarApiConsumerJUnitExtension implements Extension, BeforeEachCallbac
         Object[] args = {};
         Constructor<?> found = null;
         for (Constructor<?> constructor : type.getDeclaredConstructors()) {
-            if (constructor.getParameterCount() == 0) found = constructor;
-            if (constructor.getParameterCount() == 1 && SomeGenerator.class.equals(constructor.getParameterTypes()[0])) {
-                found = constructor;
-                args = new Object[]{someGenerator};
-                break;
-            }
+            var foundArgs = args(constructor);
+            if (foundArgs.isEmpty()) continue;
+            args = foundArgs.get();
+            found = constructor;
         }
         if (found == null) throw new WunderBarException("no matching constructor found for " + type);
         found.setAccessible(true);
         return type.cast(found.newInstance(args));
+    }
+
+    private Optional<Object[]> args(Constructor<?> constructor) {
+        var args = new ArrayList<>();
+        for (int i = 0; i < constructor.getParameterCount(); i++) {
+            Class<?> parameterType = constructor.getParameterTypes()[i];
+            if (SomeGenerator.class.equals(parameterType)) args.add(someGenerator);
+            else // implicit parameter for non-static classes
+                context.getRequiredTestInstances().getAllInstances().stream()
+                    .filter(parameterType::isInstance)
+                    .findFirst()
+                    .ifPresent(args::add);
+        }
+        return (args.size() == constructor.getParameterCount()) ? Optional.of(args.toArray()) : Optional.empty();
     }
 }

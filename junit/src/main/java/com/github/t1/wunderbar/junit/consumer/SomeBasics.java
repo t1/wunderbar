@@ -3,6 +3,7 @@ package com.github.t1.wunderbar.junit.consumer;
 import com.github.t1.wunderbar.junit.WunderBarException;
 import lombok.SneakyThrows;
 
+import javax.ws.rs.core.MediaType;
 import java.lang.reflect.AnnotatedElement;
 import java.lang.reflect.Type;
 import java.math.BigDecimal;
@@ -37,6 +38,7 @@ import static java.time.ZoneOffset.UTC;
  * Note that the <code>some...</code> methods are public, but the `@Some` annotation comes with superpowers:
  * automatic logging, reset for every test, and most often a location that you can look up.
  */
+// TODO generate Object, List, Set,
 public class SomeBasics implements SomeData {
     public static final int DEFAULT_START = 100;
     public static final Instant START_INSTANT = ZonedDateTime.of(2000, 1, 1, 0, 0, 0, 0, UTC).toInstant();
@@ -76,6 +78,7 @@ public class SomeBasics implements SomeData {
         if (UUID.class.equals(type)) return () -> (T) someUUID();
         if (URI.class.equals(type)) return () -> (T) someURI();
         if (URL.class.equals(type)) return () -> (T) someURL();
+        if (MediaType.class.equals(type)) return () -> (T) someMediaType();
 
         if (Instant.class.equals(type)) return () -> (T) someInstant();
         if (LocalDate.class.equals(type)) return () -> (T) someLocalDate();
@@ -117,12 +120,16 @@ public class SomeBasics implements SomeData {
         return String.format("%s%s-%05d", name(location), tags, someInt());
     }
 
-    static UUID someUUID() {return UUID.fromString(String.format("00000000-0000-0000-0000-%012d", someInt()));}
+    static UUID someUUID() {return UUID.fromString(someFormattedString("00000000-0000-0000-0000-%012d"));}
 
-    static URI someURI() {return URI.create(String.format("https://example.nowhere/path-%07d", someInt()));}
+    static URI someURI() {return URI.create(someFormattedString("https://example.nowhere/path-%07d"));}
 
     @SneakyThrows(MalformedURLException.class)
     static URL someURL() {return someURI().toURL();}
+
+    static MediaType someMediaType() {return MediaType.valueOf(someFormattedString("application/vnd.%05d+json;charset=utf-8"));}
+
+    static String someFormattedString(String format) {return String.format(format, someInt());}
 
     static Instant someInstant() {return START_INSTANT.plusSeconds(someInt());}
 

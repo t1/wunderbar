@@ -10,6 +10,7 @@ import javax.ws.rs.HeaderParam;
 import javax.ws.rs.PATCH;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
+import javax.ws.rs.Produces;
 import java.io.Closeable;
 
 public class ProductsGateway {
@@ -34,6 +35,7 @@ public class ProductsGateway {
         Product product(@PathParam("id") String id);
 
         @GET @Path("/{id}")
+        @Produces("application/vnd.product+json;charset=utf-8")
         Product product(@HeaderParam("Custom-Header") String customHeader, @PathParam("id") String id);
 
         @PATCH

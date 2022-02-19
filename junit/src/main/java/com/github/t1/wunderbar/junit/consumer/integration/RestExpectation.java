@@ -7,7 +7,11 @@ import com.github.t1.wunderbar.junit.http.ProblemDetails;
 import lombok.extern.slf4j.Slf4j;
 import org.eclipse.microprofile.rest.client.RestClientBuilder;
 
+import javax.ws.rs.Produces;
+import javax.ws.rs.core.MediaType;
 import java.lang.reflect.Method;
+
+import static com.github.t1.wunderbar.junit.http.HttpUtils.APPLICATION_JSON_UTF8;
 
 @Slf4j
 class RestExpectation extends HttpServiceExpectation {
@@ -19,6 +23,12 @@ class RestExpectation extends HttpServiceExpectation {
 
     @Override public HttpResponse handleRequest(HttpRequest request) {
         if (hasException()) return ProblemDetails.of(getException()).toResponse();
-        else return HttpResponse.builder().body(getResponse()).build();
+        else return HttpResponse.builder().body(getResponse()).contentType(contentType()).build();
+    }
+
+    private MediaType contentType() {
+        return method.isAnnotationPresent(Produces.class)
+            ? MediaType.valueOf(method.getAnnotation(Produces.class).value()[0])
+            : APPLICATION_JSON_UTF8;
     }
 }

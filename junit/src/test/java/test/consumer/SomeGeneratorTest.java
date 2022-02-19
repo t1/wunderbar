@@ -17,6 +17,7 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
 
+import javax.ws.rs.core.MediaType;
 import java.lang.reflect.AnnotatedElement;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
@@ -140,6 +141,10 @@ class SomeGeneratorTest {
 
     @Test void shouldGenerateURI(@Some URI uri) {
         then(uri.toString()).isBetween("https://example.nowhere/path-0000000", "https://example.nowhere/path-99999");
+    }
+
+    @Test void shouldGenerateMediaType(@Some MediaType mediaType) {
+        then(mediaType.toString()).isBetween("application/vnd.00000+json;charset=utf-8", "application/vnd.99999+json;charset=utf-8");
     }
 
     @Test void shouldGenerateURL(@Some URL url) {
