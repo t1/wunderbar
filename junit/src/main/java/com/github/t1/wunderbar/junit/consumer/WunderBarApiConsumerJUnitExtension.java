@@ -178,7 +178,7 @@ class WunderBarApiConsumerJUnitExtension implements Extension, BeforeEachCallbac
             .flatMap(register -> Stream.of(register.value()))
             .map(this::newInstance)
             .forEach(dataGenerators::add);
-        dataGenerators.add(new SomeBasics());
+        dataGenerators.add(new SomeBasics(someGenerator));
     }
 
     private Stream<ExtensionContext> extensionContexts() {

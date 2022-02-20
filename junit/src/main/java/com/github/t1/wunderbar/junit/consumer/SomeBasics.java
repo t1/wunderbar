@@ -1,10 +1,12 @@
 package com.github.t1.wunderbar.junit.consumer;
 
 import com.github.t1.wunderbar.junit.WunderBarException;
+import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 
 import javax.ws.rs.core.MediaType;
 import java.lang.reflect.AnnotatedElement;
+import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -21,6 +23,8 @@ import java.time.OffsetTime;
 import java.time.Period;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
+import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 import java.util.function.Supplier;
 
@@ -38,7 +42,8 @@ import static java.time.ZoneOffset.UTC;
  * Note that the <code>some...</code> methods are public, but the `@Some` annotation comes with superpowers:
  * automatic logging, reset for every test, and most often a location that you can look up.
  */
-// TODO generate Object, List, Set,
+// TODO generate Object
+@RequiredArgsConstructor
 public class SomeBasics implements SomeData {
     public static final int DEFAULT_START = 100;
     public static final Instant START_INSTANT = ZonedDateTime.of(2000, 1, 1, 0, 0, 0, 0, UTC).toInstant();
@@ -46,6 +51,8 @@ public class SomeBasics implements SomeData {
     private static int nextInt;
 
     static {reset();}
+
+    private final SomeGenerator someGenerator;
 
     public static void reset() {reset(DEFAULT_START);}
 
@@ -89,6 +96,15 @@ public class SomeBasics implements SomeData {
         if (OffsetTime.class.equals(type)) return () -> (T) someOffsetTime();
         if (Duration.class.equals(type)) return () -> (T) someDuration();
         if (Period.class.equals(type)) return () -> (T) somePeriod();
+
+        if (type instanceof ParameterizedType) {
+            var parameterized = (ParameterizedType) type;
+            var rawType = parameterized.getRawType();
+            if (List.class.equals(rawType))
+                return () -> (T) List.of((Object) someGenerator.generate(some, parameterized.getActualTypeArguments()[0], location));
+            if (Set.class.equals(rawType))
+                return () -> (T) Set.of((Object) someGenerator.generate(some, parameterized.getActualTypeArguments()[0], location));
+        }
 
         return null;
     }

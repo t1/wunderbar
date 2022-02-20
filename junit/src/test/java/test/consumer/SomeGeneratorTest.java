@@ -13,6 +13,7 @@ import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
@@ -35,6 +36,8 @@ import java.time.OffsetTime;
 import java.time.Period;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
+import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
@@ -188,6 +191,28 @@ class SomeGeneratorTest {
     // remember: period is not comparable!
     @Test void shouldGeneratePeriod(@Some Period period) {then(period.getDays()).isBetween(0, QUITE_BIG_INT);}
 
+    @Test void shouldGenerateListOfIntegers(@Some List<Integer> list) {
+        then(list).hasSize(1);
+        then(list.get(0)).isBetween(QUITE_SMALL_INT, QUITE_BIG_INT);
+    }
+
+    @Test void shouldGenerateSetOfIntegers(@Some Set<Integer> set) {
+        then(set).hasSize(1);
+        then(set.iterator().next()).isBetween(QUITE_SMALL_INT, QUITE_BIG_INT);
+    }
+
+    @Test void shouldGenerateListOfListOfIntegers(@Some List<List<Integer>> list) {
+        then(list).hasSize(1);
+        then(list.get(0)).hasSize(1);
+        then(list.get(0).get(0)).isBetween(QUITE_SMALL_INT, QUITE_BIG_INT);
+    }
+
+    @Test void shouldGenerateSetOfListOfIntegers(@Some Set<List<Integer>> set) {
+        then(set).hasSize(1);
+        then(set.iterator().next()).hasSize(1);
+        then(set.iterator().next().get(0)).isBetween(QUITE_SMALL_INT, QUITE_BIG_INT);
+    }
+
     // ---------------------------------------------------- custom generators
     @Register(SomeCustomUris.class)
     @Test void shouldGenerateCustomURI(@Some URI uri) {then(uri).hasToString("dummy-uri");}
@@ -197,19 +222,33 @@ class SomeGeneratorTest {
     }
 
     @Register(SomeCustomIds.class)
-    @Test void shouldGenerateCustomId(@Some({"id", "unrelated"}) String id) {then(id).hasToString("custom-id");}
+    @Test void shouldGenerateCustomId(@Some({"id", "unrelated"}) String id) {then(id).isEqualTo("custom-id");}
+
+    @Disabled("TODO we use the outer @Some; can't access inner. This seems to be a deficit in the JDK. " +
+              "see https://stackoverflow.com/questions/39952812/why-annotation-on-generic-type-argument-is-not-visible-for-nested-type " +
+              "maybe use ByteBuddy?")
+    @Register(SomeCustomIds.class)
+    @Test void shouldGenerateListOfCustomId(@Some("list") List<@Some("id") String> list) {
+        then(list).hasSize(1);
+        then(list.get(0)).isEqualTo("custom-id");
+    }
+
+    @Test void shouldGenerateSetOfWrappers(@Some Set<CustomWrapper> set) {
+        then(set).hasSize(1);
+        then(set.iterator().next()).isEqualTo(new CustomWrapper(1));
+    }
 
     static class SomeCustomIds extends SomeSingleTypes<@Some("id") String> {
         @Override public String some(Some some, Type type, AnnotatedElement location) {return "custom-id";}
     }
 
-    @Register(SomeCustomPrimitiveIntegers.class)
+    @Register(SomeCustomInts.class)
     @Test void shouldGenerateCustomInt(@Some int i1, @Some Integer i2) {
         then(i1).isBetween(-100, -10);
         then(i2).isEqualTo(100);
     }
 
-    static class SomeCustomPrimitiveIntegers implements SomeData {
+    static class SomeCustomInts implements SomeData {
         private int nextInt = -100;
 
         @Override public boolean canGenerate(Some some, Type type, AnnotatedElement location) {
