@@ -13,7 +13,7 @@ import java.lang.reflect.Type;
 public class SomeProducts extends SomeSingleTypes<Product> {
     private final SomeGenerator generator;
 
-    @Override public Product some(Some some, Type type, AnnotatedElement location) {
+    @Override public Product generate(Some some, Type type, AnnotatedElement location) {
         String id = generator.generate(Some.LITERAL.withTags("id"), String.class, location);
         int price = generator.generate(Product.class, "price");
         return Product.builder().id(id).name("product " + id).price(price).build();

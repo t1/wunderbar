@@ -228,7 +228,7 @@ class ProductResolverDirIT {
         }
 
         class SomeVendorContentTypeName extends SomeSingleTypes<@Some("vendor") String> {
-            @Override public String some(Some some, Type type, AnnotatedElement location) {return "vnd.product";}
+            @Override public String generate(Some some, Type type, AnnotatedElement location) {return "vnd.product";}
         }
     }
 

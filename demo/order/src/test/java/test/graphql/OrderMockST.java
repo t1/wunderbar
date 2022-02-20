@@ -5,14 +5,11 @@ import com.github.t1.testcontainers.jee.WildflyContainer;
 import com.github.t1.wunderbar.junit.Register;
 import com.github.t1.wunderbar.junit.consumer.Service;
 import com.github.t1.wunderbar.junit.consumer.Some;
-import com.github.t1.wunderbar.junit.consumer.SomeGenerator;
-import com.github.t1.wunderbar.junit.consumer.SomeSingleTypes;
 import com.github.t1.wunderbar.junit.consumer.WunderBarApiConsumer;
 import io.smallrye.graphql.client.typesafe.api.GraphQLClientApi;
 import io.smallrye.graphql.client.typesafe.api.TypesafeGraphQLClientBuilder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import lombok.RequiredArgsConstructor;
 import lombok.Singular;
 import lombok.experimental.SuperBuilder;
 import org.eclipse.microprofile.graphql.Mutation;
@@ -26,11 +23,7 @@ import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 import test.Slow;
 import test.SomeProductIds;
-import test.graphql.OrderMockST.SomeMockProducts;
-import test.graphql.OrderMockST.SomeOrderInputs;
 
-import java.lang.reflect.AnnotatedElement;
-import java.lang.reflect.Type;
 import java.time.LocalDate;
 import java.util.List;
 
@@ -42,7 +35,7 @@ import static org.testcontainers.containers.Network.newNetwork;
 @Slow
 @Testcontainers
 @WunderBarApiConsumer(fileName = NONE)
-@Register({SomeProductIds.class, SomeMockProducts.class, SomeOrderInputs.class})
+@Register(SomeProductIds.class)
 class OrderMockST {
     private static final Network NETWORK = newNetwork();
 
@@ -119,65 +112,29 @@ class OrderMockST {
     @Service(endpoint = "{endpoint()}") Products products;
     Api api = TypesafeGraphQLClientBuilder.newBuilder().endpoint(ORDERS.baseUri() + "graphql").build(Api.class);
 
-    @Some("product-id") static String productId;
     @Some MockProduct product;
-    LocalDate orderDate;
+    @Some OrderInput orderInput;
     String orderId;
 
     @SuppressWarnings("unused")
     String endpoint() {return "http://localhost:" + PRODUCTS.getMappedPort(8080) + "/wunderbar-mock-server/graphql";}
 
-    @RequiredArgsConstructor
-    static class SomeMockProducts extends SomeSingleTypes<MockProduct> {
-        private final SomeGenerator generator;
-
-        @Override public MockProduct some(Some some, Type type, AnnotatedElement location) {
-            return MockProduct.builder()
-                .id(productId)
-                .name("product #" + productId)
-                .description(generator.generate(MockProduct.class, "description"))
-                .price(generator.generate(MockProduct.class, "price"))
-                .build();
-        }
-    }
-
-    @RequiredArgsConstructor
-    static class SomeOrderInputs extends SomeSingleTypes<OrderInput> {
-        private final SomeGenerator generator;
-
-        @Override public OrderInput some(Some some, Type type, AnnotatedElement location) {
-            return OrderInput.builder()
-                .orderDate(generator.generate(OrderInput.class, "orderDate"))
-                .item(OrderItemInput.builder()
-                    .position(1)
-                    .productId(productId)
-                    .build())
-                .item(OrderItemInput.builder()
-                    .position(2)
-                    .productId(productId)
-                    .build())
-                .build();
-        }
-    }
-
     @BeforeEach
-    void setUp(@Some OrderInput order) {
-        this.orderDate = order.orderDate;
-        var created = api.create(order);
+    void setUp() {
+        var created = api.create(orderInput);
         this.orderId = created.id;
     }
 
     @Test void shouldGetOrder() {
-        given(products.product(product.id)).returns(product);
+        given(products.product(orderInput.getItems().get(0).getProductId())).returns(product);
 
         var actual = api.order(orderId);
 
         then(actual.id).isEqualTo(orderId);
-        then(actual.orderDate).isEqualTo(orderDate);
-        then(actual.items).hasSize(2);
-        then(actual.items.get(0).position).isEqualTo(1);
+        then(actual.orderDate).isEqualTo(orderInput.orderDate);
+        then(actual.items).hasSize(1);
+        then(actual.items.get(0).position).isEqualTo(orderInput.items.get(0).position);
+        then(actual.items.get(0).productId).isEqualTo(orderInput.items.get(0).productId);
         then(actual.items.get(0).product).isEqualTo(product);
-        then(actual.items.get(1).position).isEqualTo(2);
-        then(actual.items.get(1).product).isEqualTo(product);
     }
 }

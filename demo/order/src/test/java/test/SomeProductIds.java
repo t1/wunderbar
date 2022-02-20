@@ -12,7 +12,7 @@ import java.lang.reflect.Type;
 public class SomeProductIds extends SomeSingleTypes<@Some("product-id") String> {
     private final SomeGenerator generator;
 
-    @Override public String some(Some some, Type type, AnnotatedElement location) {
+    @Override public String generate(Some some, Type type, AnnotatedElement location) {
         return "id-" + generator.generate(some, int.class, location);
     }
 }

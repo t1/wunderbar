@@ -15,7 +15,7 @@ public class SomeProducts extends SomeSingleTypes<Product> {
     private final SomeGenerator generator;
 
     @SneakyThrows(NoSuchFieldException.class)
-    @Override public Product some(Some some, Type type, AnnotatedElement location) {
+    @Override public Product generate(Some some, Type type, AnnotatedElement location) {
         var id = (String) generator.generate(Some.LITERAL.withTags("product-id"), String.class, Product.class.getDeclaredField("id"));
         return someProduct(id);
     }

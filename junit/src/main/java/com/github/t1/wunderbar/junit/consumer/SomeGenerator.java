@@ -30,14 +30,14 @@ public interface SomeGenerator {
     /**
      * Convenience overload with a <code>Class&lt;T&gt;</code> type.
      */
-    default <T> T generate(Some some, Class<T> type, AnnotatedElement location) {
-        return generate(some, (Type) type, location);
-    }
+    default <T> T generate(Some some, Class<T> type, AnnotatedElement location) {return generate(some, (Type) type, location);}
 
     /** Convenience overload for a field in a container class. */
     @SneakyThrows(ReflectiveOperationException.class)
-    default <T> T generate(Class<?> container, String fieldName) {
-        Field field = container.getDeclaredField(fieldName);
+    default <T> T generate(Class<?> container, String fieldName) {return generate(container.getDeclaredField(fieldName));}
+
+    /** Convenience overload to generate the value for a specific field */
+    default <T> T generate(Field field) {
         return generate(field.getAnnotatedType().getAnnotation(Some.class), field.getGenericType(), field);
     }
 

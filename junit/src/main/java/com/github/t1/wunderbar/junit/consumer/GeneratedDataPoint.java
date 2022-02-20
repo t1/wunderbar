@@ -1,6 +1,7 @@
 package com.github.t1.wunderbar.junit.consumer;
 
 import com.github.t1.wunderbar.common.Internal;
+import lombok.NonNull;
 import lombok.Value;
 
 import javax.json.JsonValue;
@@ -18,18 +19,16 @@ public @Internal @Value class GeneratedDataPoint {
         return list.stream().filter(item -> item.value.equals(json)).findFirst();
     }
 
-    GeneratedDataPoint(Some some, AnnotatedElement location, Object value) {
+    GeneratedDataPoint(Some some, AnnotatedElement location, @NonNull Object value, @NonNull SomeData generator) {
         this.some = some;
         this.location = location;
-        this.type = value.getClass().getName();
         this.value = readJson(value);
         this.rawValue = value;
+        this.generator = generator;
     }
 
     @JsonbTypeSerializer(JsonbSomeSerializer.class)
     Some some;
-
-    String type;
 
     @JsonbTypeSerializer(JsonbAnnotatedElementSerializer.class)
     AnnotatedElement location;
@@ -38,6 +37,11 @@ public @Internal @Value class GeneratedDataPoint {
 
     @JsonbTransient Object rawValue;
 
+    @JsonbTransient SomeData generator;
 
-    @Override public String toString() {return value + " -> " + some + ((location == null) ? "" : ":" + location);}
+    public String getType() {return rawValue.getClass().getName();}
+
+    @Override public String toString() {
+        return value + " -> " + some + ((location == null) ? "" : ":" + location) + " [" + generator + "]";
+    }
 }

@@ -74,28 +74,36 @@ class WunderBarApiConsumerJUnitExtension implements Extension, BeforeEachCallbac
         private int depth = 0;
 
         @Override public <T> T generate(Some some, Type type, AnnotatedElement location) {
-            var generator = dataGenerators.stream()
-                .filter(gen -> gen.canGenerate(some, type, location))
-                .findFirst().orElseThrow(() -> new WunderBarException("no generator registered for " + type + " at " + location));
-            T value = generate(some, type, location, generator);
-            if (value == null) throw new WunderBarException(
-                "[" + generator + "] generated a null value" + ((location == null) ? "" : " for " + location));
-            GeneratedDataPoint.find(generatedDataPoints, value).ifPresent(data -> {
-                throw new WunderBarException("[" + generator + "] generated a non-unique value for " + location + ". There's already " + data);
-            });
-            var generatedDataPoint = new GeneratedDataPoint(some, location, value);
+            var generatedDataPoint = dataGenerators.stream()
+                .map(generator -> generate(some, type, location, generator))
+                .filter(Objects::nonNull)
+                .peek(this::checkDuplicate)
+                .findFirst()
+                .orElseThrow(() -> new WunderBarException(
+                    "no generator registered for " + Some.LITERAL.toString(some) + " " + type.getTypeName() + " at " + location));
+            @SuppressWarnings("unchecked")
+            T value = (T) generatedDataPoint.getRawValue();
             generatedDataPoints.add(generatedDataPoint);
             log.debug("generated {} {}", value, generatedDataPoint.getLocation());
             return value;
         }
 
-        private <T> T generate(Some some, Type type, AnnotatedElement location, SomeData generator) {
+        private GeneratedDataPoint generate(Some some, Type type, AnnotatedElement location, SomeData generator) {
             if (++depth > 100) throw new WunderBarException("it seems to be an infinite loop when generating " + type);
             try {
-                return generator.some(some, type, location);
+                var value = generator.some(some, type, location);
+                if (value.isEmpty()) return null;
+                return new GeneratedDataPoint(some, location, value.get(), generator);
             } finally {
                 depth--;
             }
+        }
+
+        private void checkDuplicate(GeneratedDataPoint newDataPoint) {
+            GeneratedDataPoint.find(generatedDataPoints, newDataPoint.getValue()).ifPresent(existing -> {
+                throw new WunderBarException(
+                    "[" + newDataPoint.getGenerator() + "] generated a non-unique value for " + newDataPoint.getLocation() + ". " + "There's already " + existing);
+            });
         }
 
         @Override public AnnotatedElement location(Object value) {return find(value).getLocation();}

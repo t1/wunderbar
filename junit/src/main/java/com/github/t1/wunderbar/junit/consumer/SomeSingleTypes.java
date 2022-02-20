@@ -1,10 +1,13 @@
 package com.github.t1.wunderbar.junit.consumer;
 
+import com.github.t1.wunderbar.junit.WunderBarException;
+
 import java.lang.reflect.AnnotatedElement;
 import java.lang.reflect.AnnotatedParameterizedType;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.Arrays;
+import java.util.Optional;
 import java.util.stream.Stream;
 
 /**
@@ -39,9 +42,14 @@ public abstract class SomeSingleTypes<T> implements SomeData {
             .getAnnotatedActualTypeArguments()[0].getAnnotation(Some.class);
     }
 
-    @Override public boolean canGenerate(Some some, Type type, AnnotatedElement location) {
-        if (type instanceof ParameterizedType) type = rawType(type);
-        return this.type.equals(type) && matches(some);
+    @Override public Optional<T> some(Some some, Type type, AnnotatedElement location) {
+        var maybeRawType = (type instanceof ParameterizedType) ? rawType(type) : type;
+        if (this.type.equals(maybeRawType) && matches(some)) {
+            var value = generate(some, type, location);
+            if (value == null) throw new WunderBarException(
+                "[" + this + "] generated a null value" + ((location == null) ? "" : " for " + location));
+            return Optional.of(value);
+        } else return Optional.empty();
     }
 
     private boolean matches(Some some) {
@@ -53,5 +61,5 @@ public abstract class SomeSingleTypes<T> implements SomeData {
 
     private static Type rawType(Type type) {return ((ParameterizedType) type).getRawType();}
 
-    @Override public abstract T some(Some some, Type type, AnnotatedElement location);
+    public abstract T generate(Some some, Type type, AnnotatedElement location);
 }

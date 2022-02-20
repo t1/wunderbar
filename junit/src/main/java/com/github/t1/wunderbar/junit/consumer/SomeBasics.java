@@ -3,9 +3,12 @@ package com.github.t1.wunderbar.junit.consumer;
 import com.github.t1.wunderbar.junit.WunderBarException;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
+import lombok.extern.slf4j.Slf4j;
 
 import javax.ws.rs.core.MediaType;
 import java.lang.reflect.AnnotatedElement;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.math.BigDecimal;
@@ -24,16 +27,17 @@ import java.time.Period;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
-import java.util.function.Supplier;
 
 import static com.github.t1.wunderbar.common.Utils.name;
+import static com.github.t1.wunderbar.common.Utils.setField;
 import static java.time.ZoneOffset.UTC;
 
 /**
  * Generates random values, but tries to keep them small, positive, and unique, so they are as easy to handle as possible.
- * These prerequisites are not achievable for booleans, obviously.
+ * These prerequisites are not achievable for booleans or null, obviously.
  * Strings, etc., also contain a numeric value to make them unique.
  * The default starting point is 100, so you can use smaller constants in your code without interfering with the generated
  * values. If you need bigger constants, you can change the starting point by calling {@link #reset(int)},
@@ -42,7 +46,7 @@ import static java.time.ZoneOffset.UTC;
  * Note that the <code>some...</code> methods are public, but the `@Some` annotation comes with superpowers:
  * automatic logging, reset for every test, and most often a location that you can look up.
  */
-// TODO generate Object
+@Slf4j
 @RequiredArgsConstructor
 public class SomeBasics implements SomeData {
     public static final int DEFAULT_START = 100;
@@ -58,55 +62,73 @@ public class SomeBasics implements SomeData {
 
     public static void reset(int start) {nextInt = start;}
 
-    @Override public boolean canGenerate(Some some, Type type, AnnotatedElement location) {
-        return generator(some, type, location) != null;
-    }
+    @Override public <T> Optional<T> some(Some some, Type type, AnnotatedElement location) {
+        if (byte.class.equals(type) || Byte.class.equals(type)) return optional(someByte());
+        if (char.class.equals(type) || Character.class.equals(type)) return optional(someChar());
+        if (short.class.equals(type) || Short.class.equals(type)) return optional(someShort());
+        if (int.class.equals(type) || Integer.class.equals(type)) return optional(someInt());
+        if (long.class.equals(type) || Long.class.equals(type)) return optional(someLong());
+        if (BigInteger.class.equals(type)) return optional(BigInteger.valueOf(someInt()));
 
-    @Override public <T> T some(Some some, Type type, AnnotatedElement location) {
-        Supplier<T> generator = generator(some, type, location);
-        if (generator == null) throw new WunderBarException("don't know how to generate a random " + type);
-        return generator.get();
-    }
+        if (float.class.equals(type) || Float.class.equals(type)) return optional(someFloat());
+        if (double.class.equals(type) || Double.class.equals(type)) return optional(someDouble());
+        if (BigDecimal.class.equals(type)) return optional(BigDecimal.valueOf(someInt()));
 
-    @SuppressWarnings("unchecked")
-    private <T> Supplier<T> generator(Some some, Type type, AnnotatedElement location) {
-        if (byte.class.equals(type) || Byte.class.equals(type)) return () -> (T) (Byte) someByte();
-        if (char.class.equals(type) || Character.class.equals(type)) return () -> (T) (Character) someChar();
-        if (short.class.equals(type) || Short.class.equals(type)) return () -> (T) (Short) someShort();
-        if (int.class.equals(type) || Integer.class.equals(type)) return () -> (T) (Integer) someInt();
-        if (long.class.equals(type) || Long.class.equals(type)) return () -> (T) (Long) someLong();
-        if (BigInteger.class.equals(type)) return () -> (T) BigInteger.valueOf(someInt());
+        if (String.class.equals(type)) return optional(someString(some, location));
+        if (UUID.class.equals(type)) return optional(someUUID());
+        if (URI.class.equals(type)) return optional(someURI());
+        if (URL.class.equals(type)) return optional(someURL());
+        if (MediaType.class.equals(type)) return optional(someMediaType());
 
-        if (float.class.equals(type) || Float.class.equals(type)) return () -> (T) (Float) someFloat();
-        if (double.class.equals(type) || Double.class.equals(type)) return () -> (T) (Double) someDouble();
-        if (BigDecimal.class.equals(type)) return () -> (T) BigDecimal.valueOf(someInt());
-
-        if (String.class.equals(type)) return () -> (T) someString(some, location);
-        if (UUID.class.equals(type)) return () -> (T) someUUID();
-        if (URI.class.equals(type)) return () -> (T) someURI();
-        if (URL.class.equals(type)) return () -> (T) someURL();
-        if (MediaType.class.equals(type)) return () -> (T) someMediaType();
-
-        if (Instant.class.equals(type)) return () -> (T) someInstant();
-        if (LocalDate.class.equals(type)) return () -> (T) someLocalDate();
-        if (LocalDateTime.class.equals(type)) return () -> (T) someLocalDateTime();
-        if (ZonedDateTime.class.equals(type)) return () -> (T) someZonedDateTime();
-        if (OffsetDateTime.class.equals(type)) return () -> (T) someOffsetDateTime();
-        if (LocalTime.class.equals(type)) return () -> (T) someLocalTime();
-        if (OffsetTime.class.equals(type)) return () -> (T) someOffsetTime();
-        if (Duration.class.equals(type)) return () -> (T) someDuration();
-        if (Period.class.equals(type)) return () -> (T) somePeriod();
+        if (Instant.class.equals(type)) return optional(someInstant());
+        if (LocalDate.class.equals(type)) return optional(someLocalDate());
+        if (LocalDateTime.class.equals(type)) return optional(someLocalDateTime());
+        if (ZonedDateTime.class.equals(type)) return optional(someZonedDateTime());
+        if (OffsetDateTime.class.equals(type)) return optional(someOffsetDateTime());
+        if (LocalTime.class.equals(type)) return optional(someLocalTime());
+        if (OffsetTime.class.equals(type)) return optional(someOffsetTime());
+        if (Duration.class.equals(type)) return optional(someDuration());
+        if (Period.class.equals(type)) return optional(somePeriod());
 
         if (type instanceof ParameterizedType) {
             var parameterized = (ParameterizedType) type;
             var rawType = parameterized.getRawType();
             if (List.class.equals(rawType))
-                return () -> (T) List.of((Object) someGenerator.generate(some, parameterized.getActualTypeArguments()[0], location));
+                return optional(List.of((Object) someGenerator.generate(some, parameterized.getActualTypeArguments()[0], location)));
             if (Set.class.equals(rawType))
-                return () -> (T) Set.of((Object) someGenerator.generate(some, parameterized.getActualTypeArguments()[0], location));
+                return optional(Set.of((Object) someGenerator.generate(some, parameterized.getActualTypeArguments()[0], location)));
         }
 
-        return null;
+        if (type instanceof Class) {
+            try {
+                return optional(generate((Class<?>) type));
+            } catch (NoSuchMethodException | InstantiationException e) {
+                log.debug("can not create {}: {}", type.getTypeName(), e.toString());
+                // fall through
+            } catch (IllegalAccessException | InvocationTargetException e) {
+                throw new WunderBarException("failed to generate an instance of " + type.getTypeName(), e);
+            }
+        }
+
+        return Optional.empty();
+    }
+
+    private static <T> Optional<T> optional(Object value) {
+        //noinspection unchecked
+        return (Optional<T>) Optional.of(value);
+    }
+
+    private Object generate(Class<?> classType) throws NoSuchMethodException, InstantiationException, IllegalAccessException, InvocationTargetException {
+        Constructor<?> noArgsConstructor = classType.getDeclaredConstructor();
+        noArgsConstructor.setAccessible(true);
+        var instance = noArgsConstructor.newInstance();
+        for (Class<?> type = classType; type.getSuperclass() != null; type = type.getSuperclass()) {
+            for (var field : type.getDeclaredFields()) {
+                var value = someGenerator.generate(field);
+                setField(instance, field, value);
+            }
+        }
+        return instance;
     }
 
     static byte someByte() {
