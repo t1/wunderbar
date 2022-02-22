@@ -33,6 +33,7 @@ import static com.github.t1.wunderbar.junit.http.HttpUtils.JSONB;
 import static com.github.t1.wunderbar.junit.http.HttpUtils.firstMediaType;
 import static com.github.t1.wunderbar.junit.http.HttpUtils.formatJson;
 import static com.github.t1.wunderbar.junit.http.HttpUtils.isCompatible;
+import static com.github.t1.wunderbar.junit.http.HttpUtils.mediaTypes;
 import static com.github.t1.wunderbar.junit.http.HttpUtils.read;
 import static java.util.Collections.unmodifiableList;
 import static java.util.stream.Collectors.joining;
@@ -199,13 +200,13 @@ public class HttpRequest {
         }
 
         public HttpRequestBuilder accept(String accept) {
-            if (accept.startsWith("[") && accept.endsWith("]")) accept = accept.substring(1, accept.length() - 1);
-            return accept(MediaType.valueOf(accept));
+            if (accept != null && accept.startsWith("[") && accept.endsWith("]")) accept = accept.substring(1, accept.length() - 1);
+            return accept(mediaTypes(accept).toArray(MediaType[]::new));
         }
 
-        public HttpRequestBuilder accept(MediaType accept) {
+        public HttpRequestBuilder accept(MediaType... mediaTypes) {
             if (this.accept == null) this.accept = new ArrayList<>();
-            this.accept.add(accept);
+            this.accept.addAll(List.of(mediaTypes));
             return this;
         }
 

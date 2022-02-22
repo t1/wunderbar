@@ -9,6 +9,7 @@ import org.assertj.core.api.BDDAssertions;
 import javax.json.JsonObject;
 import javax.json.JsonValue;
 import javax.ws.rs.WebApplicationException;
+import javax.ws.rs.core.MediaType;
 
 /**
  * An extension for {@link BDDAssertions BDD assertj}
@@ -31,4 +32,6 @@ public class WunderBarBDDAssertions extends BDDAssertions {
     public static HttpResponseAssert<?, ?> then(HttpResponse response) {return new HttpResponseAssert<>(response);}
 
     public static WebApplicationExceptionAssert<?, ?> then(WebApplicationException response) {return new WebApplicationExceptionAssert<>(response);}
+
+    public static MediaTypeAssert<?, ?> then(MediaType response) {return new MediaTypeAssert<>(response);}
 }

@@ -24,10 +24,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Properties;
+import java.util.stream.Stream;
 
 import static java.nio.charset.StandardCharsets.ISO_8859_1;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.Locale.ROOT;
+import static java.util.stream.Collectors.toList;
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON_TYPE;
 import static javax.ws.rs.core.MediaType.CHARSET_PARAMETER;
 
@@ -134,8 +136,9 @@ public class HttpUtils {
      * @see <a href="https://datatracker.ietf.org/doc/html/rfc6838#section-4.2.8">RFC-6838</a>
      */
     public static boolean isCompatible(List<MediaType> left, List<MediaType> right) {
-        for (MediaType thatType : left)
-            if (right.stream().anyMatch(a -> a.isCompatible(thatType)))
+        if (left == null || left.isEmpty()) return right == null || right.isEmpty();
+        for (MediaType leftType : left)
+            if (right.stream().anyMatch(rightType -> isCompatible(leftType, rightType)))
                 return true;
         return false;
     }
@@ -169,5 +172,12 @@ public class HttpUtils {
         var properties = new Properties();
         if (string != null) properties.load(new StringReader(string));
         return properties;
+    }
+
+    public static List<MediaType> mediaTypes(String string) {
+        return (string == null) ? List.of() : Stream.of(string.replace(" ", "").split(","))
+            .map(String::strip)
+            .map(MediaType::valueOf)
+            .collect(toList());
     }
 }
