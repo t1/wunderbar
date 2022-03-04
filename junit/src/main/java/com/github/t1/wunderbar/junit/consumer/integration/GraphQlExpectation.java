@@ -8,6 +8,7 @@ import io.smallrye.graphql.client.typesafe.api.AuthorizationHeader;
 import io.smallrye.graphql.client.typesafe.api.GraphQLClientApi;
 import io.smallrye.graphql.client.typesafe.api.TypesafeGraphQLClientBuilder;
 import org.eclipse.microprofile.graphql.Name;
+import org.eclipse.microprofile.graphql.Query;
 
 import java.lang.reflect.Method;
 import java.util.List;
@@ -68,6 +69,8 @@ class GraphQlExpectation extends HttpServiceExpectation {
     private String dataName() {
         if (method.isAnnotationPresent(Name.class))
             return method.getAnnotation(Name.class).value();
+        if (method.isAnnotationPresent(Query.class) && !method.getAnnotation(Query.class).value().isEmpty())
+            return method.getAnnotation(Query.class).value();
         String name = method.getName();
         if (isGetter(name))
             return lowerFirst(name.substring(3));

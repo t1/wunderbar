@@ -14,6 +14,7 @@ import org.eclipse.microprofile.graphql.GraphQLApi;
 import org.eclipse.microprofile.graphql.Id;
 import org.eclipse.microprofile.graphql.Name;
 import org.eclipse.microprofile.graphql.NonNull;
+import org.eclipse.microprofile.graphql.Query;
 import org.eclipse.microprofile.graphql.Source;
 
 import static lombok.AccessLevel.PRIVATE;
@@ -27,6 +28,9 @@ class ProductResolver {
     NamedProducts namedProducts;
 
     // would be @Inject
+    QueriedProducts queriedProducts;
+
+    // would be @Inject
     ProductsGetter productsGetter;
 
     Product product(@Source Item item) {return products.product(item.getProductId());}
@@ -34,6 +38,8 @@ class ProductResolver {
     Product product(String customHeader, @Source Item item) {return products.product(customHeader, item.getProductId());}
 
     Product namedProduct(@Source Item item) {return namedProducts.productById(item.getProductId());}
+
+    Product queriedProduct(@Source Item item) {return queriedProducts.productById(item.getProductId());}
 
     Product productGetter(@Source Item item) {return productsGetter.getProduct(item.getProductId());}
 
@@ -52,6 +58,12 @@ class ProductResolver {
     @GraphQLClientApi
     interface NamedProducts {
         @Name("p")
+        Product productById(String id);
+    }
+
+    @GraphQLClientApi
+    interface QueriedProducts {
+        @Query("q")
         Product productById(String id);
     }
 

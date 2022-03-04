@@ -18,6 +18,7 @@ import test.consumer.ProductResolver.NamedProducts;
 import test.consumer.ProductResolver.Product;
 import test.consumer.ProductResolver.Products;
 import test.consumer.ProductResolver.ProductsGetter;
+import test.consumer.ProductResolver.QueriedProducts;
 import test.consumer.ProductsGateway.ProductsRestClient;
 
 import javax.ws.rs.ForbiddenException;
@@ -48,6 +49,7 @@ import static org.assertj.core.api.Assertions.catchThrowable;
 abstract class ProductResolverTest {
     @Service(endpoint = "{endpoint()}") Products products;
     @Service(endpoint = "{endpoint()}") NamedProducts namedProducts;
+    @Service(endpoint = "{endpoint()}") QueriedProducts queriedProducts;
     @Service(endpoint = "{endpoint()}") ProductsGetter productsGetter;
     @SystemUnderTest ProductResolver resolver;
 
@@ -105,6 +107,14 @@ abstract class ProductResolverTest {
         given(namedProducts.productById(product.id)).returns(product);
 
         var resolvedProduct = resolver.namedProduct(item);
+
+        then(resolvedProduct).usingRecursiveComparison().isEqualTo(product);
+    }
+
+    @Test void shouldResolveQueriedProductMethod() {
+        given(queriedProducts.productById(product.id)).returns(product);
+
+        var resolvedProduct = resolver.queriedProduct(item);
 
         then(resolvedProduct).usingRecursiveComparison().isEqualTo(product);
     }

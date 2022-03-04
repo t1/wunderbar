@@ -145,6 +145,7 @@ public class SystemTestExpectations<T> implements WunderBarExpectations<T> {
         }
         if (api instanceof Closeable) ((Closeable) api).close();
         log.debug("---------- cleanup done");
+        stubServer.stop();
     }
 
     private Boolean isRecording() {

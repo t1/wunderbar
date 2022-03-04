@@ -17,17 +17,17 @@ import static org.junit.jupiter.api.extension.ExtensionContext.Namespace.GLOBAL;
 public class MockServer implements Extension, BeforeEachCallback {
     private static boolean initialized;
 
-    private final HttpServer server = new HttpServer(MockServer::handle);
+    private static final HttpServer SERVER = new HttpServer(MockServer::handle);
 
     public URI baseUri() {
-        return server.baseUri();
+        return SERVER.baseUri();
     }
 
     private static HttpResponse handle(HttpRequest request) {return new MockService().service(request);}
 
     @Override public void beforeEach(ExtensionContext context) {
         if (initialized) return;
-        registerShutdownHook(server::stop, context);
+        registerShutdownHook(SERVER::stop, context);
         initialized = true;
     }
 
