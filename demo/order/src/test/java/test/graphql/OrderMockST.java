@@ -117,7 +117,7 @@ class OrderMockST {
     String orderId;
 
     @SuppressWarnings("unused")
-    String endpoint() {return "http://localhost:" + PRODUCTS.getMappedPort(8080) + "/wunderbar-mock-server/graphql";}
+    String endpoint() {return "http://localhost:" + PRODUCTS.getMappedPort(8080) + "/wunderbar-mock-server/foobar/graphql";}
 
     @BeforeEach
     void setUp() {

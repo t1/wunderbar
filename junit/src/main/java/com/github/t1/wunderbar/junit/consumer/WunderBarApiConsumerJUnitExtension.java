@@ -84,7 +84,7 @@ class WunderBarApiConsumerJUnitExtension implements Extension, BeforeEachCallbac
             @SuppressWarnings("unchecked")
             T value = (T) generatedDataPoint.getRawValue();
             generatedDataPoints.add(generatedDataPoint);
-            log.debug("generated {} {}", value, generatedDataPoint.getLocation());
+            log.debug("generated {} for {}", value, generatedDataPoint.getLocation());
             return value;
         }
 
