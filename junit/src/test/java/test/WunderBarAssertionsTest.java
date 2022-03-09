@@ -1,13 +1,18 @@
 package test;
 
+import io.smallrye.graphql.client.GraphQLClientException;
+import io.smallrye.graphql.client.impl.GraphQLErrorImpl;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
 import javax.ws.rs.core.MediaType;
+import java.util.List;
+import java.util.Map;
 import java.util.stream.Stream;
 
+import static com.github.t1.wunderbar.junit.assertions.GraphQLErrorAssert.GRAPHQL_ERROR;
 import static com.github.t1.wunderbar.junit.assertions.MediaTypeAssert.MEDIA_TYPE;
 import static com.github.t1.wunderbar.junit.assertions.MediaTypeAssert.compatibleTo;
 import static com.github.t1.wunderbar.junit.assertions.MediaTypeAssert.isCompatibleToAny;
@@ -83,5 +88,21 @@ class WunderBarAssertionsTest {
         var mediaType = mediaTypes("application/json, */*; q=0.5");
 
         then(mediaType).containsExactly(APPLICATION_JSON_TYPE, MediaType.valueOf("*/*;q=0.5"));
+    }
+
+    @Test void shouldVerifyGraphQLErrors() {
+        var exception = new GraphQLClientException("foobar", List.of(graphQLError("foo"), graphQLError("bar")));
+
+        then(exception).hasErrorCode("foo").withMessageThat().isEqualTo("foo-message");
+        then(exception).hasErrorCode("bar")
+            .withMessage("bar-message")
+            .withMessageContaining("bar")
+            .withMessageThat().contains("-");
+        Object error = exception.getErrors().get(0);
+        then(error).asInstanceOf(GRAPHQL_ERROR).withMessage("foo-message");
+    }
+
+    private GraphQLErrorImpl graphQLError(String code) {
+        return new GraphQLErrorImpl(code + "-message", null, null, Map.of("code", code), null);
     }
 }
