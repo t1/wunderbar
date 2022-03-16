@@ -18,10 +18,10 @@ class ProductResolverST extends ProductResolverTest {
 
     @RegisterExtension MockServer mockServer = new MockServer();
 
-    String endpoint() {return mockServer.baseUri() + "/{technology}";}
+    String endpoint() {return mockServer.baseUri() + "/wunderbar-mock-server/foo/bar/{technology}";}
 
     @Override void verifyBaseUri(URI baseUri, Technology technology) {
-        then(baseUri).isEqualTo(mockServer.baseUri().resolve("/" + technology.path()));
+        then(baseUri).isEqualTo(mockServer.baseUri().resolve("/wunderbar-mock-server/foo/bar/" + technology.path()));
     }
 
     @Override protected void thenFailedDepletion(Throwable throwable) {

@@ -88,7 +88,8 @@ public class SystemTestExpectations<T> implements WunderBarExpectations<T> {
     @Override public Object invoke(Method method, Object... args) {
         // as the SUT only knows about the real service, these invocations can only be from stubbing
         log.debug("---------- start building expectation for {}", method.getName());
-        this.currentExpectation = HttpServiceExpectation.of(technology, stubServer, method, args)
+        var stubUri = stubServer.baseUri().resolve(baseUri.getPath());
+        this.currentExpectation = HttpServiceExpectation.of(technology, stubUri, method, args)
             .afterStubbing(this::addExpectationToMockService);
         WunderbarExpectationBuilder.buildingExpectation = currentExpectation;
         return currentExpectation.nullValue();
@@ -104,9 +105,17 @@ public class SystemTestExpectations<T> implements WunderBarExpectations<T> {
         try {
             currentExpectation.invoke();
             log.debug("---------- stub service returned");
-        } catch (Exception e) {
-            log.debug("---------- stub service threw {}", e.toString());
+        } catch (RuntimeException e) {
+            if (currentExpectation.hasException()) log.debug("---------- ignore expected exception from stub service: {}", e.toString());
+            else throw e;
         }
+    }
+
+    private HttpResponse handleStubRequest(HttpRequest request) {
+        request = request.withFormattedBody();
+        var response = currentExpectation.handleRequest(request);
+        this.currentInteraction = new HttpInteraction(0, request, response);
+        return response;
     }
 
     private void addExpectation() {
@@ -119,21 +128,15 @@ public class SystemTestExpectations<T> implements WunderBarExpectations<T> {
     }
 
     private WunderBarStubbingResult addWunderBarExpectation() {
+        if (currentInteraction == null) throw new IllegalStateException("the stub call didn't get through");
         try {
             return mock.addWunderBarExpectation(
-                currentInteraction.getRequest().withFormattedBody(),
+                currentInteraction.getRequest().withFormattedBody().withoutContextPath(),
                 currentExpectation.getDepletion(),
                 currentInteraction.getResponse());
         } catch (Exception e) {
             throw new WunderBarException("failed to add expectation to mock server; maybe it's a real service", e);
         }
-    }
-
-    private HttpResponse handleStubRequest(HttpRequest request) {
-        request = request.withFormattedBody();
-        var response = currentExpectation.handleRequest(request);
-        this.currentInteraction = new HttpInteraction(0, request, response);
-        return response;
     }
 
     @SneakyThrows(IOException.class)

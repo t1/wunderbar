@@ -16,7 +16,6 @@ import org.junit.jupiter.api.extension.RegisterExtension;
 import test.MockServer;
 import test.NonCI;
 
-import java.net.URI;
 import java.util.List;
 
 import static com.github.t1.wunderbar.common.mock.GraphQLResponseBuilder.graphQlError;
@@ -32,7 +31,7 @@ class FailingAT {
     @RegisterExtension ExpectationsExtension expectations = new ExpectationsExtension();
 
     @SuppressWarnings("unused")
-    URI endpoint() {return mockServer.baseUri();}
+    String endpoint() {return mockServer.baseUri() + "/dummy-mock-server";}
 
     @BeforeDynamicTest void shouldFailBeforeToModifyPassedInteractions(List<HttpInteraction> interactions) {
         var throwable = catchThrowable(() -> interactions.remove(0));

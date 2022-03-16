@@ -21,7 +21,7 @@ public class MockServer implements Extension, BeforeEachCallback {
 
     public URI baseUri() {return SERVER.baseUri();}
 
-    private static HttpResponse handle(HttpRequest request) {return new MockService().service(request);}
+    private static HttpResponse handle(HttpRequest request) {return new MockService().service(request.withoutContextPath());}
 
     @Override public void beforeEach(ExtensionContext context) {
         if (initialized) return;

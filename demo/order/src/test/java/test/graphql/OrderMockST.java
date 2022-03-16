@@ -117,7 +117,7 @@ class OrderMockST {
     String orderId;
 
     @SuppressWarnings("unused")
-    String endpoint() {return "http://localhost:" + PRODUCTS.getMappedPort(8080) + "/wunderbar-mock-server/foobar/graphql";}
+    String endpoint() {return "http://localhost:" + PRODUCTS.getMappedPort(8080) + "/wunderbar-mock-server/foo/bar/graphql";}
 
     @BeforeEach
     void setUp() {
@@ -126,15 +126,16 @@ class OrderMockST {
     }
 
     @Test void shouldGetOrder() {
-        given(products.product(orderInput.getItems().get(0).getProductId())).returns(product);
+        var orderItem = orderInput.items.get(0);
+        given(products.product(orderItem.getProductId())).returns(product);
 
         var actual = api.order(orderId);
 
         then(actual.id).isEqualTo(orderId);
         then(actual.orderDate).isEqualTo(orderInput.orderDate);
         then(actual.items).hasSize(1);
-        then(actual.items.get(0).position).isEqualTo(orderInput.items.get(0).position);
-        then(actual.items.get(0).productId).isEqualTo(orderInput.items.get(0).productId);
+        then(actual.items.get(0).position).isEqualTo(orderItem.position);
+        then(actual.items.get(0).productId).isEqualTo(orderItem.productId);
         then(actual.items.get(0).product).isEqualTo(product);
     }
 }

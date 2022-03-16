@@ -7,7 +7,6 @@ import com.github.t1.wunderbar.junit.consumer.Technology;
 import com.github.t1.wunderbar.junit.consumer.WunderBarExpectation;
 import com.github.t1.wunderbar.junit.http.HttpRequest;
 import com.github.t1.wunderbar.junit.http.HttpResponse;
-import com.github.t1.wunderbar.junit.http.HttpServer;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.SneakyThrows;
@@ -22,17 +21,17 @@ import static lombok.AccessLevel.PACKAGE;
 
 @Slf4j
 public abstract @Internal class HttpServiceExpectation extends WunderBarExpectation {
-    public static HttpServiceExpectation of(Technology technology, HttpServer server, Method method, Object... args) {
+    public static HttpServiceExpectation of(Technology technology, URI baseUri, Method method, Object... args) {
         switch (technology) {
             case GRAPHQL:
-                return new GraphQlExpectation(server, method, args);
+                return new GraphQlExpectation(baseUri, method, args);
             case REST:
-                return new RestExpectation(server, method, args);
+                return new RestExpectation(baseUri, method, args);
         }
         throw new UnsupportedOperationException("unreachable");
     }
 
-    private final HttpServer server;
+    private final URI baseUri;
     private Object service;
     private AfterStubbing afterStubbing = () -> {};
 
@@ -41,9 +40,9 @@ public abstract @Internal class HttpServiceExpectation extends WunderBarExpectat
     @Getter private Depletion depletion;
     private int callCount = 0;
 
-    HttpServiceExpectation(HttpServer server, Method method, Object... args) {
+    HttpServiceExpectation(URI baseUri, Method method, Object... args) {
         super(method, args);
-        this.server = server;
+        this.baseUri = baseUri;
     }
 
     public HttpServiceExpectation afterStubbing(AfterStubbing afterStubbing) {
@@ -53,7 +52,7 @@ public abstract @Internal class HttpServiceExpectation extends WunderBarExpectat
 
     public abstract HttpResponse handleRequest(HttpRequest request);
 
-    @Override public URI baseUri() {return server.baseUri();}
+    @Override public URI baseUri() {return baseUri;}
 
     public boolean hasException() {return exception != null;}
 
@@ -93,6 +92,5 @@ public abstract @Internal class HttpServiceExpectation extends WunderBarExpectat
     @SneakyThrows(IOException.class)
     @Override public void done() {
         if (service instanceof Closeable) ((Closeable) service).close();
-        server.stop();
     }
 }

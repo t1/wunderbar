@@ -45,7 +45,7 @@ class ProductResolverIT extends ProductResolverTest {
 
             then(resolvedProduct).usingRecursiveComparison().isEqualTo(givenProduct);
             then(baseUri).isEqualTo(URI.create("http://localhost:18373"));
-            then(deprecatedBaseUri.get()).isEqualTo(URI.create("http://localhost:18373"));
+            then(deprecatedBaseUri.get()).isEqualTo(URI.create("http://localhost:18373/graphql"));
         }
     }
 

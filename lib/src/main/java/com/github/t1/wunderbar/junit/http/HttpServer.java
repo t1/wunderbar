@@ -37,7 +37,7 @@ public class HttpServer {
     private Undertow start(int port) {
         Undertow server = Undertow.builder()
             .addHttpListener(port, "localhost")
-            .setHandler(this::aroundInvoke)
+            .setHandler(this::handle)
             .build();
         server.start();
         return server;
@@ -49,7 +49,7 @@ public class HttpServer {
         return address.getPort();
     }
 
-    private void aroundInvoke(HttpServerExchange exchange) {
+    private void handle(HttpServerExchange exchange) {
         HttpRequest request = buildRequest(exchange);
 
         var response = handler.apply(request);

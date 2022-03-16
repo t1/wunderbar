@@ -20,15 +20,17 @@ import static javax.ws.rs.core.Response.Status.NOT_IMPLEMENTED;
 
 @Slf4j
 public @Internal class IntegrationTestExpectations<T> implements WunderBarExpectations<T> {
-    private final BarWriter bar;
-    private final Technology technology;
-    private final List<HttpServiceExpectation> expectations = new ArrayList<>();
     private final HttpServer server;
+    private final URI endpoint;
+    private final Technology technology;
+    private final BarWriter bar;
+    private final List<HttpServiceExpectation> expectations = new ArrayList<>();
 
     private HttpServiceExpectation currentExpectation;
 
     public IntegrationTestExpectations(URI endpoint, Technology technology, BarWriter bar) {
         this.server = new HttpServer(endpoint.getPort(), this::handleRequest);
+        this.endpoint = server.baseUri().resolve(endpoint.getPath());
         this.technology = technology;
         this.bar = bar;
     }
@@ -47,7 +49,7 @@ public @Internal class IntegrationTestExpectations<T> implements WunderBarExpect
             }
         }
 
-        var expectation = HttpServiceExpectation.of(technology, server, method, args);
+        var expectation = HttpServiceExpectation.of(technology, endpoint, method, args);
         expectations.add(expectation);
         WunderbarExpectationBuilder.buildingExpectation = expectation;
 
@@ -70,5 +72,6 @@ public @Internal class IntegrationTestExpectations<T> implements WunderBarExpect
     @Override public void done() {
         expectations.forEach(WunderBarExpectation::done);
         expectations.clear();
+        server.stop();
     }
 }

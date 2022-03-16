@@ -29,7 +29,7 @@ class ProductResolverDeprecatedST {
     @SuppressWarnings("unused")
     String deprecatedEndpoint() {
         endpointCalled = true;
-        return mockServer.baseUri() + "/graphql";
+        return mockServer.baseUri() + "/mock-server/graphql";
     }
 
     @Test void shouldResolveProductFromFunctionEndpoint(@Some Product product) {

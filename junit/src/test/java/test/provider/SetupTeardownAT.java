@@ -45,7 +45,7 @@ class SetupTeardownAT {
     @RegisterExtension static ExpectationsExtension expectations = new ExpectationsExtension();
 
     @SuppressWarnings("unused")
-    static URI endpoint() {return mockServer.baseUri();}
+    static String endpoint() {return mockServer.baseUri() + "/dummy-mock-server";}
 
     static List<String> called = new ArrayList<>();
 

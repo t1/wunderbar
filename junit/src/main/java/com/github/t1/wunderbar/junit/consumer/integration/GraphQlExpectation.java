@@ -3,7 +3,6 @@ package com.github.t1.wunderbar.junit.consumer.integration;
 import com.github.t1.wunderbar.junit.http.Authorization;
 import com.github.t1.wunderbar.junit.http.HttpRequest;
 import com.github.t1.wunderbar.junit.http.HttpResponse;
-import com.github.t1.wunderbar.junit.http.HttpServer;
 import io.smallrye.graphql.client.typesafe.api.AuthorizationHeader;
 import io.smallrye.graphql.client.typesafe.api.GraphQLClientApi;
 import io.smallrye.graphql.client.typesafe.api.TypesafeGraphQLClientBuilder;
@@ -11,6 +10,7 @@ import org.eclipse.microprofile.graphql.Name;
 import org.eclipse.microprofile.graphql.Query;
 
 import java.lang.reflect.Method;
+import java.net.URI;
 import java.util.List;
 import java.util.Map;
 
@@ -20,8 +20,8 @@ class GraphQlExpectation extends HttpServiceExpectation {
     private final String configKey;
     private Authorization.Basic oldAuth;
 
-    GraphQlExpectation(HttpServer server, Method method, Object... args) {
-        super(server, method, args);
+    GraphQlExpectation(URI baseUri, Method method, Object... args) {
+        super(baseUri, method, args);
         this.configKey = configKey(method);
     }
 
@@ -34,7 +34,7 @@ class GraphQlExpectation extends HttpServiceExpectation {
     @Override protected Object service() {
         if (needsAuthorizationConfig()) this.oldAuth = configureDummyAuthorization();
         return TypesafeGraphQLClientBuilder.newBuilder()
-            .endpoint(baseUri() + "/graphql")
+            .endpoint(baseUri())
             .configKey(configKey)
             .build(method.getDeclaringClass());
     }

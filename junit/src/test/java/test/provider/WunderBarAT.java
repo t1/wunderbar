@@ -15,7 +15,6 @@ import test.MockServer;
 import javax.json.Json;
 import javax.ws.rs.ForbiddenException;
 import javax.ws.rs.NotFoundException;
-import java.net.URI;
 
 import static com.github.t1.wunderbar.junit.assertions.WunderBarBDDAssertions.then;
 import static com.github.t1.wunderbar.junit.provider.WunderBarTestFinder.findTestsIn;
@@ -38,7 +37,7 @@ class WunderBarAT {
     @RegisterExtension ExpectationsExtension expectations = new ExpectationsExtension();
 
     @SuppressWarnings("unused")
-    URI endpoint() {return mockServer.baseUri();}
+    String endpoint() {return mockServer.baseUri() + "/some-mock";}
 
     @BeforeInteraction HttpRequest prepareRequest(HttpRequest request) {
         var productId = request.matchUri("/rest/products/(.*)").group(1);

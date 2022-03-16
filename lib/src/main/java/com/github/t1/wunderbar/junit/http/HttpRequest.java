@@ -19,6 +19,7 @@ import javax.json.JsonValue;
 import javax.json.bind.annotation.JsonbCreator;
 import javax.ws.rs.core.MediaType;
 import java.net.URI;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -92,6 +93,14 @@ public class HttpRequest {
     public URI getUri() {return URI.create(uri);}
 
     public String uri() {return uri;}
+
+    public HttpRequest withoutContextPath() {
+        var contextPath = getContextPath();
+        return withUri(uri().substring(contextPath.length()));
+    }
+
+    /** The first part of the path, a.k.a. servlet name or context path. */
+    public String getContextPath() {return "/" + Path.of(uri()).getName(0);}
 
     public MatchResult matchUri(String pattern) {return matchUri(Pattern.compile(pattern));}
 
