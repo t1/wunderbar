@@ -19,10 +19,12 @@ import static javax.ws.rs.core.Response.Status.Family.SUCCESSFUL;
 class JaxRsTypesafeGraphQLClientProxy {
     private final WebTarget target;
     private final GraphQLClientConfiguration configuration;
+    private final Map<String, String> extraHeaders;
 
-    JaxRsTypesafeGraphQLClientProxy(WebTarget target, GraphQLClientConfiguration configuration) {
+    JaxRsTypesafeGraphQLClientProxy(WebTarget target, GraphQLClientConfiguration configuration, Map<String, String> extraHeaders) {
         this.target = target;
         this.configuration = configuration;
+        this.extraHeaders = extraHeaders;
     }
 
     Object invoke(Class<?> api, MethodInvocation method) {
@@ -30,9 +32,7 @@ class JaxRsTypesafeGraphQLClientProxy {
             return method.invoke(this);
         log.debug("call {} to {}", method.getName(), target.getUri());
 
-        var headers = new HeaderBuilder(api, method,
-            configuration != null ? configuration.getHeaders() : Collections.emptyMap())
-            .build();
+        var headers = headers(api, method);
         var request = new GraphQLRequestBuilder(method).build().toString();
 
         var response = post(request, headers);
@@ -40,6 +40,14 @@ class JaxRsTypesafeGraphQLClientProxy {
         log.debug("response graphql:\n{}", prefix("    ", response));
         if (response == null || response.isBlank()) response = "{}";
         return new ResultBuilder(method, response).read();
+    }
+
+    private Map<String, String> headers(Class<?> api, MethodInvocation method) {
+        var headers = new HeaderBuilder(api, method,
+            configuration != null ? configuration.getHeaders() : Collections.emptyMap())
+            .build();
+        headers.putAll(this.extraHeaders);
+        return headers;
     }
 
     private String post(String requestBody, Map<String, String> headers) {

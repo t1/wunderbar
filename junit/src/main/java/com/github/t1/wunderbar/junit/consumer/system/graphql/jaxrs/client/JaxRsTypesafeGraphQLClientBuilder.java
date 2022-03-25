@@ -14,11 +14,14 @@ import java.lang.reflect.Proxy;
 import java.net.URI;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 public class JaxRsTypesafeGraphQLClientBuilder implements TypesafeGraphQLClientBuilder {
     private String configKey = null;
     private Client client;
     private URI endpoint;
+    private Map<String, String> extraHeaders;
 
     @Override
     public TypesafeGraphQLClientBuilder configKey(String configKey) {
@@ -43,7 +46,15 @@ public class JaxRsTypesafeGraphQLClientBuilder implements TypesafeGraphQLClientB
         return this;
     }
 
-    @Override public TypesafeGraphQLClientBuilder header(String s, String s1) {
+    @Override public TypesafeGraphQLClientBuilder websocketUrl(String s) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override public TypesafeGraphQLClientBuilder websocketInitializationTimeout(Integer integer) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override public TypesafeGraphQLClientBuilder executeSingleOperationsOverWebsocket(boolean b) {
         throw new UnsupportedOperationException();
     }
 
@@ -51,8 +62,14 @@ public class JaxRsTypesafeGraphQLClientBuilder implements TypesafeGraphQLClientB
         throw new UnsupportedOperationException();
     }
 
-    @Override public TypesafeGraphQLClientBuilder subscriptionInitializationTimeout(Integer integer) {
-        throw new UnsupportedOperationException();
+
+    @Override public TypesafeGraphQLClientBuilder header(String name, String value) {
+        if (this.extraHeaders == null) {
+            this.extraHeaders = new LinkedHashMap<>();
+        }
+
+        this.extraHeaders.put(name, value);
+        return this;
     }
 
     public TypesafeGraphQLClientBuilder register(Object component) {
@@ -72,7 +89,7 @@ public class JaxRsTypesafeGraphQLClientBuilder implements TypesafeGraphQLClientB
         if (persistentConfig != null) applyConfig(persistentConfig);
 
         WebTarget webTarget = client().target(endpoint);
-        JaxRsTypesafeGraphQLClientProxy graphQlClient = new JaxRsTypesafeGraphQLClientProxy(webTarget, persistentConfig);
+        JaxRsTypesafeGraphQLClientProxy graphQlClient = new JaxRsTypesafeGraphQLClientProxy(webTarget, persistentConfig, extraHeaders);
         return apiClass.cast(Proxy.newProxyInstance(getClassLoader(apiClass), new Class<?>[]{apiClass},
             (proxy, method, args) -> invoke(apiClass, graphQlClient, method, args)));
     }
