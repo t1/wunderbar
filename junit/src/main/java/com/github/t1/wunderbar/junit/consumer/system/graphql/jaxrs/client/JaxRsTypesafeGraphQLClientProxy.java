@@ -46,7 +46,7 @@ class JaxRsTypesafeGraphQLClientProxy {
         var headers = new HeaderBuilder(api, method,
             configuration != null ? configuration.getHeaders() : Collections.emptyMap())
             .build();
-        headers.putAll(this.extraHeaders);
+        if (extraHeaders != null) headers.putAll(this.extraHeaders);
         return headers;
     }
 
