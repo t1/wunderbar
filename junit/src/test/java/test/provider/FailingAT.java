@@ -105,7 +105,7 @@ class FailingAT {
             // TODO should also match     : \"unexpected-fail\"}, \"message\"=\"product unexpected-fail fails unexpectedly\"}]");
             // but sometimes it's actually: \"validation-error\"}, \"message\"=\"no body in GraphQL request\"}]");
             then(errors.get(1).getMessage()).startsWith(
-                "[json diff (ignoring `add` operations)] \n" +
+                "[json diff (ignoring new fields)] \n" +
                 "Expecting empty but was: [\"remove /data:\n" +
                 "  expected: {\"product\":{\"id\":\"unexpected-fail\",\"description\":\"this will not be reached\"}}\n" +
                 "    actual: null\"]");

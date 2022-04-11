@@ -13,7 +13,7 @@ import javax.json.JsonStructure;
 import javax.json.JsonValue;
 import javax.json.JsonValue.ValueType;
 
-import static com.github.t1.wunderbar.common.Utils.jsonNonAddDiff;
+import static com.github.t1.wunderbar.common.Utils.nonAddFieldDiff;
 import static com.github.t1.wunderbar.junit.assertions.JsonValueAssert.JsonObjectAssert.JSON_OBJECT;
 import static com.github.t1.wunderbar.junit.assertions.WunderBarBDDAssertions.then;
 import static java.util.stream.Collectors.toList;
@@ -36,11 +36,11 @@ public class JsonValueAssert<SELF extends JsonValueAssert<SELF, ACTUAL>, ACTUAL 
                          "expected: " + expected + "\n" +
                          "actual  : " + actual)
             .isEqualTo(expected.getValueType());
-        var nonAddDescriptions = jsonNonAddDiff(expected, actual)
+        var nonAddFieldDescriptions = nonAddFieldDiff(expected, actual)
             .map(patch -> describe(patch.asJsonObject(), expected.asJsonObject()))
             .collect(toList());
-        then(nonAddDescriptions)
-            .describedAs("json diff (ignoring `add` operations)")
+        then(nonAddFieldDescriptions)
+            .describedAs("json diff (ignoring new fields)")
             .isEmpty();
     }
 

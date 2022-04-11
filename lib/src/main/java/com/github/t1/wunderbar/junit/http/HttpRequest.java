@@ -28,7 +28,7 @@ import java.util.function.Function;
 import java.util.regex.MatchResult;
 import java.util.regex.Pattern;
 
-import static com.github.t1.wunderbar.common.Utils.jsonNonAddDiff;
+import static com.github.t1.wunderbar.common.Utils.nonAddFieldDiff;
 import static com.github.t1.wunderbar.junit.http.HttpUtils.APPLICATION_JSON_UTF8;
 import static com.github.t1.wunderbar.junit.http.HttpUtils.JSONB;
 import static com.github.t1.wunderbar.junit.http.HttpUtils.firstMediaType;
@@ -126,7 +126,7 @@ public class HttpRequest {
 
     private boolean matchesBody(HttpRequest that) {
         if (!this.isJson() || !that.isJson()) return false;
-        return jsonNonAddDiff(this.jsonValue(), that.jsonValue()).findAny().isEmpty();
+        return nonAddFieldDiff(this.jsonValue(), that.jsonValue()).count() == 0;
     }
 
     public HttpRequest withFormattedBody() {return (isJson()) ? withBody(body().map(HttpUtils::formatJson).orElseThrow()) : this;}

@@ -27,6 +27,7 @@ import javax.ws.rs.core.Response.StatusType;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.net.URI;
+import java.util.List;
 
 import static com.github.t1.wunderbar.junit.assertions.GraphQLClientExceptionAssert.GRAPHQL_CLIENT_EXCEPTION;
 import static com.github.t1.wunderbar.junit.assertions.WebApplicationExceptionAssert.WEB_APPLICATION_EXCEPTION;
@@ -431,5 +432,26 @@ abstract class ProductResolverTest {
         float getFloat();
 
         double getDouble();
+    }
+
+
+    @Test
+    void shouldMatchWithLastDifferentListElements() {
+        given(products.strings(List.of("one"))).returns("one");
+        given(products.strings(List.of("one", "two"))).returns("two");
+
+        then(resolver.strings(List.of("one"))).isEqualTo("one");
+        then(resolver.strings(List.of("one", "two"))).isEqualTo("two");
+    }
+
+    @Test
+    void shouldMatchWithDifferentInnerListElements() {
+        var one = Product.builder().id("one").build();
+        var two = Product.builder().id("two").build();
+        given(products.products(List.of(one))).returns("one");
+        given(products.products(List.of(one, two))).returns("two");
+
+        then(resolver.products(List.of(one))).isEqualTo("one");
+        then(resolver.products(List.of(one, two))).isEqualTo("two");
     }
 }

@@ -4,6 +4,7 @@ import lombok.SneakyThrows;
 import lombok.experimental.UtilityClass;
 
 import javax.json.Json;
+import javax.json.JsonObject;
 import javax.json.JsonStructure;
 import javax.json.JsonValue;
 import java.io.IOException;
@@ -93,17 +94,26 @@ public @Internal class Utils {
         return null;
     }
 
-    public static Stream<JsonValue> jsonNonAddDiff(JsonValue expected, JsonValue actual) {
+    public static Stream<JsonObject> nonAddFieldDiff(JsonValue expected, JsonValue actual) {
         if (expected.getValueType() != actual.getValueType()) {
             expected = Json.createObjectBuilder().add("diff-dummy", expected).build();
             actual = Json.createObjectBuilder().add("diff-dummy", actual).build();
         }
         return Json.createDiff((JsonStructure) expected, (JsonStructure) actual).toJsonArray().stream()
-            .filter(Utils::isNonAdd);
+            .map(JsonValue::asJsonObject)
+            .filter(jsonObject -> !isAddField(jsonObject));
     }
 
-    private static boolean isNonAdd(JsonValue jsonValue) {
-        return !jsonValue.asJsonObject().getString("op").equals(ADD.operationName());
+    private static boolean isAddField(JsonObject jsonObject) {
+        return isAddOperation(jsonObject) && !isPathToArray(jsonObject);
+    }
+
+    private static boolean isAddOperation(JsonObject jsonObject) {
+        return jsonObject.getString("op").equals(ADD.operationName());
+    }
+
+    private static boolean isPathToArray(JsonObject jsonObject) {
+        return jsonObject.getString("path").matches(".*/\\d+"); // last element is an index
     }
 
     public static String prefix(String prefix, String string) {

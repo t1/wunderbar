@@ -17,6 +17,8 @@ import org.eclipse.microprofile.graphql.NonNull;
 import org.eclipse.microprofile.graphql.Query;
 import org.eclipse.microprofile.graphql.Source;
 
+import java.util.List;
+
 import static lombok.AccessLevel.PRIVATE;
 
 @GraphQLApi
@@ -48,11 +50,21 @@ class ProductResolver {
         return products.patch(patch);
     }
 
+    String strings(List<String> strings) {
+        return products.strings(strings);
+    }
+
+    String products(List<Product> products) {
+        return this.products.products(products);
+    }
+
     @GraphQLClientApi(endpoint = "dummy")
     interface Products {
         Product product(@NonNull String id);
         Product product(@Header String customHeader, @NonNull String id);
         Product patch(@NonNull Product patch);
+        String strings(@NonNull List<@NonNull String> strings);
+        String products(@NonNull List<@NonNull Product> products);
     }
 
     @GraphQLClientApi
