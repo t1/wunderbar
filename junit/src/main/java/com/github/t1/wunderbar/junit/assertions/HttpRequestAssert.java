@@ -15,37 +15,37 @@ public class HttpRequestAssert<SELF extends HttpRequestAssert<SELF, ACTUAL>, ACT
 
     protected HttpRequestAssert(ACTUAL actual, Class<?> selfType) {super(actual, selfType);}
 
-    public HttpRequestAssert<SELF, ACTUAL> isGET() {return hasMethod("GET");}
+    public SELF isGET() {return hasMethod("GET");}
 
-    public HttpRequestAssert<SELF, ACTUAL> isPOST() {return hasMethod("POST");}
+    public SELF isPOST() {return hasMethod("POST");}
 
-    public HttpRequestAssert<SELF, ACTUAL> hasMethod(String expected) {
+    public SELF hasMethod(String expected) {
         then(actual.getMethod()).as("http request method").isEqualTo(expected);
-        return this;
+        return myself;
     }
 
-    public HttpRequestAssert<SELF, ACTUAL> hasUriEndingWith(String expected) {
+    public SELF hasUriEndingWith(String expected) {
         then(actual.uri()).as("http request uri").endsWith(expected);
-        return this;
+        return myself;
     }
 
-    public HttpRequestAssert<SELF, ACTUAL> isGraphQL() {return isPOST().hasUriEndingWith("/graphql");}
+    public SELF isGraphQL() {return isPOST().hasUriEndingWith("/graphql");}
 
-    public HttpRequestAssert<SELF, ACTUAL> hasQuery(String expected) {
+    public SELF hasQuery(String expected) {
         isGraphQL();
         then(actual.get("/query")).as("GraphQL query").isJsonString().isEqualTo(expected);
-        return this;
+        return myself;
     }
 
-    public HttpRequestAssert<SELF, ACTUAL> hasVariable(String name, String value) {
+    public SELF hasVariable(String name, String value) {
         isGraphQL();
         then(actual.get("/variables/" + name)).as("GraphQL variable '%s'", name).isJsonString().isEqualTo(value);
-        return this;
+        return myself;
     }
 
-    public HttpRequestAssert<SELF, ACTUAL> hasVariable(String name) {
+    public SELF hasVariable(String name) {
         isGraphQL();
         then(actual.get("/variables/" + name)).as("GraphQL variable '%s'", name).isNotNull();
-        return this;
+        return myself;
     }
 }

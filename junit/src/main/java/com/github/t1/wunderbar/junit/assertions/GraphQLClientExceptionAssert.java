@@ -16,6 +16,13 @@ public class GraphQLClientExceptionAssert<SELF extends GraphQLClientExceptionAss
 
     public GraphQLClientExceptionAssert(ACTUAL actual, Class<? super GraphQLClientExceptionAssert<?, ?>> selfType) {super(actual, selfType);}
 
+    public ViolationErrorAssert<?, ?> hasViolationError() {
+        GraphQLError error = errors()
+            .filter(e -> "ValidationError".equals(e.getStringExtension("classification")))
+            .findAny().orElseThrow(() -> new AssertionError("no validation error found in " + actual));
+        return new ViolationErrorAssert<>(error);
+    }
+
     public GraphQLErrorAssert<?, ?> hasErrorCode(String errorCode) {
         GraphQLError error = errors()
             .filter(e -> errorCode.equals(e.getCode()))

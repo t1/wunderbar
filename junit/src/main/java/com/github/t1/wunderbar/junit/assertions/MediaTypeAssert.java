@@ -34,10 +34,10 @@ public class MediaTypeAssert<SELF extends MediaTypeAssert<SELF, ACTUAL>, ACTUAL 
 
     protected MediaTypeAssert(ACTUAL actual, Class<?> selfType) {super(actual, selfType);}
 
-    public MediaTypeAssert<SELF, ACTUAL> isCompatibleTo(MediaType expected) {return isCompatibleTo(List.of(expected));}
+    public SELF isCompatibleTo(MediaType expected) {return isCompatibleTo(List.of(expected));}
 
-    public MediaTypeAssert<SELF, ACTUAL> isCompatibleTo(List<MediaType> expected) {
+    public SELF isCompatibleTo(List<MediaType> expected) {
         then(actual).is(compatibleTo(expected));
-        return this;
+        return myself;
     }
 }

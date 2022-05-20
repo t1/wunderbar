@@ -58,7 +58,7 @@ public class JsonValueAssert<SELF extends JsonValueAssert<SELF, ACTUAL>, ACTUAL 
         return isType(STRING).extracting(HttpUtils::jsonString, InstanceOfAssertFactories.STRING);
     }
 
-    public JsonValueAssert<SELF, ACTUAL> isType(ValueType expected) {
+    public SELF isType(ValueType expected) {
         then(actual.getValueType()).isEqualTo(expected);
         return myself;
     }
@@ -72,30 +72,30 @@ public class JsonValueAssert<SELF extends JsonValueAssert<SELF, ACTUAL>, ACTUAL 
 
         protected JsonObjectAssert(ACTUAL actual, Class<?> selfType) {super(actual, selfType);}
 
-        public JsonObjectAssert<SELF, ACTUAL> has(String pointer, String expected) {
+        public SELF has(String pointer, String expected) {
             then(actual).at(pointer).isJsonString().isEqualTo(expected);
-            return this;
+            return myself;
         }
 
         public JsonValueAssert<?, ?> at(String pointer) {return at(Json.createPointer(pointer));}
 
         public JsonValueAssert<?, ?> at(JsonPointer pointer) {return then(pointer.getValue(actual));}
 
-        public JsonObjectAssert<SELF, ACTUAL> hasString(String name, String expected) {
+        public SELF hasString(String name, String expected) {
             hasField(name, STRING);
             then(actual.getString(name)).isEqualTo(expected);
-            return this;
+            return myself;
         }
 
-        public JsonObjectAssert<SELF, ACTUAL> hasField(String name) {
+        public SELF hasField(String name) {
             then(actual.containsKey(name)).describedAs("expected a field '%s' but has only %s", name, actual.keySet()).isTrue();
-            return this;
+            return myself;
         }
 
-        public JsonObjectAssert<SELF, ACTUAL> hasField(String name, ValueType type) {
+        public SELF hasField(String name, ValueType type) {
             hasField(name);
             then(actual.getValue("/" + name)).isType(type);
-            return this;
+            return myself;
         }
     }
 }

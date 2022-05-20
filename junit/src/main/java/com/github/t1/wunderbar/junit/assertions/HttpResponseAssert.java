@@ -20,27 +20,27 @@ public class HttpResponseAssert<SELF extends HttpResponseAssert<SELF, ACTUAL>, A
 
     protected HttpResponseAssert(ACTUAL actual, Class<?> selfType) {super(actual, selfType);}
 
-    public HttpResponseAssert<SELF, ACTUAL> hasStatus(Status expected) {
+    public SELF hasStatus(Status expected) {
         then(actual.getStatus()).describedAs("status").isEqualTo(expected);
-        return this;
+        return myself;
     }
 
-    public HttpResponseAssert<SELF, ACTUAL> hasStatus(int expected) {
+    public SELF hasStatus(int expected) {
         then(actual.getStatusCode()).describedAs("status").isEqualTo(expected);
-        return this;
+        return myself;
     }
 
     public AbstractStringAssert<?> asString() {return then(actual.getBody());}
 
     public JsonObjectAssert<?, ?> isJsonObject() {return then(actual.jsonValue()).isObject();}
 
-    public HttpResponseAssert<SELF, ACTUAL> hasJson(String name, String expected) {
+    public SELF hasJson(String name, String expected) {
         isJsonObject().hasString(name, expected);
-        return this;
+        return myself;
     }
 
-    public HttpResponseAssert<SELF, ACTUAL> has(String pointer, String expected) {
+    public SELF has(String pointer, String expected) {
         isJsonObject().has(pointer, expected);
-        return this;
+        return myself;
     }
 }
