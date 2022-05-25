@@ -21,7 +21,7 @@
         <smallrye-graphql.version>1.6.0</smallrye-graphql.version>
         <slf4j.version>1.7.36</slf4j.version>
         <resteasy.version>4.7.6.Final</resteasy.version>
-        <quarkus.version>2.9.1.Final</quarkus.version>
+        <quarkus.version>2.9.2.Final</quarkus.version>
         <smallrye-context-propagation.version>1.2.2</smallrye-context-propagation.version>
 
         <junit.version>5.8.2</junit.version>
