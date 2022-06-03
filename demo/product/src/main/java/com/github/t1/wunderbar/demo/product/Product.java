@@ -7,6 +7,9 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.eclipse.microprofile.graphql.Id;
 
+import javax.json.bind.Jsonb;
+import javax.json.bind.JsonbBuilder;
+
 import static lombok.AccessLevel.PRIVATE;
 
 @Getter @Setter @NoArgsConstructor
@@ -18,7 +21,7 @@ public class Product {
     Integer price;
     Boolean forbidden;
 
-    @Override public String toString() {return ProductUtils.toString(this);}
+    @Override public String toString() {return JSONB.toJson(this).replaceAll("\"", "");}
 
     public Product apply(Product patch) {
         if (patch.name != null) this.name = patch.name;
@@ -27,4 +30,6 @@ public class Product {
         if (patch.forbidden != null) this.forbidden = patch.forbidden;
         return this;
     }
+
+    private static final Jsonb JSONB = JsonbBuilder.create();
 }

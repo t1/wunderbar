@@ -35,9 +35,7 @@ public class Products {
 
     @Inject Principal principal;
 
-    @PostConstruct void postConstruct() {
-        log.info("next product id is {}", nextId);
-    }
+    @PostConstruct void postConstruct() {log.info("next product id is {}", nextId);}
 
     @GET
     @Query public @NonNull Collection<@NonNull Product> all() {
