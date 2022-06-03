@@ -97,6 +97,9 @@ No code changes needed, and now it fully tests your REST or GraphQL client annot
 This is nice, but as a welcome side effect, it _records_ the requests and responses you need for your code to work, and saves it in a `wunder.bar` file (Behavior ARchive).
 Give this file to your API provider, so they can check if their service complies to your requirements.
 You can even deploy this file, together with your other maven artefacts, e.g. by using the `attach-artifact` goal of the `build-helper-maven-plugin`; for an example, look at the pom in the https://github.com/t1/wunderbar/blob/trunk/demo/order/pom.xml[`demo/order`] submodule.
+Note that you'll get a `Failed to install artifact` error when running `mvn clean install -DskipTests`, because you skip the tests that generate the `bar` files, so the plugin can't attach them.
+Most of the time, executing `clean` is not necessary (and slows your build down); and running `install` before releasing your software is only useful for libraries, not for applications; simply run `mvn package -DskipTests` instead.
+If you still need the `install`, you can also pass `-Dbuildhelper.skipAttach`.
 
 You can disable recording for one stub by calling `withoutRecording`, e.g. when testing the error handling in your consumer code, so this interaction is not an expected behavior of the API provider.
 
@@ -248,7 +251,7 @@ You can use system-level tests to test a real system, as long as you only test w
 
 // TODO finish documentation
 
-== Documentation
+== Full Documentation
 
 The full documentation is in the JavaDoc, mainly in the https://github.com/t1/wunderbar/blob/trunk/junit/src/main/java/com/github/t1/wunderbar/junit/consumer/WunderBarApiConsumer.java[`@WunderBarApiConsumer`] annotation, the https://github.com/t1/wunderbar/blob/trunk/junit/src/main/java/com/github/t1/wunderbar/junit/consumer/Level.java[`Level`] enum and the https://github.com/t1/wunderbar/blob/main/junit/src/main/java/com/github/t1/wunderbar/junit/consumer/WunderbarExpectationBuilder.java[`WunderbarExpectationBuilder`] for the API consumer (client) side and in the https://github.com/t1/wunderbar/blob/trunk/junit/src/main/java/com/github/t1/wunderbar/junit/provider/WunderBarApiProvider.java[`@WunderBarApiProvider`] annotation and the https://github.com/t1/wunderbar/blob/trunk/junit/src/main/java/com/github/t1/wunderbar/junit/provider/WunderBarTestFinder.java[`WunderBarTestFinder`] for the API provider (server) side.
 
