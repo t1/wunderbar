@@ -31,7 +31,7 @@
         <servlet-api.version>4.0.3</servlet-api.version>
         <jsonb.version>1.0.2</jsonb.version>
 
-        <maven-test-plugins.version>3.0.0-M6</maven-test-plugins.version>
+        <maven-test-plugins.version>3.0.0-M7</maven-test-plugins.version>
     </properties>
 
     <modules>
