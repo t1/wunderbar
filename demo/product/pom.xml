@@ -23,13 +23,15 @@
     </dependencyManagement>
 
     <dependencies>
+        <!-- just make sure `order` is built first -->
         <dependency>
             <groupId>com.github.t1</groupId>
             <artifactId>wunderbar.demo.order</artifactId>
             <version>${project.version}</version>
             <type>war</type>
-            <scope>test</scope><!-- just make sure `order` is built first -->
+            <scope>test</scope>
         </dependency>
+
         <dependency>
             <groupId>com.github.t1</groupId>
             <artifactId>wunderbar.lib</artifactId>
