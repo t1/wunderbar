@@ -28,7 +28,7 @@
         <servlet-api.version>4.0.3</servlet-api.version>
         <undertow.version>2.2.19.Final</undertow.version>
 
-        <junit.version>5.9.0</junit.version>
+        <junit.version>5.9.1</junit.version>
         <assertj.version>3.23.1</assertj.version>
         <mockito.version>4.8.0</mockito.version>
         <logback.version>1.4.1</logback.version>
