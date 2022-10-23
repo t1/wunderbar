@@ -72,6 +72,10 @@ public class JaxRsTypesafeGraphQLClientBuilder implements TypesafeGraphQLClientB
         return this;
     }
 
+    @Override public TypesafeGraphQLClientBuilder initPayload(Map<String, Object> initPayload) {
+        return this;
+    }
+
     public TypesafeGraphQLClientBuilder register(Object component) {
         client().register(component);
         return this;
