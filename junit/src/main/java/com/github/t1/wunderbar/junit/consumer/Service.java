@@ -1,11 +1,11 @@
 package com.github.t1.wunderbar.junit.consumer;
 
+import jakarta.enterprise.util.AnnotationLiteral;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.With;
 import lombok.experimental.Accessors;
 
-import javax.enterprise.util.AnnotationLiteral;
 import java.lang.annotation.Retention;
 
 import static java.lang.annotation.RetentionPolicy.RUNTIME;
@@ -47,6 +47,7 @@ public @interface Service {
     int RANDOM = 0;
 
     @Getter @Accessors(fluent = true) @With @RequiredArgsConstructor
+    @SuppressWarnings("ClassExplicitlyAnnotation")
     class Literal extends AnnotationLiteral<Service> implements Service {
         private final int port;
         private final String endpoint;

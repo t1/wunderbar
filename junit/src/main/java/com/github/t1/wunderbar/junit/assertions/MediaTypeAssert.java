@@ -5,8 +5,9 @@ import org.assertj.core.api.AbstractAssert;
 import org.assertj.core.api.Condition;
 import org.assertj.core.api.InstanceOfAssertFactory;
 
-import javax.ws.rs.WebApplicationException;
-import javax.ws.rs.core.MediaType;
+import jakarta.ws.rs.WebApplicationException;
+import jakarta.ws.rs.core.MediaType;
+
 import java.util.List;
 
 import static com.github.t1.wunderbar.junit.assertions.WunderBarBDDAssertions.then;

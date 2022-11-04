@@ -53,7 +53,7 @@ class OrderMockST {
         .withDeployment("../../mock/target/wunderbar-mock-server.war");
 
     @SuppressWarnings("resource") private static JeeContainer jeeContainer() {
-        return new WildflyContainer("rdohna/wildfly", "25.0.1.Final-jdk11").withNetwork(NETWORK);
+        return WildflyContainer.create("rdohna/wildfly", "27.0.0.Beta1-jdk11").withNetwork(NETWORK);
     }
 
     interface Api {

@@ -22,8 +22,8 @@ import java.nio.file.Path;
 
 import static com.github.t1.wunderbar.junit.assertions.WebApplicationExceptionAssert.WEB_APPLICATION_EXCEPTION;
 import static com.github.t1.wunderbar.junit.assertions.WunderBarBDDAssertions.then;
-import static javax.ws.rs.core.Response.Status.FORBIDDEN;
-import static javax.ws.rs.core.Response.Status.NOT_FOUND;
+import static jakarta.ws.rs.core.Response.Status.FORBIDDEN;
+import static jakarta.ws.rs.core.Response.Status.NOT_FOUND;
 import static org.assertj.core.api.BDDAssertions.catchThrowable;
 
 @WunderBarApiConsumer(fileName = "target/system-wunder.jar")

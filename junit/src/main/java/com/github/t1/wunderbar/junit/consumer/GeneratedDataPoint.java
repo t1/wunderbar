@@ -4,9 +4,10 @@ import com.github.t1.wunderbar.common.Internal;
 import lombok.NonNull;
 import lombok.Value;
 
-import javax.json.JsonValue;
-import javax.json.bind.annotation.JsonbTransient;
-import javax.json.bind.annotation.JsonbTypeSerializer;
+import jakarta.json.JsonValue;
+import jakarta.json.bind.annotation.JsonbTransient;
+import jakarta.json.bind.annotation.JsonbTypeSerializer;
+
 import java.lang.reflect.AnnotatedElement;
 import java.util.List;
 import java.util.Optional;

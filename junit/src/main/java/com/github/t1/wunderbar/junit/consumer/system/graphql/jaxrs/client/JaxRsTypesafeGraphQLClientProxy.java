@@ -6,14 +6,15 @@ import io.smallrye.graphql.client.impl.typesafe.ResultBuilder;
 import io.smallrye.graphql.client.impl.typesafe.reflection.MethodInvocation;
 import lombok.extern.slf4j.Slf4j;
 
-import javax.ws.rs.client.WebTarget;
+import jakarta.ws.rs.client.WebTarget;
+
 import java.util.Collections;
 import java.util.Map;
 
 import static com.github.t1.wunderbar.common.Utils.prefix;
 import static com.github.t1.wunderbar.junit.http.HttpUtils.APPLICATION_JSON_UTF8;
-import static javax.ws.rs.client.Entity.entity;
-import static javax.ws.rs.core.Response.Status.Family.SUCCESSFUL;
+import static jakarta.ws.rs.client.Entity.entity;
+import static jakarta.ws.rs.core.Response.Status.Family.SUCCESSFUL;
 
 @Slf4j
 class JaxRsTypesafeGraphQLClientProxy {

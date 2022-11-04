@@ -7,7 +7,8 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
-import javax.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.MediaType;
+
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Stream;
@@ -19,7 +20,7 @@ import static com.github.t1.wunderbar.junit.assertions.MediaTypeAssert.isCompati
 import static com.github.t1.wunderbar.junit.assertions.WunderBarBDDAssertions.then;
 import static com.github.t1.wunderbar.junit.http.HttpUtils.isCompatible;
 import static com.github.t1.wunderbar.junit.http.HttpUtils.mediaTypes;
-import static javax.ws.rs.core.MediaType.APPLICATION_JSON_TYPE;
+import static jakarta.ws.rs.core.MediaType.APPLICATION_JSON_TYPE;
 
 class WunderBarAssertionsTest {
     @ParameterizedTest

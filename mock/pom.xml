@@ -5,16 +5,12 @@
     <parent>
         <artifactId>wunderbar.parent</artifactId>
         <groupId>com.github.t1</groupId>
-        <version>2.4.10-SNAPSHOT</version>
+        <version>3.0-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
     <artifactId>wunderbar.mock.server</artifactId>
     <packaging>war</packaging>
-
-    <properties>
-        <failOnMissingWebXml>false</failOnMissingWebXml>
-    </properties>
 
     <build>
         <finalName>wunderbar-mock-server</finalName>
@@ -69,6 +65,13 @@
             <artifactId>yasson</artifactId>
             <version>${yasson.version}</version>
             <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>jakarta.json.bind</groupId>
+            <artifactId>jakarta.json.bind-api</artifactId>
+            <version>3.0.0</version>
+            <!-- needed at compile-time and at test-time, but not at runtime -->
+            <optional>true</optional>
         </dependency>
     </dependencies>
 </project>

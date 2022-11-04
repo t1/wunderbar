@@ -4,7 +4,7 @@
 
     <groupId>com.github.t1</groupId>
     <artifactId>wunderbar.parent</artifactId>
-    <version>2.4.10-SNAPSHOT</version>
+    <version>3.0-SNAPSHOT</version>
     <name>Behavior Archives (Parent)</name>
     <description>Code-first, low ceremony Consumer Driven Contracts test tool for Java natives.</description>
     <packaging>pom</packaging>
@@ -17,15 +17,16 @@
         <project.build.sourceEncoding>utf-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>utf-8</project.reporting.outputEncoding>
 
-        <microprofile.version>4.0.1</microprofile.version>
-        <smallrye-graphql.version>1.8.2</smallrye-graphql.version>
-        <slf4j.version>2.0.0</slf4j.version>
-        <resteasy.version>4.7.7.Final</resteasy.version>
-        <quarkus.version>2.14.0.Final</quarkus.version>
+        <microprofile.version>5.0</microprofile.version>
+        <smallrye-graphql.version>2.0.0-SNAPSHOT</smallrye-graphql.version>
+        <slf4j.version>2.0.3</slf4j.version>
+        <resteasy.version>6.2.0.Final</resteasy.version>
+        <resteasy.mp.version>2.0.0.Final</resteasy.mp.version>
+        <quarkus.version>3.0.0.Alpha1</quarkus.version>
         <smallrye-context-propagation.version>1.2.2</smallrye-context-propagation.version>
-        <jsonb.version>1.0.2</jsonb.version>
-        <yasson.version>1.0.11</yasson.version>
-        <servlet-api.version>4.0.3</servlet-api.version>
+        <jsonb.version>3.0.0</jsonb.version>
+        <yasson.version>3.0.2</yasson.version>
+        <servlet-api.version>6.0.0</servlet-api.version>
         <undertow.version>2.3.0.Final</undertow.version>
 
         <junit.version>5.9.1</junit.version>
@@ -112,6 +113,14 @@
                 <configuration>
                     <reportFormat>plain</reportFormat>
                     <trimStackTrace>false</trimStackTrace>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-war-plugin</artifactId>
+                <version>3.3.2</version>
+                <configuration>
+                    <failOnMissingWebXml>false</failOnMissingWebXml>
                 </configuration>
             </plugin>
             <plugin>

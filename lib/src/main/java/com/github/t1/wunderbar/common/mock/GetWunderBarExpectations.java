@@ -5,8 +5,8 @@ import com.github.t1.wunderbar.junit.http.HttpResponse;
 import com.github.t1.wunderbar.junit.http.HttpUtils;
 import lombok.EqualsAndHashCode;
 
-import javax.json.Json;
-import javax.json.JsonObjectBuilder;
+import jakarta.json.Json;
+import jakarta.json.JsonObjectBuilder;
 
 import static com.github.t1.wunderbar.common.mock.GraphQLResponseBuilder.graphQLResponse;
 

@@ -1,23 +1,23 @@
 package com.github.t1.wunderbar.demo.product;
 
 import com.github.t1.wunderbar.junit.http.ProblemDetails;
+import jakarta.annotation.PostConstruct;
+import jakarta.annotation.security.RolesAllowed;
+import jakarta.inject.Inject;
+import jakarta.ws.rs.ForbiddenException;
+import jakarta.ws.rs.GET;
+import jakarta.ws.rs.NotFoundException;
+import jakarta.ws.rs.PATCH;
+import jakarta.ws.rs.Path;
+import jakarta.ws.rs.PathParam;
+import jakarta.ws.rs.WebApplicationException;
+import jakarta.ws.rs.core.Response;
 import lombok.extern.slf4j.Slf4j;
 import org.eclipse.microprofile.graphql.GraphQLApi;
 import org.eclipse.microprofile.graphql.Mutation;
 import org.eclipse.microprofile.graphql.NonNull;
 import org.eclipse.microprofile.graphql.Query;
 
-import javax.annotation.PostConstruct;
-import javax.annotation.security.RolesAllowed;
-import javax.inject.Inject;
-import javax.ws.rs.ForbiddenException;
-import javax.ws.rs.GET;
-import javax.ws.rs.NotFoundException;
-import javax.ws.rs.PATCH;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.WebApplicationException;
-import javax.ws.rs.core.Response;
 import java.security.Principal;
 import java.util.Collection;
 import java.util.Random;
@@ -26,8 +26,9 @@ import java.util.concurrent.ConcurrentMap;
 
 import static java.lang.Boolean.TRUE;
 
-@GraphQLApi @Path("/products")
-@Slf4j @SuppressWarnings("QsUndeclaredPathMimeTypesInspection")
+@GraphQLApi
+@Path("/products")
+@Slf4j
 public class Products {
     private static int nextId = new Random().nextInt(100); // just a little randomness
 

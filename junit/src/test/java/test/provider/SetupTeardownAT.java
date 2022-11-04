@@ -35,7 +35,7 @@ import static com.github.t1.wunderbar.junit.provider.WunderBarTestFinder.findTes
 import static java.lang.Integer.parseInt;
 import static java.util.stream.Collectors.joining;
 import static java.util.stream.Collectors.toList;
-import static javax.ws.rs.core.Response.Status.CREATED;
+import static jakarta.ws.rs.core.Response.Status.CREATED;
 
 @WunderBarApiProvider(baseUri = "{endpoint()}")
 class SetupTeardownAT {

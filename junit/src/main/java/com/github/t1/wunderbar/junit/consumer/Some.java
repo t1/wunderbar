@@ -1,11 +1,11 @@
 package com.github.t1.wunderbar.junit.consumer;
 
+import jakarta.enterprise.util.AnnotationLiteral;
 import lombok.EqualsAndHashCode;
 import lombok.Value;
 import lombok.With;
 import lombok.experimental.Accessors;
 
-import javax.enterprise.util.AnnotationLiteral;
 import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
 
@@ -31,6 +31,7 @@ public @interface Some {
     SomeLiteral LITERAL = new SomeLiteral(new String[0]);
 
     @Value @With @Accessors(fluent = true) @EqualsAndHashCode(callSuper = true, onlyExplicitlyIncluded = true)
+    @SuppressWarnings("ClassExplicitlyAnnotation")
     class SomeLiteral extends AnnotationLiteral<Some> implements Some {
         String[] value;
 

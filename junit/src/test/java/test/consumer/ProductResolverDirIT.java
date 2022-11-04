@@ -6,6 +6,7 @@ import com.github.t1.wunderbar.junit.consumer.Some;
 import com.github.t1.wunderbar.junit.consumer.SomeSingleTypes;
 import com.github.t1.wunderbar.junit.consumer.SystemUnderTest;
 import com.github.t1.wunderbar.junit.consumer.WunderBarApiConsumer;
+import jakarta.json.JsonValue;
 import org.eclipse.microprofile.graphql.NonNull;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -14,7 +15,6 @@ import test.consumer.ProductResolver.Product;
 import test.consumer.ProductResolver.Products;
 import test.consumer.ProductsGateway.ProductsRestClient;
 
-import javax.json.JsonValue;
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.AnnotatedElement;
@@ -33,6 +33,7 @@ import static test.consumer.ProductResolverDirIT.DIR;
 
 @WunderBarApiConsumer(fileName = DIR)
 @Register(SomeProducts.class)
+@SuppressWarnings("JUnitMalformedDeclaration")
 class ProductResolverDirIT {
     static final String DIR = "target/wunder-bar/";
 
@@ -155,21 +156,22 @@ class ProductResolverDirIT {
 
         then(resolvedProduct1).usingRecursiveComparison().isEqualTo(product1);
         then(resolvedProduct2).usingRecursiveComparison().isEqualTo(product2);
-        then(Files.list(baseDir().resolve("shouldResolveTwoProducts(Product, Product)"))
-            .map(path -> path.subpath(4, 5)).map(Path::toString))
-            .containsExactlyInAnyOrder(
-                "1 request-headers.properties",
-                "1 request-body.json",
-                "1 request-variables.json",
-                "1 response-headers.properties",
-                "1 response-body.json",
-                "1 response-variables.json",
-                "2 request-headers.properties",
-                "2 request-body.json",
-                "2 request-variables.json",
-                "2 response-headers.properties",
-                "2 response-body.json",
-                "2 response-variables.json");
+        try (var files = Files.list(baseDir().resolve("shouldResolveTwoProducts(Product, Product)"))) {
+            then(files.map(path -> path.subpath(4, 5)).map(Path::toString))
+                .containsExactlyInAnyOrder(
+                    "1 request-headers.properties",
+                    "1 request-body.json",
+                    "1 request-variables.json",
+                    "1 response-headers.properties",
+                    "1 response-body.json",
+                    "1 response-variables.json",
+                    "2 request-headers.properties",
+                    "2 request-body.json",
+                    "2 request-variables.json",
+                    "2 response-headers.properties",
+                    "2 response-body.json",
+                    "2 response-variables.json");
+        }
     }
 
     @Nested class Rest {

@@ -6,7 +6,7 @@ import com.github.t1.wunderbar.junit.http.HttpResponse;
 import org.assertj.core.api.AbstractAssert;
 import org.assertj.core.api.AbstractStringAssert;
 
-import javax.ws.rs.core.Response.Status;
+import jakarta.ws.rs.core.Response.Status;
 
 import static com.github.t1.wunderbar.junit.assertions.WunderBarBDDAssertions.then;
 

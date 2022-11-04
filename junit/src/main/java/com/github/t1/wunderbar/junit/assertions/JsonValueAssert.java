@@ -6,19 +6,19 @@ import org.assertj.core.api.AbstractStringAssert;
 import org.assertj.core.api.InstanceOfAssertFactories;
 import org.assertj.core.api.InstanceOfAssertFactory;
 
-import javax.json.Json;
-import javax.json.JsonObject;
-import javax.json.JsonPointer;
-import javax.json.JsonStructure;
-import javax.json.JsonValue;
-import javax.json.JsonValue.ValueType;
+import jakarta.json.Json;
+import jakarta.json.JsonObject;
+import jakarta.json.JsonPointer;
+import jakarta.json.JsonStructure;
+import jakarta.json.JsonValue;
+import jakarta.json.JsonValue.ValueType;
 
 import static com.github.t1.wunderbar.common.Utils.nonAddFieldDiff;
 import static com.github.t1.wunderbar.junit.assertions.JsonValueAssert.JsonObjectAssert.JSON_OBJECT;
 import static com.github.t1.wunderbar.junit.assertions.WunderBarBDDAssertions.then;
 import static java.util.stream.Collectors.toList;
-import static javax.json.JsonValue.ValueType.OBJECT;
-import static javax.json.JsonValue.ValueType.STRING;
+import static jakarta.json.JsonValue.ValueType.OBJECT;
+import static jakarta.json.JsonValue.ValueType.STRING;
 
 /**
  * AssertJ assertion on JSON values

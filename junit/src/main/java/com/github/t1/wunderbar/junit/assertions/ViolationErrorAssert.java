@@ -29,7 +29,7 @@ public class ViolationErrorAssert<SELF extends ViolationErrorAssert<SELF, ACTUAL
     // violation.propertyPath=["orderw","id"]
     // violation.invalidValue=123456789
     // violation.constraint={
-    //   "message":"{javax.validation.constraints.Size.message}"
+    //   "message":"{jakarta.validation.constraints.Size.message}"
     //   "min":1
     //   "max":3
     //   "groups":[]

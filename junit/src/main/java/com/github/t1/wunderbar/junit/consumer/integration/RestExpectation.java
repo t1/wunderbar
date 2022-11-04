@@ -6,8 +6,9 @@ import com.github.t1.wunderbar.junit.http.ProblemDetails;
 import lombok.extern.slf4j.Slf4j;
 import org.eclipse.microprofile.rest.client.RestClientBuilder;
 
-import javax.ws.rs.Produces;
-import javax.ws.rs.core.MediaType;
+import jakarta.ws.rs.Produces;
+import jakarta.ws.rs.core.MediaType;
+
 import java.lang.reflect.Method;
 import java.net.URI;
 

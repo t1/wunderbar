@@ -236,7 +236,7 @@ class WunderBarApiConsumerJUnitExtension implements Extension, BeforeEachCallbac
 
     private Technology technology(Class<?> type) {
         if (type.isAnnotationPresent(GraphQLClientApi.class)) return GRAPHQL;
-        if (type.isAnnotationPresent(javax.ws.rs.Path.class)) return REST;
+        if (type.isAnnotationPresent(jakarta.ws.rs.Path.class)) return REST;
         throw new WunderBarException("no technology recognized on " + type);
     }
 

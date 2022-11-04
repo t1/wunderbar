@@ -10,10 +10,11 @@ import lombok.RequiredArgsConstructor;
 import lombok.Value;
 import org.assertj.core.api.BDDSoftAssertions;
 
-import javax.json.Json;
-import javax.json.JsonPointer;
-import javax.json.JsonStructure;
-import javax.json.JsonValue;
+import jakarta.json.Json;
+import jakarta.json.JsonPointer;
+import jakarta.json.JsonStructure;
+import jakarta.json.JsonValue;
+
 import java.lang.reflect.Method;
 
 import static com.github.t1.wunderbar.junit.assertions.WunderBarBDDAssertions.then;

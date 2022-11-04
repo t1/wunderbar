@@ -1,6 +1,6 @@
 package com.github.t1.wunderbar.junit.provider;
 
-import javax.json.JsonValue;
+import jakarta.json.JsonValue;
 
 /**
  * This remains here only for backward compatibility; use {@link com.github.t1.wunderbar.junit.assertions.JsonValueAssert} instead.

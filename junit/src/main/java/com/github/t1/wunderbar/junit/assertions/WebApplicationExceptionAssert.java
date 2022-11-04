@@ -3,9 +3,9 @@ package com.github.t1.wunderbar.junit.assertions;
 import org.assertj.core.api.AbstractAssert;
 import org.assertj.core.api.InstanceOfAssertFactory;
 
-import javax.json.JsonObject;
-import javax.ws.rs.WebApplicationException;
-import javax.ws.rs.core.Response.StatusType;
+import jakarta.json.JsonObject;
+import jakarta.ws.rs.WebApplicationException;
+import jakarta.ws.rs.core.Response.StatusType;
 
 import static com.github.t1.wunderbar.junit.assertions.WunderBarBDDAssertions.then;
 import static com.github.t1.wunderbar.junit.http.HttpUtils.readJson;

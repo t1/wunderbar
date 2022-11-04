@@ -5,18 +5,19 @@ import lombok.Getter;
 import lombok.Value;
 import lombok.With;
 
-import javax.json.Json;
-import javax.json.JsonObject;
-import javax.json.JsonObjectBuilder;
-import javax.json.JsonPatch;
-import javax.json.JsonPatchBuilder;
-import javax.json.JsonValue;
-import javax.json.bind.annotation.JsonbCreator;
-import javax.json.bind.annotation.JsonbTypeAdapter;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.Response.Status;
-import javax.ws.rs.core.Response.StatusType;
+import jakarta.json.Json;
+import jakarta.json.JsonObject;
+import jakarta.json.JsonObjectBuilder;
+import jakarta.json.JsonPatch;
+import jakarta.json.JsonPatchBuilder;
+import jakarta.json.JsonValue;
+import jakarta.json.bind.annotation.JsonbCreator;
+import jakarta.json.bind.annotation.JsonbTypeAdapter;
+import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.Response;
+import jakarta.ws.rs.core.Response.Status;
+import jakarta.ws.rs.core.Response.StatusType;
+
 import java.util.Optional;
 import java.util.Properties;
 import java.util.concurrent.atomic.AtomicReference;
@@ -32,9 +33,9 @@ import static com.github.t1.wunderbar.junit.http.HttpUtils.isCompatible;
 import static com.github.t1.wunderbar.junit.http.HttpUtils.optional;
 import static com.github.t1.wunderbar.junit.http.HttpUtils.read;
 import static com.github.t1.wunderbar.junit.http.HttpUtils.readJson;
-import static javax.json.JsonValue.ValueType.OBJECT;
-import static javax.ws.rs.core.MediaType.APPLICATION_JSON_TYPE;
-import static javax.ws.rs.core.Response.Status.OK;
+import static jakarta.json.JsonValue.ValueType.OBJECT;
+import static jakarta.ws.rs.core.MediaType.APPLICATION_JSON_TYPE;
+import static jakarta.ws.rs.core.Response.Status.OK;
 import static lombok.AccessLevel.NONE;
 
 @Value @Builder @With

@@ -8,7 +8,7 @@ import com.github.t1.wunderbar.junit.http.HttpResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.extension.Extension;
 
-import javax.json.Json;
+import jakarta.json.Json;
 
 import static com.github.t1.wunderbar.common.mock.MockService.addExpectation;
 

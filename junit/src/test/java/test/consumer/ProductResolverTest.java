@@ -9,6 +9,9 @@ import com.github.t1.wunderbar.junit.consumer.SystemUnderTest;
 import com.github.t1.wunderbar.junit.consumer.Technology;
 import com.github.t1.wunderbar.junit.consumer.WunderBarApiConsumer;
 import io.smallrye.graphql.client.typesafe.api.GraphQLClientApi;
+import jakarta.ws.rs.ForbiddenException;
+import jakarta.ws.rs.NotFoundException;
+import jakarta.ws.rs.core.Response.StatusType;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -21,9 +24,6 @@ import test.consumer.ProductResolver.ProductsGetter;
 import test.consumer.ProductResolver.QueriedProducts;
 import test.consumer.ProductsGateway.ProductsRestClient;
 
-import javax.ws.rs.ForbiddenException;
-import javax.ws.rs.NotFoundException;
-import javax.ws.rs.core.Response.StatusType;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.net.URI;
@@ -40,9 +40,9 @@ import static com.github.t1.wunderbar.junit.consumer.WunderbarExpectationBuilder
 import static com.github.t1.wunderbar.junit.consumer.WunderbarExpectationBuilder.createService;
 import static com.github.t1.wunderbar.junit.consumer.WunderbarExpectationBuilder.given;
 import static com.github.t1.wunderbar.junit.consumer.WunderbarExpectationBuilder.once;
-import static javax.ws.rs.core.Response.Status.FORBIDDEN;
-import static javax.ws.rs.core.Response.Status.INTERNAL_SERVER_ERROR;
-import static javax.ws.rs.core.Response.Status.NOT_FOUND;
+import static jakarta.ws.rs.core.Response.Status.FORBIDDEN;
+import static jakarta.ws.rs.core.Response.Status.INTERNAL_SERVER_ERROR;
+import static jakarta.ws.rs.core.Response.Status.NOT_FOUND;
 import static org.assertj.core.api.Assertions.catchThrowable;
 
 @WunderBarApiConsumer
@@ -285,6 +285,7 @@ abstract class ProductResolverTest {
             thenRestError(throwable, NOT_FOUND, "not-found", "product " + product.id + " not found");
         }
 
+        @SuppressWarnings("JUnitMalformedDeclaration")
         @Test void shouldPatchProduct(@Some int newPrice) {
             var patchedProduct = product.withPrice(newPrice);
             var patch = Product.builder().id(product.id).price(newPrice).build();

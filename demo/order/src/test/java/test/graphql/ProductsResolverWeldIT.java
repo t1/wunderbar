@@ -9,15 +9,15 @@ import com.github.t1.wunderbar.junit.consumer.Service;
 import com.github.t1.wunderbar.junit.consumer.Some;
 import com.github.t1.wunderbar.junit.consumer.WunderBarApiConsumer;
 import io.smallrye.graphql.client.GraphQLClientException;
+import jakarta.inject.Inject;
 import org.jboss.weld.junit.MockBean;
 import org.jboss.weld.junit5.EnableWeld;
+import org.jboss.weld.junit5.ExplicitParamInjection;
 import org.jboss.weld.junit5.WeldInitiator;
 import org.jboss.weld.junit5.WeldSetup;
 import org.junit.jupiter.api.Test;
 import test.SomeProductIds;
 import test.SomeProducts;
-
-import javax.inject.Inject;
 
 import static com.github.t1.wunderbar.junit.consumer.WunderbarExpectationBuilder.given;
 import static org.assertj.core.api.Assertions.catchThrowableOfType;
@@ -26,6 +26,7 @@ import static org.assertj.core.api.BDDAssertions.then;
 @WunderBarApiConsumer(fileName = "target/weld-wunder.jar")
 @EnableWeld
 @Register({SomeProducts.class, SomeProductIds.class})
+@ExplicitParamInjection
 class ProductsResolverWeldIT {
     @Service Products products;
     @Inject ProductsResolver resolver;
@@ -43,6 +44,7 @@ class ProductsResolverWeldIT {
         then(resolvedProduct).usingRecursiveComparison().isEqualTo(product);
     }
 
+    @SuppressWarnings("JUnitMalformedDeclaration")
     @Test void shouldResolveTwoProducts(@Some Product givenProduct1, @Some Product givenProduct2) {
         given(products.product(givenProduct1.getId())).returns(givenProduct1);
         given(products.product(givenProduct2.getId())).returns(givenProduct2);

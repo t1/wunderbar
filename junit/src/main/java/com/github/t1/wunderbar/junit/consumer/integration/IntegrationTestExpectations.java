@@ -16,7 +16,7 @@ import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 
-import static javax.ws.rs.core.Response.Status.NOT_IMPLEMENTED;
+import static jakarta.ws.rs.core.Response.Status.NOT_IMPLEMENTED;
 
 @Slf4j
 public @Internal class IntegrationTestExpectations<T> implements WunderBarExpectations<T> {

@@ -3,15 +3,16 @@ package com.github.t1.wunderbar.junit.http;
 import lombok.Builder;
 import lombok.Value;
 
-import javax.ws.rs.WebApplicationException;
-import javax.ws.rs.core.Response.StatusType;
+import jakarta.ws.rs.WebApplicationException;
+import jakarta.ws.rs.core.Response.StatusType;
+
 import java.net.URI;
 
 import static com.github.t1.wunderbar.junit.http.HttpUtils.PROBLEM_DETAIL_TYPE;
 import static com.github.t1.wunderbar.junit.http.HttpUtils.errorCode;
 import static com.github.t1.wunderbar.junit.http.HttpUtils.splitCamel;
 import static java.util.Locale.ROOT;
-import static javax.ws.rs.core.Response.Status.INTERNAL_SERVER_ERROR;
+import static jakarta.ws.rs.core.Response.Status.INTERNAL_SERVER_ERROR;
 
 @Value @Builder
 public class ProblemDetails {

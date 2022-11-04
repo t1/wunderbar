@@ -10,7 +10,7 @@ import java.util.List;
 
 import static com.github.t1.wunderbar.common.Utils.prefix;
 import static java.util.Collections.unmodifiableList;
-import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
+import static jakarta.ws.rs.core.Response.Status.BAD_REQUEST;
 
 @Slf4j
 public class MockService {

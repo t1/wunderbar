@@ -8,6 +8,7 @@ import com.github.t1.wunderbar.junit.consumer.SomeData;
 import com.github.t1.wunderbar.junit.consumer.SomeGenerator;
 import com.github.t1.wunderbar.junit.consumer.SomeSingleTypes;
 import com.github.t1.wunderbar.junit.consumer.WunderBarApiConsumer;
+import jakarta.ws.rs.core.MediaType;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -20,7 +21,6 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
 
-import javax.ws.rs.core.MediaType;
 import java.lang.reflect.AnnotatedElement;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
@@ -57,6 +57,7 @@ import static test.consumer.SomeGeneratorTest.SomeCustomWrappers;
 /** the fact that @Register is @Inherited is tested by the subclasses of the ProductResolverTest */
 @WunderBarApiConsumer
 @Register({SomeCustomWrappers.class, SomeCustomGenerics.class})
+@SuppressWarnings("JUnitMalformedDeclaration")
 class SomeGeneratorTest {
     private static final int QUITE_SMALL_INT = SomeBasics.DEFAULT_START;
     private static final int QUITE_BIG_INT = Short.MAX_VALUE;

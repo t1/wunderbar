@@ -4,7 +4,7 @@ import com.github.t1.wunderbar.junit.http.HttpRequest;
 import lombok.Builder;
 import lombok.Value;
 
-import javax.json.JsonObject;
+import jakarta.json.JsonObject;
 
 @Value @Builder(buildMethodName = "internalBuild")
 public class GraphQLBodyMatcher {

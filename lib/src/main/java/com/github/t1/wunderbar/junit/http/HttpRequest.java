@@ -1,6 +1,14 @@
 package com.github.t1.wunderbar.junit.http;
 
 import com.github.t1.wunderbar.common.Internal;
+import jakarta.json.Json;
+import jakarta.json.JsonObject;
+import jakarta.json.JsonObjectBuilder;
+import jakarta.json.JsonPatch;
+import jakarta.json.JsonPatchBuilder;
+import jakarta.json.JsonValue;
+import jakarta.json.bind.annotation.JsonbCreator;
+import jakarta.ws.rs.core.MediaType;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
@@ -10,14 +18,6 @@ import lombok.NonNull;
 import lombok.Value;
 import lombok.With;
 
-import javax.json.Json;
-import javax.json.JsonObject;
-import javax.json.JsonObjectBuilder;
-import javax.json.JsonPatch;
-import javax.json.JsonPatchBuilder;
-import javax.json.JsonValue;
-import javax.json.bind.annotation.JsonbCreator;
-import javax.ws.rs.core.MediaType;
 import java.net.URI;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -36,13 +36,13 @@ import static com.github.t1.wunderbar.junit.http.HttpUtils.formatJson;
 import static com.github.t1.wunderbar.junit.http.HttpUtils.isCompatible;
 import static com.github.t1.wunderbar.junit.http.HttpUtils.mediaTypes;
 import static com.github.t1.wunderbar.junit.http.HttpUtils.read;
+import static jakarta.json.JsonValue.ValueType.OBJECT;
+import static jakarta.ws.rs.core.HttpHeaders.ACCEPT;
+import static jakarta.ws.rs.core.HttpHeaders.AUTHORIZATION;
+import static jakarta.ws.rs.core.HttpHeaders.CONTENT_TYPE;
+import static jakarta.ws.rs.core.MediaType.APPLICATION_JSON_TYPE;
 import static java.util.Collections.unmodifiableList;
 import static java.util.stream.Collectors.joining;
-import static javax.json.JsonValue.ValueType.OBJECT;
-import static javax.ws.rs.core.HttpHeaders.ACCEPT;
-import static javax.ws.rs.core.HttpHeaders.AUTHORIZATION;
-import static javax.ws.rs.core.HttpHeaders.CONTENT_TYPE;
-import static javax.ws.rs.core.MediaType.APPLICATION_JSON_TYPE;
 import static lombok.AccessLevel.NONE;
 
 @Value @Builder @With @EqualsAndHashCode(exclude = "jsonValue")
@@ -126,7 +126,7 @@ public class HttpRequest {
 
     private boolean matchesBody(HttpRequest that) {
         if (!this.isJson() || !that.isJson()) return false;
-        return nonAddFieldDiff(this.jsonValue(), that.jsonValue()).count() == 0;
+        return nonAddFieldDiff(this.jsonValue(), that.jsonValue()).findAny().isEmpty();
     }
 
     public HttpRequest withFormattedBody() {return (isJson()) ? withBody(body().map(HttpUtils::formatJson).orElseThrow()) : this;}

@@ -6,10 +6,10 @@ import com.github.t1.wunderbar.junit.http.HttpResponse;
 import io.smallrye.graphql.client.GraphQLClientException;
 import org.assertj.core.api.BDDAssertions;
 
-import javax.json.JsonObject;
-import javax.json.JsonValue;
-import javax.ws.rs.WebApplicationException;
-import javax.ws.rs.core.MediaType;
+import jakarta.json.JsonObject;
+import jakarta.json.JsonValue;
+import jakarta.ws.rs.WebApplicationException;
+import jakarta.ws.rs.core.MediaType;
 
 /**
  * An extension for {@link BDDAssertions BDD assertj}
