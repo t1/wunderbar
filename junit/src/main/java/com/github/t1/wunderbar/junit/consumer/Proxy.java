@@ -4,8 +4,10 @@ import com.github.t1.wunderbar.junit.consumer.integration.IntegrationTestExpecta
 import com.github.t1.wunderbar.junit.consumer.system.SystemTestExpectations;
 import com.github.t1.wunderbar.junit.consumer.unit.UnitTestExpectations;
 import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.net.URI;
 
@@ -33,7 +35,7 @@ class Proxy<T> implements ProxyFactory<T> {
     }
 
     private T createProxy(Class<T> type) {
-        return type.cast(java.lang.reflect.Proxy.newProxyInstance(getClassLoader(), new Class[]{type}, this::proxyInvoked));
+        return type.cast(java.lang.reflect.Proxy.newProxyInstance(getClassLoader(), new Class[]{type}, new ProxyInvocationHandler(this)));
     }
 
     private static ClassLoader getClassLoader() {
@@ -71,4 +73,13 @@ class Proxy<T> implements ProxyFactory<T> {
     @Override public T getSutProxy() {return expectations.asSutProxy(proxy);}
 
     void done() {expectations.done();}
+
+    @RequiredArgsConstructor
+    static class ProxyInvocationHandler implements InvocationHandler {
+        final Proxy<?> proxy;
+
+        @Override public Object invoke(Object proxy1, Method method, Object[] args) throws Throwable {
+            return proxy.proxyInvoked(proxy1, method, args);
+        }
+    }
 }

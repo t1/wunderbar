@@ -1,14 +1,12 @@
 package com.github.t1.wunderbar.junit.consumer;
 
 import com.github.t1.wunderbar.junit.WunderBarException;
+import jakarta.ws.rs.core.MediaType;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 
-import jakarta.ws.rs.core.MediaType;
-
 import java.lang.reflect.AnnotatedElement;
-import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
@@ -103,14 +101,15 @@ public class SomeBasics implements SomeData {
         if (type instanceof Class) {
             try {
                 return optional(generate((Class<?>) type));
-            } catch (NoSuchMethodException | InstantiationException e) {
+            } catch (NoSuchMethodException | InstantiationException | IllegalAccessException e) {
                 log.debug("can not create {}: {}", type.getTypeName(), e.toString());
-                // fall through
-            } catch (IllegalAccessException | InvocationTargetException e) {
+                return Optional.empty();
+            } catch (InvocationTargetException e) {
                 throw new WunderBarException("failed to generate an instance of " + type.getTypeName(), e);
             }
         }
 
+        log.debug("don't know how to create a {}", type.getTypeName());
         return Optional.empty();
     }
 
@@ -120,9 +119,7 @@ public class SomeBasics implements SomeData {
     }
 
     private Object generate(Class<?> classType) throws NoSuchMethodException, InstantiationException, IllegalAccessException, InvocationTargetException {
-        Constructor<?> noArgsConstructor = classType.getDeclaredConstructor();
-        noArgsConstructor.setAccessible(true);
-        var instance = noArgsConstructor.newInstance();
+        var instance = classType.getDeclaredConstructor().newInstance();
         for (Class<?> type = classType; type.getSuperclass() != null; type = type.getSuperclass()) {
             for (var field : type.getDeclaredFields()) {
                 var value = someGenerator.generate(field);

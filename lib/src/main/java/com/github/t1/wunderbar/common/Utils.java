@@ -1,12 +1,11 @@
 package com.github.t1.wunderbar.common;
 
-import lombok.SneakyThrows;
-import lombok.experimental.UtilityClass;
-
 import jakarta.json.Json;
 import jakarta.json.JsonObject;
 import jakarta.json.JsonStructure;
 import jakarta.json.JsonValue;
+import lombok.SneakyThrows;
+import lombok.experimental.UtilityClass;
 
 import java.io.IOException;
 import java.lang.reflect.AnnotatedElement;
@@ -22,9 +21,9 @@ import java.util.Collections;
 import java.util.List;
 import java.util.stream.Stream;
 
+import static jakarta.json.JsonPatch.Operation.ADD;
 import static java.util.stream.Collectors.joining;
 import static java.util.stream.Collectors.toList;
-import static jakarta.json.JsonPatch.Operation.ADD;
 
 @UtilityClass
 public @Internal class Utils {
@@ -35,7 +34,7 @@ public @Internal class Utils {
         try {
             return method.invoke(instance, args);
         } catch (IllegalArgumentException e) {
-            if ("argument type mismatch" .equals(e.getMessage()))
+            if ("argument type mismatch".equals(e.getMessage()))
                 throw new IllegalArgumentException(method + " doesn't like these argument types:" + argumentTypes(args), e);
             throw e;
         } catch (InvocationTargetException e) {

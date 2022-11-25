@@ -7,11 +7,10 @@ import com.github.t1.wunderbar.junit.http.HttpInteraction;
 import com.github.t1.wunderbar.junit.http.HttpRequest;
 import com.github.t1.wunderbar.junit.http.HttpResponse;
 import com.github.t1.wunderbar.junit.provider.WunderBarTestFinder.Test;
+import jakarta.ws.rs.core.MediaType;
 import lombok.NonNull;
 import lombok.SneakyThrows;
 import lombok.Value;
-
-import jakarta.ws.rs.core.MediaType;
 
 import java.io.IOException;
 import java.net.URI;
@@ -26,14 +25,16 @@ import java.util.stream.Stream;
 
 import static com.github.t1.wunderbar.junit.http.HttpUtils.optional;
 import static com.github.t1.wunderbar.junit.http.HttpUtils.properties;
-import static java.util.stream.Collectors.toUnmodifiableList;
 import static jakarta.ws.rs.core.HttpHeaders.ACCEPT;
 import static jakarta.ws.rs.core.HttpHeaders.AUTHORIZATION;
 import static jakarta.ws.rs.core.HttpHeaders.CONTENT_TYPE;
+import static java.util.stream.Collectors.toUnmodifiableList;
 
 abstract class BarReader {
     @SneakyThrows(IOException.class)
     static BarReader from(Path path) {
+        if (!Files.exists(path))
+            throw new WunderBarException("can't find any tests in " + path);
         if (Files.isDirectory(path))
             return new DirBarReader(path);
         return new JarBarReader(path);

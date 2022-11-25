@@ -6,9 +6,6 @@ on:
 
 jobs:
   build:
-    strategy:
-      matrix:
-        jdk: [ 11 ]
     runs-on: ubuntu-latest
 
     steps:
@@ -16,7 +13,7 @@ jobs:
     - uses: actions/setup-java@v3
       with:
         distribution: 'temurin'
-        java-version: ${{ matrix.jdk }}
+        java-version: 17
         cache: 'maven'
 
     - run: mvn --batch-mode --show-version --no-transfer-progress -DCI=GitHub install

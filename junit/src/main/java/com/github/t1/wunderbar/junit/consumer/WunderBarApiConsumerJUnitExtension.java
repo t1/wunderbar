@@ -1,5 +1,6 @@
 package com.github.t1.wunderbar.junit.consumer;
 
+import com.github.t1.wunderbar.common.Utils;
 import com.github.t1.wunderbar.junit.Register;
 import com.github.t1.wunderbar.junit.WunderBarException;
 import io.smallrye.graphql.client.typesafe.api.GraphQLClientApi;
@@ -44,7 +45,6 @@ import static com.github.t1.wunderbar.junit.consumer.Level.AUTO;
 import static com.github.t1.wunderbar.junit.consumer.Level.INTEGRATION;
 import static com.github.t1.wunderbar.junit.consumer.Level.SYSTEM;
 import static com.github.t1.wunderbar.junit.consumer.Level.UNIT;
-import static com.github.t1.wunderbar.junit.consumer.Service.DEFAULT_ENDPOINT;
 import static com.github.t1.wunderbar.junit.consumer.Technology.GRAPHQL;
 import static com.github.t1.wunderbar.junit.consumer.Technology.REST;
 import static java.time.temporal.ChronoUnit.NANOS;
@@ -91,9 +91,9 @@ class WunderBarApiConsumerJUnitExtension implements Extension, BeforeEachCallbac
         private GeneratedDataPoint generate(Some some, Type type, AnnotatedElement location, SomeData generator) {
             if (++depth > 100) throw new WunderBarException("it seems to be an infinite loop when generating " + type);
             try {
-                var value = generator.some(some, type, location);
-                if (value.isEmpty()) return null;
-                return new GeneratedDataPoint(some, location, value.get(), generator);
+                return generator.some(some, type, location)
+                    .map(value -> new GeneratedDataPoint(some, location, value, generator))
+                    .orElse(null);
             } finally {
                 depth--;
             }
@@ -248,10 +248,8 @@ class WunderBarApiConsumerJUnitExtension implements Extension, BeforeEachCallbac
         return UNIT;
     }
 
-    @SuppressWarnings({"deprecated", "removal"})
     private URI endpoint(Service service, Technology technology) {
         var endpoint = service.endpoint();
-        if (DEFAULT_ENDPOINT.equals(endpoint)) endpoint = settings.endpoint();
         endpoint = replace(endpoint, FUNCTION, this::functionCall);
         endpoint = replace(endpoint, TECHNOLOGY, __ -> technology.path());
         endpoint = replace(endpoint, PORT, __ -> Integer.toString(service.port()));
@@ -304,14 +302,11 @@ class WunderBarApiConsumerJUnitExtension implements Extension, BeforeEachCallbac
         @SneakyThrows(ReflectiveOperationException.class)
         private Object enclosingInstance() {
             var field = instance.getClass().getDeclaredField("this$0");
-            field.setAccessible(true);
-            return field.get(instance);
+            return Utils.getField(instance, field);
         }
 
-        @SneakyThrows(ReflectiveOperationException.class)
         private Object invoke() {
-            method.setAccessible(true);
-            return method.invoke(instance);
+            return Utils.invoke(instance, method);
         }
     }
 

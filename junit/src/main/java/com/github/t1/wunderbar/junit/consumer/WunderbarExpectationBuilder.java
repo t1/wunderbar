@@ -7,9 +7,6 @@ import com.github.t1.wunderbar.junit.consumer.Service.Literal;
 import java.lang.reflect.InvocationHandler;
 import java.net.URI;
 import java.util.Objects;
-import java.util.function.Consumer;
-
-import static com.github.t1.wunderbar.common.Utils.getField;
 
 /**
  * Static methods for building expectations, etc.
@@ -34,14 +31,6 @@ public class WunderbarExpectationBuilder<T> {
     }
 
     public @Internal static WunderBarExpectation buildingExpectation;
-
-    /** use {@link #baseUri(Object)} instead */
-    @Deprecated(forRemoval = true)
-    public WunderbarExpectationBuilder<T> whileSettingBaseUri(Consumer<URI> setter) {
-        if (buildingExpectation == null) throw new StubbingMismatchException();
-        setter.accept(buildingExpectation.baseUri());
-        return this;
-    }
 
 
     public static Depletion always() {return times(Integer.MAX_VALUE);}
@@ -174,14 +163,13 @@ public class WunderbarExpectationBuilder<T> {
         return getProxy(invocationHandler).getExpectations().baseUri();
     }
 
-    // this is an ugly hack, but I currently don't have a better idea
+    @SuppressWarnings("unchecked")
     private static <T> Proxy<T> getProxy(InvocationHandler invocationHandler) {
         try {
-            return getField(invocationHandler, "arg$1");
-        } catch (Exception e) { // work around SneakyThrows
-            //noinspection ConstantConditions
-            if (e instanceof NoSuchFieldException || e instanceof ClassCastException)
-                throw new IllegalArgumentException("not a service proxy instance", e);
+            return (Proxy<T>) ((Proxy.ProxyInvocationHandler) invocationHandler).proxy;
+        } catch (ClassCastException e) {
+            throw new IllegalArgumentException("not a service proxy instance", e);
+        } catch (RuntimeException e) {
             throw new RuntimeException("can't determine service proxy instance", e);
         }
     }

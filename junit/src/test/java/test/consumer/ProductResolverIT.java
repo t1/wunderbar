@@ -12,7 +12,6 @@ import test.consumer.ProductResolver.Product;
 import test.consumer.ProductResolver.Products;
 
 import java.net.URI;
-import java.util.concurrent.atomic.AtomicReference;
 
 import static com.github.t1.wunderbar.junit.consumer.Level.INTEGRATION;
 import static com.github.t1.wunderbar.junit.consumer.WunderbarExpectationBuilder.baseUri;
@@ -32,20 +31,15 @@ class ProductResolverIT extends ProductResolverTest {
     @Nested class FixedPort {
         @Service(port = 18373) Products productsWithFixedPort;
 
-        @SuppressWarnings("removal")
         @Test void shouldSetFixedPort() {
             var givenProduct = Product.builder().id("x").name("some-product-name").build();
             var baseUri = baseUri(productsWithFixedPort);
-            var deprecatedBaseUri = new AtomicReference<URI>();
-            given(productsWithFixedPort.product(givenProduct.getId()))
-                .whileSettingBaseUri(deprecatedBaseUri::set)
-                .returns(givenProduct);
+            given(productsWithFixedPort.product(givenProduct.getId())).returns(givenProduct);
 
             var resolvedProduct = resolver.product(Item.builder().productId(givenProduct.getId()).build());
 
             then(resolvedProduct).usingRecursiveComparison().isEqualTo(givenProduct);
             then(baseUri).isEqualTo(URI.create("http://localhost:18373"));
-            then(deprecatedBaseUri.get()).isEqualTo(URI.create("http://localhost:18373/graphql"));
         }
     }
 

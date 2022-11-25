@@ -48,7 +48,6 @@ import java.util.stream.Stream;
 
 import static com.github.t1.wunderbar.common.Utils.name;
 import static com.github.t1.wunderbar.junit.consumer.SomeBasics.START_INSTANT;
-import static lombok.AccessLevel.PRIVATE;
 import static org.assertj.core.api.Assertions.catchThrowable;
 import static org.assertj.core.api.BDDAssertions.then;
 import static test.consumer.SomeGeneratorTest.SomeCustomGenerics;
@@ -316,8 +315,8 @@ class SomeGeneratorTest {
             .hasRootCauseMessage("fails-always");
     }
 
-    static class FailingClass {
-        FailingClass() {throw new RuntimeException("fails-always");}
+    public static class FailingClass {
+        public FailingClass() {throw new RuntimeException("fails-always");}
     }
 
     @Nested class WithCustomStart {
@@ -373,7 +372,7 @@ class SomeGeneratorTest {
         then(throwable).isInstanceOf(WunderBarException.class).hasMessage("this value was not generated via the WunderBar @Some annotation: " + uuid);
     }
 
-    @NoArgsConstructor(access = PRIVATE) @AllArgsConstructor
+    @NoArgsConstructor @AllArgsConstructor
     public static @Data @Builder class CustomType {
         String foo;
         CustomWrapper bar;

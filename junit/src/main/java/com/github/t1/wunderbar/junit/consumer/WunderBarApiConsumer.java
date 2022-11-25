@@ -45,12 +45,6 @@ public @interface WunderBarApiConsumer {
      */
     String fileName() default "target/wunder.bar";
 
-    /**
-     * @deprecated use {@link Service#endpoint()} instead
-     */
-    @Deprecated(forRemoval = true)
-    String endpoint() default Service.DEFAULT_ENDPOINT;
-
     /** Indicates that <em>no</em> <code>bar</code> file should be written. */
     String NONE = "";
 }

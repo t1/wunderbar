@@ -26,6 +26,7 @@ import java.util.regex.Pattern;
 import java.util.stream.Stream;
 import java.util.stream.Stream.Builder;
 
+import static com.github.t1.wunderbar.common.Utils.invoke;
 import static com.github.t1.wunderbar.junit.JunitUtils.ORDER;
 import static com.github.t1.wunderbar.junit.provider.OnInteractionErrorMethodHandler.DEFAULT_ON_INTERACTION_ERROR;
 import static java.util.stream.Collectors.toUnmodifiableList;
@@ -118,8 +119,7 @@ class WunderBarApiProviderJUnitExtension implements Extension, BeforeEachCallbac
     private String call(String methodName) {
         var instance = context.getRequiredTestInstance();
         var method = instance.getClass().getDeclaredMethod(methodName);
-        method.setAccessible(true);
-        return method.invoke(instance).toString();
+        return invoke(instance, method).toString();
     }
 
     @Override public void afterEach(ExtensionContext context) {
@@ -224,7 +224,5 @@ class WunderBarApiProviderJUnitExtension implements Extension, BeforeEachCallbac
         HttpResponse getActual();
 
         void expect(Function<HttpInteraction, HttpInteraction> function);
-        @SuppressWarnings("DeprecatedIsStillUsed") @Deprecated
-        void setActual(HttpResponse actual);
     }
 }

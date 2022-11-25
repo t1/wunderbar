@@ -6,14 +6,13 @@ import com.github.t1.wunderbar.junit.http.HttpInteraction;
 import com.github.t1.wunderbar.junit.http.HttpRequest;
 import com.github.t1.wunderbar.junit.http.HttpResponse;
 import com.github.t1.wunderbar.junit.provider.WunderBarApiProviderJUnitExtension.Execution;
-import lombok.RequiredArgsConstructor;
-import lombok.Value;
-import org.assertj.core.api.BDDSoftAssertions;
-
 import jakarta.json.Json;
 import jakarta.json.JsonPointer;
 import jakarta.json.JsonStructure;
 import jakarta.json.JsonValue;
+import lombok.RequiredArgsConstructor;
+import lombok.Value;
+import org.assertj.core.api.BDDSoftAssertions;
 
 import java.lang.reflect.Method;
 
@@ -45,7 +44,6 @@ class OnInteractionErrorMethodHandler {
         if (result != null) throw new WunderBarException("unexpected return type " + result.getClass()); // TODO test
     }
 
-    @SuppressWarnings("removal")
     private Object[] args(OnInteractionErrorParams params) {
         var args = new Object[method.getParameterCount()];
         for (int i = 0; i < args.length; i++) {
@@ -56,8 +54,6 @@ class OnInteractionErrorMethodHandler {
                 args[i] = params.execution.getExpected().getRequest();
             else if (type.equals(HttpResponse.class))
                 args[i] = params.execution.getExpected().getResponse();
-            else if (type.equals(ActualHttpResponse.class))
-                args[i] = new ActualHttpResponse(params.execution.getActual());
             else if (type.equals(BDDSoftAssertions.class))
                 args[i] = params.getAssertions();
             else if (type.equals(WunderBarExecution.class))
