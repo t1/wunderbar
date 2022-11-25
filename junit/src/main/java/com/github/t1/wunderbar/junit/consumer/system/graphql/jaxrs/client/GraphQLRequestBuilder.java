@@ -4,15 +4,14 @@ import io.smallrye.graphql.client.impl.typesafe.QueryBuilder;
 import io.smallrye.graphql.client.impl.typesafe.reflection.FieldInfo;
 import io.smallrye.graphql.client.impl.typesafe.reflection.MethodInvocation;
 import io.smallrye.graphql.client.impl.typesafe.reflection.TypeInfo;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-
 import jakarta.json.Json;
 import jakarta.json.JsonArray;
 import jakarta.json.JsonArrayBuilder;
 import jakarta.json.JsonObject;
 import jakarta.json.JsonObjectBuilder;
 import jakarta.json.JsonValue;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -21,6 +20,7 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Stream;
 
 @Slf4j
@@ -52,6 +52,8 @@ import java.util.stream.Stream;
     }
 
     private JsonValue value(Object value) {
+        if (value instanceof AtomicReference) // check before the null-check, as it could contain null
+            value = ((AtomicReference<?>) value).get();
         if (value == null)
             return JsonValue.NULL;
         if (value instanceof JsonValue)

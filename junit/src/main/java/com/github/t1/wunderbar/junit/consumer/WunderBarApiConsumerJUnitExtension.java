@@ -20,7 +20,6 @@ import java.lang.reflect.AnnotatedElement;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
-import java.lang.reflect.Parameter;
 import java.lang.reflect.Type;
 import java.net.URI;
 import java.time.Duration;
@@ -350,7 +349,7 @@ class WunderBarApiConsumerJUnitExtension implements Extension, BeforeEachCallbac
         return Level.class.equals(parameterType) ||
                SomeGenerator.class.equals(parameterType) ||
                BarWriter.class.equals(parameterType) || // this is intentionally not documented
-               someAnnotation(parameterContext.getParameter()) != null;
+               someAnnotation(parameterContext) != null;
     }
 
     @Override public Object resolveParameter(ParameterContext parameterContext, ExtensionContext extensionContext) throws ParameterResolutionException {
@@ -358,18 +357,15 @@ class WunderBarApiConsumerJUnitExtension implements Extension, BeforeEachCallbac
         if (Level.class.equals(parameter.getType())) return level();
         if (SomeGenerator.class.equals(parameter.getType())) return someGenerator;
         if (BarWriter.class.equals(parameter.getType())) return bar;
-        return someGenerator.generate(someAnnotation(parameter), parameter.getParameterizedType(), parameter);
+        return someGenerator.generate(someAnnotation(parameterContext), parameter.getParameterizedType(), parameter);
     }
 
-    private Some someAnnotation(Parameter parameter) {
+    private Some someAnnotation(ParameterContext parameter) {
         // parameter#getDeclaredAnnotation, etc. is not sufficient for annotations with TYPE_USE (like `@Some`)
         // see https://stackoverflow.com/questions/66241813/how-to-parse-java-annotation-in-generic-type
         var annotatedTypes = parameter.getDeclaringExecutable().getAnnotatedParameterTypes();
-        return annotatedTypes[index(parameter)].getDeclaredAnnotation(Some.class);
+        return annotatedTypes[parameter.getIndex()].getDeclaredAnnotation(Some.class);
     }
-
-    private static int index(Parameter parameter) {return getField(parameter, "index");}
-
 
     @Override public void afterEach(ExtensionContext context) {
         var duration = duration();
