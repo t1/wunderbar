@@ -1,0 +1,10 @@
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: wunderbar
+  annotations:
+    github.com/project-slug: t1/wunderbar
+spec:
+  type: other
+  lifecycle: unknown
+  owner: t1
