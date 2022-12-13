@@ -4,6 +4,10 @@ metadata:
   name: wunderbar
   annotations:
     github.com/project-slug: t1/wunderbar
+  links:
+  - title: GitHub Actions
+    url: https://github.com/t1/wunderbar/actions
+    icon: dashboard
 spec:
   type: other
   lifecycle: unknown
