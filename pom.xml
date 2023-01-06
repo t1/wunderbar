@@ -18,7 +18,7 @@
         <project.reporting.outputEncoding>utf-8</project.reporting.outputEncoding>
 
         <microprofile.version>6.0</microprofile.version>
-        <smallrye-graphql.version>2.0.0</smallrye-graphql.version>
+        <smallrye-graphql.version>2.0.1</smallrye-graphql.version>
         <slf4j.version>2.0.3</slf4j.version>
         <resteasy.version>6.2.2.Final</resteasy.version>
         <resteasy.mp.version>2.0.0.Final</resteasy.mp.version>
