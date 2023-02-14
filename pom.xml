@@ -27,7 +27,7 @@
         <jsonb.version>3.0.0</jsonb.version>
         <yasson.version>3.0.2</yasson.version>
         <servlet-api.version>6.0.0</servlet-api.version>
-        <undertow.version>2.3.3.Final</undertow.version>
+        <undertow.version>2.3.4.Final</undertow.version>
 
         <junit.version>5.9.2</junit.version>
         <assertj.version>3.24.2</assertj.version>
