@@ -6,7 +6,6 @@ import io.smallrye.graphql.client.impl.typesafe.reflection.MethodInvocation;
 import io.smallrye.graphql.client.typesafe.api.GraphQLClientApi;
 import io.smallrye.graphql.client.typesafe.api.TypesafeGraphQLClientBuilder;
 import io.smallrye.graphql.client.websocket.WebsocketSubprotocol;
-
 import jakarta.ws.rs.client.Client;
 import jakarta.ws.rs.client.ClientBuilder;
 import jakarta.ws.rs.client.WebTarget;
@@ -23,6 +22,7 @@ public class JaxRsTypesafeGraphQLClientBuilder implements TypesafeGraphQLClientB
     private Client client;
     private URI endpoint;
     private Map<String, String> extraHeaders;
+    private boolean allowUnexpectedResponseFields;
 
     @Override
     public TypesafeGraphQLClientBuilder configKey(String configKey) {
@@ -63,6 +63,11 @@ public class JaxRsTypesafeGraphQLClientBuilder implements TypesafeGraphQLClientB
         throw new UnsupportedOperationException();
     }
 
+    @Override public TypesafeGraphQLClientBuilder allowUnexpectedResponseFields(boolean value) {
+        this.allowUnexpectedResponseFields = value;
+        return this;
+    }
+
 
     @Override public TypesafeGraphQLClientBuilder header(String name, String value) {
         if (this.extraHeaders == null) {
@@ -94,7 +99,7 @@ public class JaxRsTypesafeGraphQLClientBuilder implements TypesafeGraphQLClientB
         if (persistentConfig != null) applyConfig(persistentConfig);
 
         WebTarget webTarget = client().target(endpoint);
-        JaxRsTypesafeGraphQLClientProxy graphQlClient = new JaxRsTypesafeGraphQLClientProxy(webTarget, persistentConfig, extraHeaders);
+        JaxRsTypesafeGraphQLClientProxy graphQlClient = new JaxRsTypesafeGraphQLClientProxy(webTarget, persistentConfig, extraHeaders, allowUnexpectedResponseFields);
         return apiClass.cast(Proxy.newProxyInstance(getClassLoader(apiClass), new Class<?>[]{apiClass},
             (proxy, method, args) -> invoke(apiClass, graphQlClient, method, args)));
     }

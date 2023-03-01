@@ -4,9 +4,8 @@ import io.smallrye.graphql.client.impl.GraphQLClientConfiguration;
 import io.smallrye.graphql.client.impl.typesafe.HeaderBuilder;
 import io.smallrye.graphql.client.impl.typesafe.ResultBuilder;
 import io.smallrye.graphql.client.impl.typesafe.reflection.MethodInvocation;
-import lombok.extern.slf4j.Slf4j;
-
 import jakarta.ws.rs.client.WebTarget;
+import lombok.extern.slf4j.Slf4j;
 
 import java.util.Collections;
 import java.util.Map;
@@ -21,11 +20,13 @@ class JaxRsTypesafeGraphQLClientProxy {
     private final WebTarget target;
     private final GraphQLClientConfiguration configuration;
     private final Map<String, String> extraHeaders;
+    private final boolean allowUnexpectedResponseFields;
 
-    JaxRsTypesafeGraphQLClientProxy(WebTarget target, GraphQLClientConfiguration configuration, Map<String, String> extraHeaders) {
+    JaxRsTypesafeGraphQLClientProxy(WebTarget target, GraphQLClientConfiguration configuration, Map<String, String> extraHeaders, boolean allowUnexpectedResponseFields) {
         this.target = target;
         this.configuration = configuration;
         this.extraHeaders = extraHeaders;
+        this.allowUnexpectedResponseFields = allowUnexpectedResponseFields;
     }
 
     Object invoke(Class<?> api, MethodInvocation method) {
@@ -40,7 +41,7 @@ class JaxRsTypesafeGraphQLClientProxy {
 
         log.debug("response graphql:\n{}", prefix("    ", response));
         if (response == null || response.isBlank()) response = "{}";
-        return new ResultBuilder(method, response).read();
+        return new ResultBuilder(method, response, allowUnexpectedResponseFields).read();
     }
 
     private Map<String, String> headers(Class<?> api, MethodInvocation method) {
