@@ -18,7 +18,6 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
  * <li>{@link com.github.t1.wunderbar.junit.http.HttpInteraction HttpInteraction}: the expected request and response
  * <li>{@link com.github.t1.wunderbar.junit.http.HttpRequest HttpRequest}: the expected request
  * <li>{@link com.github.t1.wunderbar.junit.http.HttpResponse HttpResponse}: the expected response
- * <li>{@link com.github.t1.wunderbar.junit.provider.ActualHttpResponse ActualHttpResponse}: the actual response
  * <li>{@link org.assertj.core.api.BDDSoftAssertions BDDSoftAssertions}: the mismatches that WunderBar has found. You can turn them
  *     into an {@link AssertionError} by calling {@link org.assertj.core.api.BDDSoftAssertions#assertAll() assertAll()}.
  * <li><code>{@link com.github.t1.wunderbar.junit.provider.WunderBarExecution WunderBarExecution}</code>: meta data about

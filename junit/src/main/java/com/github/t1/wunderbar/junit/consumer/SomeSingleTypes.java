@@ -18,7 +18,7 @@ import java.util.stream.Stream;
  * A common use-case is that you want your generator to work only for some tags in <code>@Some</code>.
  * To do so, you can simply annotate the type parameter like this:
  * <pre>
- * class CustomId extends SomeSingleTypes<&#064;Some("id") String> {
+ * class CustomId extends SomeSingleTypes&lt;&#064;Some("id") String&gt; {
  *     public String some(Some some, Type type, AnnotatedElement location) {
  *         return "custom-id";
  *     }
