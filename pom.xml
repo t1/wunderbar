@@ -4,7 +4,7 @@
 
     <groupId>com.github.t1</groupId>
     <artifactId>wunderbar.parent</artifactId>
-    <version>3.1</version>
+    <version>3.2-SNAPSHOT</version>
     <name>Behavior Archives (Parent)</name>
     <description>Code-first, low ceremony Consumer Driven Contracts test tool for Java natives.</description>
     <packaging>pom</packaging>
@@ -61,7 +61,7 @@
     <scm>
         <developerConnection>scm:git:https://github.com/t1/wunderbar</developerConnection>
         <url>https://github.com/t1/wunderbar</url>
-        <tag>v3.1</tag>
+        <tag>HEAD</tag>
     </scm>
     <distributionManagement>
         <snapshotRepository>
