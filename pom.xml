@@ -25,7 +25,7 @@
         <quarkus.version>3.0.0.CR1</quarkus.version>
         <smallrye-context-propagation.version>1.2.2</smallrye-context-propagation.version>
         <jsonb.version>3.0.0</jsonb.version>
-        <yasson.version>3.0.2</yasson.version>
+        <yasson.version>3.0.3</yasson.version>
         <servlet-api.version>6.0.0</servlet-api.version>
         <undertow.version>2.3.5.Final</undertow.version>
 
