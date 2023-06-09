@@ -6,15 +6,16 @@ import com.github.t1.wunderbar.junit.http.HttpResponse;
 import io.smallrye.graphql.client.typesafe.api.AuthorizationHeader;
 import io.smallrye.graphql.client.typesafe.api.GraphQLClientApi;
 import io.smallrye.graphql.client.typesafe.api.TypesafeGraphQLClientBuilder;
+import jakarta.json.Json;
+import jakarta.json.JsonObject;
 import org.eclipse.microprofile.graphql.Name;
 import org.eclipse.microprofile.graphql.Query;
 
 import java.lang.reflect.Method;
 import java.net.URI;
-import java.util.List;
-import java.util.Map;
 
 import static com.github.t1.wunderbar.junit.http.HttpUtils.errorCode;
+import static com.github.t1.wunderbar.junit.http.HttpUtils.readJson;
 
 class GraphQlExpectation extends HttpServiceExpectation {
     private final String configKey;
@@ -34,14 +35,14 @@ class GraphQlExpectation extends HttpServiceExpectation {
     @Override protected Object service() {
         if (needsAuthorizationConfig()) this.oldAuth = configureDummyAuthorization();
         return TypesafeGraphQLClientBuilder.newBuilder()
-            .endpoint(baseUri())
-            .configKey(configKey)
-            .build(method.getDeclaringClass());
+                .endpoint(baseUri())
+                .configKey(configKey)
+                .build(method.getDeclaringClass());
     }
 
     private boolean needsAuthorizationConfig() {
         return method.isAnnotationPresent(AuthorizationHeader.class)
-               || method.getDeclaringClass().isAnnotationPresent(AuthorizationHeader.class);
+                || method.getDeclaringClass().isAnnotationPresent(AuthorizationHeader.class);
     }
 
     private Authorization.Basic configureDummyAuthorization() {
@@ -54,15 +55,16 @@ class GraphQlExpectation extends HttpServiceExpectation {
         return HttpResponse.builder().body(buildResponseBody()).build();
     }
 
-    private GraphQlResponse buildResponseBody() {
-        var responseBuilder = GraphQlResponse.builder();
-        if (getResponse() != null)
-            responseBuilder.data(Map.of(dataName(), getResponse()));
-        if (getException() != null)
-            responseBuilder.errors(List.of(GraphQLErrorResponse.builder()
-                .message(getException().getMessage())
-                .extension("code", errorCode(getException()))
-                .build()));
+    private JsonObject buildResponseBody() {
+        var responseBuilder = Json.createObjectBuilder();
+        if (getException() == null)
+            responseBuilder.add("data", Json.createObjectBuilder().add(dataName(), readJson(getResponse())));
+        else
+            responseBuilder.add("errors", Json.createArrayBuilder().add(Json.createObjectBuilder()
+                    .add("message", getException().getMessage())
+                    .add("extensions", Json.createObjectBuilder()
+                            .add("code", errorCode(getException()))
+                            .build())));
         return responseBuilder.build();
     }
 
@@ -95,7 +97,7 @@ class GraphQlExpectation extends HttpServiceExpectation {
 
     private String setConfig(String name, String value) {
         return (value == null)
-            ? System.clearProperty(configKey + "/mp-graphql/" + name)
-            : System.setProperty(configKey + "/mp-graphql/" + name, value);
+                ? System.clearProperty(configKey + "/mp-graphql/" + name)
+                : System.setProperty(configKey + "/mp-graphql/" + name, value);
     }
 }

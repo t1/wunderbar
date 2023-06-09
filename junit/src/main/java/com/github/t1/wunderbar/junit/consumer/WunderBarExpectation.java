@@ -43,7 +43,7 @@ public abstract @Internal class WunderBarExpectation {
 
     public abstract URI baseUri();
 
-    public abstract void returns(@NonNull Depletion depletion, @NonNull Object response);
+    public abstract void returns(@NonNull Depletion depletion, Object response);
 
     public abstract void willThrow(@NonNull Depletion depletion, @NonNull Exception exception);
 

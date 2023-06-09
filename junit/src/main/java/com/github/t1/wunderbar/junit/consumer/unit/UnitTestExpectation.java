@@ -27,7 +27,7 @@ class UnitTestExpectation extends WunderBarExpectation {
 
     @Override public URI baseUri() {return null;}
 
-    @Override public void returns(@NonNull Depletion depletion, @NonNull Object response) {
+    @Override public void returns(@NonNull Depletion depletion, Object response) {
         mockitoStub.willAnswer(i -> {
             ++callCount;
             depletion.check(callCount);

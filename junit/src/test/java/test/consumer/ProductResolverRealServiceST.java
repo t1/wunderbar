@@ -6,20 +6,19 @@ import com.github.t1.wunderbar.junit.consumer.Service;
 import com.github.t1.wunderbar.junit.consumer.Some;
 import com.github.t1.wunderbar.junit.consumer.SystemUnderTest;
 import com.github.t1.wunderbar.junit.consumer.WunderBarApiConsumer;
-import com.github.t1.wunderbar.junit.consumer.integration.GraphQlResponse;
 import com.github.t1.wunderbar.junit.http.HttpRequest;
 import com.github.t1.wunderbar.junit.http.HttpResponse;
 import com.github.t1.wunderbar.junit.http.HttpServer;
+import jakarta.json.Json;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import test.consumer.ProductResolver.Item;
 import test.consumer.ProductResolver.Product;
 import test.consumer.ProductResolver.Products;
 
-import java.util.Map;
-
 import static com.github.t1.wunderbar.junit.assertions.WunderBarBDDAssertions.then;
 import static com.github.t1.wunderbar.junit.consumer.WunderbarExpectationBuilder.given;
+import static com.github.t1.wunderbar.junit.http.HttpUtils.readJson;
 import static org.assertj.core.api.Assertions.catchThrowable;
 
 @WunderBarApiConsumer
@@ -34,13 +33,13 @@ class ProductResolverRealServiceST {
 
     private HttpResponse handle(HttpRequest request) {
         then(request).isGraphQL()
-            .hasQuery("query product($id: String!) { product(id: $id) {id name price} }")
-            .hasVariable("id", product.id);
+                .hasQuery("query product($id: String!) { product(id: $id) {id name price} }")
+                .hasVariable("id", product.id);
         return HttpResponse.builder()
-            .body(GraphQlResponse.builder()
-                .data(Map.of("product", product))
-                .build())
-            .build();
+                .body(Json.createObjectBuilder()
+                        .add("data", Json.createObjectBuilder().add("product", readJson(product)))
+                        .build())
+                .build();
     }
 
     @AfterEach
@@ -59,6 +58,6 @@ class ProductResolverRealServiceST {
         var throwable = catchThrowable(() -> given(products.product(product.id)).returns(product));
 
         then(throwable).isInstanceOf(WunderBarException.class)
-            .hasMessageStartingWith("failed to add expectation to mock server");
+                .hasMessageStartingWith("failed to add expectation to mock server");
     }
 }

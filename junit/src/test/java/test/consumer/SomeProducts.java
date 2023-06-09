@@ -16,6 +16,6 @@ public class SomeProducts extends SomeSingleTypes<Product> {
     @Override public Product generate(Some some, Type type, AnnotatedElement location) {
         String id = generator.generate(Some.LITERAL.withTags("id"), String.class, location);
         int price = generator.generate(Product.class, "price");
-        return Product.builder().id(id).name("product " + id).price(price).build();
+        return Product.builder().id(id).name("test product " + id).price(price).build();
     }
 }

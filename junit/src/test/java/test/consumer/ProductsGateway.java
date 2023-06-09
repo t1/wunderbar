@@ -1,33 +1,31 @@
 package test.consumer;
 
+import jakarta.inject.Inject;
+import jakarta.ws.rs.*;
 import org.eclipse.microprofile.rest.client.inject.RegisterRestClient;
 import test.consumer.ProductResolver.Item;
 import test.consumer.ProductResolver.Product;
 
-import jakarta.inject.Inject;
-import jakarta.ws.rs.GET;
-import jakarta.ws.rs.HeaderParam;
-import jakarta.ws.rs.PATCH;
-import jakarta.ws.rs.Path;
-import jakarta.ws.rs.PathParam;
-import jakarta.ws.rs.Produces;
-
 import java.io.Closeable;
 
-public class ProductsGateway {
+class ProductsGateway {
     @Inject ProductsRestClient products;
 
-    public Product product(Item item) {
+    Product product(Item item) {
         return products.product(item.getProductId());
     }
 
-    public Product product(String customHeader, Item item) {
+    Product product(String customHeader, Item item) {
         return products.product(customHeader, item.getProductId());
     }
 
-    public Product productWithPriceUpdate(Item item, int newPrice) {
+    Product productWithPriceUpdate(Item item, int newPrice) {
         var patch = Product.builder().id(item.getProductId()).price(newPrice).build();
         return products.patch(patch);
+    }
+
+    void postVoid() {
+        products.postVoid();
     }
 
     @RegisterRestClient @Path("/products")
@@ -41,5 +39,8 @@ public class ProductsGateway {
 
         @PATCH
         Product patch(Product patch);
+
+        @POST
+        Void postVoid();
     }
 }

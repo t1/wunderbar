@@ -52,14 +52,6 @@ class ProductResolverIT extends ProductResolverTest {
 
             then(throwable).hasMessage("can't throw null from an expectation");
         }
-
-        @Test void shouldFailToCallWillReturnWithNull() {
-            var stub = given(products.product("dummy"));
-
-            var throwable = catchThrowable(() -> stub.returns(null));
-
-            then(throwable).hasMessage("can't return null from an expectation");
-        }
     }
 
     @GraphQLClientApi(configKey = TEST_CONFIG_KEY)

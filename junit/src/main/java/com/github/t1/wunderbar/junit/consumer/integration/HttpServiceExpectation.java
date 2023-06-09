@@ -66,7 +66,7 @@ public abstract @Internal class HttpServiceExpectation extends WunderBarExpectat
 
     protected abstract Object service();
 
-    @Override public void returns(@NonNull Depletion depletion, @NonNull Object response) {
+    @Override public void returns(@NonNull Depletion depletion, Object response) {
         assertUnset("returns");
         this.depletion = depletion;
         this.response = response;

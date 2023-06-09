@@ -50,7 +50,6 @@ public class WunderbarExpectationBuilder<T> {
     public void returns(Depletion depletion, T response) {
         if (buildingExpectation == null) throw new StubbingMismatchException();
         try {
-            if (response == null) throw new WunderBarException("can't return null from an expectation");
             buildingExpectation.returns(depletion, response);
         } finally {
             buildingExpectation = null;
