@@ -17,7 +17,7 @@
         <project.build.sourceEncoding>utf-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>utf-8</project.reporting.outputEncoding>
 
-        <microprofile.version>6.0</microprofile.version>
+        <microprofile.version>6.1</microprofile.version>
         <smallrye-graphql.version>2.5.0</smallrye-graphql.version>
         <slf4j.version>2.0.9</slf4j.version>
         <resteasy.version>6.2.5.Final</resteasy.version>
