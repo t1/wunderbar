@@ -32,7 +32,7 @@
         <junit.version>5.10.1</junit.version>
         <assertj.version>3.24.2</assertj.version>
         <mockito.version>5.7.0</mockito.version>
-        <logback.version>1.4.13</logback.version>
+        <logback.version>1.4.14</logback.version>
 
         <maven-test-plugins.version>3.2.2</maven-test-plugins.version>
     </properties>
