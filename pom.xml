@@ -19,7 +19,7 @@
 
         <microprofile.version>6.1</microprofile.version>
         <smallrye-graphql.version>2.6.1</smallrye-graphql.version>
-        <slf4j.version>2.0.10</slf4j.version>
+        <slf4j.version>2.0.11</slf4j.version>
         <resteasy.version>6.2.6.Final</resteasy.version>
         <resteasy.mp.version>2.1.4.Final</resteasy.mp.version>
         <quarkus.version>3.6.4</quarkus.version>
