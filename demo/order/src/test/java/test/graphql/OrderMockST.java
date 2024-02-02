@@ -42,24 +42,25 @@ class OrderMockST {
     private static final Network NETWORK = newNetwork();
 
     @Container static JeeContainer ORDERS = jeeContainer()
-        .withMainPortBoundToFixedPort(18080)
-        .withPortBoundToFixedPort(19990, 9990)
-        .withPortBoundToFixedPort(18787, 8787)
-        .withDeployment("target/order.war");
+            .withMainPortBoundToFixedPort(18080)
+            .withPortBoundToFixedPort(19990, 9990)
+            .withPortBoundToFixedPort(18787, 8787)
+            .withDeployment("target/order.war");
 
     @Container static JeeContainer PRODUCTS = jeeContainer()
-        .withMainPortBoundToFixedPort(28080)
-        .withPortBoundToFixedPort(29990, 9990)
-        .withPortBoundToFixedPort(28787, 8787)
-        .withNetworkAliases("products")
-        .withDeployment("../../mock/target/wunderbar-mock-server.war");
+            .withMainPortBoundToFixedPort(28080)
+            .withPortBoundToFixedPort(29990, 9990)
+            .withPortBoundToFixedPort(28787, 8787)
+            .withNetworkAliases("products")
+            .withDeployment("../../mock/target/wunderbar-mock-server.war");
 
     @SuppressWarnings("resource") private static JeeContainer jeeContainer() {
-        return WildflyContainer.create("rdohna/wildfly", "27.0.0.Beta1-jdk11").withNetwork(NETWORK);
+        return WildflyContainer.create("rdohna/wildfly", "30.0-jdk17").withNetwork(NETWORK);
     }
 
     interface Api {
         Order order(@NonNull String id);
+
         @Mutation CreateOrderResponse create(@NonNull OrderInput order);
     }
 
