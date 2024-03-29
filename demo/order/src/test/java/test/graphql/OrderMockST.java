@@ -1,7 +1,6 @@
 package test.graphql;
 
 import com.github.t1.testcontainers.jee.JeeContainer;
-import com.github.t1.testcontainers.jee.WildflyContainer;
 import com.github.t1.wunderbar.junit.Register;
 import com.github.t1.wunderbar.junit.consumer.Service;
 import com.github.t1.wunderbar.junit.consumer.Some;
@@ -54,9 +53,8 @@ class OrderMockST {
             .withNetworkAliases("products")
             .withDeployment("../../mock/target/wunderbar-mock-server.war");
 
-    @SuppressWarnings("resource") private static JeeContainer jeeContainer() {
-        return WildflyContainer.create("rdohna/wildfly", "30.0-jdk17").withNetwork(NETWORK);
-    }
+    @SuppressWarnings("resource")
+    static JeeContainer jeeContainer() {return JeeContainer.create().withNetwork(NETWORK);}
 
     interface Api {
         Order order(@NonNull String id);
