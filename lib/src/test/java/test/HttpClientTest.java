@@ -1,13 +1,12 @@
-package unit;
+package test;
 
 import com.github.t1.wunderbar.junit.http.HttpClient;
 import com.github.t1.wunderbar.junit.http.HttpRequest;
 import com.github.t1.wunderbar.junit.http.HttpResponse;
 import com.github.t1.wunderbar.junit.http.HttpServer;
+import jakarta.ws.rs.core.MediaType;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Test;
-
-import jakarta.ws.rs.core.MediaType;
 
 import static jakarta.ws.rs.core.MediaType.APPLICATION_JSON_TYPE;
 import static jakarta.ws.rs.core.MediaType.APPLICATION_XML_TYPE;

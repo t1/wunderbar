@@ -25,28 +25,22 @@ class VariablesCollector {
 
     private void collect(JsonValue json) {
         switch (json.getValueType()) {
-            case STRING:
-                put(((JsonString) json).getString());
-                break;
-            case NUMBER:
-                put(((JsonNumber) json).bigDecimalValue());
-                break;
-            case OBJECT:
+            case STRING -> put(((JsonString) json).getString());
+            case NUMBER -> put(((JsonNumber) json).bigDecimalValue());
+            case OBJECT -> {
                 var jsonObject = json.asJsonObject();
                 put(jsonObject);
                 jsonObject.forEach((key, field) -> at(path + "/" + key).collect(field));
-                break;
-            case ARRAY:
+            }
+            case ARRAY -> {
                 var array = json.asJsonArray();
                 put(array);
                 for (int i = 0; i < array.size(); i++) {
                     at(path + "/" + i).collect(array.get(i));
                 }
-                break;
-            case NULL:
-            case TRUE:
-            case FALSE:
-                break; // these values can't be unique
+            }
+            case NULL, TRUE, FALSE -> { // these values can't be unique
+            }
         }
     }
 

@@ -1,9 +1,9 @@
 package com.github.t1.wunderbar.junit.http;
 
-import lombok.RequiredArgsConstructor;
-
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response.Status;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 import java.net.URI;
 import java.net.http.HttpRequest.BodyPublishers;
@@ -13,14 +13,13 @@ import java.net.http.HttpResponse.ResponseInfo;
 import java.time.Duration;
 
 import static com.github.t1.wunderbar.junit.http.HttpUtils.charset;
+import static jakarta.ws.rs.core.HttpHeaders.*;
+import static jakarta.ws.rs.core.MediaType.WILDCARD_TYPE;
 import static java.net.http.HttpClient.Redirect.NORMAL;
 import static java.net.http.HttpRequest.BodyPublishers.noBody;
-import static jakarta.ws.rs.core.HttpHeaders.ACCEPT;
-import static jakarta.ws.rs.core.HttpHeaders.AUTHORIZATION;
-import static jakarta.ws.rs.core.HttpHeaders.CONTENT_TYPE;
-import static jakarta.ws.rs.core.MediaType.WILDCARD_TYPE;
 
 @RequiredArgsConstructor
+@Slf4j
 public class HttpClient {
     private static final java.net.http.HttpClient HTTP = java.net.http.HttpClient.newBuilder()
         .followRedirects(NORMAL)
@@ -28,13 +27,19 @@ public class HttpClient {
         .build();
 
     private final URI baseUri;
+    private boolean logging = false;
+
+    public HttpClient logging(boolean logging) {this.logging = logging; return this;}
 
     public HttpResponse send(HttpRequest request) {
+        if (logging) log.debug("request:\n{}", request);
         var httpRequest = convert(request);
 
         var httpResponse = send(httpRequest);
 
-        return convert(httpResponse);
+        var response = convert(httpResponse);
+        if (logging) log.debug("response:\n{}r", response);
+        return response;
     }
 
     private java.net.http.HttpRequest convert(HttpRequest request) {
@@ -52,7 +57,7 @@ public class HttpClient {
         try {
             return HTTP.send(httpRequest, HttpClient::bodyHandler);
         } catch (Exception e) {
-            throw new RuntimeException("failed to send http request to " + baseUri);
+            throw new RuntimeException("failed to send http request to " + baseUri, e);
         }
     }
 

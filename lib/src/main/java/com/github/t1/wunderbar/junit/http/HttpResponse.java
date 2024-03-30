@@ -1,41 +1,30 @@
 package com.github.t1.wunderbar.junit.http;
 
-import lombok.Builder;
-import lombok.Getter;
-import lombok.Value;
-import lombok.With;
-
-import jakarta.json.Json;
-import jakarta.json.JsonObject;
-import jakarta.json.JsonObjectBuilder;
-import jakarta.json.JsonPatch;
-import jakarta.json.JsonPatchBuilder;
-import jakarta.json.JsonValue;
+import jakarta.json.*;
 import jakarta.json.bind.annotation.JsonbCreator;
 import jakarta.json.bind.annotation.JsonbTypeAdapter;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.Response.Status;
 import jakarta.ws.rs.core.Response.StatusType;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.Value;
+import lombok.With;
 
+import java.nio.charset.Charset;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
-import static com.github.t1.wunderbar.junit.http.HttpUtils.APPLICATION_JSON_UTF8;
-import static com.github.t1.wunderbar.junit.http.HttpUtils.JSONB;
-import static com.github.t1.wunderbar.junit.http.HttpUtils.PROBLEM_DETAIL_TYPE;
-import static com.github.t1.wunderbar.junit.http.HttpUtils.formatJson;
-import static com.github.t1.wunderbar.junit.http.HttpUtils.fromJson;
-import static com.github.t1.wunderbar.junit.http.HttpUtils.isCompatible;
-import static com.github.t1.wunderbar.junit.http.HttpUtils.optional;
-import static com.github.t1.wunderbar.junit.http.HttpUtils.read;
-import static com.github.t1.wunderbar.junit.http.HttpUtils.readJson;
+import static com.github.t1.wunderbar.junit.http.HttpUtils.*;
 import static jakarta.json.JsonValue.ValueType.OBJECT;
 import static jakarta.ws.rs.core.MediaType.APPLICATION_JSON_TYPE;
+import static jakarta.ws.rs.core.MediaType.CHARSET_PARAMETER;
 import static jakarta.ws.rs.core.Response.Status.OK;
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static lombok.AccessLevel.NONE;
 
 @Value @Builder @With
@@ -65,14 +54,18 @@ public class HttpResponse {
     @Override public String toString() {return (headerProperties() + body).trim();}
 
     public String headerProperties() {
-        return "" +
-               "Status: " + getStatusString() + "\n" +
+        return "Status: " + getStatusString() + "\n" +
                "Content-Type: " + contentType + "\n";
     }
 
     public String getStatusString() {return status.getStatusCode() + " " + status.getReasonPhrase();}
 
     public int getStatusCode() {return status.getStatusCode();}
+
+    public Charset getCharset() {
+        var charsetName = contentType.getParameters().get(CHARSET_PARAMETER);
+        return (charsetName == null) ? UTF_8 : Charset.forName(charsetName);
+    }
 
     public HttpResponse withStatusCode(int statusCode) {
         var status = Status.fromStatusCode(statusCode);
@@ -91,6 +84,8 @@ public class HttpResponse {
     public Optional<String> body() {return Optional.ofNullable(body);}
 
     public Optional<JsonValue> json() {return jsonValue.updateAndGet(this::createOrGetJsonValue);}
+
+    public byte[] bytes() {return hasBody() ? body.getBytes(getCharset()) : null;}
 
     public <T> T as(Class<T> type) {return read(body, contentType, type);}
 

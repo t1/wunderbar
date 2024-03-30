@@ -42,22 +42,20 @@ class WunderBarAT {
     @BeforeInteraction HttpRequest prepareRequest(HttpRequest request) {
         var productId = request.matchUri("/rest/products/(.*)").group(1);
         switch (productId) {
-            case "existing-product-id":
+            case "existing-product-id" -> {
                 expectations.addRestProduct("requested-product-id", HttpResponse.builder().body(Json.createObjectBuilder()
-                    .add("id", "generated-product-id")
-                    .add("name", "some-product-name")
-                    .add("price", 1599)
-                    .build()
+                        .add("id", "generated-product-id")
+                        .add("name", "some-product-name")
+                        .add("price", 1599)
+                        .build()
                 ).build());
-                return request.withUri("/rest/products/requested-product-id");
-            case "forbidden-product-id":
-                expectations.addRestProduct("forbidden-product-id", ProblemDetails.of(new ForbiddenException()).toResponse());
-                break;
-            case "unknown-product-id":
-                expectations.addRestProduct("unknown-product-id", ProblemDetails.of(new NotFoundException()).toResponse());
-                break;
-            default:
-                fail("unexpected request for product id " + productId);
+                request = request.withUri("/rest/products/requested-product-id");
+            }
+            case "forbidden-product-id" ->
+                    expectations.addRestProduct("forbidden-product-id", ProblemDetails.of(new ForbiddenException()).toResponse());
+            case "unknown-product-id" ->
+                    expectations.addRestProduct("unknown-product-id", ProblemDetails.of(new NotFoundException()).toResponse());
+            default -> fail("unexpected request for product id " + productId);
         }
         return request;
     }

@@ -66,19 +66,16 @@ public class SystemTestExpectations<T> implements WunderBarExpectations<T> {
 
     private T buildApi() {
         log.info("build {} system test endpoint: {}", technology, baseUri);
-        switch (technology) {
-            case GRAPHQL:
-                return new JaxRsTypesafeGraphQLClientBuilder()
+        return switch (technology) {
+            case GRAPHQL -> new JaxRsTypesafeGraphQLClientBuilder()
                     .register(filter)
                     .endpoint(baseUri)
                     .build(type);
-            case REST:
-                return RestClientBuilder.newBuilder()
+            case REST -> RestClientBuilder.newBuilder()
                     .register(filter)
                     .baseUri(baseUri)
                     .build(type);
-        }
-        throw new UnsupportedOperationException("unreachable");
+        };
     }
 
     @Override public URI baseUri() {return baseUri;}

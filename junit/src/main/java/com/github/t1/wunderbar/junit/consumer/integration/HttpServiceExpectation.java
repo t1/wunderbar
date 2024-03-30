@@ -22,13 +22,10 @@ import static lombok.AccessLevel.PACKAGE;
 @Slf4j
 public abstract @Internal class HttpServiceExpectation extends WunderBarExpectation {
     public static HttpServiceExpectation of(Technology technology, URI baseUri, Method method, Object... args) {
-        switch (technology) {
-            case GRAPHQL:
-                return new GraphQlExpectation(baseUri, method, args);
-            case REST:
-                return new RestExpectation(baseUri, method, args);
-        }
-        throw new UnsupportedOperationException("unreachable");
+        return switch (technology) {
+            case GRAPHQL -> new GraphQlExpectation(baseUri, method, args);
+            case REST -> new RestExpectation(baseUri, method, args);
+        };
     }
 
     private final URI baseUri;

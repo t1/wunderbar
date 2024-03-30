@@ -51,17 +51,12 @@ class Proxy<T> implements ProxyFactory<T> {
     }
 
     private WunderBarExpectations<T> createExpectations() {
-        switch (level) {
-            case AUTO:
-                throw new IllegalStateException("Unreachable code: AUTO level should have been resolved already");
-            case UNIT:
-                return new UnitTestExpectations<>(type);
-            case INTEGRATION:
-                return new IntegrationTestExpectations<>(endpoint, technology, bar);
-            case SYSTEM:
-                return new SystemTestExpectations<>(type, endpoint, technology, bar);
-        }
-        throw new UnsupportedOperationException("unreachable");
+        return switch (level) {
+            case AUTO -> throw new IllegalStateException("Unreachable code: AUTO level should have been resolved already");
+            case UNIT -> new UnitTestExpectations<>(type);
+            case INTEGRATION -> new IntegrationTestExpectations<>(endpoint, technology, bar);
+            case SYSTEM -> new SystemTestExpectations<>(type, endpoint, technology, bar);
+        };
     }
 
     public boolean isAssignableTo(Field field) {

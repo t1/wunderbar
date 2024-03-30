@@ -203,16 +203,17 @@ class ConsumerDrivenAT {
         private boolean setup() {
             switch (response.getStatus().toEnum()) {
                 case OK:
-                    switch (request.getMethod()) {
-                        case "GET":
+                    return switch (request.getMethod()) {
+                        case "GET" -> {
                             create(response.as(Product.class));
-                            return false;
-                        case "PATCH":
+                            yield false;
+                        }
+                        case "PATCH" -> {
                             checkExists();
-                            return true;
-                        default:
-                            throw new RuntimeException("unsupported method " + request.getMethod());
-                    }
+                            yield true;
+                        }
+                        default -> throw new RuntimeException("unsupported method " + request.getMethod());
+                    };
                 case FORBIDDEN:
                     createForbiddenProduct(request.matchUri("/rest/products/(.*)").group(1));
                     return false;

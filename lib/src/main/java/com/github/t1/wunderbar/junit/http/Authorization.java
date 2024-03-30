@@ -15,16 +15,12 @@ public interface Authorization {
         if (split.length != 2) throw new IllegalArgumentException("unsupported authorization format: need a type");
         var type = split[0].toLowerCase(ROOT);
         var credentials = split[1];
-        switch (type) {
-            case "dummy":
-                return new Dummy(credentials);
-            case "basic":
-                return new Basic(credentials);
-            case "bearer":
-                return new Bearer(credentials);
-            default:
-                throw new IllegalArgumentException("unsupported authorization type " + type);
-        }
+        return switch (type) {
+            case "dummy" -> new Dummy(credentials);
+            case "basic" -> new Basic(credentials);
+            case "bearer" -> new Bearer(credentials);
+            default -> throw new IllegalArgumentException("unsupported authorization type " + type);
+        };
     }
 
     /** The credentials as used for the http <code>Authorization</code> header */

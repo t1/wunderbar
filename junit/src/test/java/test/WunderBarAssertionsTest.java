@@ -30,10 +30,8 @@ class WunderBarAssertionsTest {
         var rightTypes = mediaTypes(right);
 
         switch (leftTypes.size()) {
-            case 0:
-                then(isCompatible(leftTypes, rightTypes)).isTrue();
-                break;
-            case 1:
+            case 0 -> then(isCompatible(leftTypes, rightTypes)).isTrue();
+            case 1 -> {
                 then(leftTypes.get(0)).isCompatibleTo(rightTypes);
                 if (rightTypes.size() == 1) {
                     then(leftTypes.get(0)).isCompatibleTo(rightTypes.get(0));
@@ -41,9 +39,8 @@ class WunderBarAssertionsTest {
                 then(leftTypes).are(compatibleTo(rightTypes));
                 then(leftTypes).singleElement().is(compatibleTo(rightTypes));
                 then(leftTypes).singleElement().asInstanceOf(MEDIA_TYPE).isCompatibleTo(rightTypes);
-                break;
-            default:
-                then(leftTypes).anyMatch(type -> isCompatibleToAny(rightTypes, type));
+            }
+            default -> then(leftTypes).anyMatch(type -> isCompatibleToAny(rightTypes, type));
         }
 
         then(rightTypes).are(compatibleTo(leftTypes));
