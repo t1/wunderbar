@@ -9,7 +9,7 @@ jobs:
   build:
     strategy:
       matrix:
-        jdk: [ 21 ]
+        jdk: [ 17, 21 ]
     runs-on: ubuntu-latest
 
     steps:
