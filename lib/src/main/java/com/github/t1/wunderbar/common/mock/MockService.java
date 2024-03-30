@@ -51,7 +51,7 @@ public class MockService {
 
 
     public HttpResponse service(HttpRequest rawRequest) {
-        var request = rawRequest.withFormattedBody();
+        var request = rawRequest.normalized();
         log.info("received request:\n{}", prefix("< ", request.toString()));
         WunderBarMockExpectation expectation = findExpectationMatching(request);
         if (expectation == null) {

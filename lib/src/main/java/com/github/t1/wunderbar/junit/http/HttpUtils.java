@@ -1,8 +1,5 @@
 package com.github.t1.wunderbar.junit.http;
 
-import lombok.SneakyThrows;
-import lombok.experimental.UtilityClass;
-
 import jakarta.json.Json;
 import jakarta.json.JsonObjectBuilder;
 import jakarta.json.JsonString;
@@ -15,24 +12,23 @@ import jakarta.json.stream.JsonParsingException;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response.Status;
 import jakarta.ws.rs.core.Response.StatusType;
+import lombok.SneakyThrows;
+import lombok.experimental.UtilityClass;
 
 import java.io.IOException;
 import java.io.StringReader;
 import java.io.StringWriter;
 import java.nio.charset.Charset;
-import java.util.Base64;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Properties;
+import java.util.*;
 import java.util.stream.Stream;
 
+import static jakarta.ws.rs.core.MediaType.APPLICATION_JSON_TYPE;
+import static jakarta.ws.rs.core.MediaType.CHARSET_PARAMETER;
 import static java.nio.charset.StandardCharsets.ISO_8859_1;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.Locale.ROOT;
+import static java.util.stream.Collectors.joining;
 import static java.util.stream.Collectors.toList;
-import static jakarta.ws.rs.core.MediaType.APPLICATION_JSON_TYPE;
-import static jakarta.ws.rs.core.MediaType.CHARSET_PARAMETER;
 
 @UtilityClass
 public class HttpUtils {
@@ -122,6 +118,14 @@ public class HttpUtils {
     }
 
     public static String[] splitCamel(String in) {return in.split("(?=\\p{javaUpperCase})");}
+
+    public static String normalizeTitle(String name) {
+        return Stream.of(name.split("-")).map(HttpUtils::initcap).collect(joining("-"));
+    }
+
+    public static String initcap(String string) {
+        return string == null || string.isEmpty() ? string : Character.toUpperCase(string.charAt(0)) + string.substring(1);
+    }
 
     public static String base64(String string) {
         return Base64.getEncoder().encodeToString(string.getBytes(UTF_8));

@@ -144,7 +144,7 @@ class ConsumerDrivenAT {
         request = authorized(request, isGraphQL, setup.getNeedsAuth());
 
         return interaction
-            .withRequest(request.withFormattedBody())
+            .withRequest(request.normalized())
             .withResponse(setup.getResponse());
     }
 

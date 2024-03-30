@@ -109,7 +109,7 @@ public class SystemTestExpectations<T> implements WunderBarExpectations<T> {
     }
 
     private HttpResponse handleStubRequest(HttpRequest request) {
-        request = request.withFormattedBody();
+        request = request.normalized();
         var response = currentExpectation.handleRequest(request);
         this.currentInteraction = new HttpInteraction(0, request, response);
         return response;
@@ -128,7 +128,7 @@ public class SystemTestExpectations<T> implements WunderBarExpectations<T> {
         if (currentInteraction == null) throw new IllegalStateException("the stub call didn't get through");
         try {
             return mock.addWunderBarExpectation(
-                currentInteraction.getRequest().withFormattedBody().withoutContextPath(),
+                currentInteraction.getRequest().normalized().withoutContextPath(),
                 currentExpectation.getDepletion(),
                 currentInteraction.getResponse());
         } catch (Exception e) {

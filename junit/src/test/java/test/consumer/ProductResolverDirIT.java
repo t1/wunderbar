@@ -57,7 +57,7 @@ class ProductResolverDirIT {
                         "}\n"));
         then(jsonFile(prefix + "1 request-variables.json")).isEqualTo(readJson(
                 "{" +
-                        "    \":custom-Header\": {" +
+                        "    \":Custom-Header\": {" +
                         "        \"some\": {\"tags\": [\"header\"]}," +
                         "        \"type\": \"java.lang.String\"," +
                         "        \"location\": \"parameter [customHeader] @method " + methodName + "\"," +
@@ -113,7 +113,7 @@ class ProductResolverDirIT {
         then(resolvedProduct).usingRecursiveComparison().isEqualTo(product);
         then(jsonFile("shouldReplaceNumericHeader(Product, int)/1 request-variables.json")).isEqualToIgnoringNewFields(readJson(
                 "{" +
-                        "    \":custom-Header:x{}\": {" +
+                        "    \":Custom-Header:x{}\": {" +
                         "        \"value\": 102" +
                         "    }," +
                         "    \"/variables/id\": {" +
@@ -224,7 +224,7 @@ class ProductResolverDirIT {
                             "}"));
         }
 
-        class SomeVendorContentTypeName extends SomeSingleTypes<@Some("vendor") String> {
+        static class SomeVendorContentTypeName extends SomeSingleTypes<@Some("vendor") String> {
             @Override public String generate(Some some, Type type, AnnotatedElement location) {return "vnd.product";}
         }
     }

@@ -57,7 +57,7 @@ public @Internal class IntegrationTestExpectations<T> implements WunderBarExpect
     }
 
     private HttpResponse handleRequest(HttpRequest request) {
-        request = request.withFormattedBody();
+        request = request.normalized();
 
         if (currentExpectation == null)
             return HttpResponse.builder().status(NOT_IMPLEMENTED).body("no current expectation set").build();

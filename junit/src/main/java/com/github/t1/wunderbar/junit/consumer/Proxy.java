@@ -31,7 +31,7 @@ class Proxy<T> implements ProxyFactory<T> {
     }
 
     @Override public String toString() {
-        return "Proxy(" + level + ":" + type.getSimpleName() + ":" + expectations.baseUri() + ")";
+        return "Proxy(" + technology.path() + "-" + level + ":" + type.getSimpleName() + ":" + expectations.baseUri() + ")";
     }
 
     private T createProxy(Class<T> type) {
@@ -52,7 +52,8 @@ class Proxy<T> implements ProxyFactory<T> {
 
     private WunderBarExpectations<T> createExpectations() {
         return switch (level) {
-            case AUTO -> throw new IllegalStateException("Unreachable code: AUTO level should have been resolved already");
+            case AUTO ->
+                    throw new IllegalStateException("Unreachable code: AUTO level should have been resolved already");
             case UNIT -> new UnitTestExpectations<>(type);
             case INTEGRATION -> new IntegrationTestExpectations<>(endpoint, technology, bar);
             case SYSTEM -> new SystemTestExpectations<>(type, endpoint, technology, bar);

@@ -9,7 +9,6 @@ import jakarta.json.JsonPatchBuilder;
 import jakarta.json.JsonValue;
 import jakarta.json.bind.annotation.JsonbCreator;
 import jakarta.ws.rs.core.MediaType;
-import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -35,22 +34,24 @@ import static com.github.t1.wunderbar.junit.http.HttpUtils.firstMediaType;
 import static com.github.t1.wunderbar.junit.http.HttpUtils.formatJson;
 import static com.github.t1.wunderbar.junit.http.HttpUtils.isCompatible;
 import static com.github.t1.wunderbar.junit.http.HttpUtils.mediaTypes;
+import static com.github.t1.wunderbar.junit.http.HttpUtils.normalizeTitle;
 import static com.github.t1.wunderbar.junit.http.HttpUtils.read;
 import static jakarta.json.JsonValue.ValueType.OBJECT;
 import static jakarta.ws.rs.core.HttpHeaders.ACCEPT;
 import static jakarta.ws.rs.core.HttpHeaders.AUTHORIZATION;
 import static jakarta.ws.rs.core.HttpHeaders.CONTENT_TYPE;
 import static jakarta.ws.rs.core.MediaType.APPLICATION_JSON_TYPE;
+import static jakarta.ws.rs.core.MediaType.WILDCARD_TYPE;
 import static java.util.Collections.unmodifiableList;
 import static java.util.stream.Collectors.joining;
 import static lombok.AccessLevel.NONE;
 
 @Value @Builder @With @EqualsAndHashCode(exclude = "jsonValue")
 public class HttpRequest {
-    String method;
-    String uri;
+    @NonNull String method;
+    @NonNull String uri;
     Authorization authorization;
-    MediaType contentType;
+    @NonNull MediaType contentType;
     List<MediaType> accept;
     List<Header> headers;
     String body;
@@ -58,13 +59,13 @@ public class HttpRequest {
     @Getter(NONE) AtomicReference<Optional<JsonValue>> jsonValue = new AtomicReference<>();
 
     @Internal @JsonbCreator public HttpRequest(
-        String method,
-        String uri,
-        Authorization authorization,
-        MediaType contentType,
-        List<MediaType> accept,
-        List<Header> headers,
-        String body
+            String method,
+            String uri,
+            Authorization authorization,
+            MediaType contentType,
+            List<MediaType> accept,
+            List<Header> headers,
+            String body
     ) {
         this.method = (method == null) ? "GET" : method;
         this.uri = (uri == null) ? "/" : uri;
@@ -78,16 +79,15 @@ public class HttpRequest {
     @Override public String toString() {return (method + " " + uri + "\n" + body().orElse("")).trim();}
 
     public String headerProperties() {
-        return "" +
-               ((accept == null) ? "" : ACCEPT + ": " + accept() + "\n") +
-               ((contentType == null) ? "" : CONTENT_TYPE + ": " + contentType + "\n") +
+        return ((accept == null) ? "" : ACCEPT + ": " + accept() + "\n") +
+               (CONTENT_TYPE + ": " + contentType + "\n") +
                ((authorization == null) ? "" : AUTHORIZATION + ": " + authorization + "\n") +
                ((headers == null) ? "" : headers.stream().map(Header::toString).collect(joining("\n")) + "\n");
     }
 
     public String accept() {
         return (accept.size() == 1) ? accept.get(0).toString()
-            : accept.stream().map(MediaType::toString).collect(joining("; "));
+                : accept.stream().map(MediaType::toString).collect(joining("; "));
     }
 
     public URI getUri() {return URI.create(uri);}
@@ -106,7 +106,8 @@ public class HttpRequest {
 
     public MatchResult matchUri(Pattern pattern) {
         var matcher = pattern.matcher(uri());
-        if (!matcher.matches()) throw new IllegalArgumentException("expected uri to match " + pattern + " but was " + uri);
+        if (!matcher.matches())
+            throw new IllegalArgumentException("expected uri to match " + pattern + " but was " + uri);
         return matcher.toMatchResult(); // make immutable
     }
 
@@ -119,7 +120,7 @@ public class HttpRequest {
         return this.method.equals(that.method)
                && this.uri.equals(that.uri)
                && (this.authorization == null || this.authorization.equals(that.authorization))
-               && (this.contentType == null || isCompatible(this.contentType, that.contentType))
+               && isCompatible(this.contentType, that.contentType)
                && (this.accept == null || isCompatible(this.accept, that.accept))
                && (this.body == null || matchesBody(that));
     }
@@ -129,7 +130,12 @@ public class HttpRequest {
         return nonAddFieldDiff(this.jsonValue(), that.jsonValue()).findAny().isEmpty();
     }
 
-    public HttpRequest withFormattedBody() {return (isJson()) ? withBody(body().map(HttpUtils::formatJson).orElseThrow()) : this;}
+    public HttpRequest normalized() {
+        var out = this;
+        if (isJson()) out = withBody(body().map(HttpUtils::formatJson).orElseThrow());
+        if (WILDCARD_TYPE.equals(contentType)) out = out.withContentType(APPLICATION_JSON_UTF8);
+        return out;
+    }
 
     public boolean hasBody() {return body != null;}
 
@@ -180,10 +186,15 @@ public class HttpRequest {
 
     public HttpRequest with(JsonValue body) {return withBody(formatJson(body));}
 
-    @NoArgsConstructor(force = true) @AllArgsConstructor
+    @NoArgsConstructor(force = true)
     public static @Value class Header {
         @NonNull String name;
         @NonNull List<String> values;
+
+        public Header(@NonNull String name, @NonNull List<String> values) {
+            this.name = normalizeTitle(name);
+            this.values = values;
+        }
 
         @Override public String toString() {return (values.isEmpty()) ? "" : name + ": " + String.join("; ", values);}
     }
@@ -209,7 +220,8 @@ public class HttpRequest {
         }
 
         public HttpRequestBuilder accept(String accept) {
-            if (accept != null && accept.startsWith("[") && accept.endsWith("]")) accept = accept.substring(1, accept.length() - 1);
+            if (accept != null && accept.startsWith("[") && accept.endsWith("]"))
+                accept = accept.substring(1, accept.length() - 1);
             return accept(mediaTypes(accept).toArray(MediaType[]::new));
         }
 
