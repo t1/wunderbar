@@ -23,7 +23,7 @@
         <slf4j.version>2.0.12</slf4j.version>
         <resteasy.version>6.2.8.Final</resteasy.version>
         <resteasy.mp.version>2.1.5.Final</resteasy.mp.version>
-        <quarkus.version>3.9.1</quarkus.version>
+        <quarkus.version>3.9.2</quarkus.version>
         <smallrye-context-propagation.version>1.2.2</smallrye-context-propagation.version>
         <jsonb.version>3.0.0</jsonb.version>
         <yasson.version>3.0.3</yasson.version>
