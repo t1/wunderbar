@@ -59,7 +59,7 @@
         <dependency>
             <groupId>jakarta.json.bind</groupId>
             <artifactId>jakarta.json.bind-api</artifactId>
-            <version>3.0.0</version>
+            <version>3.0.1</version>
             <!-- needed at compile-time and at test-time, but not at runtime -->
             <optional>true</optional>
         </dependency>
