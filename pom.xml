@@ -27,7 +27,7 @@
         <smallrye-context-propagation.version>1.2.2</smallrye-context-propagation.version>
         <jsonb.version>3.0.1</jsonb.version>
         <yasson.version>3.0.3</yasson.version>
-        <servlet-api.version>6.0.0</servlet-api.version>
+        <servlet-api.version>6.1.0</servlet-api.version>
 
         <junit.version>5.10.2</junit.version>
         <assertj.version>3.26.0</assertj.version>
