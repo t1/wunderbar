@@ -30,7 +30,7 @@
         <servlet-api.version>6.1.0</servlet-api.version>
 
         <junit.version>5.10.3</junit.version>
-        <assertj.version>3.26.0</assertj.version>
+        <assertj.version>3.26.3</assertj.version>
         <mockito.version>5.12.0</mockito.version>
         <logback.version>1.5.6</logback.version>
 
