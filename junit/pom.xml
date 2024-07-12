@@ -32,6 +32,12 @@
             <artifactId>jakarta.json.bind-api</artifactId>
             <version>${jsonb.version}</version>
         </dependency>
+        <dependency>
+            <groupId>jakarta.json</groupId>
+            <artifactId>jakarta.json-api</artifactId>
+            <version>${json.version}</version>
+        </dependency>
+
 
         <dependency>
             <groupId>org.jboss.resteasy</groupId>
