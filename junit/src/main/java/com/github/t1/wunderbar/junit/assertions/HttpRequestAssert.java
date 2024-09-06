@@ -10,7 +10,7 @@ import static com.github.t1.wunderbar.junit.assertions.WunderBarBDDAssertions.th
  */
 @SuppressWarnings("UnusedReturnValue")
 public class HttpRequestAssert<SELF extends HttpRequestAssert<SELF, ACTUAL>, ACTUAL extends HttpRequest>
-    extends AbstractAssert<SELF, ACTUAL> {
+        extends AbstractAssert<SELF, ACTUAL> {
     public HttpRequestAssert(ACTUAL actual) {this(actual, HttpRequestAssert.class);}
 
     protected HttpRequestAssert(ACTUAL actual, Class<?> selfType) {super(actual, selfType);}

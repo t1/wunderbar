@@ -13,7 +13,8 @@ class BeforeInteractionMethodHandler extends AbstractInteractionMethodHandler {
 
     @Override protected void apply(Object result, Execution execution) {
         if (result instanceof HttpInteraction) execution.expect(interaction -> (HttpInteraction) result);
-        else if (result instanceof HttpRequest) execution.expect(interaction -> interaction.withRequest((HttpRequest) result));
+        else if (result instanceof HttpRequest)
+            execution.expect(interaction -> interaction.withRequest((HttpRequest) result));
         else super.apply(result, execution);
     }
 }

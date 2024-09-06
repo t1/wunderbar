@@ -4,15 +4,14 @@ import com.github.t1.wunderbar.demo.order.OrderItem;
 import com.github.t1.wunderbar.demo.order.Product;
 import com.github.t1.wunderbar.demo.order.ProductsGateway;
 import com.github.t1.wunderbar.demo.order.ProductsGateway.ProductsRestClient;
+import jakarta.ws.rs.ForbiddenException;
+import jakarta.ws.rs.NotFoundException;
+import jakarta.ws.rs.WebApplicationException;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-
-import jakarta.ws.rs.ForbiddenException;
-import jakarta.ws.rs.NotFoundException;
-import jakarta.ws.rs.WebApplicationException;
 
 import static jakarta.ws.rs.core.Response.Status.FORBIDDEN;
 import static jakarta.ws.rs.core.Response.Status.NOT_FOUND;
@@ -41,7 +40,7 @@ class ProductsGatewayUnitTest {
     @Test void shouldFailToGetUnknownProduct() {
         given(products.product(product.getId())).willThrow(new NotFoundException());
 
-        var throwable = catchThrowableOfType(() -> gateway.product(item()), WebApplicationException.class);
+        var throwable = catchThrowableOfType(WebApplicationException.class, () -> gateway.product(item()));
 
         then(throwable.getResponse().getStatusInfo()).isEqualTo(NOT_FOUND);
     }
@@ -49,7 +48,7 @@ class ProductsGatewayUnitTest {
     @Test void shouldFailToGetForbiddenProduct() {
         given(products.product(product.getId())).willThrow(new ForbiddenException());
 
-        var throwable = catchThrowableOfType(() -> gateway.product(item()), WebApplicationException.class);
+        var throwable = catchThrowableOfType(WebApplicationException.class, () -> gateway.product(item()));
 
         then(throwable.getResponse().getStatusInfo()).isEqualTo(FORBIDDEN);
     }

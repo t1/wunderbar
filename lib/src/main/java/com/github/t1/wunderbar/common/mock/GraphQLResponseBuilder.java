@@ -1,12 +1,11 @@
 package com.github.t1.wunderbar.common.mock;
 
 import com.github.t1.wunderbar.junit.http.HttpResponse;
-import lombok.ToString;
-
 import jakarta.json.Json;
 import jakarta.json.JsonArrayBuilder;
 import jakarta.json.JsonObject;
 import jakarta.json.JsonObjectBuilder;
+import lombok.ToString;
 
 import java.util.function.Consumer;
 
@@ -16,11 +15,11 @@ public class GraphQLResponseBuilder {
 
     public static HttpResponse graphQlError(String code, String message) {
         return graphQLResponse().add("errors", Json.createArrayBuilder()
-            .add(Json.createObjectBuilder()
-                .add("message", message)
-                .add("extensions", Json.createObjectBuilder()
-                    .add("code", code))
-            )).build();
+                .add(Json.createObjectBuilder()
+                        .add("message", message)
+                        .add("extensions", Json.createObjectBuilder()
+                                .add("code", code))
+                )).build();
     }
 
     private final JsonObjectBuilder builder = Json.createObjectBuilder();

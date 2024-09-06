@@ -9,12 +9,11 @@ import com.github.t1.wunderbar.junit.consumer.Service;
 import com.github.t1.wunderbar.junit.consumer.Some;
 import com.github.t1.wunderbar.junit.consumer.SystemUnderTest;
 import com.github.t1.wunderbar.junit.consumer.WunderBarApiConsumer;
-import org.junit.jupiter.api.Test;
-import test.SomeProducts;
-
 import jakarta.ws.rs.ForbiddenException;
 import jakarta.ws.rs.NotFoundException;
 import jakarta.ws.rs.WebApplicationException;
+import org.junit.jupiter.api.Test;
+import test.SomeProducts;
 
 import static com.github.t1.wunderbar.junit.consumer.WunderbarExpectationBuilder.given;
 import static jakarta.ws.rs.core.Response.Status.FORBIDDEN;
@@ -67,7 +66,7 @@ class ProductsGatewayIT {
     @Test void shouldFailToGetUnknownProduct() {
         given(products.product(product.getId())).willThrow(new NotFoundException());
 
-        var throwable = catchThrowableOfType(() -> gateway.product(item()), WebApplicationException.class);
+        var throwable = catchThrowableOfType(WebApplicationException.class, () -> gateway.product(item()));
 
         then(throwable.getResponse().getStatusInfo()).isEqualTo(NOT_FOUND);
     }
@@ -75,7 +74,7 @@ class ProductsGatewayIT {
     @Test void shouldFailToGetForbiddenProduct() {
         given(products.product(product.getId())).willThrow(new ForbiddenException());
 
-        var throwable = catchThrowableOfType(() -> gateway.product(item()), WebApplicationException.class);
+        var throwable = catchThrowableOfType(WebApplicationException.class, () -> gateway.product(item()));
 
         then(throwable.getResponse().getStatusInfo()).isEqualTo(FORBIDDEN);
     }

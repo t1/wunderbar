@@ -25,7 +25,7 @@ public class Orders {
     @Query public Order order(@NonNull @PathParam("id") String id) {
         log.debug("get order with id {}", id);
         var order = ORDERS.stream().filter(i -> i.id.equals(id))
-            .findFirst().orElseThrow(() -> new NotFoundException("no order with id " + id));
+                .findFirst().orElseThrow(() -> new NotFoundException("no order with id " + id));
         log.debug("found order {}", order);
         return order;
     }

@@ -26,6 +26,6 @@ class ProductResolverST extends ProductResolverTest {
 
     @Override protected void thenFailedDepletion(Throwable throwable) {
         then(throwable).isInstanceOf(IllegalStateException.class)
-            .hasMessageContaining("no matching expectation found");
+                .hasMessageContaining("no matching expectation found");
     }
 }

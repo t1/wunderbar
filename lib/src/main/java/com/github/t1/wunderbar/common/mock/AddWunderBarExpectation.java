@@ -2,13 +2,11 @@ package com.github.t1.wunderbar.common.mock;
 
 import com.github.t1.wunderbar.junit.http.HttpRequest;
 import com.github.t1.wunderbar.junit.http.HttpResponse;
-import lombok.Data;
+import jakarta.json.Json;
+import jakarta.json.JsonObjectBuilder;
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
-
-import jakarta.json.Json;
-import jakarta.json.JsonObjectBuilder;
 
 import static com.github.t1.wunderbar.common.mock.GraphQLResponseBuilder.graphQLResponse;
 
@@ -22,7 +20,7 @@ class AddWunderBarExpectation extends GraphQLMockExpectation {
     }
 
     @Override public HttpResponse handle(HttpRequest request) {
-        var variables = request.as(Body.class).getVariables();
+        var variables = request.as(Body.class).variables();
         var expectation = addExpectation(variables);
         return graphQLResponse().with(builder -> expectationResponse(builder, expectation)).build();
     }
@@ -34,24 +32,20 @@ class AddWunderBarExpectation extends GraphQLMockExpectation {
 
     private static void expectationResponse(JsonObjectBuilder builder, WunderBarMockExpectation expectation) {
         builder.add("data", Json.createObjectBuilder()
-            .add("addWunderBarExpectation", Json.createObjectBuilder()
-                .add("status", "ok")
-                .add("id", expectation.getId())));
+                .add("addWunderBarExpectation", Json.createObjectBuilder()
+                        .add("status", "ok")
+                        .add("id", expectation.getId())));
     }
 
-    public static @Data class Body {
-        String query;
-        Variables variables;
-        String operationName;
-    }
+    public record Body(
+            String query,
+            Variables variables,
+            String operationName) {}
 
-    public static @Data class Variables {
-        HttpRequest request;
-        Depletion depletion;
-        HttpResponse response;
-    }
+    public record Variables(
+            HttpRequest request,
+            Depletion depletion,
+            HttpResponse response) {}
 
-    public static @Data class Depletion {
-        int maxCallCount;
-    }
+    public record Depletion(int maxCallCount) {}
 }

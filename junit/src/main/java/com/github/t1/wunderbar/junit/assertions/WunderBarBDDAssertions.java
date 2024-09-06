@@ -4,12 +4,11 @@ import com.github.t1.wunderbar.junit.assertions.JsonValueAssert.JsonObjectAssert
 import com.github.t1.wunderbar.junit.http.HttpRequest;
 import com.github.t1.wunderbar.junit.http.HttpResponse;
 import io.smallrye.graphql.client.GraphQLClientException;
-import org.assertj.core.api.BDDAssertions;
-
 import jakarta.json.JsonObject;
 import jakarta.json.JsonValue;
 import jakarta.ws.rs.WebApplicationException;
 import jakarta.ws.rs.core.MediaType;
+import org.assertj.core.api.BDDAssertions;
 
 /**
  * An extension for {@link BDDAssertions BDD assertj}

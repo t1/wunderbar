@@ -42,7 +42,7 @@ class GraphQlExpectation extends HttpServiceExpectation {
 
     private boolean needsAuthorizationConfig() {
         return method.isAnnotationPresent(AuthorizationHeader.class)
-                || method.getDeclaringClass().isAnnotationPresent(AuthorizationHeader.class);
+               || method.getDeclaringClass().isAnnotationPresent(AuthorizationHeader.class);
     }
 
     private Authorization.Basic configureDummyAuthorization() {

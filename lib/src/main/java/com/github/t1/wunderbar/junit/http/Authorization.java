@@ -25,6 +25,7 @@ public interface Authorization {
 
     /** The credentials as used for the http <code>Authorization</code> header */
     String toHeader();
+
     Dummy toDummy();
 
     @Value class Dummy implements Authorization {

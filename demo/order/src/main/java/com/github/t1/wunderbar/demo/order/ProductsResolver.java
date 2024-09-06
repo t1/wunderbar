@@ -34,6 +34,7 @@ public class ProductsResolver {
     @GraphQLClientApi(configKey = "products")
     public interface Products {
         Product product(@NonNull String id);
+
         @AuthorizationHeader
         @Mutation Product update(@NonNull Product patch);
     }

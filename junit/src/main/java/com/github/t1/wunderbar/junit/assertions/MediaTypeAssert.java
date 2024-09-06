@@ -1,12 +1,11 @@
 package com.github.t1.wunderbar.junit.assertions;
 
 import com.github.t1.wunderbar.junit.http.HttpUtils;
+import jakarta.ws.rs.WebApplicationException;
+import jakarta.ws.rs.core.MediaType;
 import org.assertj.core.api.AbstractAssert;
 import org.assertj.core.api.Condition;
 import org.assertj.core.api.InstanceOfAssertFactory;
-
-import jakarta.ws.rs.WebApplicationException;
-import jakarta.ws.rs.core.MediaType;
 
 import java.util.List;
 
@@ -18,13 +17,13 @@ import static com.github.t1.wunderbar.junit.assertions.WunderBarBDDAssertions.th
  */
 @SuppressWarnings("UnusedReturnValue")
 public class MediaTypeAssert<SELF extends MediaTypeAssert<SELF, ACTUAL>, ACTUAL extends MediaType>
-    extends AbstractAssert<SELF, ACTUAL> {
+        extends AbstractAssert<SELF, ACTUAL> {
     public static final InstanceOfAssertFactory<MediaType, MediaTypeAssert<?, ?>> MEDIA_TYPE
-        = new InstanceOfAssertFactory<>(MediaType.class, MediaTypeAssert::new);
+            = new InstanceOfAssertFactory<>(MediaType.class, MediaTypeAssert::new);
 
     public static Condition<? super MediaType> compatibleTo(List<MediaType> expectedTypes) {
         return new Condition<>(actual -> isCompatibleToAny(expectedTypes, actual),
-            "compatible to any of {}", expectedTypes);
+                "compatible to any of {}", expectedTypes);
     }
 
     public static boolean isCompatibleToAny(List<MediaType> expectedTypes, MediaType actual) {

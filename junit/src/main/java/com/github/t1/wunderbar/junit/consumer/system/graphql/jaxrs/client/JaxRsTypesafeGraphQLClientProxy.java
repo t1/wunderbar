@@ -46,8 +46,8 @@ class JaxRsTypesafeGraphQLClientProxy {
 
     private Map<String, String> headers(Class<?> api, MethodInvocation method) {
         var headers = new HeaderBuilder(api, method,
-            configuration != null ? configuration.getHeaders() : Collections.emptyMap())
-            .build();
+                configuration != null ? configuration.getHeaders() : Collections.emptyMap())
+                .build();
         if (extraHeaders != null) headers.putAll(this.extraHeaders);
         return headers;
     }
@@ -60,9 +60,9 @@ class JaxRsTypesafeGraphQLClientProxy {
             var status = response.getStatusInfo();
             if (status.getFamily() != SUCCESSFUL)
                 throw new IllegalStateException(
-                    "expected successful status code from " + target.getUri() + " but got " +
-                    status.getStatusCode() + " " + status.getReasonPhrase() + ":\n" +
-                    response.readEntity(String.class));
+                        "expected successful status code from " + target.getUri() + " but got " +
+                        status.getStatusCode() + " " + status.getReasonPhrase() + ":\n" +
+                        response.readEntity(String.class));
             return response.readEntity(String.class);
         }
     }

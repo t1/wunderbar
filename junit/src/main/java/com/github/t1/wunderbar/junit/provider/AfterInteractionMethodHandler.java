@@ -15,7 +15,8 @@ class AfterInteractionMethodHandler extends AbstractInteractionMethodHandler {
     @Override protected Object arg(Execution execution, Parameter parameter) {
         if (parameter.isAnnotationPresent(Actual.class)) {
             if (HttpResponse.class.equals(parameter.getType())) return execution.getActual();
-            else throw new WunderBarException("a " + parameter.getType().getSimpleName() + " parameter can't take the `@Actual` annotation");
+            else
+                throw new WunderBarException("a " + parameter.getType().getSimpleName() + " parameter can't take the `@Actual` annotation");
         }
         return super.arg(execution, parameter);
     }

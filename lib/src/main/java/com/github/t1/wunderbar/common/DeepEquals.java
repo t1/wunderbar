@@ -1,8 +1,7 @@
 package com.github.t1.wunderbar.common;
 
-import lombok.SneakyThrows;
-
 import jakarta.json.bind.annotation.JsonbTransient;
+import lombok.SneakyThrows;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;

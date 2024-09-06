@@ -47,7 +47,7 @@ public @Internal class Utils {
     }
 
     private static List<String> argumentTypes(Object[] args) {
-        return Stream.of(args).map(Object::getClass).map(Class::getSimpleName).collect(toList());
+        return Stream.of(args).map(Object::getClass).map(Class::getSimpleName).toList();
     }
 
     @SneakyThrows(IOException.class)
@@ -100,8 +100,8 @@ public @Internal class Utils {
             actual = Json.createObjectBuilder().add("diff-dummy", actual).build();
         }
         return Json.createDiff((JsonStructure) expected, (JsonStructure) actual).toJsonArray().stream()
-            .map(JsonValue::asJsonObject)
-            .filter(jsonObject -> !isAddField(jsonObject));
+                .map(JsonValue::asJsonObject)
+                .filter(jsonObject -> !isAddField(jsonObject));
     }
 
     private static boolean isAddField(JsonObject jsonObject) {
@@ -118,8 +118,8 @@ public @Internal class Utils {
 
     public static String prefix(String prefix, String string) {
         return (string == null) ? prefix + "null" :
-            Arrays.stream(string.split("\n"))
-                .map(line -> prefix + line)
-                .collect(joining("\n"));
+                Arrays.stream(string.split("\n"))
+                        .map(line -> prefix + line)
+                        .collect(joining("\n"));
     }
 }

@@ -6,15 +6,14 @@ import com.github.t1.wunderbar.junit.http.HttpRequest;
 import com.github.t1.wunderbar.junit.http.HttpRequest.HttpRequestBuilder;
 import com.github.t1.wunderbar.junit.http.HttpResponse;
 import com.github.t1.wunderbar.junit.http.HttpResponse.HttpResponseBuilder;
-import lombok.RequiredArgsConstructor;
-import lombok.SneakyThrows;
-import lombok.extern.slf4j.Slf4j;
-
 import jakarta.ws.rs.client.ClientRequestContext;
 import jakarta.ws.rs.client.ClientRequestFilter;
 import jakarta.ws.rs.client.ClientResponseContext;
 import jakarta.ws.rs.client.ClientResponseFilter;
 import jakarta.ws.rs.core.MediaType;
+import lombok.RequiredArgsConstructor;
+import lombok.SneakyThrows;
+import lombok.extern.slf4j.Slf4j;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -55,8 +54,8 @@ class BarFilter implements ClientRequestFilter, ClientResponseFilter {
 
         private Builder(ClientRequestContext requestContext) {
             request
-                .method(requestContext.getMethod())
-                .uri(local(requestContext.getUri()));
+                    .method(requestContext.getMethod())
+                    .uri(local(requestContext.getUri()));
             log.info("request {} {}", requestContext.getMethod(), request.build().getUri());
             if (!requestContext.getAcceptableMediaTypes().isEmpty())
                 request.accept(requestContext.getAcceptableMediaTypes().get(0));

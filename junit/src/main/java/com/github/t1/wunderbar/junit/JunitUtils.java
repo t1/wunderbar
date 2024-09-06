@@ -9,5 +9,5 @@ import java.util.Comparator;
 @Internal
 public class JunitUtils {
     public static final Comparator<AnnotatedElement> ORDER = Comparator.comparingInt(element ->
-        element.isAnnotationPresent(Order.class) ? element.getAnnotation(Order.class).value() : Order.DEFAULT);
+            element.isAnnotationPresent(Order.class) ? element.getAnnotation(Order.class).value() : Order.DEFAULT);
 }

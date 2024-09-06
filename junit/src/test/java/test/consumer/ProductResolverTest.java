@@ -2,7 +2,12 @@ package test.consumer;
 
 import com.github.t1.wunderbar.junit.Register;
 import com.github.t1.wunderbar.junit.WunderBarException;
-import com.github.t1.wunderbar.junit.consumer.*;
+import com.github.t1.wunderbar.junit.consumer.BarWriter;
+import com.github.t1.wunderbar.junit.consumer.Service;
+import com.github.t1.wunderbar.junit.consumer.Some;
+import com.github.t1.wunderbar.junit.consumer.SystemUnderTest;
+import com.github.t1.wunderbar.junit.consumer.Technology;
+import com.github.t1.wunderbar.junit.consumer.WunderBarApiConsumer;
 import io.smallrye.graphql.client.typesafe.api.GraphQLClientApi;
 import jakarta.ws.rs.ForbiddenException;
 import jakarta.ws.rs.NotFoundException;
@@ -12,7 +17,12 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
-import test.consumer.ProductResolver.*;
+import test.consumer.ProductResolver.Item;
+import test.consumer.ProductResolver.NamedProducts;
+import test.consumer.ProductResolver.Product;
+import test.consumer.ProductResolver.Products;
+import test.consumer.ProductResolver.ProductsGetter;
+import test.consumer.ProductResolver.QueriedProducts;
 import test.consumer.ProductsGateway.ProductsRestClient;
 
 import java.lang.reflect.Method;
@@ -26,8 +36,14 @@ import static com.github.t1.wunderbar.junit.assertions.WunderBarBDDAssertions.th
 import static com.github.t1.wunderbar.junit.consumer.Service.DEFAULT_ENDPOINT;
 import static com.github.t1.wunderbar.junit.consumer.Technology.GRAPHQL;
 import static com.github.t1.wunderbar.junit.consumer.Technology.REST;
-import static com.github.t1.wunderbar.junit.consumer.WunderbarExpectationBuilder.*;
-import static jakarta.ws.rs.core.Response.Status.*;
+import static com.github.t1.wunderbar.junit.consumer.WunderbarExpectationBuilder.baseUri;
+import static com.github.t1.wunderbar.junit.consumer.WunderbarExpectationBuilder.createProxy;
+import static com.github.t1.wunderbar.junit.consumer.WunderbarExpectationBuilder.createService;
+import static com.github.t1.wunderbar.junit.consumer.WunderbarExpectationBuilder.given;
+import static com.github.t1.wunderbar.junit.consumer.WunderbarExpectationBuilder.once;
+import static jakarta.ws.rs.core.Response.Status.FORBIDDEN;
+import static jakarta.ws.rs.core.Response.Status.INTERNAL_SERVER_ERROR;
+import static jakarta.ws.rs.core.Response.Status.NOT_FOUND;
 import static org.assertj.core.api.Assertions.catchThrowable;
 
 @WunderBarApiConsumer
@@ -52,6 +68,7 @@ abstract class ProductResolverTest {
         var resolvedProduct = resolver.product(item);
 
         then(resolvedProduct).usingRecursiveComparison().isEqualTo(product);
+        then(resolvedProduct.id).isEqualTo(item.productId);
     }
 
     @Test void shouldResolveProductWithoutRecording(BarWriter bar) {

@@ -28,7 +28,6 @@ import static com.github.t1.wunderbar.junit.http.HttpUtils.properties;
 import static jakarta.ws.rs.core.HttpHeaders.ACCEPT;
 import static jakarta.ws.rs.core.HttpHeaders.AUTHORIZATION;
 import static jakarta.ws.rs.core.HttpHeaders.CONTENT_TYPE;
-import static java.util.stream.Collectors.toUnmodifiableList;
 
 abstract class BarReader {
     @SneakyThrows(IOException.class)
@@ -42,9 +41,9 @@ abstract class BarReader {
 
     Stream<Test> tests() {
         return treeEntries()
-            .sorted()
-            .distinct() // remove duplicates for all the files for one test
-            .map(TreeEntry::toTest);
+                .sorted()
+                .distinct() // remove duplicates for all the files for one test
+                .map(TreeEntry::toTest);
     }
 
     protected abstract Stream<TreeEntry> treeEntries();
@@ -53,9 +52,9 @@ abstract class BarReader {
 
 
     public List<HttpInteraction> interactionsFor(Test test) {
-        return IntStream.rangeClosed(1, test.getInteractionCount())
-            .mapToObj(n -> new HttpInteraction(n, request(test, n), response(test, n)))
-            .collect(toUnmodifiableList());
+        return IntStream.rangeClosed(1, test.interactionCount())
+                .mapToObj(n -> new HttpInteraction(n, request(test, n), response(test, n)))
+                .toList();
     }
 
     private HttpRequest request(Test test, int n) {return request(requestHeaders(test, n), requestBody(test, n));}
@@ -75,16 +74,16 @@ abstract class BarReader {
         return builder.build();
     }
 
-    private Properties requestHeaders(Test test, int n) {return properties(read(test.getPath() + "/" + n + " request-headers.properties"));}
+    private Properties requestHeaders(Test test, int n) {return properties(read(test.path() + "/" + n + " request-headers.properties"));}
 
-    private Optional<String> requestBody(Test test, int n) {return optionalRead(test.getPath() + "/" + n + " request-body.json");}
+    private Optional<String> requestBody(Test test, int n) {return optionalRead(test.path() + "/" + n + " request-body.json");}
 
 
     private HttpResponse response(Test test, int n) {return HttpResponse.from(responseHeaders(test, n), responseBody(test, n));}
 
-    private Properties responseHeaders(Test test, int n) {return properties(read(test.getPath() + "/" + n + " response-headers.properties"));}
+    private Properties responseHeaders(Test test, int n) {return properties(read(test.path() + "/" + n + " response-headers.properties"));}
 
-    private Optional<String> responseBody(Test test, int n) {return optionalRead(test.getPath() + "/" + n + " response-body.json");}
+    private Optional<String> responseBody(Test test, int n) {return optionalRead(test.path() + "/" + n + " response-body.json");}
 
 
     private String read(String name) {
@@ -104,6 +103,6 @@ abstract class BarReader {
         @Override public int compareTo(@NonNull TreeEntry that) {return COMPARATOR.compare(this, that);}
 
         private static final Comparator<TreeEntry> COMPARATOR = Comparator.comparing(TreeEntry::getUri)
-            .thenComparing(TreeEntry::getNumber);
+                .thenComparing(TreeEntry::getNumber);
     }
 }

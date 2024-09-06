@@ -7,6 +7,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 import lombok.With;
@@ -22,6 +23,7 @@ import java.util.List;
 import static lombok.AccessLevel.PRIVATE;
 
 @GraphQLApi
+@RequiredArgsConstructor
 class ProductResolver {
     // would be @Inject
     Products products;
@@ -61,9 +63,13 @@ class ProductResolver {
     @GraphQLClientApi(endpoint = "dummy")
     interface Products {
         Product product(@NonNull String id);
+
         Product product(@Header String customHeader, @NonNull String id);
+
         Product patch(@NonNull Product patch);
+
         String strings(@NonNull List<@NonNull String> strings);
+
         String products(@NonNull List<@NonNull Product> products);
     }
 

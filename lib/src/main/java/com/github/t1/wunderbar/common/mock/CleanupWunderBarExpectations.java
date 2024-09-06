@@ -2,12 +2,11 @@ package com.github.t1.wunderbar.common.mock;
 
 import com.github.t1.wunderbar.junit.http.HttpRequest;
 import com.github.t1.wunderbar.junit.http.HttpResponse;
+import jakarta.json.Json;
+import jakarta.json.JsonObjectBuilder;
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
-
-import jakarta.json.Json;
-import jakarta.json.JsonObjectBuilder;
 
 import static com.github.t1.wunderbar.common.mock.GraphQLResponseBuilder.graphQLResponse;
 
@@ -23,6 +22,6 @@ class CleanupWunderBarExpectations extends GraphQLMockExpectation {
 
     private void finalResponse(JsonObjectBuilder builder) {
         builder.add("data", Json.createObjectBuilder()
-            .add("cleanupWunderBarExpectations", "ok"));
+                .add("cleanupWunderBarExpectations", "ok"));
     }
 }

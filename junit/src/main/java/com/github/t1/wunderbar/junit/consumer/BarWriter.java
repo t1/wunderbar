@@ -18,7 +18,7 @@ import static com.github.t1.wunderbar.junit.http.HttpUtils.properties;
 import static com.github.t1.wunderbar.junit.http.HttpUtils.toJson;
 import static java.util.Collections.emptyList;
 
-@Slf4j
+@Setter @Slf4j
 public @Internal abstract class BarWriter implements Closeable {
     public static BarWriter to(String fileName) {
         Path path = Path.of(fileName);
@@ -29,7 +29,7 @@ public @Internal abstract class BarWriter implements Closeable {
         return barWriter;
     }
 
-    @Setter private List<GeneratedDataPoint> generatedDataPoints = emptyList(); // this class won't change it
+    private List<GeneratedDataPoint> generatedDataPoints = emptyList(); // this class won't change it
 
     @Override public String toString() {return getClass().getSimpleName() + ":" + getPath();}
 
@@ -48,11 +48,12 @@ public @Internal abstract class BarWriter implements Closeable {
     }
 
     private void writeRequestFiles(HttpRequest request, String id) {
-        if (request.getAuthorization() != null) request = request.withAuthorization(request.getAuthorization().toDummy());
+        if (request.getAuthorization() != null)
+            request = request.withAuthorization(request.getAuthorization().toDummy());
         var headers =
-            "Method: " + request.getMethod() + "\n" +
-            "URI: " + request.getUri() + "\n" +
-            request.headerProperties();
+                "Method: " + request.getMethod() + "\n" +
+                "URI: " + request.getUri() + "\n" +
+                request.headerProperties();
         write(id + "request-headers.properties", headers);
         request.body().ifPresent(body -> writeBody(id + "request", body));
         writeVariables(id + "request", request.body(), properties(headers));

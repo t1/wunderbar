@@ -15,7 +15,9 @@ import java.util.function.Function;
 
 import static jakarta.ws.rs.core.HttpHeaders.CONTENT_LENGTH;
 import static jakarta.ws.rs.core.HttpHeaders.CONTENT_TYPE;
-import static jakarta.ws.rs.core.MediaType.*;
+import static jakarta.ws.rs.core.MediaType.CHARSET_PARAMETER;
+import static jakarta.ws.rs.core.MediaType.WILDCARD_TYPE;
+import static jakarta.ws.rs.core.MediaType.valueOf;
 import static jakarta.ws.rs.core.Response.Status.INTERNAL_SERVER_ERROR;
 import static java.nio.charset.StandardCharsets.UTF_8;
 

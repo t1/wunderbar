@@ -12,7 +12,6 @@ import io.smallrye.graphql.client.GraphQLClientException;
 import io.smallrye.graphql.client.typesafe.api.GraphQLClientApi;
 import io.smallrye.graphql.client.typesafe.api.Header;
 import io.smallrye.graphql.client.typesafe.api.TypesafeGraphQLClientBuilder;
-import lombok.Data;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.eclipse.microprofile.graphql.Mutation;
@@ -47,16 +46,16 @@ class ConsumerDrivenAT {
 
     @SuppressWarnings("SpellCheckingInspection")
     private static final String JWT =
-        "Bearer " +
-        "eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9" +
-        "." +
-        "eyJpc3MiOiJodHRwczovL2dpdGh1Yi5jb20vdDEiLCJ1cG4iOiJqYW5lQGRvZS5jb20iLCJncm91cHMiOlsiV3JpdGVyIl0sImlhd" +
-        "CI6MTYxNTAwMjk1NiwiZXhwIjo0NjkwODQyOTU2LCJqdGkiOiJhMWY3YzAwYS0yYWI5LTQ3MGItYWVhNi0xYjZmZWU3NDM3ZTYifQ" +
-        "." +
-        "VRYLxspQqQ_IjORNR092L2lqPg6SE3xOeMQEUVLEuOZj1YoynM-oOMw0UAGQsZlv1w11pf9XIf2okptV2FKloFkkn6cWm0K1ZeYYv" +
-        "Ud5OKaRU33AapZ2GSSKASfOkzshzw_y5G_e5-VqCXo5asspIYwSNzFy9JcA65JWhBttyepOPUx4Kmp3Eb5V9f-2rpfNGQbyHNh7rY" +
-        "BpeLrnViaaVe_3wW4QKiAX17gncNf6nLWO-pH8_qlLcaWqBNrIBauA_YqrZT4kUcyb0uFz06hSThGiJliUS2KiZratjj3YvGj8X8_" +
-        "ikqc7Tm_xldxlX_D5IHyuhNNe4sVppXDko7fQMw";
+            "Bearer " +
+            "eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9" +
+            "." +
+            "eyJpc3MiOiJodHRwczovL2dpdGh1Yi5jb20vdDEiLCJ1cG4iOiJqYW5lQGRvZS5jb20iLCJncm91cHMiOlsiV3JpdGVyIl0sImlhd" +
+            "CI6MTYxNTAwMjk1NiwiZXhwIjo0NjkwODQyOTU2LCJqdGkiOiJhMWY3YzAwYS0yYWI5LTQ3MGItYWVhNi0xYjZmZWU3NDM3ZTYifQ" +
+            "." +
+            "VRYLxspQqQ_IjORNR092L2lqPg6SE3xOeMQEUVLEuOZj1YoynM-oOMw0UAGQsZlv1w11pf9XIf2okptV2FKloFkkn6cWm0K1ZeYYv" +
+            "Ud5OKaRU33AapZ2GSSKASfOkzshzw_y5G_e5-VqCXo5asspIYwSNzFy9JcA65JWhBttyepOPUx4Kmp3Eb5V9f-2rpfNGQbyHNh7rY" +
+            "BpeLrnViaaVe_3wW4QKiAX17gncNf6nLWO-pH8_qlLcaWqBNrIBauA_YqrZT4kUcyb0uFz06hSThGiJliUS2KiZratjj3YvGj8X8_" +
+            "ikqc7Tm_xldxlX_D5IHyuhNNe4sVppXDko7fQMw";
 
     private static final List<String> createdProductIds = new ArrayList<>();
 
@@ -69,7 +68,9 @@ class ConsumerDrivenAT {
     @Header(name = "Authorization", constant = JWT)
     private interface Backdoor {
         @Query Product maybeProduct(@NonNull String id);
+
         @Mutation @NonNull Product store(@NonNull Product product);
+
         @Mutation Product delete(@NonNull String productId);
     }
 
@@ -83,11 +84,11 @@ class ConsumerDrivenAT {
     /** It's not the job of the client to check for auth, so we do it ourselves */
     @Test void shouldFailToStoreWhenUnauthorized() {
         var api = TypesafeGraphQLClientBuilder.newBuilder()
-            .endpoint(GRAPHQL_ENDPOINT)
-            .build(UnauthorizedClientApi.class);
+                .endpoint(GRAPHQL_ENDPOINT)
+                .build(UnauthorizedClientApi.class);
         var product = Product.builder().id("unauthorized-product-id").build();
 
-        var throwable = catchThrowableOfType(() -> api.store(product), GraphQLClientException.class);
+        var throwable = catchThrowableOfType(GraphQLClientException.class, () -> api.store(product));
 
         then(throwable.getErrors().get(0).getCode()).isEqualTo("unauthorized");
     }
@@ -134,18 +135,18 @@ class ConsumerDrivenAT {
     @BeforeInteraction HttpInteraction createTestData(HttpInteraction interaction) {
         var request = interaction.getRequest();
         var isGraphQL = request.getUri().getPath().equals("/graphql");
-        log.info("create test data for " + (isGraphQL ? "graphql" : "rest") + " interaction " + interaction.getNumber() + ": "
-                 + request.getMethod() + " " + request.getUri());
+        log.info("create test data for {} interaction {}: {} {}", isGraphQL ? "graphql" : "rest",
+                interaction.getNumber(), request.getMethod(), request.getUri());
         var setup = isGraphQL
-            ? new GraphQlSetUp(interaction)
-            : new RestSetUp(interaction);
+                ? new GraphQlSetUp(interaction)
+                : new RestSetUp(interaction);
 
         request = setup.getRequest();
         request = authorized(request, isGraphQL, setup.getNeedsAuth());
 
         return interaction
-            .withRequest(request.normalized())
-            .withResponse(setup.getResponse());
+                .withRequest(request.normalized())
+                .withResponse(setup.getResponse());
     }
 
     private HttpRequest authorized(HttpRequest request, boolean isGraphQL, boolean needsAuth) {
@@ -184,7 +185,9 @@ class ConsumerDrivenAT {
 
     private interface SetUp {
         Boolean getNeedsAuth();
+
         HttpRequest getRequest();
+
         HttpResponse getResponse();
     }
 
@@ -243,22 +246,25 @@ class ConsumerDrivenAT {
 
         private boolean setup() {
             var operation = expectedErrorCode().or(this::dataName).orElseThrow();
-            switch (operation) {
-                case "product":
+            return switch (operation) {
+                case "product" -> {
                     create(graphQlResponse.data.product);
-                    return false;
-                case "update":
+                    yield false;
+                }
+                case "update" -> {
                     patchExisting();
-                    return true;
-                case "product-forbidden":
+                    yield true;
+                }
+                case "product-forbidden" -> {
                     createForbiddenProduct(jsonString(request.get("/variables/id")));
-                    return false;
-                case "product-not-found":
+                    yield false;
+                }
+                case "product-not-found" -> {
                     doNothing();
-                    return false;
-                default:
-                    throw new RuntimeException("unsupported code: " + operation);
-            }
+                    yield false;
+                }
+                default -> throw new RuntimeException("unsupported code: " + operation);
+            };
         }
 
         private void create(Product product) {
@@ -278,28 +284,17 @@ class ConsumerDrivenAT {
             if (graphQlResponse.errors == null || graphQlResponse.errors.isEmpty()) return Optional.empty();
             if (graphQlResponse.errors.size() != 1)
                 throw new RuntimeException("expected exactly one error but got " + graphQlResponse.errors);
-            return Optional.of(graphQlResponse.errors.get(0).getExtensions().getCode());
+            return Optional.of(graphQlResponse.errors.get(0).extensions().code());
         }
 
         private Optional<String> dataName() {return Optional.of(graphQlResponse.data.product != null ? "product" : "update");}
     }
 
-    public static @Data class GraphQlResponse {
-        GraphQlData data;
-        List<GraphQlError> errors;
-    }
+    public record GraphQlResponse(GraphQlData data, List<GraphQlError> errors) {}
 
-    public static @Data class GraphQlData {
-        Product product;
-        Product update;
-    }
+    public record GraphQlData(Product product, Product update) {}
 
-    public static @Data class GraphQlError {
-        String message;
-        GraphQlErrorExtensions extensions;
-    }
+    public record GraphQlError(String message, GraphQlErrorExtensions extensions) {}
 
-    public static @Data class GraphQlErrorExtensions {
-        String code;
-    }
+    public record GraphQlErrorExtensions(String code) {}
 }

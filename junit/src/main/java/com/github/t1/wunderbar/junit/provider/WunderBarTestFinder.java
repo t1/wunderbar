@@ -3,7 +3,6 @@ package com.github.t1.wunderbar.junit.provider;
 import com.github.t1.wunderbar.common.Internal;
 import com.github.t1.wunderbar.junit.WunderBarException;
 import lombok.NonNull;
-import lombok.Value;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.DynamicNode;
 import org.junit.jupiter.api.function.Executable;
@@ -93,53 +92,52 @@ public class WunderBarTestFinder {
     private final TestCollection root;
 
     private interface TestNode {
-        Path getPath();
+        Path path();
 
         DynamicNode toDynamicNode(Function<Test, Executable> executableFactory);
     }
 
-    private static @Value class TestCollection implements TestNode {
-        URI uri;
-        @NonNull Path path;
-        List<TestNode> children = new ArrayList<>();
-
+    private record TestCollection(
+            URI uri,
+            @NonNull Path path,
+            List<TestNode> children) implements TestNode {
         @Override public String toString() {
             return path + ": " + children.stream().map(TestNode::toString).collect(joining(", ", "[", "]"));
         }
 
         private void merge(Test test) {
             var collection = this;
-            for (int i = 0; i < test.getPath().getNameCount() - 1; i++) {
-                collection = collection.getOrCreateSubCollection(test.getPath().subpath(0, i + 1));
+            for (int i = 0; i < test.path().getNameCount() - 1; i++) {
+                collection = collection.getOrCreateSubCollection(test.path().subpath(0, i + 1));
             }
             collection.addOrReplace(test);
         }
 
         private TestCollection getOrCreateSubCollection(Path path) {
             return children.stream()
-                .filter(node -> node.getPath().equals(path))
-                .findFirst()
-                .flatMap(node -> (node instanceof TestCollection) ? Optional.of((TestCollection) node) : Optional.empty())
-                .orElseGet(() -> {
-                    var sub = new TestCollection(uri.resolve(path.toString()), path);
-                    this.children.add(sub);
-                    return sub;
-                });
+                    .filter(node -> node.path().equals(path))
+                    .findFirst()
+                    .flatMap(node -> (node instanceof TestCollection) ? Optional.of((TestCollection) node) : Optional.empty())
+                    .orElseGet(() -> {
+                        var sub = new TestCollection(uri.resolve(path.toString()), path, new ArrayList<>());
+                        this.children.add(sub);
+                        return sub;
+                    });
         }
 
         private void addOrReplace(Test newTest) {
-            var existingTest = testAt(newTest.getPath());
+            var existingTest = testAt(newTest.path());
             if (existingTest == null)
                 children.add(newTest);
-            else if (existingTest.getInteractionCount() < newTest.getInteractionCount())
+            else if (existingTest.interactionCount() < newTest.interactionCount())
                 children.set(children.indexOf(existingTest), newTest);
             // else already contains the higher interactionCount
         }
 
         private Test testAt(Path path) {
             return (Test) children.stream() // if this cast fails, the file is badly corrupt
-                .filter(child -> child.getPath().equals(path))
-                .findFirst().orElse(null);
+                    .filter(child -> child.path().equals(path))
+                    .findFirst().orElse(null);
         }
 
         @Override public DynamicNode toDynamicNode(Function<Test, Executable> executableFactory) {
@@ -148,11 +146,7 @@ public class WunderBarTestFinder {
         }
     }
 
-    public static @Internal @Value class Test implements TestNode {
-        @NonNull Path path;
-        int interactionCount;
-        @NonNull URI uri;
-
+    public @Internal record Test(@NonNull Path path, int interactionCount, @NonNull URI uri) implements TestNode {
         @Override public String toString() {return path + " [" + interactionCount + "] in " + uri;}
 
         public String getDisplayName() {return path.getFileName().toString();}
@@ -167,12 +161,12 @@ public class WunderBarTestFinder {
             throw new WunderBarException("annotate your wunderbar test with @" + WunderBarApiProvider.class.getName());
 
         this.bar = BarReader.from(barFilePath);
-        this.root = new TestCollection(barFilePath.toUri().normalize(), Path.of(bar.getDisplayName()));
+        this.root = new TestCollection(barFilePath.toUri().normalize(), Path.of(bar.getDisplayName()), new ArrayList<>());
 
         // indirection with null is necessary, as we can't access `this` in the constructor chain to build the default factory
         this.executableFactory = (executableFactory == null)
-            ? test -> WunderBarApiProviderJUnitExtension.INSTANCE.createExecutable(bar.interactionsFor(test), test)
-            : executableFactory;
+                ? test -> WunderBarApiProviderJUnitExtension.INSTANCE.createExecutable(bar.interactionsFor(test), test)
+                : executableFactory;
 
         scanTests();
     }

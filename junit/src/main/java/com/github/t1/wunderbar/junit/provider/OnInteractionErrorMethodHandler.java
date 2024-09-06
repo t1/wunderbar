@@ -58,7 +58,8 @@ class OnInteractionErrorMethodHandler {
                 args[i] = params.getAssertions();
             else if (type.equals(WunderBarExecution.class))
                 args[i] = params.getExecution();
-            else throw new WunderBarException("invalid argument type " + type + " for parameter " + i + " of " + method);
+            else
+                throw new WunderBarException("invalid argument type " + type + " for parameter " + i + " of " + method);
         }
         return args;
     }
@@ -77,8 +78,8 @@ class OnInteractionErrorMethodHandler {
             var actual = execution.getActual();
             assertions.then(actual.getStatusString()).describedAs("status").isEqualTo(expected.getStatusString());
             assertions.then(isCompatible(actual.getContentType(), expected.getContentType()))
-                .describedAs("Content-Type: " + actual.getContentType() + " to be compatible to " + expected.getContentType())
-                .isTrue();
+                    .describedAs("Content-Type: " + actual.getContentType() + " to be compatible to " + expected.getContentType())
+                    .isTrue();
             checkBody(body(actual), body(expected));
         }
 
@@ -94,9 +95,9 @@ class OnInteractionErrorMethodHandler {
          */
         private HttpResponse withoutVolatileProblemDetails(HttpResponse response) {
             return response.with(json -> json
-                .remove("title")
-                .remove("detail")
-                .remove("instance")
+                    .remove("title")
+                    .remove("detail")
+                    .remove("instance")
             ).withFormattedBody();
         }
 

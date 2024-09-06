@@ -18,15 +18,18 @@ class BeforeDynamicTestMethodHandler extends AbstractDynamicTestMethodHandler {
 
     @SuppressWarnings("unchecked")
     @Override protected void apply(Type returnType, Object result, Executions executions) {
-        if (returnType instanceof ParameterizedType) {
-            var parameterizedType = (ParameterizedType) returnType;
-            if (parameterizedType.getRawType() instanceof Class && List.class.isAssignableFrom((Class<?>) parameterizedType.getRawType())) {
+        if (returnType instanceof ParameterizedType parameterizedType) {
+            if (parameterizedType.getRawType() instanceof Class<?> cls && List.class.isAssignableFrom(cls)) {
                 var elementType = (Class<?>) parameterizedType.getActualTypeArguments()[0];
-                if (elementType.isAssignableFrom(HttpInteraction.class)) executions.setInteractions((List<HttpInteraction>) result);
-                else if (elementType.isAssignableFrom(HttpRequest.class)) replaceInteractions(executions, (List<HttpRequest>) result, HttpInteraction::withRequest);
-                else if (elementType.isAssignableFrom(HttpResponse.class)) replaceInteractions(executions, (List<HttpResponse>) result, HttpInteraction::withResponse);
+                if (elementType.isAssignableFrom(HttpInteraction.class))
+                    executions.setInteractions((List<HttpInteraction>) result);
+                else if (elementType.isAssignableFrom(HttpRequest.class))
+                    replaceInteractions(executions, (List<HttpRequest>) result, HttpInteraction::withRequest);
+                else if (elementType.isAssignableFrom(HttpResponse.class))
+                    replaceInteractions(executions, (List<HttpResponse>) result, HttpInteraction::withResponse);
                 else throw wunderBarException("unexpected list return type " + returnType); // TODO test
-            } else if (result != null) throw wunderBarException("unexpected parameterized return type " + returnType); // TODO test
+            } else if (result != null)
+                throw wunderBarException("unexpected parameterized return type " + returnType); // TODO test
         } else if (result != null) throw wunderBarException("unexpected return type " + returnType); // TODO test
     }
 
