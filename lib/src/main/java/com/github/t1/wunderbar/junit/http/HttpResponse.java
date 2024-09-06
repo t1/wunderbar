@@ -1,6 +1,11 @@
 package com.github.t1.wunderbar.junit.http;
 
-import jakarta.json.*;
+import jakarta.json.Json;
+import jakarta.json.JsonObject;
+import jakarta.json.JsonObjectBuilder;
+import jakarta.json.JsonPatch;
+import jakarta.json.JsonPatchBuilder;
+import jakarta.json.JsonValue;
 import jakarta.json.bind.annotation.JsonbCreator;
 import jakarta.json.bind.annotation.JsonbTypeAdapter;
 import jakarta.ws.rs.core.MediaType;
@@ -19,7 +24,15 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
-import static com.github.t1.wunderbar.junit.http.HttpUtils.*;
+import static com.github.t1.wunderbar.junit.http.HttpUtils.APPLICATION_JSON_UTF8;
+import static com.github.t1.wunderbar.junit.http.HttpUtils.JSONB;
+import static com.github.t1.wunderbar.junit.http.HttpUtils.PROBLEM_DETAIL_TYPE;
+import static com.github.t1.wunderbar.junit.http.HttpUtils.formatJson;
+import static com.github.t1.wunderbar.junit.http.HttpUtils.fromJson;
+import static com.github.t1.wunderbar.junit.http.HttpUtils.isCompatible;
+import static com.github.t1.wunderbar.junit.http.HttpUtils.optional;
+import static com.github.t1.wunderbar.junit.http.HttpUtils.read;
+import static com.github.t1.wunderbar.junit.http.HttpUtils.readJson;
 import static jakarta.json.JsonValue.ValueType.OBJECT;
 import static jakarta.ws.rs.core.MediaType.APPLICATION_JSON_TYPE;
 import static jakarta.ws.rs.core.MediaType.CHARSET_PARAMETER;

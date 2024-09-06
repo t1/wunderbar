@@ -1,12 +1,11 @@
 package com.github.t1.wunderbar.junit.consumer;
 
 import com.github.t1.wunderbar.common.Internal;
-import lombok.NonNull;
-import lombok.Value;
-
 import jakarta.json.JsonValue;
 import jakarta.json.bind.annotation.JsonbTransient;
 import jakarta.json.bind.annotation.JsonbTypeSerializer;
+import lombok.NonNull;
+import lombok.Value;
 
 import java.lang.reflect.AnnotatedElement;
 import java.util.List;

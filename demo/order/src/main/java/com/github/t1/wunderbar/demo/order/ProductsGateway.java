@@ -1,12 +1,11 @@
 package com.github.t1.wunderbar.demo.order;
 
-import org.eclipse.microprofile.rest.client.inject.RegisterRestClient;
-
 import jakarta.inject.Inject;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.PATCH;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.PathParam;
+import org.eclipse.microprofile.rest.client.inject.RegisterRestClient;
 
 import java.io.Closeable;
 

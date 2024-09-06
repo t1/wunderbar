@@ -98,17 +98,17 @@ class FailingAT {
         var errors = assertions.assertionErrorsCollected();
         thenSoftly(softly -> {
             softly.then(errors).hasSize(2);
-            softly.then(errors.get(0).getMessage()).startsWith(
-                "[errors] \n" +
-                "expected: null\n" +
-                " but was: [{\"extensions\"={\"code\"=");
+            softly.then(errors.get(0).getMessage()).startsWith("""
+                    [errors]\s
+                    expected: null
+                     but was: [{"extensions"={"code"=""");
             // TODO should also match     : \"unexpected-fail\"}, \"message\"=\"product unexpected-fail fails unexpectedly\"}]");
             // but sometimes it's actually: \"validation-error\"}, \"message\"=\"no body in GraphQL request\"}]");
-            then(errors.get(1).getMessage()).startsWith(
-                "[json diff (ignoring new fields)] \n" +
-                "Expecting empty but was: [\"remove /data:\n" +
-                "  expected: {\"product\":{\"id\":\"unexpected-fail\",\"description\":\"this will not be reached\"}}\n" +
-                "    actual: null\"]");
+            then(errors.get(1).getMessage()).startsWith("""
+                    [json diff (ignoring new fields)]\s
+                    Expecting empty but was: ["remove /data:
+                      expected: {"product":{"id":"unexpected-fail","description":"this will not be reached"}}
+                        actual: null"]""");
         });
     }
 }

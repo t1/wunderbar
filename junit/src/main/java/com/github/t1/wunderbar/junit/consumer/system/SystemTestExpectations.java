@@ -13,7 +13,6 @@ import com.github.t1.wunderbar.junit.http.HttpRequest;
 import com.github.t1.wunderbar.junit.http.HttpResponse;
 import com.github.t1.wunderbar.junit.http.HttpServer;
 import io.smallrye.graphql.client.typesafe.api.GraphQLClientApi;
-import lombok.Data;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.eclipse.microprofile.graphql.Mutation;
@@ -87,7 +86,7 @@ public class SystemTestExpectations<T> implements WunderBarExpectations<T> {
         log.debug("---------- start building expectation for {}", method.getName());
         var stubUri = stubServer.baseUri().resolve(baseUri.getPath());
         this.currentExpectation = HttpServiceExpectation.of(technology, stubUri, method, args)
-            .afterStubbing(this::addExpectationToMockService);
+                .afterStubbing(this::addExpectationToMockService);
         WunderbarExpectationBuilder.buildingExpectation = currentExpectation;
         return currentExpectation.nullValue();
     }
@@ -103,7 +102,8 @@ public class SystemTestExpectations<T> implements WunderBarExpectations<T> {
             currentExpectation.invoke();
             log.debug("---------- stub service returned");
         } catch (RuntimeException e) {
-            if (currentExpectation.hasException()) log.debug("---------- ignore expected exception from stub service: {}", e.toString());
+            if (currentExpectation.hasException())
+                log.debug("---------- ignore expected exception from stub service: {}", e.toString());
             else throw e;
         }
     }
@@ -119,7 +119,7 @@ public class SystemTestExpectations<T> implements WunderBarExpectations<T> {
         log.debug("add expectation to mock service");
         var stubbingResult = addWunderBarExpectation();
         log.debug("---------- add expectation and stubbing done -> {}", stubbingResult);
-        if (stubbingResult == null || !"ok".equals(stubbingResult.getStatus()))
+        if (stubbingResult == null || !"ok".equals(stubbingResult.status()))
             throw new WunderBarException("unexpected response from adding expectation to mock server: " + stubbingResult);
         this.didAddExpectations = true;
     }
@@ -128,9 +128,9 @@ public class SystemTestExpectations<T> implements WunderBarExpectations<T> {
         if (currentInteraction == null) throw new IllegalStateException("the stub call didn't get through");
         try {
             return mock.addWunderBarExpectation(
-                currentInteraction.getRequest().normalized().withoutContextPath(),
-                currentExpectation.getDepletion(),
-                currentInteraction.getResponse());
+                    currentInteraction.getRequest().normalized().withoutContextPath(),
+                    currentExpectation.getDepletion(),
+                    currentInteraction.getResponse());
         } catch (Exception e) {
             throw new WunderBarException("failed to add expectation to mock server; maybe it's a real service", e);
         }
@@ -156,15 +156,12 @@ public class SystemTestExpectations<T> implements WunderBarExpectations<T> {
     @GraphQLClientApi
     private interface WunderBarMockServerApi {
         @Mutation WunderBarStubbingResult addWunderBarExpectation(
-            @NonNull HttpRequest request,
-            @NonNull Depletion depletion,
-            @NonNull HttpResponse response);
+                @NonNull HttpRequest request,
+                @NonNull Depletion depletion,
+                @NonNull HttpResponse response);
+
         @Mutation String cleanupWunderBarExpectations();
     }
 
-    @Data
-    private static class WunderBarStubbingResult {
-        int id;
-        String status;
-    }
+    private record WunderBarStubbingResult(int id, String status) {}
 }

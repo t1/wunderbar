@@ -19,13 +19,13 @@ public class MockServlet extends HttpServlet {
 
     public void service(HttpServletRequest servletRequest, HttpServletResponse servletResponse) throws IOException {
         HttpRequest request = HttpRequest.builder()
-            .method(servletRequest.getMethod())
-            .uri(maybe(servletRequest.getPathInfo(), "") +
-                 maybe(servletRequest.getQueryString(), "?"))
-            .contentType(servletRequest.getContentType())
-            .accept(servletRequest.getHeader("Accept"))
-            .body(servletRequest.getReader().lines().collect(joining()))
-            .build();
+                .method(servletRequest.getMethod())
+                .uri(maybe(servletRequest.getPathInfo(), "") +
+                     maybe(servletRequest.getQueryString(), "?"))
+                .contentType(servletRequest.getContentType())
+                .accept(servletRequest.getHeader("Accept"))
+                .body(servletRequest.getReader().lines().collect(joining()))
+                .build();
 
         HttpResponse response = service.service(request);
 

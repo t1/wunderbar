@@ -1,22 +1,20 @@
 package com.github.t1.wunderbar.junit.assertions;
 
 import com.github.t1.wunderbar.junit.http.HttpUtils;
-import org.assertj.core.api.AbstractAssert;
-import org.assertj.core.api.AbstractStringAssert;
-import org.assertj.core.api.InstanceOfAssertFactories;
-import org.assertj.core.api.InstanceOfAssertFactory;
-
 import jakarta.json.Json;
 import jakarta.json.JsonObject;
 import jakarta.json.JsonPointer;
 import jakarta.json.JsonStructure;
 import jakarta.json.JsonValue;
 import jakarta.json.JsonValue.ValueType;
+import org.assertj.core.api.AbstractAssert;
+import org.assertj.core.api.AbstractStringAssert;
+import org.assertj.core.api.InstanceOfAssertFactories;
+import org.assertj.core.api.InstanceOfAssertFactory;
 
 import static com.github.t1.wunderbar.common.Utils.nonAddFieldDiff;
 import static com.github.t1.wunderbar.junit.assertions.JsonValueAssert.JsonObjectAssert.JSON_OBJECT;
 import static com.github.t1.wunderbar.junit.assertions.WunderBarBDDAssertions.then;
-import static java.util.stream.Collectors.toList;
 import static jakarta.json.JsonValue.ValueType.OBJECT;
 import static jakarta.json.JsonValue.ValueType.STRING;
 
@@ -25,23 +23,23 @@ import static jakarta.json.JsonValue.ValueType.STRING;
  */
 @SuppressWarnings("UnusedReturnValue")
 public class JsonValueAssert<SELF extends JsonValueAssert<SELF, ACTUAL>, ACTUAL extends JsonValue>
-    extends AbstractAssert<SELF, ACTUAL> {
+        extends AbstractAssert<SELF, ACTUAL> {
     public JsonValueAssert(ACTUAL actual) {this(actual, JsonValueAssert.class);}
 
     protected JsonValueAssert(ACTUAL actual, Class<?> selfType) {super(actual, selfType);}
 
     public void isEqualToIgnoringNewFields(JsonValue expected) {
         then(actual.getValueType())
-            .describedAs("value type mismatch\n" +
-                         "expected: " + expected + "\n" +
-                         "actual  : " + actual)
-            .isEqualTo(expected.getValueType());
+                .describedAs("value type mismatch\n" +
+                             "expected: " + expected + "\n" +
+                             "actual  : " + actual)
+                .isEqualTo(expected.getValueType());
         var nonAddFieldDescriptions = nonAddFieldDiff(expected, actual)
-            .map(patch -> describe(patch.asJsonObject(), expected.asJsonObject()))
-            .collect(toList());
+                .map(patch -> describe(patch.asJsonObject(), expected.asJsonObject()))
+                .toList();
         then(nonAddFieldDescriptions)
-            .describedAs("json diff (ignoring new fields)")
-            .isEmpty();
+                .describedAs("json diff (ignoring new fields)")
+                .isEmpty();
     }
 
     private String describe(JsonObject patch, JsonStructure expectedRoot) {
@@ -64,9 +62,9 @@ public class JsonValueAssert<SELF extends JsonValueAssert<SELF, ACTUAL>, ACTUAL 
     }
 
     public static class JsonObjectAssert<SELF extends JsonObjectAssert<SELF, ACTUAL>, ACTUAL extends JsonObject>
-        extends AbstractAssert<SELF, ACTUAL> {
+            extends AbstractAssert<SELF, ACTUAL> {
         public static final InstanceOfAssertFactory<JsonObject, JsonObjectAssert<?, ?>> JSON_OBJECT
-            = new InstanceOfAssertFactory<>(JsonObject.class, JsonObjectAssert::new);
+                = new InstanceOfAssertFactory<>(JsonObject.class, JsonObjectAssert::new);
 
         public JsonObjectAssert(ACTUAL actual) {this(actual, JsonObjectAssert.class);}
 

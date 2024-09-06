@@ -4,14 +4,13 @@ import com.github.t1.wunderbar.common.mock.MockService;
 import com.github.t1.wunderbar.junit.http.HttpRequest;
 import com.github.t1.wunderbar.junit.http.HttpResponse;
 import com.github.t1.wunderbar.mock.MockServlet;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
 
 import java.io.BufferedReader;
 import java.io.PrintWriter;
@@ -38,17 +37,17 @@ class MockServletTest {
         given(servletRequest.getHeader("Accept")).willReturn("application/bar");
         given(servletRequest.getReader()).willReturn(new BufferedReader(new StringReader("{\"foo\":\"bar\"}")));
         given(service.service(HttpRequest.builder()
-            .method("POST")
-            .uri("/foo/bar?foo=bar")
-            .contentType("application/foo")
-            .accept("application/bar")
-            .body("{\"foo\":\"bar\"}")
-            .build())
+                .method("POST")
+                .uri("/foo/bar?foo=bar")
+                .contentType("application/foo")
+                .accept("application/bar")
+                .body("{\"foo\":\"bar\"}")
+                .build())
         ).willReturn(HttpResponse.builder()
-            .status(BAD_REQUEST)
-            .contentType("application/bar")
-            .body("ok")
-            .build());
+                .status(BAD_REQUEST)
+                .contentType("application/bar")
+                .body("ok")
+                .build());
         given(servletResponse.getWriter()).willReturn(responseWriter);
 
         servlet.service(servletRequest, servletResponse);

@@ -8,6 +8,7 @@ package com.github.t1.wunderbar.junit.consumer;
 public interface ProxyFactory<T> {
     /** This is the proxy to use inside the test class for stubbing the expected results */
     T getStubbingProxy();
+
     /** This is the proxy to use in the system under test, i.e. for the real service calls */
     T getSutProxy();
 }

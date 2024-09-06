@@ -3,11 +3,10 @@ package com.github.t1.wunderbar.junit.consumer.integration;
 import com.github.t1.wunderbar.junit.http.HttpRequest;
 import com.github.t1.wunderbar.junit.http.HttpResponse;
 import com.github.t1.wunderbar.junit.http.ProblemDetails;
-import lombok.extern.slf4j.Slf4j;
-import org.eclipse.microprofile.rest.client.RestClientBuilder;
-
 import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.core.MediaType;
+import lombok.extern.slf4j.Slf4j;
+import org.eclipse.microprofile.rest.client.RestClientBuilder;
 
 import java.lang.reflect.Method;
 import java.net.URI;
@@ -29,7 +28,7 @@ class RestExpectation extends HttpServiceExpectation {
 
     private MediaType contentType() {
         return method.isAnnotationPresent(Produces.class)
-            ? MediaType.valueOf(method.getAnnotation(Produces.class).value()[0])
-            : APPLICATION_JSON_UTF8;
+                ? MediaType.valueOf(method.getAnnotation(Produces.class).value()[0])
+                : APPLICATION_JSON_UTF8;
     }
 }

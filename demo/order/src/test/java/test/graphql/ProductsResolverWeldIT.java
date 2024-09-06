@@ -33,8 +33,8 @@ class ProductsResolverWeldIT {
 
     @WeldSetup
     WeldInitiator weld = WeldInitiator.from(ProductsResolver.class, Products.class)
-        .addBeans(MockBean.builder().types(Products.class).create(ctx -> products).build())
-        .build();
+            .addBeans(MockBean.builder().types(Products.class).create(ctx -> products).build())
+            .build();
 
     @Test void shouldResolveProduct(@Some Product product) {
         given(products.product(product.getId())).returns(product);
@@ -72,7 +72,7 @@ class ProductsResolverWeldIT {
     @Test void shouldFailToResolveUnknownProduct(@Some("product-id") String id) {
         given(products.product(id)).willThrow(new ProductNotFoundException(id));
 
-        var throwable = catchThrowableOfType(() -> resolver.product(item(id)), GraphQLClientException.class);
+        var throwable = catchThrowableOfType(GraphQLClientException.class, () -> resolver.product(item(id)));
 
         then(throwable.getErrors()).hasSize(1);
         var error = throwable.getErrors().get(0);
@@ -83,7 +83,7 @@ class ProductsResolverWeldIT {
     @Test void shouldFailToResolveForbiddenProduct(@Some("product-id") String id) {
         given(products.product(id)).willThrow(new ProductForbiddenException(id));
 
-        var throwable = catchThrowableOfType(() -> resolver.product(item(id)), GraphQLClientException.class);
+        var throwable = catchThrowableOfType(GraphQLClientException.class, () -> resolver.product(item(id)));
 
         then(throwable.getErrors()).hasSize(1);
         var error = throwable.getErrors().get(0);

@@ -41,14 +41,14 @@ class ProductsGatewayST {
             response.body(existing);
         } else if (id.equals(forbidden.getId())) {
             response.status(FORBIDDEN)
-                .problemDetail("the product " + id + " is forbidden")
-                .problemTitle("ForbiddenException")
-                .problemType("urn:problem-type:forbidden");
+                    .problemDetail("the product " + id + " is forbidden")
+                    .problemTitle("ForbiddenException")
+                    .problemType("urn:problem-type:forbidden");
         } else {
             response.status(NOT_FOUND)
-                .problemDetail("there is no product with the id " + id)
-                .problemTitle("NotFoundException")
-                .problemType("urn:problem-type:not-found");
+                    .problemDetail("there is no product with the id " + id)
+                    .problemTitle("NotFoundException")
+                    .problemType("urn:problem-type:not-found");
         }
         return response.build();
     }
@@ -79,19 +79,19 @@ class ProductsGatewayST {
         var throwable = catchThrowable(() -> gateway.product(item(id)));
 
         then(throwable).asInstanceOf(WEB_APPLICATION_EXCEPTION)
-            .hasStatus(NOT_FOUND)
-            .hasType("urn:problem-type:not-found")
-            .hasTitle("NotFoundException")
-            .hasDetail("there is no product with the id " + id);
+                .hasStatus(NOT_FOUND)
+                .hasType("urn:problem-type:not-found")
+                .hasTitle("NotFoundException")
+                .hasDetail("there is no product with the id " + id);
     }
 
     @Test void shouldFailToGetForbiddenProduct() {
         var throwable = catchThrowable(() -> gateway.product(item(forbidden.getId())));
 
         then(throwable).asInstanceOf(WEB_APPLICATION_EXCEPTION)
-            .hasStatus(FORBIDDEN)
-            .hasType("urn:problem-type:forbidden")
-            .hasTitle("ForbiddenException")
-            .hasDetail("the product " + forbidden.getId() + " is forbidden");
+                .hasStatus(FORBIDDEN)
+                .hasType("urn:problem-type:forbidden")
+                .hasTitle("ForbiddenException")
+                .hasDetail("the product " + forbidden.getId() + " is forbidden");
     }
 }

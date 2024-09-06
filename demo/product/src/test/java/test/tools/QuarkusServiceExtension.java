@@ -1,15 +1,14 @@
 package test.tools;
 
+import jakarta.ws.rs.GET;
+import jakarta.ws.rs.Path;
+import jakarta.ws.rs.Produces;
+import jakarta.ws.rs.core.Response;
 import org.eclipse.microprofile.rest.client.RestClientBuilder;
 import org.junit.jupiter.api.extension.AfterAllCallback;
 import org.junit.jupiter.api.extension.BeforeAllCallback;
 import org.junit.jupiter.api.extension.Extension;
 import org.junit.jupiter.api.extension.ExtensionContext;
-
-import jakarta.ws.rs.GET;
-import jakarta.ws.rs.Path;
-import jakarta.ws.rs.Produces;
-import jakarta.ws.rs.core.Response;
 
 import java.net.URI;
 import java.time.Duration;
@@ -35,8 +34,8 @@ public class QuarkusServiceExtension implements Extension, BeforeAllCallback, Af
     // TODO there must be a better way to wait for the readiness than a busy-waiting loop
     private void waitUntilReady() throws TimeoutException, InterruptedException {
         var healthClient = RestClientBuilder.newBuilder()
-            .baseUri(URI.create(ENDPOINT))
-            .build(HealthClient.class);
+                .baseUri(URI.create(ENDPOINT))
+                .build(HealthClient.class);
         var start = Instant.now();
         Response response;
         do {

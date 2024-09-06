@@ -13,24 +13,27 @@ class ApiProviderTest {
 
     @TestFactory DynamicNode standardTest() {
         fixture
-            .withTest("some-container/some-test",
-                HttpRequest.builder()
-                    .method("POST")
-                    .body("{\n" +
-                          "  \"query\":\"query product($id: String) { product(id: $id) {id name} }\",\n" +
-                          "  \"variables\":{\"id\":\"x\"}\n" +
-                          "}")
-                    .build(),
-                HttpResponse.builder()
-                    .body("{\n" +
-                          "  \"data\": {\n" +
-                          "    \"product\": {\"id\": \"x\",\"name\": \"some-product-name\"}\n" +
-                          "  },\n" +
-                          "  \"errors\": []\n" +
-                          "}\n")
-                    .build())
+                .withTest("some-container/some-test",
+                        HttpRequest.builder()
+                                .method("POST")
+                                .body("""
+                                        {
+                                          "query":"query product($id: String) { product(id: $id) {id name} }",
+                                          "variables":{"id":"x"}
+                                        }""")
+                                .build(),
+                        HttpResponse.builder()
+                                .body("""
+                                        {
+                                          "data": {
+                                            "product": {"id": "x","name": "some-product-name"}
+                                          },
+                                          "errors": []
+                                        }
+                                        """)
+                                .build())
 
-            .expect("some-container/some-test", 1);
+                .expect("some-container/some-test", 1);
 
         return fixture.findTests();
     }
@@ -38,34 +41,34 @@ class ApiProviderTest {
     @TestFactory DynamicNode flatTest() {
         fixture.withTest("flat")
 
-            .expect("flat", 1);
+                .expect("flat", 1);
 
         return fixture.findTests();
     }
 
     @TestFactory DynamicNode nestedTests() {
         fixture
-            .withTest("root-1")
-            .withTest("root-2")
-            .withTest("root-2")
-            .withTest("root-2")
-            .withTest("root/flat-1")
-            .withTest("root/flat-2")
-            .withTest("root/flat-3")
-            .withTest("root/nested/nest-1")
-            .withTest("root/deeply/nested/deep-1")
-            .withTest("root/deeply/nested/deep-2")
-            .withTest("root-3")
+                .withTest("root-1")
+                .withTest("root-2")
+                .withTest("root-2")
+                .withTest("root-2")
+                .withTest("root/flat-1")
+                .withTest("root/flat-2")
+                .withTest("root/flat-3")
+                .withTest("root/nested/nest-1")
+                .withTest("root/deeply/nested/deep-1")
+                .withTest("root/deeply/nested/deep-2")
+                .withTest("root-3")
 
-            .expect("root-1", 1)
-            .expect("root-2", 3)
-            .expect("root/flat-1", 1)
-            .expect("root/flat-2", 1)
-            .expect("root/flat-3", 1)
-            .expect("root/nested/nest-1", 1)
-            .expect("root/deeply/nested/deep-1", 1)
-            .expect("root/deeply/nested/deep-2", 1)
-            .expect("root-3", 1);
+                .expect("root-1", 1)
+                .expect("root-2", 3)
+                .expect("root/flat-1", 1)
+                .expect("root/flat-2", 1)
+                .expect("root/flat-3", 1)
+                .expect("root/nested/nest-1", 1)
+                .expect("root/deeply/nested/deep-1", 1)
+                .expect("root/deeply/nested/deep-2", 1)
+                .expect("root-3", 1);
 
         return fixture.findTests();
     }

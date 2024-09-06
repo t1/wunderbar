@@ -5,10 +5,9 @@ import com.github.t1.wunderbar.common.mock.MockService;
 import com.github.t1.wunderbar.common.mock.WunderBarMockExpectation;
 import com.github.t1.wunderbar.junit.http.HttpRequest;
 import com.github.t1.wunderbar.junit.http.HttpResponse;
+import jakarta.json.Json;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.extension.Extension;
-
-import jakarta.json.Json;
 
 import static com.github.t1.wunderbar.common.mock.MockService.addExpectation;
 
@@ -16,10 +15,10 @@ import static com.github.t1.wunderbar.common.mock.MockService.addExpectation;
 class ExpectationsExtension implements Extension {
     public void addGraphQLProduct(String id, HttpResponse response) {
         var expectation = add(GraphQLBodyMatcher.graphQlRequest()
-            .query("query product($id: String!) { product(id: $id) {id name price} }")
-            .variables(Json.createObjectBuilder().add("id", id).build())
-            .operationName("product")
-            .build(), 1, response);
+                .query("query product($id: String!) { product(id: $id) {id name price} }")
+                .variables(Json.createObjectBuilder().add("id", id).build())
+                .operationName("product")
+                .build(), 1, response);
         log.debug("[GraphQL] generated expectation id {} for product {}", expectation.getId(), id);
     }
 

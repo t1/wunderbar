@@ -1,11 +1,10 @@
 package com.github.t1.wunderbar.junit.assertions;
 
-import org.assertj.core.api.AbstractAssert;
-import org.assertj.core.api.InstanceOfAssertFactory;
-
 import jakarta.json.JsonObject;
 import jakarta.ws.rs.WebApplicationException;
 import jakarta.ws.rs.core.Response.StatusType;
+import org.assertj.core.api.AbstractAssert;
+import org.assertj.core.api.InstanceOfAssertFactory;
 
 import static com.github.t1.wunderbar.junit.assertions.WunderBarBDDAssertions.then;
 import static com.github.t1.wunderbar.junit.http.HttpUtils.readJson;
@@ -16,9 +15,9 @@ import static com.github.t1.wunderbar.junit.http.HttpUtils.readJson;
  */
 @SuppressWarnings("UnusedReturnValue")
 public class WebApplicationExceptionAssert<SELF extends WebApplicationExceptionAssert<SELF, ACTUAL>, ACTUAL extends WebApplicationException>
-    extends AbstractAssert<SELF, ACTUAL> {
+        extends AbstractAssert<SELF, ACTUAL> {
     public static final InstanceOfAssertFactory<WebApplicationException, WebApplicationExceptionAssert<?, ?>> WEB_APPLICATION_EXCEPTION
-        = new InstanceOfAssertFactory<>(WebApplicationException.class, WebApplicationExceptionAssert::new);
+            = new InstanceOfAssertFactory<>(WebApplicationException.class, WebApplicationExceptionAssert::new);
 
     protected WebApplicationExceptionAssert(ACTUAL actual) {this(actual, WebApplicationExceptionAssert.class);}
 

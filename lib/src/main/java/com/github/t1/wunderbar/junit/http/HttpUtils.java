@@ -19,7 +19,11 @@ import java.io.IOException;
 import java.io.StringReader;
 import java.io.StringWriter;
 import java.nio.charset.Charset;
-import java.util.*;
+import java.util.Base64;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Properties;
 import java.util.stream.Stream;
 
 import static jakarta.ws.rs.core.MediaType.APPLICATION_JSON_TYPE;
@@ -28,7 +32,6 @@ import static java.nio.charset.StandardCharsets.ISO_8859_1;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.Locale.ROOT;
 import static java.util.stream.Collectors.joining;
-import static java.util.stream.Collectors.toList;
 
 @UtilityClass
 public class HttpUtils {
@@ -36,8 +39,8 @@ public class HttpUtils {
     public static final MediaType APPLICATION_JSON_UTF8 = APPLICATION_JSON_TYPE.withCharset("utf-8");
     public static final MediaType PROBLEM_DETAIL_TYPE = MediaType.valueOf("application/problem+json;charset=utf-8");
     public static final Jsonb JSONB = JsonbBuilder.create(new JsonbConfig()
-        .withFormatting(true)
-        .withAdapters(new StatusTypeAdapter(), new MediaTypeAdapter()));
+            .withFormatting(true)
+            .withAdapters(new StatusTypeAdapter(), new MediaTypeAdapter()));
 
     static Charset charset(MediaType contentType) {
         var charsetName = (contentType == null) ? null : contentType.getParameters().get(CHARSET_PARAMETER);
@@ -85,7 +88,7 @@ public class HttpUtils {
     public static JsonValue readJson(String json) {
         try {
             return ((json == null) || json.isEmpty()) ? JsonValue.NULL :
-                Json.createReader(new StringReader(json)).readValue();
+                    Json.createReader(new StringReader(json)).readValue();
         } catch (JsonParsingException e) {
             var offset = (int) e.getLocation().getStreamOffset();
             var pre = (offset < 0) ? "" : json.substring(0, offset);
@@ -98,8 +101,8 @@ public class HttpUtils {
         if (value == null) return null;
         var writer = new StringWriter();
         Json.createWriterFactory(Map.of(JsonGenerator.PRETTY_PRINTING, true))
-            .createWriter(writer)
-            .write(value);
+                .createWriter(writer)
+                .write(value);
         return writer.toString().trim() + "\n";
     }
 
@@ -181,8 +184,8 @@ public class HttpUtils {
 
     public static List<MediaType> mediaTypes(String string) {
         return (string == null) ? List.of() : Stream.of(string.replace(" ", "").split(","))
-            .map(String::strip)
-            .map(MediaType::valueOf)
-            .collect(toList());
+                .map(String::strip)
+                .map(MediaType::valueOf)
+                .toList();
     }
 }

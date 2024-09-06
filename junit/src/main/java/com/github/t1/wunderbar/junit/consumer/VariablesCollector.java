@@ -1,10 +1,9 @@
 package com.github.t1.wunderbar.junit.consumer;
 
-import lombok.RequiredArgsConstructor;
-
 import jakarta.json.JsonNumber;
 import jakarta.json.JsonString;
 import jakarta.json.JsonValue;
+import lombok.RequiredArgsConstructor;
 
 import java.util.List;
 import java.util.Map;
@@ -48,7 +47,7 @@ class VariablesCollector {
 
     private void put(Object value) {
         GeneratedDataPoint.find(generatedDataPoints, value)
-            .ifPresent(generated -> variables.put(path, generated));
+                .ifPresent(generated -> variables.put(path, generated));
     }
 
     void collect(Properties headers) {
@@ -61,14 +60,14 @@ class VariablesCollector {
 
     private void collect(GeneratedDataPoint point, String headerName, String headerValue, Map<String, GeneratedDataPoint> variables) {
         matchingPath(headerName, headerValue, point)
-            .ifPresent(matchingPath -> variables.put(":" + matchingPath, point));
+                .ifPresent(matchingPath -> variables.put(":" + matchingPath, point));
     }
 
     private Optional<String> matchingPath(String headerName, String headerValue, GeneratedDataPoint point) {
         var rawString = point.getRawValue().toString();
         var matchType = (point.getRawValue() instanceof Number) ? "(\\D)" : ".";
         var matcher = Pattern.compile("(?<prefix>" + matchType + "*?)" + rawString + "(?<suffix>" + matchType + "*)")
-            .matcher(headerValue);
+                .matcher(headerValue);
         if (matcher.matches()) {
             var prefix = matcher.group("prefix");
             var suffix = matcher.group("suffix");

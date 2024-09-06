@@ -47,7 +47,6 @@ import static com.github.t1.wunderbar.junit.consumer.Level.UNIT;
 import static com.github.t1.wunderbar.junit.consumer.Technology.GRAPHQL;
 import static com.github.t1.wunderbar.junit.consumer.Technology.REST;
 import static java.time.temporal.ChronoUnit.NANOS;
-import static java.util.stream.Collectors.toList;
 import static org.junit.jupiter.api.extension.ExtensionContext.Namespace.GLOBAL;
 
 @Slf4j
@@ -74,12 +73,12 @@ class WunderBarApiConsumerJUnitExtension implements Extension, BeforeEachCallbac
 
         @Override public <T> T generate(Some some, Type type, AnnotatedElement location) {
             var generatedDataPoint = dataGenerators.stream()
-                .map(generator -> generate(some, type, location, generator))
-                .filter(Objects::nonNull)
-                .peek(this::checkDuplicate)
-                .findFirst()
-                .orElseThrow(() -> new WunderBarException(
-                    "no generator registered for " + Some.LITERAL.toString(some) + " " + type.getTypeName() + " at " + location));
+                    .map(generator -> generate(some, type, location, generator))
+                    .filter(Objects::nonNull)
+                    .peek(this::checkDuplicate)
+                    .findFirst()
+                    .orElseThrow(() -> new WunderBarException(
+                            "no generator registered for " + Some.LITERAL.toString(some) + " " + type.getTypeName() + " at " + location));
             @SuppressWarnings("unchecked")
             T value = (T) generatedDataPoint.getRawValue();
             generatedDataPoints.add(generatedDataPoint);
@@ -91,8 +90,8 @@ class WunderBarApiConsumerJUnitExtension implements Extension, BeforeEachCallbac
             if (++depth > 100) throw new WunderBarException("it seems to be an infinite loop when generating " + type);
             try {
                 return generator.some(some, type, location)
-                    .map(value -> new GeneratedDataPoint(some, location, value, generator))
-                    .orElse(null);
+                        .map(value -> new GeneratedDataPoint(some, location, value, generator))
+                        .orElse(null);
             } finally {
                 depth--;
             }
@@ -101,7 +100,7 @@ class WunderBarApiConsumerJUnitExtension implements Extension, BeforeEachCallbac
         private void checkDuplicate(GeneratedDataPoint newDataPoint) {
             GeneratedDataPoint.find(generatedDataPoints, newDataPoint.getValue()).ifPresent(existing -> {
                 throw new WunderBarException(
-                    "[" + newDataPoint.getGenerator() + "] generated a non-unique value for " + newDataPoint.getLocation() + ". " + "There's already " + existing);
+                        "[" + newDataPoint.getGenerator() + "] generated a non-unique value for " + newDataPoint.getLocation() + ". " + "There's already " + existing);
             });
         }
 
@@ -111,7 +110,7 @@ class WunderBarApiConsumerJUnitExtension implements Extension, BeforeEachCallbac
 
         private GeneratedDataPoint find(Object value) {
             return GeneratedDataPoint.find(generatedDataPoints, value)
-                .orElseThrow(() -> new WunderBarException("this value was not generated via the WunderBar @Some annotation: " + value));
+                    .orElseThrow(() -> new WunderBarException("this value was not generated via the WunderBar @Some annotation: " + value));
         }
     };
 
@@ -161,9 +160,10 @@ class WunderBarApiConsumerJUnitExtension implements Extension, BeforeEachCallbac
 
     private Object findWunderBarTest() {
         var instances = context.getRequiredTestInstances().getAllInstances().stream()
-            .filter(this::isAnnotatedAsWunderBarConsumer)
-            .collect(toList());
-        if (instances.isEmpty()) throw new WunderBarException("annotation not found: " + WunderBarApiConsumer.class.getName());
+                .filter(this::isAnnotatedAsWunderBarConsumer)
+                .toList();
+        if (instances.isEmpty())
+            throw new WunderBarException("annotation not found: " + WunderBarApiConsumer.class.getName());
         return instances.get(instances.size() - 1); // the innermost / closest
     }
 
@@ -178,13 +178,13 @@ class WunderBarApiConsumerJUnitExtension implements Extension, BeforeEachCallbac
 
     private void registerSomeDataGenerators() {
         extensionContexts()
-            .map(ExtensionContext::getElement)
-            .flatMap(Optional::stream)
-            .map(element -> element.getAnnotation(Register.class))
-            .filter(Objects::nonNull)
-            .flatMap(register -> Stream.of(register.value()))
-            .map(this::newInstance)
-            .forEach(dataGenerators::add);
+                .map(ExtensionContext::getElement)
+                .flatMap(Optional::stream)
+                .map(element -> element.getAnnotation(Register.class))
+                .filter(Objects::nonNull)
+                .flatMap(register -> Stream.of(register.value()))
+                .map(this::newInstance)
+                .forEach(dataGenerators::add);
         dataGenerators.add(new SomeBasics(someGenerator));
     }
 
@@ -194,10 +194,10 @@ class WunderBarApiConsumerJUnitExtension implements Extension, BeforeEachCallbac
 
     private void forEachField(Class<? extends Annotation> annotationType, Consumer<Field> action) {
         context.getRequiredTestInstances().getAllInstances().stream()
-            .flatMap(this::allFields)
-            .filter(field -> isAnnotationPresent(field, annotationType))
-            .sorted(ORDER)
-            .forEach(action);
+                .flatMap(this::allFields)
+                .filter(field -> isAnnotationPresent(field, annotationType))
+                .sorted(ORDER)
+                .forEach(action);
     }
 
     private boolean isAnnotationPresent(Field field, Class<? extends Annotation> annotationType) {
@@ -326,25 +326,29 @@ class WunderBarApiConsumerJUnitExtension implements Extension, BeforeEachCallbac
 
     private Object getOrInitField(Field sutField) {
         var testInstance = instanceFor(sutField);
-        if (getField(testInstance, sutField) == null)
-            setField(testInstance, sutField, newInstance(sutField.getType()));
-        return getField(testInstance, sutField);
+        var instance = getField(testInstance, sutField);
+        if (instance == null) {
+            instance = newInstance(sutField.getType());
+            setField(testInstance, sutField, instance);
+        }
+        return instance;
     }
 
     private void injectProxiesIntoSut(Object systemUnderTest) {
         Stream.of(systemUnderTest.getClass().getDeclaredFields())
-            .filter(Objects::nonNull)
-            .forEach(targetField -> injectProxyIntoSut(systemUnderTest, targetField));
+                .filter(Objects::nonNull)
+                .forEach(targetField -> injectProxyIntoSut(systemUnderTest, targetField));
     }
 
     private void injectProxyIntoSut(Object instance, Field field) {
         proxies.stream()
-            .filter(proxy -> proxy.isAssignableTo(field))
-            .forEach(proxy -> setField(instance, field, proxy.getSutProxy()));
+                .filter(proxy -> proxy.isAssignableTo(field))
+                .forEach(proxy -> setField(instance, field, proxy.getSutProxy()));
     }
 
 
-    @Override public boolean supportsParameter(ParameterContext parameterContext, ExtensionContext extensionContext) throws ParameterResolutionException {
+    @Override
+    public boolean supportsParameter(ParameterContext parameterContext, ExtensionContext extensionContext) throws ParameterResolutionException {
         Class<?> parameterType = parameterContext.getParameter().getType();
         return Level.class.equals(parameterType) ||
                SomeGenerator.class.equals(parameterType) ||
@@ -352,7 +356,8 @@ class WunderBarApiConsumerJUnitExtension implements Extension, BeforeEachCallbac
                someAnnotation(parameterContext) != null;
     }
 
-    @Override public Object resolveParameter(ParameterContext parameterContext, ExtensionContext extensionContext) throws ParameterResolutionException {
+    @Override
+    public Object resolveParameter(ParameterContext parameterContext, ExtensionContext extensionContext) throws ParameterResolutionException {
         var parameter = parameterContext.getParameter();
         if (Level.class.equals(parameter.getType())) return level();
         if (SomeGenerator.class.equals(parameter.getType())) return someGenerator;
@@ -408,9 +413,9 @@ class WunderBarApiConsumerJUnitExtension implements Extension, BeforeEachCallbac
             if (SomeGenerator.class.equals(parameterType)) args.add(someGenerator);
             else // implicit parameter for non-static classes
                 context.getRequiredTestInstances().getAllInstances().stream()
-                    .filter(parameterType::isInstance)
-                    .findFirst()
-                    .ifPresent(args::add);
+                        .filter(parameterType::isInstance)
+                        .findFirst()
+                        .ifPresent(args::add);
         }
         return (args.size() == constructor.getParameterCount()) ? Optional.of(args.toArray()) : Optional.empty();
     }

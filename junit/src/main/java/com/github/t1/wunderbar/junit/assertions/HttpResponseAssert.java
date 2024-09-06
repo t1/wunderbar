@@ -3,10 +3,9 @@ package com.github.t1.wunderbar.junit.assertions;
 import com.github.t1.wunderbar.junit.assertions.JsonValueAssert.JsonObjectAssert;
 import com.github.t1.wunderbar.junit.http.HttpRequest;
 import com.github.t1.wunderbar.junit.http.HttpResponse;
+import jakarta.ws.rs.core.Response.Status;
 import org.assertj.core.api.AbstractAssert;
 import org.assertj.core.api.AbstractStringAssert;
-
-import jakarta.ws.rs.core.Response.Status;
 
 import static com.github.t1.wunderbar.junit.assertions.WunderBarBDDAssertions.then;
 
@@ -15,7 +14,7 @@ import static com.github.t1.wunderbar.junit.assertions.WunderBarBDDAssertions.th
  */
 @SuppressWarnings("UnusedReturnValue")
 public class HttpResponseAssert<SELF extends HttpResponseAssert<SELF, ACTUAL>, ACTUAL extends HttpResponse>
-    extends AbstractAssert<SELF, ACTUAL> {
+        extends AbstractAssert<SELF, ACTUAL> {
     public HttpResponseAssert(ACTUAL actual) {this(actual, HttpResponseAssert.class);}
 
     protected HttpResponseAssert(ACTUAL actual, Class<?> selfType) {super(actual, selfType);}

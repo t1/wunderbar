@@ -8,9 +8,9 @@ import org.assertj.core.api.InstanceOfAssertFactory;
 import java.util.stream.Stream;
 
 public class GraphQLClientExceptionAssert<SELF extends GraphQLClientExceptionAssert<SELF, ACTUAL>, ACTUAL extends GraphQLClientException>
-    extends AbstractThrowableAssert<SELF, ACTUAL> {
+        extends AbstractThrowableAssert<SELF, ACTUAL> {
     public static final InstanceOfAssertFactory<GraphQLClientException, GraphQLClientExceptionAssert<?, ?>> GRAPHQL_CLIENT_EXCEPTION
-        = new InstanceOfAssertFactory<>(GraphQLClientException.class, GraphQLClientExceptionAssert::new);
+            = new InstanceOfAssertFactory<>(GraphQLClientException.class, GraphQLClientExceptionAssert::new);
 
     public GraphQLClientExceptionAssert(ACTUAL actual) {this(actual, GraphQLClientExceptionAssert.class);}
 
@@ -18,15 +18,15 @@ public class GraphQLClientExceptionAssert<SELF extends GraphQLClientExceptionAss
 
     public ViolationErrorAssert<?, ?> hasViolationError() {
         GraphQLError error = errors()
-            .filter(e -> "ValidationError".equals(e.getStringExtension("classification")))
-            .findAny().orElseThrow(() -> new AssertionError("no validation error found in " + actual));
+                .filter(e -> "ValidationError".equals(e.getStringExtension("classification")))
+                .findAny().orElseThrow(() -> new AssertionError("no validation error found in " + actual));
         return new ViolationErrorAssert<>(error);
     }
 
     public GraphQLErrorAssert<?, ?> hasErrorCode(String errorCode) {
         GraphQLError error = errors()
-            .filter(e -> errorCode.equals(e.getCode()))
-            .findAny().orElseThrow(() -> errorNotFound(errorCode));
+                .filter(e -> errorCode.equals(e.getCode()))
+                .findAny().orElseThrow(() -> errorNotFound(errorCode));
         return new GraphQLErrorAssert<>(error);
     }
 

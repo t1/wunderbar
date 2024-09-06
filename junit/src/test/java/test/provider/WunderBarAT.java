@@ -7,14 +7,13 @@ import com.github.t1.wunderbar.junit.provider.Actual;
 import com.github.t1.wunderbar.junit.provider.AfterInteraction;
 import com.github.t1.wunderbar.junit.provider.BeforeInteraction;
 import com.github.t1.wunderbar.junit.provider.WunderBarApiProvider;
+import jakarta.json.Json;
+import jakarta.ws.rs.ForbiddenException;
+import jakarta.ws.rs.NotFoundException;
 import org.junit.jupiter.api.DynamicNode;
 import org.junit.jupiter.api.TestFactory;
 import org.junit.jupiter.api.extension.RegisterExtension;
 import test.MockServer;
-
-import jakarta.json.Json;
-import jakarta.ws.rs.ForbiddenException;
-import jakarta.ws.rs.NotFoundException;
 
 import static com.github.t1.wunderbar.junit.assertions.WunderBarBDDAssertions.then;
 import static com.github.t1.wunderbar.junit.provider.WunderBarTestFinder.findTestsIn;
@@ -60,7 +59,8 @@ class WunderBarAT {
         return request;
     }
 
-    @AfterInteraction HttpResponse adjustResponse(HttpRequest request, HttpResponse expected, @Actual HttpResponse actual) {
+    @AfterInteraction
+    HttpResponse adjustResponse(HttpRequest request, HttpResponse expected, @Actual HttpResponse actual) {
         var productId = request.matchUri("/rest/products/(.*)").group(1);
         if (productId.equals("requested-product-id")) {
             then(expected).has("/id", "existing-product-id");

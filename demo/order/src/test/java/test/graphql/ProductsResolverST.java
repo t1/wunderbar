@@ -44,7 +44,7 @@ class ProductsResolverST {
         var body = request.jsonValue().asJsonObject();
         var query = body.getString("query");
         assert query.equals("query product($id: String!) { product(id: $id) {id name description price} }")
-            : "unexpected query: [" + query + "]";
+                : "unexpected query: [" + query + "]";
         if (isMutation(query)) // currently, not used
             assert SYSTEM_TEST_CREDENTIALS.equals(request.getAuthorization()) : "expected mutation to be authorized with the system test credentials";
         else assert request.getAuthorization() == null : "expected query not to be authorized";
@@ -100,7 +100,7 @@ class ProductsResolverST {
     }
 
     @Test void shouldFailToResolveUnknownProduct() {
-        var throwable = catchThrowableOfType(() -> resolver.product(item("-1")), GraphQLClientException.class);
+        var throwable = catchThrowableOfType(GraphQLClientException.class, () -> resolver.product(item("-1")));
 
         then(throwable.getErrors()).hasSize(1);
         var error = throwable.getErrors().get(0);
@@ -109,7 +109,7 @@ class ProductsResolverST {
     }
 
     @Test void shouldFailToResolveForbiddenProduct() {
-        var throwable = catchThrowableOfType(() -> resolver.product(item(forbidden.getId())), GraphQLClientException.class);
+        var throwable = catchThrowableOfType(GraphQLClientException.class, () -> resolver.product(item(forbidden.getId())));
 
         then(throwable.getErrors()).hasSize(1);
         var error = throwable.getErrors().get(0);

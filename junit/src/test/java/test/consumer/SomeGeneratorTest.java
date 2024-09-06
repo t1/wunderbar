@@ -87,12 +87,13 @@ class SomeGeneratorTest {
         var throwable = catchThrowable(() -> gen.generate(byte.class));
 
         then(throwable).isInstanceOf(ArithmeticException.class)
-            .hasMessageContaining("byte overflow");
+                .hasMessageContaining("byte overflow");
     }
 
     @Test void shouldGenerateChar(@Some char i) {then(i).isBetween((char) QUITE_SMALL_INT, Character.MAX_VALUE);}
 
-    @Test void shouldGenerateCharacter(@Some Character i) {then(i).isBetween((char) QUITE_SMALL_INT, Character.MAX_VALUE);}
+    @Test
+    void shouldGenerateCharacter(@Some Character i) {then(i).isBetween((char) QUITE_SMALL_INT, Character.MAX_VALUE);}
 
     @Test void shouldFailToGenerateLargeChar(SomeGenerator gen) {
         SomeBasics.reset(Character.MAX_VALUE);
@@ -100,7 +101,7 @@ class SomeGeneratorTest {
         var throwable = catchThrowable(() -> gen.generate(char.class));
 
         then(throwable).isInstanceOf(IllegalStateException.class)
-            .hasMessageContaining("too many values generated");
+                .hasMessageContaining("too many values generated");
     }
 
     @Test void shouldGenerateShort(@Some short i) {then(i).isBetween((short) QUITE_SMALL_INT, (short) QUITE_BIG_INT);}
@@ -111,14 +112,14 @@ class SomeGeneratorTest {
         var throwable = catchThrowable(() -> gen.generate(short.class));
 
         then(throwable).isInstanceOf(IllegalStateException.class)
-            .hasMessageContaining("too many values generated");
+                .hasMessageContaining("too many values generated");
     }
 
     @Test void shouldGenerateInt(@Some int i) {then(i).isBetween(QUITE_SMALL_INT, QUITE_BIG_INT);}
 
     @Test void shouldGenerateSomeIntegers(@Some int i1, @Some int i2, @Some int i3, @Some int i4, @Some int i5) {
         Stream.of(i1, i2, i3, i4, i5).forEach(i ->
-            then(i).isBetween(QUITE_SMALL_INT, QUITE_BIG_INT));
+                then(i).isBetween(QUITE_SMALL_INT, QUITE_BIG_INT));
     }
 
     @Test void shouldFailToGenerateLargeInt(SomeGenerator gen) {
@@ -127,18 +128,21 @@ class SomeGeneratorTest {
         var throwable = catchThrowable(() -> gen.generate(int.class));
 
         then(throwable).isInstanceOf(IllegalStateException.class)
-            .hasMessageContaining("too many values generated");
+                .hasMessageContaining("too many values generated");
     }
 
     @Test void shouldGenerateLong(@Some long i) {then(i).isBetween((long) QUITE_SMALL_INT, (long) QUITE_BIG_INT);}
 
-    @Test void shouldGenerateBigInteger(@Some BigInteger i) {then(i).isBetween(BigInteger.ZERO, BigInteger.valueOf(QUITE_BIG_INT));}
+    @Test
+    void shouldGenerateBigInteger(@Some BigInteger i) {then(i).isBetween(BigInteger.ZERO, BigInteger.valueOf(QUITE_BIG_INT));}
 
     @Test void shouldGenerateFloat(@Some float i) {then(i).isBetween((float) QUITE_SMALL_INT, (float) QUITE_BIG_INT);}
 
-    @Test void shouldGenerateDouble(@Some double i) {then(i).isBetween((double) QUITE_SMALL_INT, (double) QUITE_BIG_INT);}
+    @Test
+    void shouldGenerateDouble(@Some double i) {then(i).isBetween((double) QUITE_SMALL_INT, (double) QUITE_BIG_INT);}
 
-    @Test void shouldGenerateBigDecimal(@Some BigDecimal i) {then(i).isBetween(BigDecimal.ZERO, BigDecimal.valueOf(QUITE_BIG_INT));}
+    @Test
+    void shouldGenerateBigDecimal(@Some BigDecimal i) {then(i).isBetween(BigDecimal.ZERO, BigDecimal.valueOf(QUITE_BIG_INT));}
 
     @Test void shouldGenerateString(@Some String string) {then(string).isBetween("string-00000", "string-99999");}
 
@@ -158,7 +162,8 @@ class SomeGeneratorTest {
         then(url.toString()).isBetween("https://example.nowhere/path-0000000", "https://example.nowhere/path-99999");
     }
 
-    @Test void shouldGenerateInstant(@Some Instant instant) {then(instant).isBetween(START_INSTANT, START_INSTANT.plusSeconds(QUITE_BIG_INT));}
+    @Test
+    void shouldGenerateInstant(@Some Instant instant) {then(instant).isBetween(START_INSTANT, START_INSTANT.plusSeconds(QUITE_BIG_INT));}
 
     @Test void shouldGenerateLocalDate(@Some LocalDate localDate) {
         var startLocalDate = LocalDate.ofInstant(START_INSTANT, ZoneId.systemDefault());
@@ -190,7 +195,8 @@ class SomeGeneratorTest {
         then(localTime).isBetween(startOffsetTime, startOffsetTime.plusSeconds(QUITE_BIG_INT));
     }
 
-    @Test void shouldGenerateDuration(@Some Duration duration) {then(duration).isBetween(Duration.ZERO, Duration.ofSeconds(QUITE_BIG_INT));}
+    @Test
+    void shouldGenerateDuration(@Some Duration duration) {then(duration).isBetween(Duration.ZERO, Duration.ofSeconds(QUITE_BIG_INT));}
 
     // remember: period is not comparable!
     @Test void shouldGeneratePeriod(@Some Period period) {then(period.getDays()).isBetween(0, QUITE_BIG_INT);}
@@ -258,8 +264,8 @@ class SomeGeneratorTest {
         @SuppressWarnings("unchecked")
         @Override public Optional<Integer> some(Some some, Type type, AnnotatedElement location) {
             return (int.class.equals(type)) // not Integer here
-                ? Optional.of(nextInt++)
-                : Optional.empty();
+                    ? Optional.of(nextInt++)
+                    : Optional.empty();
         }
     }
 
@@ -290,7 +296,7 @@ class SomeGeneratorTest {
         var throwable = catchThrowable(() -> generator.generate(String.class));
 
         then(throwable).isInstanceOf(WunderBarException.class)
-            .hasMessage("[fixed-generator] generated a non-unique value for null. There's already \"foo\" -> Some.SomeLiteral(value=[]) [fixed-generator]");
+                .hasMessage("[fixed-generator] generated a non-unique value for null. There's already \"foo\" -> Some.SomeLiteral(value=[]) [fixed-generator]");
     }
 
     static class SomeFixedStrings extends SomeSingleTypes<String> {
@@ -303,16 +309,16 @@ class SomeGeneratorTest {
         var throwable = catchThrowable(() -> generator.generate(AbstractList.class));
 
         then(throwable).isInstanceOf(WunderBarException.class)
-            .hasMessage("no generator registered for @Some() java.util.AbstractList at null");
+                .hasMessage("no generator registered for @Some() java.util.AbstractList at null");
     }
 
     @Test void shouldFailToGenerateFailingClass(SomeGenerator generator) {
         var throwable = catchThrowable(() -> generator.generate(FailingClass.class));
 
         then(throwable).isInstanceOf(WunderBarException.class)
-            .hasMessage("failed to generate an instance of " + FailingClass.class.getName())
-            .hasRootCauseInstanceOf(RuntimeException.class)
-            .hasRootCauseMessage("fails-always");
+                .hasMessage("failed to generate an instance of " + FailingClass.class.getName())
+                .hasRootCauseInstanceOf(RuntimeException.class)
+                .hasRootCauseMessage("fails-always");
     }
 
     public static class FailingClass {
@@ -338,9 +344,10 @@ class SomeGeneratorTest {
 
     // ---------------------------------------------------- custom types
     @Register(SomeCustomTypes.class)
-    @Test void shouldGenerateCustomDataWithSpecialGenerator(@Some("valid") CustomType data, SomeGenerator generator) throws Exception {
+    @Test
+    void shouldGenerateCustomDataWithSpecialGenerator(@Some("valid") CustomType data, SomeGenerator generator) throws Exception {
         then(generator.location(data)).isEqualTo(SomeGeneratorTest.class
-            .getDeclaredMethod("shouldGenerateCustomDataWithSpecialGenerator", CustomType.class, SomeGenerator.class).getParameters()[0]);
+                .getDeclaredMethod("shouldGenerateCustomDataWithSpecialGenerator", CustomType.class, SomeGenerator.class).getParameters()[0]);
         then(generator.findSomeFor(data).value()).containsExactly("valid");
 
         then(data.foo).startsWith("valid-data-foo-");
@@ -353,7 +360,8 @@ class SomeGeneratorTest {
         then(generator.location(data.gen.wrapped)).isEqualTo(CustomGeneric.class.getDeclaredField("wrapped"));
     }
 
-    @Test void shouldGenerateCustomDataWithGenericGenerator(@Some CustomType data, SomeGenerator generator) throws Exception {
+    @Test
+    void shouldGenerateCustomDataWithGenericGenerator(@Some CustomType data, SomeGenerator generator) throws Exception {
         then(data.foo).startsWith("foo-");
         then(data.bar).isEqualTo(new CustomWrapper(1));
         then(data.baz).startsWith("baz-cool-");
@@ -382,7 +390,7 @@ class SomeGeneratorTest {
 
     @AllArgsConstructor
     public static @Data class CustomWrapper {
-        int wrapped;
+        @SuppressWarnings("unused") int wrapped;
     }
 
     public static @Data @Builder class CustomGeneric<T> {
@@ -397,12 +405,12 @@ class SomeGeneratorTest {
             assert some.value().length == 1;
             var tag = some.value()[0];
             return CustomType.builder()
-                .foo(tag + "-" + name(location) + "-" +
-                     generator.generate(CustomType.class, "foo"))
-                .bar(generator.generate(CustomType.class, "bar"))
-                .baz(generator.generate(CustomType.class, "baz"))
-                .gen(generator.generate(CustomType.class, "gen"))
-                .build();
+                    .foo(tag + "-" + name(location) + "-" +
+                         generator.generate(CustomType.class, "foo"))
+                    .bar(generator.generate(CustomType.class, "bar"))
+                    .baz(generator.generate(CustomType.class, "baz"))
+                    .gen(generator.generate(CustomType.class, "gen"))
+                    .build();
         }
     }
 
@@ -439,8 +447,8 @@ class SomeGeneratorTest {
         then(throwable).isInstanceOf(WunderBarException.class).hasMessageContaining("infinite loop");
     }
 
-    private static @Data @Builder class InfiniteLoop {
-        String dummy;
+    static @Data @Builder class InfiniteLoop {
+        @SuppressWarnings("unused") String dummy;
     }
 
     @RequiredArgsConstructor

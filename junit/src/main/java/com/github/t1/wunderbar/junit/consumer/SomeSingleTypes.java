@@ -39,7 +39,7 @@ public abstract class SomeSingleTypes<T> implements SomeData {
         var typeOfT = ((ParameterizedType) this.getClass().getGenericSuperclass()).getActualTypeArguments()[0];
         this.type = (Class<T>) ((typeOfT instanceof ParameterizedType) ? rawType(typeOfT) : typeOfT);
         this.some = ((AnnotatedParameterizedType) this.getClass().getAnnotatedSuperclass())
-            .getAnnotatedActualTypeArguments()[0].getAnnotation(Some.class);
+                .getAnnotatedActualTypeArguments()[0].getAnnotation(Some.class);
     }
 
     @Override public Optional<T> some(Some some, Type type, AnnotatedElement location) {
@@ -47,7 +47,7 @@ public abstract class SomeSingleTypes<T> implements SomeData {
         if (this.type.equals(maybeRawType) && matches(some)) {
             var value = generate(some, type, location);
             if (value == null) throw new WunderBarException(
-                "[" + this + "] generated a null value" + ((location == null) ? "" : " for " + location));
+                    "[" + this + "] generated a null value" + ((location == null) ? "" : " for " + location));
             return Optional.of(value);
         } else return Optional.empty();
     }

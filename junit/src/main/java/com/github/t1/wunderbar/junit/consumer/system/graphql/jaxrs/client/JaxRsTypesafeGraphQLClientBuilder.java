@@ -12,8 +12,6 @@ import jakarta.ws.rs.client.WebTarget;
 
 import java.lang.reflect.Proxy;
 import java.net.URI;
-import java.security.AccessController;
-import java.security.PrivilegedAction;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -83,7 +81,9 @@ public class JaxRsTypesafeGraphQLClientBuilder implements TypesafeGraphQLClientB
     }
 
     public TypesafeGraphQLClientBuilder register(Object component) {
-        client().register(component);
+        @SuppressWarnings("resource")
+        var client = client();
+        client.register(component);
         return this;
     }
 
@@ -98,10 +98,11 @@ public class JaxRsTypesafeGraphQLClientBuilder implements TypesafeGraphQLClientB
         GraphQLClientConfiguration persistentConfig = configs.getClient(configKey);
         if (persistentConfig != null) applyConfig(persistentConfig);
 
+        @SuppressWarnings("resource")
         WebTarget webTarget = client().target(endpoint);
         JaxRsTypesafeGraphQLClientProxy graphQlClient = new JaxRsTypesafeGraphQLClientProxy(webTarget, persistentConfig, extraHeaders, allowUnexpectedResponseFields);
-        return apiClass.cast(Proxy.newProxyInstance(getClassLoader(apiClass), new Class<?>[]{apiClass},
-            (proxy, method, args) -> invoke(apiClass, graphQlClient, method, args)));
+        return apiClass.cast(Proxy.newProxyInstance(apiClass.getClassLoader(), new Class<?>[]{apiClass},
+                (proxy, method, args) -> invoke(apiClass, graphQlClient, method, args)));
     }
 
     private Object invoke(Class<?> apiClass, JaxRsTypesafeGraphQLClientProxy graphQlClient, java.lang.reflect.Method method,
@@ -112,12 +113,6 @@ public class JaxRsTypesafeGraphQLClientBuilder implements TypesafeGraphQLClientB
             return null; // void
         }
         return graphQlClient.invoke(apiClass, methodInvocation);
-    }
-
-    private ClassLoader getClassLoader(Class<?> apiClass) {
-        if (System.getSecurityManager() == null)
-            return apiClass.getClassLoader();
-        return AccessController.doPrivileged((PrivilegedAction<ClassLoader>) apiClass::getClassLoader);
     }
 
     /**

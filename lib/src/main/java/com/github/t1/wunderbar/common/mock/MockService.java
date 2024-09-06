@@ -9,8 +9,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static com.github.t1.wunderbar.common.Utils.prefix;
-import static java.util.Collections.unmodifiableList;
 import static jakarta.ws.rs.core.Response.Status.BAD_REQUEST;
+import static java.util.Collections.unmodifiableList;
 
 @Slf4j
 public class MockService {
@@ -26,10 +26,10 @@ public class MockService {
 
     public static WunderBarMockExpectation addExpectation(HttpRequest expectedRequest, int maxCallCount, HttpResponse response) {
         return addExpectation(WunderBarMockInteractionExpectation.builder()
-            .expectedRequest(expectedRequest)
-            .maxCallCount(maxCallCount)
-            .response(response)
-            .build());
+                .expectedRequest(expectedRequest)
+                .maxCallCount(maxCallCount)
+                .response(response)
+                .build());
     }
 
     private static WunderBarMockExpectation addExpectation(WunderBarMockExpectation expectation) {
@@ -69,8 +69,8 @@ public class MockService {
 
     private WunderBarMockExpectation findExpectationMatching(HttpRequest request) {
         return EXPECTATIONS.stream()
-            .peek(expectation -> log.debug("{} (of {}) match {}", expectation.getId(), EXPECTATIONS.size(), expectation))
-            .filter(expectation -> expectation.matches(request))
-            .findFirst().orElse(null);
+                .peek(expectation -> log.debug("{} (of {}) match {}", expectation.getId(), EXPECTATIONS.size(), expectation))
+                .filter(expectation -> expectation.matches(request))
+                .findFirst().orElse(null);
     }
 }

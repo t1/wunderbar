@@ -5,7 +5,7 @@ import io.smallrye.graphql.client.GraphQLError;
 import static com.github.t1.wunderbar.junit.assertions.WunderBarBDDAssertions.then;
 
 public class ViolationErrorAssert<SELF extends ViolationErrorAssert<SELF, ACTUAL>, ACTUAL extends GraphQLError>
-    extends GraphQLErrorAssert<SELF, ACTUAL> {
+        extends GraphQLErrorAssert<SELF, ACTUAL> {
     public ViolationErrorAssert(ACTUAL actual) {super(actual);}
 
     public ViolationErrorAssert(ACTUAL actual, Class<? super GraphQLClientExceptionAssert<?, ?>> selfType) {super(actual, selfType);}

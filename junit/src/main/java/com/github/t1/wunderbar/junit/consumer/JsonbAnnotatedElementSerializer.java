@@ -12,7 +12,8 @@ import static com.github.t1.wunderbar.common.Utils.name;
 import static java.util.Locale.ROOT;
 
 public class JsonbAnnotatedElementSerializer implements JsonbSerializer<AnnotatedElement> {
-    @Override public void serialize(AnnotatedElement annotatedElement, JsonGenerator generator, SerializationContext ctx) {
+    @Override
+    public void serialize(AnnotatedElement annotatedElement, JsonGenerator generator, SerializationContext ctx) {
         if (annotatedElement == null) generator.writeNull();
         else generator.write(annotatedElement.getClass().getSimpleName().toLowerCase(ROOT) + " "
                              + "[" + name(annotatedElement) + "] "

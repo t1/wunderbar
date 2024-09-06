@@ -29,7 +29,6 @@ import java.util.stream.Stream.Builder;
 import static com.github.t1.wunderbar.common.Utils.invoke;
 import static com.github.t1.wunderbar.junit.JunitUtils.ORDER;
 import static com.github.t1.wunderbar.junit.provider.OnInteractionErrorMethodHandler.DEFAULT_ON_INTERACTION_ERROR;
-import static java.util.stream.Collectors.toUnmodifiableList;
 
 class WunderBarApiProviderJUnitExtension implements Extension, BeforeEachCallback, AfterEachCallback {
     static WunderBarApiProviderJUnitExtension INSTANCE;
@@ -56,34 +55,34 @@ class WunderBarApiProviderJUnitExtension implements Extension, BeforeEachCallbac
 
     private WunderBarApiProvider findSettings() {
         return context.getRequiredTestInstances().getAllInstances().stream()
-            .filter(test -> test.getClass().isAnnotationPresent(WunderBarApiProvider.class))
-            .findFirst()
-            .map(instance -> instance.getClass().getAnnotation(WunderBarApiProvider.class))
-            .orElseThrow(() -> new WunderBarException("annotation not found: " + WunderBarApiProvider.class.getName()));
+                .filter(test -> test.getClass().isAnnotationPresent(WunderBarApiProvider.class))
+                .findFirst()
+                .map(instance -> instance.getClass().getAnnotation(WunderBarApiProvider.class))
+                .orElseThrow(() -> new WunderBarException("annotation not found: " + WunderBarApiProvider.class.getName()));
     }
 
     private void scanForBeforeDynamicTestMethods() {
         for (Object instance : context.getRequiredTestInstances().getAllInstances())
             allMethods(instance, BeforeDynamicTest.class)
-                .forEach(method -> beforeDynamicTestMethods.add(new BeforeDynamicTestMethodHandler(instance, method)));
+                    .forEach(method -> beforeDynamicTestMethods.add(new BeforeDynamicTestMethodHandler(instance, method)));
     }
 
     private void scanForBeforeInteractionMethods() {
         for (Object instance : context.getRequiredTestInstances().getAllInstances())
             allMethods(instance, BeforeInteraction.class)
-                .forEach(method -> beforeInteractionMethods.add(new BeforeInteractionMethodHandler(instance, method)));
+                    .forEach(method -> beforeInteractionMethods.add(new BeforeInteractionMethodHandler(instance, method)));
     }
 
     private void scanForAfterInteractionMethods() {
         for (Object instance : context.getRequiredTestInstances().getAllInstances())
             allMethods(instance, AfterInteraction.class)
-                .forEach(method -> afterInteractionMethods.add(new AfterInteractionMethodHandler(instance, method)));
+                    .forEach(method -> afterInteractionMethods.add(new AfterInteractionMethodHandler(instance, method)));
     }
 
     private void scanForOnInteractionErrorMethods() {
         for (Object instance : context.getRequiredTestInstances().getAllInstances())
             allMethods(instance, OnInteractionError.class)
-                .forEach(method -> onInteractionErrorMethods.add(new OnInteractionErrorMethodHandler(instance, method)));
+                    .forEach(method -> onInteractionErrorMethods.add(new OnInteractionErrorMethodHandler(instance, method)));
         if (onInteractionErrorMethods.isEmpty())
             onInteractionErrorMethods.add(new OnInteractionErrorMethodHandler(null, DEFAULT_ON_INTERACTION_ERROR));
     }
@@ -91,16 +90,16 @@ class WunderBarApiProviderJUnitExtension implements Extension, BeforeEachCallbac
     private void scanForAfterDynamicTestMethods() {
         for (Object instance : context.getRequiredTestInstances().getAllInstances())
             allMethods(instance, AfterDynamicTest.class)
-                .forEach(method -> afterDynamicTestMethods.add(new AfterDynamicTestMethodHandler(instance, method)));
+                    .forEach(method -> afterDynamicTestMethods.add(new AfterDynamicTestMethodHandler(instance, method)));
     }
 
     private Stream<Method> allMethods(Object instance, Class<? extends Annotation> annotationType) {
         Builder<Method> builder = Stream.builder();
         for (Class<?> c = instance.getClass(); c != null; c = c.getSuperclass())
             Stream.of(c.getDeclaredMethods())
-                .filter(method -> method.isAnnotationPresent(annotationType))
-                .sorted(ORDER)
-                .forEach(builder::add);
+                    .filter(method -> method.isAnnotationPresent(annotationType))
+                    .sorted(ORDER)
+                    .forEach(builder::add);
         return builder.build();
     }
 
@@ -148,7 +147,7 @@ class WunderBarApiProviderJUnitExtension implements Extension, BeforeEachCallbac
         }
 
         @Override public int getInteractionCount() {
-            return test.getInteractionCount();
+            return test.interactionCount();
         }
 
         @Override public String getDisplayName() {return test.getDisplayName();}
@@ -158,7 +157,7 @@ class WunderBarApiProviderJUnitExtension implements Extension, BeforeEachCallbac
             beforeDynamicTestMethods.forEach(handler -> handler.invoke(this));
 
             for (HttpInteraction interaction : interactions) {
-                System.out.println("=> execute " + interaction.getNumber() + " of " + test.getInteractionCount());
+                System.out.println("=> execute " + interaction.getNumber() + " of " + test.interactionCount());
                 actualResponses.add(new ExecutionImpl(interaction).run());
             }
 
@@ -166,9 +165,9 @@ class WunderBarApiProviderJUnitExtension implements Extension, BeforeEachCallbac
             afterDynamicTestMethods.forEach(consumer -> consumer.invoke(this));
         }
 
-        private class ExecutionImpl implements Execution {
-            @Getter HttpInteraction expected;
-            @Getter @Setter HttpResponse actual;
+        @Getter private class ExecutionImpl implements Execution {
+            HttpInteraction expected;
+            @Setter HttpResponse actual;
 
             public ExecutionImpl(HttpInteraction expected) {
                 this.expected = expected;
@@ -182,11 +181,11 @@ class WunderBarApiProviderJUnitExtension implements Extension, BeforeEachCallbac
 
             @Override public int getInteractionNumber() {return expected.getNumber();}
 
-            @Override public int getInteractionCount() {return test.getInteractionCount();}
+            @Override public int getInteractionCount() {return test.interactionCount();}
 
             private HttpResponse run() {
                 beforeInteractionMethods.forEach(handler -> handler.invoke(this));
-                var numbering = expected.getNumber() + "/" + test.getInteractionCount();
+                var numbering = expected.getNumber() + "/" + test.interactionCount();
                 System.out.println("-- actual request " + numbering + ":\n" + expected.getRequest() + "\n");
 
                 this.actual = httpClient.send(expected.getRequest()).withFormattedBody();
@@ -198,7 +197,8 @@ class WunderBarApiProviderJUnitExtension implements Extension, BeforeEachCallbac
                 return actual;
             }
 
-            @Override public void expect(Function<HttpInteraction, HttpInteraction> function) {expected = function.apply(expected);}
+            @Override
+            public void expect(Function<HttpInteraction, HttpInteraction> function) {expected = function.apply(expected);}
         }
     }
 
@@ -210,7 +210,7 @@ class WunderBarApiProviderJUnitExtension implements Extension, BeforeEachCallbac
         default List<HttpResponse> getExpectedResponses() {return mapExpectedResponses(HttpInteraction::getResponse);}
 
         default <T> List<T> mapExpectedResponses(Function<HttpInteraction, T> function) {
-            return getInteractions().stream().map(function).collect(toUnmodifiableList());
+            return getInteractions().stream().map(function).toList();
         }
 
         List<HttpResponse> getActualResponses();
@@ -221,6 +221,7 @@ class WunderBarApiProviderJUnitExtension implements Extension, BeforeEachCallbac
 
     interface Execution extends WunderBarExecution {
         HttpInteraction getExpected();
+
         HttpResponse getActual();
 
         void expect(Function<HttpInteraction, HttpInteraction> function);

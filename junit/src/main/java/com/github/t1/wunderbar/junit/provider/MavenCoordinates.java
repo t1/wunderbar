@@ -21,9 +21,9 @@ public @Value class MavenCoordinates {
         if (split.length < 3) throw new RuntimeException("invalid Maven coordinates [" + coordinates + "]");
 
         var builder = MavenCoordinates.builder()
-            .groupId(split[0])
-            .artifactId(split[1])
-            .version(split[2]);
+                .groupId(split[0])
+                .artifactId(split[1])
+                .version(split[2]);
         if (split.length > 3)
             builder.packaging(split[3]);
         if (split.length > 4)
@@ -44,17 +44,17 @@ public @Value class MavenCoordinates {
 
     public Path getLocalRepositoryPath() {
         return LOCAL_REPOSITORY
-            .resolve(groupId.replace('.', '/'))
-            .resolve(artifactId)
-            .resolve(version)
-            .resolve(fileName());
+                .resolve(groupId.replace('.', '/'))
+                .resolve(artifactId)
+                .resolve(version)
+                .resolve(fileName());
     }
 
     private String fileName() {
         var out = new StringBuilder()
-            .append(artifactId)
-            .append("-")
-            .append(version);
+                .append(artifactId)
+                .append("-")
+                .append(version);
         if (classifier != null) out.append("-").append(classifier);
         out.append(".").append(packaging);
         return out.toString();
@@ -66,15 +66,15 @@ public @Value class MavenCoordinates {
         if (exists(getLocalRepositoryPath())) return;
         log.info("download maven artifact {}", getCompactString());
         var mvn = new ProcessBuilder()
-            .command("mvn", "dependency:get", "-D" + "artifact=" + getCompactString())
-            // .inheritIO() // may help with debugging
-            .start();
+                .command("mvn", "dependency:get", "-D" + "artifact=" + getCompactString())
+                // .inheritIO() // may help with debugging
+                .start();
         var exited = mvn.waitFor(30, SECONDS);
         if (!exited || mvn.exitValue() != 0) {
             System.err.println(readAll(mvn.getInputStream()));
-            throw new RuntimeException(("" +
-                (exited ? "can't download" : "timeout while downloading")
-                + " maven artifact: " + getCompactString() + " " + readAll(mvn.getErrorStream())).trim());
+            throw new RuntimeException((
+                    (exited ? "can't download" : "timeout while downloading")
+                    + " maven artifact: " + getCompactString() + " " + readAll(mvn.getErrorStream())).trim());
         }
     }
 

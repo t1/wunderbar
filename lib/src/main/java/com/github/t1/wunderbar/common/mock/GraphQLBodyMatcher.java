@@ -1,10 +1,9 @@
 package com.github.t1.wunderbar.common.mock;
 
 import com.github.t1.wunderbar.junit.http.HttpRequest;
+import jakarta.json.JsonObject;
 import lombok.Builder;
 import lombok.Value;
-
-import jakarta.json.JsonObject;
 
 @Value @Builder(buildMethodName = "internalBuild")
 public class GraphQLBodyMatcher {
@@ -18,11 +17,11 @@ public class GraphQLBodyMatcher {
         public HttpRequest build() {
             var body = internalBuild();
             return HttpRequest.builder()
-                .method("POST")
-                .uri("/graphql")
-                .contentType("application/json")
-                .body(body)
-                .build();
+                    .method("POST")
+                    .uri("/graphql")
+                    .contentType("application/json")
+                    .body(body)
+                    .build();
         }
     }
 }

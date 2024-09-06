@@ -20,7 +20,9 @@ class DirBarReader extends BarReader {
 
     @SneakyThrows(IOException.class)
     @Override protected Stream<TreeEntry> treeEntries() {
-        return Files.walk(rootPath).flatMap(this::treeEntry);
+        @SuppressWarnings("resource") // I don't get this Intellij warning: the stream will be closed like all streams are
+        var walker = Files.walk(rootPath);
+        return walker.flatMap(this::treeEntry);
     }
 
     private Stream<TreeEntry> treeEntry(Path path) {
@@ -51,6 +53,9 @@ class DirBarReader extends BarReader {
         return Optional.empty();
     }
 
-    private static final Pattern TEST_FILE = Pattern.compile("(?<number>[0-9]+) " +
-        "(?<direction>(request|response))-(?<part>(body|headers))\\.(?<extension>(json|properties))");
+    private static final Pattern TEST_FILE = Pattern.compile(
+            "(?<number>[0-9]+) " +
+            "(?<direction>(request|response))-" +
+            "(?<part>(body|headers))\\." +
+            "(?<extension>(json|properties))");
 }

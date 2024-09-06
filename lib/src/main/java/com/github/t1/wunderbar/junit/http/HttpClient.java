@@ -13,7 +13,9 @@ import java.net.http.HttpResponse.ResponseInfo;
 import java.time.Duration;
 
 import static com.github.t1.wunderbar.junit.http.HttpUtils.charset;
-import static jakarta.ws.rs.core.HttpHeaders.*;
+import static jakarta.ws.rs.core.HttpHeaders.ACCEPT;
+import static jakarta.ws.rs.core.HttpHeaders.AUTHORIZATION;
+import static jakarta.ws.rs.core.HttpHeaders.CONTENT_TYPE;
 import static jakarta.ws.rs.core.MediaType.WILDCARD_TYPE;
 import static java.net.http.HttpClient.Redirect.NORMAL;
 import static java.net.http.HttpRequest.BodyPublishers.noBody;
@@ -22,14 +24,17 @@ import static java.net.http.HttpRequest.BodyPublishers.noBody;
 @Slf4j
 public class HttpClient {
     private static final java.net.http.HttpClient HTTP = java.net.http.HttpClient.newBuilder()
-        .followRedirects(NORMAL)
-        .connectTimeout(Duration.ofSeconds(1))
-        .build();
+            .followRedirects(NORMAL)
+            .connectTimeout(Duration.ofSeconds(1))
+            .build();
 
     private final URI baseUri;
     private boolean logging = false;
 
-    public HttpClient logging(boolean logging) {this.logging = logging; return this;}
+    public HttpClient logging(boolean logging) {
+        this.logging = logging;
+        return this;
+    }
 
     public HttpResponse send(HttpRequest request) {
         if (logging) log.debug("request:\n{}", request);
@@ -44,11 +49,11 @@ public class HttpClient {
 
     private java.net.http.HttpRequest convert(HttpRequest request) {
         var builder = java.net.http.HttpRequest.newBuilder()
-            // using URI#resolve would remove the context path of the base uri
-            .uri(URI.create(baseUri + "" + request.getUri()))
-            .method(request.getMethod(), request.body().map(BodyPublishers::ofString).orElse(noBody()))
-            .header(CONTENT_TYPE, request.getContentType().toString())
-            .header(ACCEPT, request.accept());
+                // using URI#resolve would remove the context path of the base uri
+                .uri(URI.create(baseUri + "" + request.getUri()))
+                .method(request.getMethod(), request.body().map(BodyPublishers::ofString).orElse(noBody()))
+                .header(CONTENT_TYPE, request.getContentType().toString())
+                .header(ACCEPT, request.accept());
         if (request.getAuthorization() != null) builder.header(AUTHORIZATION, request.getAuthorization().toHeader());
         return builder.build();
     }
@@ -70,10 +75,10 @@ public class HttpClient {
         var body = response.body();
         if (body != null && body.isEmpty()) body = null;
         return HttpResponse.builder()
-            .status(Status.fromStatusCode(response.statusCode()))
-            .contentType(contentType(response))
-            .body(body)
-            .build();
+                .status(Status.fromStatusCode(response.statusCode()))
+                .contentType(contentType(response))
+                .body(body)
+                .build();
     }
 
     private MediaType contentType(java.net.http.HttpResponse<?> response) {

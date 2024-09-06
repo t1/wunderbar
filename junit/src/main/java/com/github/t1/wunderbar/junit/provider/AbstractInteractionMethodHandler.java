@@ -45,7 +45,9 @@ abstract class AbstractInteractionMethodHandler {
     }
 
     protected void apply(Object result, Execution execution) {
-        if (result instanceof HttpResponse) execution.expect(interaction -> interaction.withResponse((HttpResponse) result));
-        else if (result != null) throw new WunderBarException("unexpected return type " + result.getClass()); // TODO test
+        if (result instanceof HttpResponse)
+            execution.expect(interaction -> interaction.withResponse((HttpResponse) result));
+        else if (result != null)
+            throw new WunderBarException("unexpected return type " + result.getClass()); // TODO test
     }
 }
