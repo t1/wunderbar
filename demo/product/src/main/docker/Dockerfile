@@ -1,4 +1,4 @@
-FROM registry.access.redhat.com/ubi8/openjdk-11-runtime:1.20-2.1727147566
+FROM registry.access.redhat.com/ubi8/openjdk-11-runtime:1.20-2.1729081630
 
 ENV LANG='en_US.UTF-8' LANGUAGE='en_US:en'
 
