@@ -66,7 +66,7 @@
         <dependency>
             <groupId>io.smallrye</groupId>
             <artifactId>smallrye-context-propagation</artifactId>
-            <version>2.1.2</version>
+            <version>2.2.0</version>
             <scope>runtime</scope>
         </dependency>
         <dependency>
