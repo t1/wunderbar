@@ -57,16 +57,16 @@ class ProductsResolverWeldIT {
     }
 
     /** before you mutate an existing object, make sure it exists in the unmodified state */
-    @Test void shouldUpdateExistingProductPrice(@Some Product product) {
+    @Test void shouldUpdateExistingProductPrice(@Some Product product, @Some int newPrice) {
         given(products.product(product.getId())).returns(product);
-        given(products.update(new Product().withId(product.getId()).withPrice(12_99))).returns(product.withPrice(12_99));
+        given(products.update(new Product().withId(product.getId()).withPrice(newPrice))).returns(product.withPrice(newPrice));
 
         var item = item(product.getId());
         var preCheck = resolver.product(item);
-        var resolvedProduct = resolver.productWithPriceUpdate(item, 12_99);
+        var resolvedProduct = resolver.productWithPriceUpdate(item, newPrice);
 
         then(preCheck).usingRecursiveComparison().isEqualTo(product);
-        then(resolvedProduct).usingRecursiveComparison().isEqualTo(product.withPrice(12_99));
+        then(resolvedProduct).usingRecursiveComparison().isEqualTo(product.withPrice(newPrice));
     }
 
     @Test void shouldFailToResolveUnknownProduct(@Some("product-id") String id) {

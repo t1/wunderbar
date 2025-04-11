@@ -51,13 +51,13 @@ class ProductsGatewayIT {
     }
 
     /** before you mutate an existing object, make sure it exists in the unmodified state */
-    @Test void shouldUpdateProductPrice() {
+    @Test void shouldUpdateProductPrice(@Some int newPrice) {
         given(products.product(product.getId())).returns(product);
-        var expected = product.withPrice(12_99);
-        given(products.patch(new Product().withId(product.getId()).withPrice(12_99))).returns(expected);
+        var expected = product.withPrice(newPrice);
+        given(products.patch(new Product().withId(product.getId()).withPrice(newPrice))).returns(expected);
 
         var preCheck = gateway.product(item());
-        var updated = gateway.productWithPriceUpdate(item(), 12_99);
+        var updated = gateway.productWithPriceUpdate(item(), newPrice);
 
         then(preCheck).usingRecursiveComparison().isEqualTo(product);
         then(updated).usingRecursiveComparison().isEqualTo(expected);
