@@ -14,6 +14,8 @@
         <maven.compiler.source>17</maven.compiler.source>
         <maven.compiler.target>17</maven.compiler.target>
         <maven.compiler.parameters>true</maven.compiler.parameters>
+        <maven.compiler.proc>full</maven.compiler.proc>
+        <project.build.outputTimestamp>1980-02-01T00:00:00Z</project.build.outputTimestamp>
         <project.build.sourceEncoding>utf-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>utf-8</project.reporting.outputEncoding>
 
