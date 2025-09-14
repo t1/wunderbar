@@ -36,7 +36,7 @@
         <mockito.version>5.19.0</mockito.version>
         <logback.version>1.5.18</logback.version>
 
-        <maven-test-plugins.version>3.5.3</maven-test-plugins.version>
+        <maven-test-plugins.version>3.5.4</maven-test-plugins.version>
     </properties>
 
     <modules>
