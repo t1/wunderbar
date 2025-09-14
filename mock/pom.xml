@@ -10,6 +10,7 @@
     </parent>
 
     <artifactId>wunderbar.mock.server</artifactId>
+    <name>Behavior Archives (Mock Server)</name>
     <packaging>war</packaging>
 
     <build>

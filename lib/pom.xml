@@ -10,6 +10,7 @@
     </parent>
 
     <artifactId>wunderbar.lib</artifactId>
+    <name>Behavior Archives (Lib)</name>
 
     <dependencies>
         <dependency>
