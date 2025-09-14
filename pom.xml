@@ -4,7 +4,7 @@
 
     <groupId>com.github.t1</groupId>
     <artifactId>wunderbar.parent</artifactId>
-    <version>3.5.1-SNAPSHOT</version>
+    <version>3.5.1</version>
     <name>Behavior Archives (Parent)</name>
     <description>Code-first, low ceremony Consumer Driven Contracts test tool for Java natives.</description>
     <packaging>pom</packaging>
@@ -15,7 +15,7 @@
         <maven.compiler.target>17</maven.compiler.target>
         <maven.compiler.parameters>true</maven.compiler.parameters>
         <maven.compiler.proc>full</maven.compiler.proc>
-        <project.build.outputTimestamp>1980-02-01T00:00:00Z</project.build.outputTimestamp>
+        <project.build.outputTimestamp>2025-09-14T08:12:22Z</project.build.outputTimestamp>
         <project.build.sourceEncoding>utf-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>utf-8</project.reporting.outputEncoding>
 
@@ -63,7 +63,7 @@
     <scm>
         <developerConnection>scm:git:https://github.com/t1/wunderbar</developerConnection>
         <url>https://github.com/t1/wunderbar</url>
-        <tag>v3.5</tag>
+        <tag>v3.5.1</tag>
     </scm>
 
     <dependencyManagement>
