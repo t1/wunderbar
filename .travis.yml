@@ -1,0 +1,8 @@
+language: java
+
+jdk:
+  - openjdk17
+  - openjdk21
+
+install: skip
+script: mvn --batch-mode --show-version --no-transfer-progress -DCI=GitHub install
