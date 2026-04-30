@@ -24,7 +24,7 @@
         <smallrye-graphql.version>2.17.0</smallrye-graphql.version>
         <slf4j.version>2.0.17</slf4j.version>
         <resteasy.version>7.0.2.Final</resteasy.version>
-        <jersey.mp.rest-client.version>4.0.0</jersey.mp.rest-client.version>
+        <jersey.mp.rest-client.version>4.0.2</jersey.mp.rest-client.version>
         <microprofile.rest-client.version>4.0</microprofile.rest-client.version>
         <quarkus.version>3.35.0</quarkus.version>
         <smallrye-context-propagation.version>1.2.2</smallrye-context-propagation.version>
