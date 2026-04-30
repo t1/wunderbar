@@ -4,15 +4,15 @@
 
     <groupId>com.github.t1</groupId>
     <artifactId>wunderbar.parent</artifactId>
-    <version>3.5.2-SNAPSHOT</version>
+    <version>4.0-SNAPSHOT</version>
     <name>Behavior Archives (Parent)</name>
     <description>Code-first, low ceremony Consumer Driven Contracts test tool for Java natives.</description>
     <packaging>pom</packaging>
     <url>https://github.com/t1/wunderbar</url>
 
     <properties>
-        <maven.compiler.source>17</maven.compiler.source>
-        <maven.compiler.target>17</maven.compiler.target>
+        <maven.compiler.source>21</maven.compiler.source>
+        <maven.compiler.target>21</maven.compiler.target>
         <maven.compiler.parameters>true</maven.compiler.parameters>
         <maven.compiler.proc>full</maven.compiler.proc>
         <project.build.outputTimestamp>2025-09-14T13:19:23Z</project.build.outputTimestamp>
@@ -20,10 +20,12 @@
         <project.reporting.outputEncoding>utf-8</project.reporting.outputEncoding>
 
         <microprofile.version>7.1</microprofile.version>
+        <jakarta.ws.rs.version>4.0.0</jakarta.ws.rs.version>
         <smallrye-graphql.version>2.17.0</smallrye-graphql.version>
         <slf4j.version>2.0.17</slf4j.version>
         <resteasy.version>7.0.2.Final</resteasy.version>
-        <resteasy.mp.version>3.0.1.Final</resteasy.mp.version>
+        <jersey.mp.rest-client.version>4.0.0</jersey.mp.rest-client.version>
+        <microprofile.rest-client.version>4.0</microprofile.rest-client.version>
         <quarkus.version>3.35.0</quarkus.version>
         <smallrye-context-propagation.version>1.2.2</smallrye-context-propagation.version>
         <json.version>2.1.3</json.version>
@@ -97,6 +99,34 @@
                 <configuration>
                     <parameters>true</parameters><!-- see https://youtrack.jetbrains.com/issue/IDEA-201496 -->
                 </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-enforcer-plugin</artifactId>
+                <version>3.6.2</version>
+                <executions>
+                    <execution>
+                        <id>enforce-resteasy-major-line</id>
+                        <phase>validate</phase>
+                        <goals>
+                            <goal>enforce</goal>
+                        </goals>
+                        <configuration>
+                            <rules>
+                                <bannedDependencies>
+                                    <searchTransitive>true</searchTransitive>
+                                    <excludes>
+                                        <exclude>org.jboss.resteasy:*:[0,7)</exclude>
+                                        <exclude>org.jboss.resteasy:*:[8,)</exclude>
+                                    </excludes>
+                                    <message>
+                                        RESTEasy major versions must stay aligned on org.jboss.resteasy 7.x.
+                                    </message>
+                                </bannedDependencies>
+                            </rules>
+                        </configuration>
+                    </execution>
+                </executions>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>

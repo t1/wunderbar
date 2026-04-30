@@ -5,6 +5,7 @@ import lombok.Getter;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
+import org.eclipse.microprofile.rest.client.RestClientBuilder;
 
 import java.lang.reflect.Method;
 import java.net.URI;
@@ -18,6 +19,12 @@ public abstract @Internal class WunderBarExpectation {
     @Getter @Setter private boolean recording = true;
     protected final Method method;
     protected final Object[] args;
+
+    public static RestClientBuilder restClientBuilder() {
+        return RestClientBuilder.newBuilder()
+                // By default, Jersey uses its JDK connector (HttpURLConnection), which does not support PATCH requests
+                .property("jersey.config.client.connector.provider", "org.glassfish.jersey.apache5.connector.Apache5ConnectorProvider");
+    }
 
     @Override public String toString() {
         return getClass().getSimpleName() + " for " + method + Arrays.toString(args);

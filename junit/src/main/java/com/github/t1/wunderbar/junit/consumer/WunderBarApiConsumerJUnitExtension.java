@@ -6,11 +6,11 @@ import com.github.t1.wunderbar.junit.WunderBarException;
 import io.smallrye.graphql.client.typesafe.api.GraphQLClientApi;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
+import org.jspecify.annotations.NonNull;
 import org.junit.jupiter.api.extension.AfterEachCallback;
 import org.junit.jupiter.api.extension.BeforeEachCallback;
 import org.junit.jupiter.api.extension.Extension;
 import org.junit.jupiter.api.extension.ExtensionContext;
-import org.junit.jupiter.api.extension.ExtensionContext.Store.CloseableResource;
 import org.junit.jupiter.api.extension.ParameterContext;
 import org.junit.jupiter.api.extension.ParameterResolutionException;
 import org.junit.jupiter.api.extension.ParameterResolver;
@@ -114,7 +114,7 @@ class WunderBarApiConsumerJUnitExtension implements Extension, BeforeEachCallbac
         }
     };
 
-    @Override public void beforeEach(ExtensionContext context) {
+    @Override public void beforeEach(@NonNull ExtensionContext context) {
         INSTANCE = this;
         if (!initialized) init(context);
 
@@ -143,7 +143,7 @@ class WunderBarApiConsumerJUnitExtension implements Extension, BeforeEachCallbac
         initialized = true;
     }
 
-    private static void registerShutdownHook(CloseableResource shutDown, ExtensionContext context) {
+    private static void registerShutdownHook(AutoCloseable shutDown, ExtensionContext context) {
         context.getRoot().getStore(GLOBAL).put(WunderBarApiConsumerJUnitExtension.class.getName(), shutDown);
     }
 
@@ -164,7 +164,7 @@ class WunderBarApiConsumerJUnitExtension implements Extension, BeforeEachCallbac
                 .toList();
         if (instances.isEmpty())
             throw new WunderBarException("annotation not found: " + WunderBarApiConsumer.class.getName());
-        return instances.get(instances.size() - 1); // the innermost / closest
+        return instances.getLast(); // the innermost / closest
     }
 
     private boolean isAnnotatedAsWunderBarConsumer(Object test) {
@@ -262,50 +262,27 @@ class WunderBarApiConsumerJUnitExtension implements Extension, BeforeEachCallbac
         return endpoint;
     }
 
+    /// Search super classes as well as enclosing classes.
+    /// The enclosing-instance walk is handled by JUnit's `getAllInstances()`;
+    /// the super-class walk is done via plain reflection.
     private String functionCall(String methodName) {
-        var instance = context.getRequiredTestInstance();
-        var method = new EndpointInvocation(methodName, instance);
-        var result = method.invoke();
+        var entry = context.getRequiredTestInstances().getAllInstances().stream()
+                .map(instance -> findMethod(instance.getClass(), methodName)
+                        .map(m -> Map.entry(instance, m))
+                        .orElse(null))
+                .filter(Objects::nonNull)
+                .findFirst()
+                .orElseThrow(() -> new WunderBarException("endpoint method not found '" + methodName + "'"));
+        var result = Utils.invoke(entry.getKey(), entry.getValue());
         if (result == null) throw new NullPointerException("endpoint method '" + methodName + "' returned null");
         return result.toString();
     }
 
-    /**
-     * Search super classes as well as enclosing classes.
-     * Careful: a nested instance is not a subclass of the enclosing class.
-     */
-    private static class EndpointInvocation {
-        private final String methodName;
-        private Object instance;
-        private Method method;
-
-        private EndpointInvocation(String methodName, Object instance) {
-            this.methodName = methodName;
-            this.instance = instance;
-            find(instance.getClass());
-            if (method == null) throw new WunderBarException("endpoint method not found '" + methodName + "'");
-        }
-
-        private void find(Class<?> type) {
-            try {
-                method = type.getDeclaredMethod(methodName);
-            } catch (NoSuchMethodException e) {
-                if (type.getSuperclass() != null) find(type.getSuperclass());
-                if (method == null && type.isMemberClass()) {
-                    instance = enclosingInstance();
-                    find(type.getEnclosingClass());
-                }
-            }
-        }
-
-        @SneakyThrows(ReflectiveOperationException.class)
-        private Object enclosingInstance() {
-            var field = instance.getClass().getDeclaredField("this$0");
-            return Utils.getField(instance, field);
-        }
-
-        private Object invoke() {
-            return Utils.invoke(instance, method);
+    private Optional<Method> findMethod(Class<?> type, String methodName) {
+        try {
+            return Optional.of(type.getDeclaredMethod(methodName));
+        } catch (NoSuchMethodException e) {
+            return type.getSuperclass() != null ? findMethod(type.getSuperclass(), methodName) : Optional.empty();
         }
     }
 
@@ -336,7 +313,6 @@ class WunderBarApiConsumerJUnitExtension implements Extension, BeforeEachCallbac
 
     private void injectProxiesIntoSut(Object systemUnderTest) {
         Stream.of(systemUnderTest.getClass().getDeclaredFields())
-                .filter(Objects::nonNull)
                 .forEach(targetField -> injectProxyIntoSut(systemUnderTest, targetField));
     }
 
@@ -348,7 +324,7 @@ class WunderBarApiConsumerJUnitExtension implements Extension, BeforeEachCallbac
 
 
     @Override
-    public boolean supportsParameter(ParameterContext parameterContext, ExtensionContext extensionContext) throws ParameterResolutionException {
+    public boolean supportsParameter(ParameterContext parameterContext, @NonNull ExtensionContext extensionContext) throws ParameterResolutionException {
         Class<?> parameterType = parameterContext.getParameter().getType();
         return Level.class.equals(parameterType) ||
                SomeGenerator.class.equals(parameterType) ||
@@ -357,7 +333,7 @@ class WunderBarApiConsumerJUnitExtension implements Extension, BeforeEachCallbac
     }
 
     @Override
-    public Object resolveParameter(ParameterContext parameterContext, ExtensionContext extensionContext) throws ParameterResolutionException {
+    public Object resolveParameter(ParameterContext parameterContext, @NonNull ExtensionContext extensionContext) throws ParameterResolutionException {
         var parameter = parameterContext.getParameter();
         if (Level.class.equals(parameter.getType())) return level();
         if (SomeGenerator.class.equals(parameter.getType())) return someGenerator;
@@ -372,7 +348,7 @@ class WunderBarApiConsumerJUnitExtension implements Extension, BeforeEachCallbac
         return annotatedTypes[parameter.getIndex()].getDeclaredAnnotation(Some.class);
     }
 
-    @Override public void afterEach(ExtensionContext context) {
+    @Override public void afterEach(@NonNull ExtensionContext context) {
         var duration = duration();
 
         if (WunderbarExpectationBuilder.buildingExpectation != null)
