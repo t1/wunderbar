@@ -17,12 +17,13 @@ import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.eclipse.microprofile.graphql.Mutation;
 import org.eclipse.microprofile.graphql.NonNull;
-import org.eclipse.microprofile.rest.client.RestClientBuilder;
 
 import java.io.Closeable;
 import java.io.IOException;
 import java.lang.reflect.Method;
 import java.net.URI;
+
+import static com.github.t1.wunderbar.junit.consumer.WunderBarExpectation.restClientBuilder;
 
 @Slf4j
 public class SystemTestExpectations<T> implements WunderBarExpectations<T> {
@@ -70,7 +71,7 @@ public class SystemTestExpectations<T> implements WunderBarExpectations<T> {
                     .register(filter)
                     .endpoint(baseUri)
                     .build(type);
-            case REST -> RestClientBuilder.newBuilder()
+            case REST -> restClientBuilder()
                     .register(filter)
                     .baseUri(baseUri)
                     .build(type);

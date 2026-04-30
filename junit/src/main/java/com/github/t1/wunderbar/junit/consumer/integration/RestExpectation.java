@@ -6,7 +6,6 @@ import com.github.t1.wunderbar.junit.http.ProblemDetails;
 import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.core.MediaType;
 import lombok.extern.slf4j.Slf4j;
-import org.eclipse.microprofile.rest.client.RestClientBuilder;
 
 import java.lang.reflect.Method;
 import java.net.URI;
@@ -18,7 +17,9 @@ class RestExpectation extends HttpServiceExpectation {
     RestExpectation(URI baseUri, Method method, Object... args) {super(baseUri, method, args);}
 
     @Override protected Object service() {
-        return RestClientBuilder.newBuilder().baseUri(baseUri()).build(method.getDeclaringClass());
+        return restClientBuilder()
+                .baseUri(baseUri())
+                .build(method.getDeclaringClass());
     }
 
     @Override public HttpResponse handleRequest(HttpRequest request) {

@@ -20,7 +20,7 @@ import test.SomeProductIds;
 import test.SomeProducts;
 
 import static com.github.t1.wunderbar.junit.consumer.WunderbarExpectationBuilder.given;
-import static org.assertj.core.api.Assertions.catchThrowableOfType;
+import static org.assertj.core.api.BDDAssertions.catchThrowableOfType;
 import static org.assertj.core.api.BDDAssertions.then;
 
 @WunderBarApiConsumer(fileName = "target/weld-wunder.jar")
@@ -44,7 +44,6 @@ class ProductsResolverWeldIT {
         then(resolvedProduct).usingRecursiveComparison().isEqualTo(product);
     }
 
-    @SuppressWarnings("JUnitMalformedDeclaration")
     @Test void shouldResolveTwoProducts(@Some Product givenProduct1, @Some Product givenProduct2) {
         given(products.product(givenProduct1.getId())).returns(givenProduct1);
         given(products.product(givenProduct2.getId())).returns(givenProduct2);
@@ -75,7 +74,7 @@ class ProductsResolverWeldIT {
         var throwable = catchThrowableOfType(GraphQLClientException.class, () -> resolver.product(item(id)));
 
         then(throwable.getErrors()).hasSize(1);
-        var error = throwable.getErrors().get(0);
+        var error = throwable.getErrors().getFirst();
         then(error.getMessage()).isEqualTo("product " + id + " not found");
         then(error.getCode()).isEqualTo("product-not-found");
     }
@@ -86,7 +85,7 @@ class ProductsResolverWeldIT {
         var throwable = catchThrowableOfType(GraphQLClientException.class, () -> resolver.product(item(id)));
 
         then(throwable.getErrors()).hasSize(1);
-        var error = throwable.getErrors().get(0);
+        var error = throwable.getErrors().getFirst();
         then(error.getMessage()).isEqualTo("product " + id + " is forbidden");
         then(error.getCode()).isEqualTo("product-forbidden");
     }

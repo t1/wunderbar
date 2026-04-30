@@ -14,8 +14,8 @@ import org.junit.jupiter.api.Test;
 import test.SomeProductIds;
 import test.SomeProducts;
 
+import static org.assertj.core.api.BDDAssertions.catchThrowableOfType;
 import static com.github.t1.wunderbar.junit.consumer.WunderbarExpectationBuilder.given;
-import static org.assertj.core.api.Assertions.catchThrowableOfType;
 import static org.assertj.core.api.BDDAssertions.then;
 
 @WunderBarApiConsumer
@@ -62,7 +62,7 @@ class ProductsResolverIT {
         var throwable = catchThrowableOfType(GraphQLClientException.class, () -> resolver.product(item(id)));
 
         then(throwable.getErrors()).hasSize(1);
-        var error = throwable.getErrors().get(0);
+        var error = throwable.getErrors().getFirst();
         then(error.getMessage()).isEqualTo("product " + id + " not found");
         then(error.getCode()).isEqualTo("product-not-found");
     }
@@ -73,7 +73,7 @@ class ProductsResolverIT {
         var throwable = catchThrowableOfType(GraphQLClientException.class, () -> resolver.product(item(id)));
 
         then(throwable.getErrors()).hasSize(1);
-        var error = throwable.getErrors().get(0);
+        var error = throwable.getErrors().getFirst();
         then(error.getMessage()).isEqualTo("product " + id + " is forbidden");
         then(error.getCode()).isEqualTo("product-forbidden");
     }

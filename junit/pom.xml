@@ -5,7 +5,7 @@
     <parent>
         <groupId>com.github.t1</groupId>
         <artifactId>wunderbar.parent</artifactId>
-        <version>3.5.2-SNAPSHOT</version>
+        <version>4.0-SNAPSHOT</version>
     </parent>
 
     <artifactId>wunderbar.junit</artifactId>
@@ -24,9 +24,14 @@
             <version>${smallrye-graphql.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.jboss.resteasy.microprofile</groupId>
-            <artifactId>microprofile-rest-client</artifactId>
-            <version>${resteasy.mp.version}</version>
+            <groupId>org.eclipse.microprofile.rest.client</groupId>
+            <artifactId>microprofile-rest-client-api</artifactId>
+            <version>${microprofile.rest-client.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>jakarta.ws.rs</groupId>
+            <artifactId>jakarta.ws.rs-api</artifactId>
+            <version>${jakarta.ws.rs.version}</version>
         </dependency>
         <dependency>
             <groupId>jakarta.json.bind</groupId>
@@ -41,9 +46,15 @@
 
 
         <dependency>
-            <groupId>org.jboss.resteasy</groupId>
-            <artifactId>resteasy-json-binding-provider</artifactId>
-            <version>${resteasy.version}</version>
+            <groupId>org.glassfish.jersey.ext.microprofile</groupId>
+            <artifactId>jersey-mp-rest-client</artifactId>
+            <version>${jersey.mp.rest-client.version}</version>
+            <scope>runtime</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.glassfish.jersey.connectors</groupId>
+            <artifactId>jersey-apache5-connector</artifactId>
+            <version>${jersey.mp.rest-client.version}</version>
             <scope>runtime</scope>
         </dependency>
         <dependency>

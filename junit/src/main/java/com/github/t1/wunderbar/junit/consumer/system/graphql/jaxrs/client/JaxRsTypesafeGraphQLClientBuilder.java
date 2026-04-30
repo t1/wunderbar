@@ -15,6 +15,8 @@ import java.net.URI;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
+/// This is an alternative to the standard {@link io.smallrye.graphql.client.vertx.typesafe.VertxTypesafeGraphQLClientBuilder}
+/// that uses JAX-RS to transport via http, so we can use the same filters as for REST calls.
 public class JaxRsTypesafeGraphQLClientBuilder implements TypesafeGraphQLClientBuilder {
     private String configKey = null;
     private Client client;

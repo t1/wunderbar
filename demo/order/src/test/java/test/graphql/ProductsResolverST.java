@@ -23,7 +23,7 @@ import test.SomeProducts;
 import java.net.URI;
 
 import static com.github.t1.wunderbar.junit.http.HttpUtils.JSONB;
-import static org.assertj.core.api.Assertions.catchThrowableOfType;
+import static org.assertj.core.api.BDDAssertions.catchThrowableOfType;
 import static org.assertj.core.api.BDDAssertions.then;
 
 @WunderBarApiConsumer(fileName = "target/system-wunder.jar")
@@ -103,7 +103,7 @@ class ProductsResolverST {
         var throwable = catchThrowableOfType(GraphQLClientException.class, () -> resolver.product(item("-1")));
 
         then(throwable.getErrors()).hasSize(1);
-        var error = throwable.getErrors().get(0);
+        var error = throwable.getErrors().getFirst();
         then(error.getMessage()).isEqualTo("product -1 not found");
         then(error.getCode()).isEqualTo("product-not-found");
     }
@@ -112,7 +112,7 @@ class ProductsResolverST {
         var throwable = catchThrowableOfType(GraphQLClientException.class, () -> resolver.product(item(forbidden.getId())));
 
         then(throwable.getErrors()).hasSize(1);
-        var error = throwable.getErrors().get(0);
+        var error = throwable.getErrors().getFirst();
         then(error.getMessage()).isEqualTo("product " + forbidden.getId() + " is forbidden");
         then(error.getCode()).isEqualTo("product-forbidden");
     }
