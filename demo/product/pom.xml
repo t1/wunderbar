@@ -9,7 +9,7 @@
     </parent>
 
     <artifactId>wunderbar.demo.product</artifactId>
-    <name>Behavior Archives (Product)</name>
+    <name>Wunderbar (Product-Demo)</name>
 
     <dependencyManagement>
         <dependencies>

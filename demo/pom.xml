@@ -9,7 +9,7 @@
     </parent>
 
     <artifactId>wunderbar.demo</artifactId>
-    <name>Behavior Archives (Demo-Parent)</name>
+    <name>Wunderbar (Demo-Parent)</name>
     <packaging>pom</packaging>
 
     <modules>

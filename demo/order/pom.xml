@@ -9,7 +9,7 @@
     </parent>
 
     <artifactId>wunderbar.demo.order</artifactId>
-    <name>Behavior Archives (Demo: Order)</name>
+    <name>Wunderbar (Order-Demo)</name>
     <packaging>war</packaging>
 
     <build>

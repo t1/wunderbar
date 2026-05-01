@@ -9,7 +9,7 @@
     </parent>
 
     <artifactId>wunderbar.junit</artifactId>
-    <name>Behavior Archives (JUnit)</name>
+    <name>Wunderbar (JUnit)</name>
 
     <dependencies>
         <dependency>
