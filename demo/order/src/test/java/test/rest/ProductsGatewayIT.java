@@ -9,19 +9,24 @@ import com.github.t1.wunderbar.junit.consumer.Service;
 import com.github.t1.wunderbar.junit.consumer.Some;
 import com.github.t1.wunderbar.junit.consumer.SystemUnderTest;
 import com.github.t1.wunderbar.junit.consumer.WunderBarApiConsumer;
+import com.github.t1.wunderbar.junit.consumer.WunderBarApiConsumer.Output;
 import jakarta.ws.rs.ForbiddenException;
 import jakarta.ws.rs.NotFoundException;
 import jakarta.ws.rs.WebApplicationException;
 import org.junit.jupiter.api.Test;
 import test.SomeProducts;
 
+import static com.github.t1.wunderbar.junit.ContractFormat.OPENAPI;
 import static com.github.t1.wunderbar.junit.consumer.WunderbarExpectationBuilder.given;
 import static jakarta.ws.rs.core.Response.Status.FORBIDDEN;
 import static jakarta.ws.rs.core.Response.Status.NOT_FOUND;
 import static org.assertj.core.api.Assertions.catchThrowableOfType;
 import static org.assertj.core.api.BDDAssertions.then;
 
-@WunderBarApiConsumer
+@WunderBarApiConsumer(output = {
+        @Output(fileName = "target/wunder.bar"),
+        @Output(format = OPENAPI, fileName = "target/openapi.json")
+})
 @Register(SomeProducts.class)
 class ProductsGatewayIT {
     @Service ProductsRestClient products;

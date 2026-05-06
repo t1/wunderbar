@@ -1,6 +1,7 @@
 package com.github.t1.wunderbar.junit.provider;
 
 import com.github.t1.wunderbar.common.Internal;
+import com.github.t1.wunderbar.junit.ContractFormat;
 import com.github.t1.wunderbar.junit.WunderBarException;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
@@ -14,12 +15,14 @@ import java.util.List;
 import java.util.Optional;
 import java.util.function.Function;
 
+import static com.github.t1.wunderbar.junit.ContractFormat.AUTO;
+import static com.github.t1.wunderbar.junit.ContractFormat.BAR;
 import static java.util.stream.Collectors.joining;
 import static org.junit.jupiter.api.DynamicContainer.dynamicContainer;
 import static org.junit.jupiter.api.DynamicTest.dynamicTest;
 
 /**
- * Static methods to find <code>*.bar</code> files.
+ * Static methods to find WunderBar contract files, e.g. BAR or OpenAPI files.
  *
  * @see WunderBarApiProvider
  */
@@ -30,24 +33,32 @@ public class WunderBarTestFinder {
      * <pre><code>
      * &#64;TestFactory DynamicNode consumerDrivenContractTests() {
      *     return findTestsIn("wunder.bar");
+     *     // or: return findTestsIn("openapi.json");
      * }
      * </code></pre>
      */
     public static DynamicNode findTestsIn(String barPath) {return findTestsIn(Path.of(barPath));}
+
+    /** Find all tests in that file using the given contract format. */
+    public static DynamicNode findTestsIn(String path, ContractFormat format) {return findTestsIn(Path.of(path), format);}
 
     /**
      * Find all tests in that file. Usage:
      * <pre><code>
      * &#64;TestFactory DynamicNode consumerDrivenContractTests() {
      *     return findTestsIn("wunder.bar");
+     *     // or: return findTestsIn("openapi.json");
      * }
      * </code></pre>
      */
-    public static DynamicNode findTestsIn(Path barPath) {return findTestsIn(barPath, null);}
+    public static DynamicNode findTestsIn(Path barPath) {return findTestsIn(barPath, AUTO);}
+
+    /** Find all tests in that file using the given contract format. */
+    public static DynamicNode findTestsIn(Path path, ContractFormat format) {return findTestsIn(path, format, null);}
 
     /** used for tests */
-    public static @Internal DynamicNode findTestsIn(Path barPath, Function<Test, Executable> executableFactory) {
-        return new WunderBarTestFinder(barPath, executableFactory).toDynamicNode();
+    public static @Internal DynamicNode findTestsIn(Path path, ContractFormat format, Function<Test, Executable> executableFactory) {
+        return new WunderBarTestFinder(path, format, executableFactory).toDynamicNode();
     }
 
 
@@ -61,8 +72,14 @@ public class WunderBarTestFinder {
      * <code>&lt;groupId&gt;:&lt;artifactId&gt;:&lt;version&gt;[:&lt;packaging&gt;[:&lt;classifier&gt;]]</code>
      * <p>
      * Note that both the <code>classifier</code> and the <code>packaging</code> (the file extension) are optional and default to <code>bar</code>.
+     * Use {@link ContractFormat#OPENAPI OPENAPI} to default to <code>json</code>/<code>openapi</code> instead.
      */
     public static DynamicNode findTestsInArtifact(String coordinates) {return findTestsInArtifact(MavenCoordinates.of(coordinates));}
+
+    /** Find all tests in that maven artifact using the given contract format. */
+    public static DynamicNode findTestsInArtifact(String coordinates, ContractFormat format) {
+        return findTestsInArtifact(MavenCoordinates.of(coordinates), format);
+    }
 
     /**
      * Find all tests in that maven artifact, downloading it from a maven repository with the <code>mvn</code> command
@@ -70,25 +87,40 @@ public class WunderBarTestFinder {
      * (mainly the <code>settings.xml</code>) is considered.
      * <p>
      * Note that both the <code>classifier</code> and the <code>packaging</code> (the file extension) are optional and default to <code>bar</code>.
+     * Use {@link ContractFormat#OPENAPI OPENAPI} to default to <code>json</code>/<code>openapi</code> instead.
      */
-    public static DynamicNode findTestsInArtifact(MavenCoordinates coordinates) {return findTestsInArtifact(coordinates, null);}
+    public static DynamicNode findTestsInArtifact(MavenCoordinates coordinates) {return findTestsInArtifact(coordinates, AUTO);}
 
-    /** used for tests */
-    public static @Internal DynamicNode findTestsInArtifact(MavenCoordinates coordinates, Function<Test, Executable> executableFactory) {
-        coordinates = withDefaults(coordinates);
-        coordinates.download();
-        return new WunderBarTestFinder(coordinates.getLocalRepositoryPath(), executableFactory).toDynamicNode();
+    /** Find all tests in that maven artifact using the given contract format. */
+    public static DynamicNode findTestsInArtifact(MavenCoordinates coordinates, ContractFormat format) {
+        return findTestsInArtifact(coordinates, format, null);
     }
 
-    private static MavenCoordinates withDefaults(MavenCoordinates coordinates) {
-        if (coordinates.getClassifier() == null) coordinates = coordinates.withClassifier("bar");
-        if (coordinates.getPackaging() == null) coordinates = coordinates.withPackaging("bar");
+    /** used for tests */
+    public static @Internal DynamicNode findTestsInArtifact(MavenCoordinates coordinates, ContractFormat format, Function<Test, Executable> executableFactory) {
+        coordinates = withDefaults(coordinates, format);
+        coordinates.download();
+        return new WunderBarTestFinder(coordinates.getLocalRepositoryPath(), format, executableFactory).toDynamicNode();
+    }
+
+    private static MavenCoordinates withDefaults(MavenCoordinates coordinates, ContractFormat format) {
+        var resolvedFormat = resolveArtifactFormat(coordinates, format);
+        if (coordinates.getClassifier() == null)
+            coordinates = coordinates.withClassifier(resolvedFormat.defaultClassifier());
+        if (coordinates.getPackaging() == null)
+            coordinates = coordinates.withPackaging(resolvedFormat.defaultPackaging());
         return coordinates;
+    }
+
+    private static ContractFormat resolveArtifactFormat(MavenCoordinates coordinates, ContractFormat format) {
+        if (format != AUTO) return format;
+        if (coordinates.getPackaging() == null) return BAR;
+        return AUTO.resolve("x." + coordinates.getPackaging());
     }
 
 
     private final Function<Test, Executable> executableFactory;
-    private final BarReader bar;
+    private final InteractionReader archive;
     private final TestCollection root;
 
     private interface TestNode {
@@ -101,7 +133,7 @@ public class WunderBarTestFinder {
             URI uri,
             @NonNull Path path,
             List<TestNode> children) implements TestNode {
-        @Override public String toString() {
+        @Override public @NonNull String toString() {
             return path + ": " + children.stream().map(TestNode::toString).collect(joining(", ", "[", "]"));
         }
 
@@ -147,7 +179,7 @@ public class WunderBarTestFinder {
     }
 
     public @Internal record Test(@NonNull Path path, int interactionCount, @NonNull URI uri) implements TestNode {
-        @Override public String toString() {return path + " [" + interactionCount + "] in " + uri;}
+        @Override public @NonNull String toString() {return path + " [" + interactionCount + "] in " + uri;}
 
         public String getDisplayName() {return path.getFileName().toString();}
 
@@ -156,23 +188,23 @@ public class WunderBarTestFinder {
         }
     }
 
-    private WunderBarTestFinder(Path barFilePath, Function<Test, Executable> executableFactory) {
+    private WunderBarTestFinder(Path barFilePath, ContractFormat format, Function<Test, Executable> executableFactory) {
         if (WunderBarApiProviderJUnitExtension.INSTANCE == null)
             throw new WunderBarException("annotate your wunderbar test with @" + WunderBarApiProvider.class.getName());
 
-        this.bar = BarReader.from(barFilePath);
-        this.root = new TestCollection(barFilePath.toUri().normalize(), Path.of(bar.getDisplayName()), new ArrayList<>());
+        this.archive = InteractionReader.from(barFilePath, format);
+        this.root = new TestCollection(barFilePath.toUri().normalize(), Path.of(archive.getDisplayName()), new ArrayList<>());
 
         // indirection with null is necessary, as we can't access `this` in the constructor chain to build the default factory
         this.executableFactory = (executableFactory == null)
-                ? test -> WunderBarApiProviderJUnitExtension.INSTANCE.createExecutable(bar.interactionsFor(test), test)
+                ? test -> WunderBarApiProviderJUnitExtension.INSTANCE.createExecutable(archive.interactionsFor(test), test)
                 : executableFactory;
 
         scanTests();
     }
 
     private void scanTests() {
-        bar.tests().forEach(root::merge);
+        archive.tests().forEach(root::merge);
     }
 
     private DynamicNode toDynamicNode() {return root.toDynamicNode(executableFactory);}

@@ -33,6 +33,11 @@
                                     <type>bar</type>
                                     <classifier>products</classifier>
                                 </artifact>
+                                <artifact>
+                                    <file>target/openapi.json</file>
+                                    <type>json</type>
+                                    <classifier>openapi</classifier>
+                                </artifact>
                             </artifacts>
                         </configuration>
                     </execution>

@@ -8,6 +8,7 @@ import com.github.t1.wunderbar.junit.Register;
 import com.github.t1.wunderbar.junit.consumer.Service;
 import com.github.t1.wunderbar.junit.consumer.Some;
 import com.github.t1.wunderbar.junit.consumer.WunderBarApiConsumer;
+import com.github.t1.wunderbar.junit.consumer.WunderBarApiConsumer.Output;
 import io.smallrye.graphql.client.GraphQLClientException;
 import jakarta.inject.Inject;
 import org.jboss.weld.junit.MockBean;
@@ -23,7 +24,7 @@ import static com.github.t1.wunderbar.junit.consumer.WunderbarExpectationBuilder
 import static org.assertj.core.api.BDDAssertions.catchThrowableOfType;
 import static org.assertj.core.api.BDDAssertions.then;
 
-@WunderBarApiConsumer(fileName = "target/weld-wunder.jar")
+@WunderBarApiConsumer(output = @Output(fileName = "target/weld-wunder.jar"))
 @EnableWeld
 @Register({SomeProducts.class, SomeProductIds.class})
 @ExplicitParamInjection

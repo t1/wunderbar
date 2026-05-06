@@ -20,7 +20,9 @@ Easily scale that from Unit to Integration Testfootnote:[The terms "Integration 
 Or even go for System Tests, where your service runs in a production-like environment and calls a pre-deployed mock service.
 Either way, this helps clients to test their own code and...
 
-"Consumer Driven Contracts": ... as a _side effect_, WunderBar also records the expected http interactions into a Behavior ARchive `bar`, a simple zip file containing properties files for the method, uri, and headers, and json files for the bodiesfootnote:[We currently don't see the necessity to support other content types, open an issue if you _do_ need `xml` or whatever.].
+"Consumer Driven Contracts": ... as a _side effect_, WunderBar also records the expected http interactions into a contract file.
+By default this is a Behavior ARchive `bar`, a simple zip file containing properties files for the method, uri, and headers, and json files for the bodiesfootnote:[We currently don't see the necessity to support other content types, open an issue if you _do_ need `xml` or whatever.].
+Alternatively, you can configure WunderBar to write an OpenAPI JSON file instead.
 Hand this file over to the API providers, so they can use it to verify compliance with the clients' requirements.
 See the article linked above.
 Just to make it clear: just because the consumer drives the API contract doesn't mean that the provider is expected to comply blindly.
@@ -29,7 +31,7 @@ The provider has to evolve a domain model that is consistent over all consumers:
 Starting from the API Consumer perspective is actually just a very natural way of defining an API: from the real requirements.
 But you must generally take care that no client application logic seeps into your backend domain, i.e. views, flows, etc.
 
-"Java native": The consumer/client can use REST via https://github.com/eclipse/microprofile-rest-client[MicroProfile REST Client] or https://graphql.org[GraphQL] via https://github.com/smallrye/smallrye-graphql/tree/main/client/api[SmallRye GraphQL Client], while the server can use any technology stack that can run JUnit 5 tests (or you can use the `bar` files directly).
+"Java native": The consumer/client can use REST via https://github.com/eclipse/microprofile-rest-client[MicroProfile REST Client] or https://graphql.org[GraphQL] via https://github.com/smallrye/smallrye-graphql/tree/main/client/api[SmallRye GraphQL Client], while the server can use any technology stack that can run JUnit 5 tests (or you can use the contract files directly).
 For the details see below.
 
 == 2 Minute API Consumer Intro
@@ -94,8 +96,25 @@ Note that you can also use the Mockito syntax `given(...).willReturn(...)`, but 
 To make things interesting, you can change the `@WunderBarApiConsumer` annotation to `@WunderBarApiConsumer(level = INTEGRATION)` (or simply change the test name to end with `IT`, short for Integration Test): WunderBar now starts a mock server exposing the behavior you just stubbed, i.e. it will reply to your real http request with the proper product http response.
 No code changes needed, and now it fully tests your REST or GraphQL client annotations and (de)serialization of your POJOs.
 
-This is nice, but as a welcome side effect, it _records_ the requests and responses you need for your code to work, and saves it in a `wunder.bar` file (Behavior ARchive).
+This is nice, but as a welcome side effect, it _records_ the requests and responses you need for your code to work, and saves them in one or more contract files.
+By default this is a single `wunder.bar` file (Behavior ARchive), configured through the `output` attribute of `@WunderBarApiConsumer`.
+If you prefer an OpenAPI document, configure your test like this:
+
+[source,java]
+----
+@WunderBarApiConsumer(output =
+    @WunderBarApiConsumer.Output(format = OPENAPI, fileName = "target/openapi.json"))
+class ProductsGatewayOpenApiIT { /* ... */ }
+
+@WunderBarApiConsumer(output = {
+    @WunderBarApiConsumer.Output(fileName = "target/wunder.bar"),
+    @WunderBarApiConsumer.Output(format = OPENAPI, fileName = "target/openapi.json")
+})
+class ProductsGatewayMultiFormatIT { /* ... */ }
+----
+
 Give this file to your API provider, so they can check if their service complies to your requirements.
+Use `@WunderBarApiConsumer(output = {})` if you want to disable writing contract files completely.
 You can even deploy this file, together with your other maven artefacts, e.g. by using the `attach-artifact` goal of the `build-helper-maven-plugin`; for an example, look at the pom in the https://github.com/t1/wunderbar/blob/trunk/demo/order/pom.xml[`demo/order`] submodule.
 Note that you'll get a `Failed to install artifact` error when running `mvn clean install -DskipTests`, because you skip the tests that generate the `bar` files, so the plugin can't attach them.
 Most of the time, executing `clean` is not necessary (and slows your build down); and running `install` before releasing your software is only useful for libraries, not for applications; simply run `mvn package -DskipTests` instead.
@@ -144,7 +163,7 @@ For a full example see https://github.com/t1/wunderbar/blob/trunk/junit/src/test
 
 == 2 Minute API Provider Intro
 
-When you implement an API (i.e. you provide it), you can load a suite of tests that has been stored in a `wunder.bar` file, and run them against your service:
+When you implement an API (i.e. you provide it), you can load a suite of tests that has been stored in a contract file, and run them against your service:
 
 [source,java]
 ----
@@ -152,16 +171,17 @@ When you implement an API (i.e. you provide it), you can load a suite of tests t
 class ConsumerDrivenAT {
     @TestFactory DynamicNode orderTests() {
         return findTestsIn("wunder.bar");
+        // or: return findTestsIn("openapi.json");
     }
 }
 ----
 
-There are several ways to load `bar` files; e.g., you can also load them from maven coordinates.
+There are several ways to load contract files; e.g., you can also load them from maven coordinates.
 See the public methods in the https://github.com/t1/wunderbar/blob/trunk/junit/src/main/java/com/github/t1/wunderbar/junit/provider/WunderBarTestFinder.java[`WunderBarTestFinder`] class for details.
 
 The requirements will be more specific than your service, but that's a good thing: thankfully, your service will be lenient in some cases; e.g. it accepts different content type encodings, like `ISO-8859-1` or `utf-8`.
 In this way, a client can change some details of its technical requirements, e.g. by requesting a different encoding or even content type (e.g. `json` instead of `xml`); as long as your service supports it, the tests continue to pass.
-And if it doesn't support it, it will show up as soon as the new version of the bar file runs.
+And if it doesn't support it, it will show up as soon as the new version of the contract file runs.
 
 If the test data in your service is static and matches the expectations of your clients/consumers, that's it!
 But to be honest, managing test data is generally a nastily complex issue, and WunderBar can help, but can't make it go away completely.
@@ -169,7 +189,7 @@ But to be honest, managing test data is generally a nastily complex issue, and W
 === Managing Test Data (Provider)
 
 Consumer Driven Contract testing is about the _structure_ of the data, the API.
-But the requests and responses in a `bar` file also contain some more or less random _data_ itself.
+But the requests and responses in a contract file also contain some more or less random _data_ itself.
 The most common reflex is to create exactly that data in your test system, which is okay as long as the data is very static.
 But test data often changes or is even deleted for various reasons: some data simply times out, other data is changed by manual as well as automated tests, etc.
 This demands coordination between different teams, resulting in high effort and brittle tests: they sporadically break without exposing a real bug anywhere but in this communication between people.
@@ -179,7 +199,7 @@ You can do so by using some mutating APIs of your service, or by storing and del
 either way, you'll need do this kind of test setup before every test in the BAR (and maybe some cleanup thereafter).
 To do so, just define a method, annotated as https://github.com/t1/wunderbar/blob/trunk/junit/src/main/java/com/github/t1/wunderbar/junit/provider/BeforeInteraction.java[`@BeforeInteraction`]footnote:[JUnit invokes the standard JUnit `@Before/AfterEach` methods only once for every test method, not for every test in a `DynamicNode`. WunderBar also calls methods annotated as https://github.com/t1/wunderbar/blob/trunk/junit/src/main/java/com/github/t1/wunderbar/junit/provider/BeforeDynamicTest.java[`@BeforeDynamicTest`] / https://github.com/t1/wunderbar/blob/trunk/junit/src/main/java/com/github/t1/wunderbar/junit/provider/AfterDynamicTest.java[`@AfterDynamicTest`]; the difference is that, in some cases, there can be several subsequent interactions within one dynamic test, so methods with `Before/AfterDynamicTest` work on Lists.], taking a single parameter of type https://github.com/t1/wunderbar/blob/trunk/lib/src/main/java/com/github/t1/wunderbar/junit/http/HttpRequest.java[`HttpRequest`], https://github.com/t1/wunderbar/blob/trunk/lib/src/main/java/com/github/t1/wunderbar/junit/http/HttpResponse.java[`HttpResponse`], or https://github.com/t1/wunderbar/blob/trunk/lib/src/main/java/com/github/t1/wunderbar/junit/http/HttpInteraction.java[`HttpInteraction`] (which basically just bundles a request and response).
 
-In addition to storing the data in your system, you can also manipulate the request or the expected response by returning an `HttpInteraction`, `HttpRequest`, or `HttpResponse` from your `BeforeInteraction` method to modify the interaction, e.g. to replace the dummy credentials from the bar file (xref:credentials[see below]) with real credentials your service will accept.
+In addition to storing the data in your system, you can also manipulate the request or the expected response by returning an `HttpInteraction`, `HttpRequest`, or `HttpResponse` from your `BeforeInteraction` method to modify the interaction, e.g. to replace the dummy credentials from the contract file (xref:credentials[see below]) with real credentials your service will accept.
 The https://github.com/t1/wunderbar/blob/trunk/lib/src/main/java/com/github/t1/wunderbar/junit/http/HttpRequest.java[`HttpRequest`] and https://github.com/t1/wunderbar/blob/trunk/lib/src/main/java/com/github/t1/wunderbar/junit/http/HttpResponse.java[`HttpResponse`] classes help here with a bunch of convenient methods.
 
 This works nicely when reading data, but you'll need more for mutating operations; e.g. when a test creates a record in a database, it most often will also generate something like a primary key, which will not match the key in the expected response.footnote:[You actually could create the data in a setup method, manipulate the expected response accordingly, and rely on your service being idempotent, so the real call will return the same data, but this is not only more work but also contra-intuitive. There's a better way.]
@@ -195,7 +215,7 @@ For a fully running example, see the demo https://github.com/t1/wunderbar/blob/m
 [#credentials]
 == Credentials
 
-`bar` files never contain the secrets of a real `Authorization` header footnote:[They used to say that the username was a secret, too, but when you use good passwords (i.e. really random and really long), this is not necessary anymore, but it makes life so much easier to see the username.].
+Contract files never contain the secrets of a real `Authorization` header footnote:[They used to say that the username was a secret, too, but when you use good passwords (i.e. really random and really long), this is not necessary anymore, but it makes life so much easier to see the username.].
 They could contain random values for integration tests, without adding any benefit; for system-level tests (xref:system-level-tests[see below]) against a real service, the interactions would even contain real credentials.
 So WunderBar only writes dummy values instead.
 

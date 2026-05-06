@@ -27,14 +27,13 @@ import test.SomeProductIds;
 import java.time.LocalDate;
 import java.util.List;
 
-import static com.github.t1.wunderbar.junit.consumer.WunderBarApiConsumer.NONE;
 import static com.github.t1.wunderbar.junit.consumer.WunderbarExpectationBuilder.given;
 import static org.assertj.core.api.BDDAssertions.then;
 import static org.testcontainers.containers.Network.newNetwork;
 
 @Slow
 @Testcontainers
-@WunderBarApiConsumer(fileName = NONE)
+@WunderBarApiConsumer(output = {})
 @Register(SomeProductIds.class)
 @DisabledIfSystemProperty(named = "CI", matches = "GitHub", disabledReason = "we need to update SmallRye GraphQL to 2.0.0.RC13")
 class OrderMockST {
@@ -127,7 +126,7 @@ class OrderMockST {
     }
 
     @Test void shouldGetOrder() {
-        var orderItem = orderInput.items.get(0);
+        var orderItem = orderInput.items.getFirst();
         given(products.product(orderItem.getProductId())).returns(product);
 
         var actual = api.order(orderId);
@@ -135,8 +134,8 @@ class OrderMockST {
         then(actual.id).isEqualTo(orderId);
         then(actual.orderDate).isEqualTo(orderInput.orderDate);
         then(actual.items).hasSize(1);
-        then(actual.items.get(0).position).isEqualTo(orderItem.position);
-        then(actual.items.get(0).productId).isEqualTo(orderItem.productId);
-        then(actual.items.get(0).product).isEqualTo(product);
+        then(actual.items.getFirst().position).isEqualTo(orderItem.position);
+        then(actual.items.getFirst().productId).isEqualTo(orderItem.productId);
+        then(actual.items.getFirst().product).isEqualTo(product);
     }
 }

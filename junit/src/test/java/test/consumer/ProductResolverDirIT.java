@@ -31,7 +31,7 @@ import static com.github.t1.wunderbar.http.HttpUtils.readJson;
 import static org.assertj.core.api.Assertions.contentOf;
 import static test.consumer.ProductResolverDirIT.DIR;
 
-@WunderBarApiConsumer(fileName = DIR)
+@WunderBarApiConsumer(output = @WunderBarApiConsumer.Output(fileName = DIR))
 @Register(SomeProducts.class)
 class ProductResolverDirIT {
     static final String DIR = "target/wunder-bar/";

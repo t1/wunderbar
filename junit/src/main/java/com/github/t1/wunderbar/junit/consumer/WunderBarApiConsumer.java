@@ -1,5 +1,6 @@
 package com.github.t1.wunderbar.junit.consumer;
 
+import com.github.t1.wunderbar.junit.ContractFormat;
 import org.junit.jupiter.api.extension.ExtendWith;
 
 import java.lang.annotation.Inherited;
@@ -10,7 +11,7 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
 
 /**
  * Configures and prepares the tests for some code that consumes an API, by injecting the {@link Service} and {@link SystemUnderTest}
- * fields. Also manages the <code>bar</code> files written.
+ * fields. Also manages the contract files written.
  * <p>
  * When you have {@link org.junit.jupiter.api.Nested Nested} tests, the annotation closest to the test determines the configuration.
  * <p>
@@ -34,17 +35,47 @@ public @interface WunderBarApiConsumer {
     Level level() default AUTO;
 
     /**
-     * The path to the <code>bar</code> file to save interactions to; or {@link #NONE}, if they should <em>not</em> be saved.
-     * Defaults to <code>target/wunder.bar</code>.
+     * The contract files to save interactions to.
      * <p>
-     * Note that you can also write to a <code>.jar</code> file, WunderBar accepts those, too, and your tooling may be better.
-     * And if the file name ends with a slash (<code>/</code>), the test files will not be zipped but remain plain files;
-     * this may also be more convenient for some use cases.
+     * This is the only consumer-side file output configuration.
+     * The default writes one BAR file to <code>target/wunder.bar</code>.
+     * Use an empty array to disable writing completely, e.g. <code>@WunderBarApiConsumer(output = {})</code>.
+     * <p>
+     * BAR files can also be written to a <code>.jar</code> file, and if the file name ends with a slash
+     * (<code>/</code>), the test files will not be zipped but remain plain files.
+     * OpenAPI output must be a single JSON file, e.g. <code>target/openapi.json</code>.
+     * <p>
+     * Use several {@link Output outputs} to write more than one contract file from the same test.
      * <p>
      * Will be ignored for {@link Level#UNIT UNIT} level tests.
      */
-    String fileName() default "target/wunder.bar";
+    Output[] output() default {@Output(fileName = "target/wunder.bar")};
 
-    /** Indicates that <em>no</em> <code>bar</code> file should be written. */
-    String NONE = "";
+    /**
+     * One configured contract output.
+     * <p>
+     * Example:
+     * <pre><code>
+     * &#64;WunderBarApiConsumer(output = {
+     *     &#64;Output(fileName = "target/wunderbar.jar"),
+     *     &#64;Output(format = OPENAPI, fileName = "target/openapi.json")
+     * })
+     * </code></pre>
+     */
+    @interface Output {
+        /**
+         * The format of the contract file to write.
+         * <p>
+         * The default {@link ContractFormat#AUTO AUTO} resolves to {@link ContractFormat#OPENAPI OPENAPI}
+         * for <code>*.json</code> files and to {@link ContractFormat#BAR BAR} otherwise.
+         */
+        ContractFormat format() default ContractFormat.AUTO;
+
+        /**
+         * The path to the contract file to save interactions to.
+         * <p>
+         * This must not be blank.
+         */
+        String fileName();
+    }
 }

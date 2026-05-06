@@ -15,6 +15,7 @@ import java.io.IOException;
 import java.nio.file.Path;
 
 import static com.github.t1.wunderbar.common.Utils.deleteRecursive;
+import static com.github.t1.wunderbar.junit.ContractFormat.OPENAPI;
 import static java.nio.file.Files.createDirectories;
 import static org.assertj.core.api.Assertions.catchThrowable;
 import static org.assertj.core.api.BDDAssertions.then;
@@ -73,6 +74,16 @@ class FindInArtifactTest {
                 .expect("artifact-test", 1);
 
         return fixture.findTestsInArtifact(COORDINATES);
+    }
+
+    @TestFactory DynamicNode openApiArtifactWithDefaultClassifierAndPackagingTest() {
+        fixture.withFormat(OPENAPI)
+                .in(versionDir.resolve("wunderbar.test.artifact-1.2.3-openapi.json"))
+                .withTest("artifact-test")
+
+                .expect("artifact-test", 1);
+
+        return fixture.findTestsInArtifact(COORDINATES.withClassifier(null).withPackaging(null));
     }
 
     @Test void shouldFailToParseEmptyCoordinates() {

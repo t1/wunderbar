@@ -14,11 +14,16 @@ import org.junit.jupiter.api.Test;
 import test.SomeProductIds;
 import test.SomeProducts;
 
+import static com.github.t1.wunderbar.junit.consumer.WunderBarApiConsumer.*;
 import static org.assertj.core.api.BDDAssertions.catchThrowableOfType;
+import static com.github.t1.wunderbar.junit.ContractFormat.OPENAPI;
 import static com.github.t1.wunderbar.junit.consumer.WunderbarExpectationBuilder.given;
 import static org.assertj.core.api.BDDAssertions.then;
 
-@WunderBarApiConsumer
+@WunderBarApiConsumer(output = {
+        @Output(fileName = "target/wunder.bar"),
+        @Output(format = OPENAPI, fileName = "target/openapi.json")
+})
 @Register({SomeProducts.class, SomeProductIds.class})
 class ProductsResolverIT {
     @Service Products products;

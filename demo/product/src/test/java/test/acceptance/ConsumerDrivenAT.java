@@ -94,8 +94,13 @@ class ConsumerDrivenAT {
 
     @TestFactory DynamicNode demoOrderConsumerTests() {
         authorization = Authorization.valueOf(JWT); // use real credentials
-        // if there were different bar files, we might use different credentials
+        // if there were different contract files, we might use different credentials
         return findTestsIn("../order/target/wunder.bar");
+    }
+
+    @TestFactory DynamicNode demoOrderConsumerOpenApiTests() {
+        authorization = Authorization.valueOf(JWT); // use real credentials
+        return findTestsIn("../order/target/openapi.json");
     }
 
     @TestFactory DynamicNode demoOrderConsumerSystemTests() {
@@ -105,7 +110,13 @@ class ConsumerDrivenAT {
     // @TestFactory // disabled, as during maven release:prepare tests, this artifact is not installed as expected
     @SuppressWarnings("unused")
     DynamicNode demoOrderConsumerArtifactTests() throws IOException {
-        return findTestsInArtifact("com.github.t1:wunderbar.demo.order:" + getVersion());
+        return findTestsInArtifact("com.github.t1:wunderbar.demo.order:" + getVersion() + ":bar:products");
+    }
+
+    // @TestFactory // disabled for the same reason as the BAR artifact test above
+    @SuppressWarnings("unused")
+    DynamicNode demoOrderConsumerOpenApiArtifactTests() throws IOException {
+        return findTestsInArtifact("com.github.t1:wunderbar.demo.order:" + getVersion() + ":json:openapi");
     }
 
     /**

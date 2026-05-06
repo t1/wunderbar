@@ -1,20 +1,17 @@
 package com.github.t1.wunderbar.junit.provider;
 
-import com.github.t1.wunderbar.junit.WunderBarException;
 import com.github.t1.wunderbar.http.Authorization;
 import com.github.t1.wunderbar.http.Authorization.Dummy;
 import com.github.t1.wunderbar.http.HttpInteraction;
 import com.github.t1.wunderbar.http.HttpRequest;
 import com.github.t1.wunderbar.http.HttpResponse;
+import com.github.t1.wunderbar.junit.WunderBarException;
 import com.github.t1.wunderbar.junit.provider.WunderBarTestFinder.Test;
 import jakarta.ws.rs.core.MediaType;
 import lombok.NonNull;
-import lombok.SneakyThrows;
 import lombok.Value;
 
-import java.io.IOException;
 import java.net.URI;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Comparator;
 import java.util.List;
@@ -29,17 +26,8 @@ import static jakarta.ws.rs.core.HttpHeaders.ACCEPT;
 import static jakarta.ws.rs.core.HttpHeaders.AUTHORIZATION;
 import static jakarta.ws.rs.core.HttpHeaders.CONTENT_TYPE;
 
-abstract class BarReader {
-    @SneakyThrows(IOException.class)
-    static BarReader from(Path path) {
-        if (!Files.exists(path))
-            throw new WunderBarException("can't find any tests in " + path);
-        if (Files.isDirectory(path))
-            return new DirBarReader(path);
-        return new JarBarReader(path);
-    }
-
-    Stream<Test> tests() {
+abstract class BarReader extends InteractionReader {
+    @Override Stream<Test> tests() {
         return treeEntries()
                 .sorted()
                 .distinct() // remove duplicates for all the files for one test

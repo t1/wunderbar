@@ -4,15 +4,15 @@ import com.github.t1.wunderbar.demo.order.OrderItem;
 import com.github.t1.wunderbar.demo.order.Product;
 import com.github.t1.wunderbar.demo.order.ProductsResolver;
 import com.github.t1.wunderbar.demo.order.ProductsResolver.Products;
+import com.github.t1.wunderbar.http.Authorization;
+import com.github.t1.wunderbar.http.HttpRequest;
+import com.github.t1.wunderbar.http.HttpResponse;
+import com.github.t1.wunderbar.http.HttpServer;
 import com.github.t1.wunderbar.junit.Register;
 import com.github.t1.wunderbar.junit.consumer.Service;
 import com.github.t1.wunderbar.junit.consumer.Some;
 import com.github.t1.wunderbar.junit.consumer.SystemUnderTest;
 import com.github.t1.wunderbar.junit.consumer.WunderBarApiConsumer;
-import com.github.t1.wunderbar.http.Authorization;
-import com.github.t1.wunderbar.http.HttpRequest;
-import com.github.t1.wunderbar.http.HttpResponse;
-import com.github.t1.wunderbar.http.HttpServer;
 import io.smallrye.graphql.client.GraphQLClientException;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
@@ -23,10 +23,11 @@ import test.SomeProducts;
 import java.net.URI;
 
 import static com.github.t1.wunderbar.http.HttpUtils.JSONB;
+import static com.github.t1.wunderbar.junit.consumer.WunderBarApiConsumer.*;
 import static org.assertj.core.api.BDDAssertions.catchThrowableOfType;
 import static org.assertj.core.api.BDDAssertions.then;
 
-@WunderBarApiConsumer(fileName = "target/system-wunder.jar")
+@WunderBarApiConsumer(output = @Output(fileName = "target/system-wunder.jar"))
 @Register(SomeProducts.class)
 class ProductsResolverST {
     /** this server would normally be a real server running somewhere */

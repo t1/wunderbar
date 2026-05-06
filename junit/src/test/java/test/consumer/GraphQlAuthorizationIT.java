@@ -55,7 +55,7 @@ class GraphQlAuthorizationIT {
         Product product(String id);
     }
 
-    @WunderBarApiConsumer(level = INTEGRATION, fileName = "target/NoCredentialsGenerator-bar/")
+    @WunderBarApiConsumer(level = INTEGRATION, output = @WunderBarApiConsumer.Output(fileName = "target/NoCredentialsGenerator-bar/"))
     @Nested class NoCredentialsGenerator {
         @Service NonAuthorizedMethodProducts nonAuthorizedMethodProducts;
 
@@ -78,7 +78,7 @@ class GraphQlAuthorizationIT {
         Product product(String id);
     }
 
-    @WunderBarApiConsumer(level = INTEGRATION, fileName = "target/SystemPropertyCredentialsGenerator-bar/")
+    @WunderBarApiConsumer(level = INTEGRATION, output = @WunderBarApiConsumer.Output(fileName = "target/SystemPropertyCredentialsGenerator-bar/"))
     @Nested class SystemPropertyCredentialsGenerator {
         @Service NonAuthorizedMethodProducts2 nonAuthorizedMethodProducts;
 
@@ -111,7 +111,7 @@ class GraphQlAuthorizationIT {
         Product product(String id);
     }
 
-    @WunderBarApiConsumer(level = INTEGRATION, fileName = "target/MethodCredentialsGenerator-bar/")
+    @WunderBarApiConsumer(level = INTEGRATION, output = @WunderBarApiConsumer.Output(fileName = "target/MethodCredentialsGenerator-bar/"))
     @Nested class MethodCredentialsGenerator {
         @Service AuthorizedMethodProducts authorizedMethodProducts;
         @Service AuthorizedMethodProducts2 authorizedMethodProducts2;
@@ -165,7 +165,7 @@ class GraphQlAuthorizationIT {
         Product product(String id);
     }
 
-    @WunderBarApiConsumer(level = INTEGRATION, fileName = "target/InterfaceCredentialsGenerator-bar/")
+    @WunderBarApiConsumer(level = INTEGRATION, output = @WunderBarApiConsumer.Output(fileName = "target/InterfaceCredentialsGenerator-bar/"))
     @Nested class InterfaceCredentialsGenerator {
         @Service AuthorizedInterfaceProducts authorizedInterfaceProducts;
 
@@ -199,7 +199,7 @@ class GraphQlAuthorizationIT {
         Product product(String id);
     }
 
-    @WunderBarApiConsumer(level = INTEGRATION, fileName = "target/InterfaceHeaderCredentialsGenerator-bar/")
+    @WunderBarApiConsumer(level = INTEGRATION, output = @WunderBarApiConsumer.Output(fileName = "target/InterfaceHeaderCredentialsGenerator-bar/"))
     @Nested class InterfaceHeaderCredentialsGenerator {
         @Service AuthorizedInterfaceHeaderProducts products;
 
@@ -221,7 +221,7 @@ class GraphQlAuthorizationIT {
         Product product(@Header(name = "Authorization") String auth, String id);
     }
 
-    @WunderBarApiConsumer(level = INTEGRATION, fileName = "target/ParameterHeaderCredentialsGenerator-bar/")
+    @WunderBarApiConsumer(level = INTEGRATION, output = @WunderBarApiConsumer.Output(fileName = "target/ParameterHeaderCredentialsGenerator-bar/"))
     @Nested class ParameterHeaderCredentialsGenerator {
         @Service AuthorizedParameterHeaderProducts products;
 
@@ -244,7 +244,7 @@ class GraphQlAuthorizationIT {
         Product product(String id);
     }
 
-    @WunderBarApiConsumer(level = INTEGRATION, fileName = "target/InterfaceTokenHeaderCredentialsGenerator-bar/")
+    @WunderBarApiConsumer(level = INTEGRATION, output = @WunderBarApiConsumer.Output(fileName = "target/InterfaceTokenHeaderCredentialsGenerator-bar/"))
     @Nested class InterfaceTokenHeaderCredentialsGenerator {
         @Service AuthorizedInterfaceTokenHeaderProducts products;
 

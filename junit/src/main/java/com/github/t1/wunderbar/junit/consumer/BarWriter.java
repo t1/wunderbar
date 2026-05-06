@@ -3,6 +3,8 @@ package com.github.t1.wunderbar.junit.consumer;
 import com.github.t1.wunderbar.common.Internal;
 import com.github.t1.wunderbar.http.HttpRequest;
 import com.github.t1.wunderbar.http.HttpResponse;
+import com.github.t1.wunderbar.junit.ContractFormat;
+import com.github.t1.wunderbar.junit.WunderBarException;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 
@@ -16,15 +18,27 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import static com.github.t1.wunderbar.http.HttpUtils.properties;
 import static com.github.t1.wunderbar.http.HttpUtils.toJson;
+import static com.github.t1.wunderbar.junit.ContractFormat.BAR;
 import static java.util.Collections.emptyList;
 
 @Setter @Slf4j
 public @Internal abstract class BarWriter implements Closeable {
-    public static BarWriter to(String fileName) {
-        Path path = Path.of(fileName);
+    public static BarWriter to(String fileName) {return to(BAR, fileName);}
+
+    public static BarWriter to(ContractFormat format, String fileName) {
+        var resolvedFormat = format.resolve(fileName);
+        var path = Path.of(fileName);
         var archiveComment = "version: 1.1\n";
-        log.info("create bar [{}] in {}", archiveComment, fileName);
-        var barWriter = fileName.endsWith("/") ? new DirectoryBarWriter(path) : new JarBarWriter(path);
+        log.info("create {} [{}] in {}", resolvedFormat, archiveComment, fileName);
+        var barWriter = switch (resolvedFormat) {
+            case AUTO -> throw new IllegalStateException("unreachable");
+            case BAR -> fileName.endsWith("/") ? new DirectoryBarWriter(path) : new JarBarWriter(path);
+            case OPENAPI -> {
+                if (fileName.endsWith("/"))
+                    throw new WunderBarException("OpenAPI output must be a file, not a directory: " + fileName);
+                yield new OpenApiBarWriter(path);
+            }
+        };
         barWriter.setComment(archiveComment);
         return barWriter;
     }
@@ -41,8 +55,8 @@ public @Internal abstract class BarWriter implements Closeable {
 
     public abstract String getDirectory();
 
-    public final void save(HttpRequest request, HttpResponse response) {
-        String id = getDirectory() + "/" + counter().incrementAndGet() + " ";
+    public void save(HttpRequest request, HttpResponse response) {
+        var id = getDirectory() + "/" + counter().incrementAndGet() + " ";
         writeRequestFiles(request, id);
         writeResponseFiles(response, id);
     }

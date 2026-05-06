@@ -59,7 +59,7 @@ class ProductResolverIT extends ProductResolverTest {
         Product product(String id);
     }
 
-    @WunderBarApiConsumer(level = INTEGRATION, fileName = WITH_CONFIG_KEY_BAR)
+    @WunderBarApiConsumer(level = INTEGRATION, output = @WunderBarApiConsumer.Output(fileName = WITH_CONFIG_KEY_BAR))
     @Nested class WithConfigKeyGenerator {
         static final String TEST_CONFIG_KEY = "test-config-key";
         static final String WITH_CONFIG_KEY_BAR = "target/WithConfigKeyGenerator-bar/";

@@ -1,8 +1,10 @@
 package com.github.t1.wunderbar.junit.consumer;
 
 import com.github.t1.wunderbar.common.Utils;
+import com.github.t1.wunderbar.junit.ContractFormat;
 import com.github.t1.wunderbar.junit.Register;
 import com.github.t1.wunderbar.junit.WunderBarException;
+import com.github.t1.wunderbar.junit.consumer.WunderBarApiConsumer.Output;
 import io.smallrye.graphql.client.typesafe.api.GraphQLClientApi;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
@@ -54,7 +56,7 @@ class WunderBarApiConsumerJUnitExtension implements Extension, BeforeEachCallbac
     /** We need to access this instance from the static methods in the {@link WunderbarExpectationBuilder} */
     static WunderBarApiConsumerJUnitExtension INSTANCE;
     private static boolean initialized = false;
-    static final Map<String, BarWriter> BAR_WRITERS = new LinkedHashMap<>();
+    static final Map<ArchiveTarget, BarWriter> BAR_WRITERS = new LinkedHashMap<>();
     private static final Pattern FUNCTION = Pattern.compile("(?<prefix>.*)\\{(?<match>.*)\\(\\)}(?<suffix>.*)");
     private static final Pattern PORT = Pattern.compile("(?<prefix>.*)\\{(?<match>port)}(?<suffix>.*)");
     private static final Pattern TECHNOLOGY = Pattern.compile("(?<prefix>.*)\\{(?<match>technology)}(?<suffix>.*)");
@@ -124,7 +126,7 @@ class WunderBarApiConsumerJUnitExtension implements Extension, BeforeEachCallbac
         this.settings = findSettings();
         log.info("==================== {} test: {}", level(), testId);
 
-        this.bar = BAR_WRITERS.computeIfAbsent(settings.fileName(), this::createBar);
+        this.bar = createBar();
         if (bar != null) {
             bar.setGeneratedDataPoints(generatedDataPoints);
             bar.setDirectory(testId);
@@ -171,10 +173,31 @@ class WunderBarApiConsumerJUnitExtension implements Extension, BeforeEachCallbac
         return test.getClass().isAnnotationPresent(WunderBarApiConsumer.class);
     }
 
-    private BarWriter createBar(String fileName) {
-        if (fileName.equals(WunderBarApiConsumer.NONE)) return null;
-        return BarWriter.to(fileName);
+    private BarWriter createBar() {
+        var outputs = outputs();
+        if (outputs.isEmpty()) return null;
+        if (outputs.size() == 1) return BAR_WRITERS.computeIfAbsent(outputs.getFirst(), this::createBar);
+        return new MultipleBarWriter(outputs.stream()
+                .map(target -> BAR_WRITERS.computeIfAbsent(target, this::createBar))
+                .toList());
     }
+
+    private List<ArchiveTarget> outputs() {
+        var outputs = Stream.of(settings.output())
+                .map(this::toArchiveTarget)
+                .toList();
+        var duplicate = outputs.stream().map(ArchiveTarget::fileName).distinct().count() != outputs.size();
+        if (duplicate) throw new WunderBarException("duplicate output file names configured on @" + WunderBarApiConsumer.class.getSimpleName());
+        return outputs;
+    }
+
+    private ArchiveTarget toArchiveTarget(Output output) {
+        if (output.fileName().isBlank())
+            throw new WunderBarException("output file name must not be blank on @" + WunderBarApiConsumer.class.getSimpleName());
+        return new ArchiveTarget(output.fileName(), output.format().resolve(output.fileName()));
+    }
+
+    private BarWriter createBar(ArchiveTarget target) {return BarWriter.to(target.format(), target.fileName());}
 
     private void registerSomeDataGenerators() {
         extensionContexts()
@@ -395,4 +418,6 @@ class WunderBarApiConsumerJUnitExtension implements Extension, BeforeEachCallbac
         }
         return (args.size() == constructor.getParameterCount()) ? Optional.of(args.toArray()) : Optional.empty();
     }
+
+    private record ArchiveTarget(String fileName, ContractFormat format) {}
 }

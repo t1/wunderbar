@@ -1,8 +1,9 @@
 package test.provider;
 
-import com.github.t1.wunderbar.junit.consumer.BarWriter;
 import com.github.t1.wunderbar.http.HttpRequest;
 import com.github.t1.wunderbar.http.HttpResponse;
+import com.github.t1.wunderbar.junit.ContractFormat;
+import com.github.t1.wunderbar.junit.consumer.BarWriter;
 import com.github.t1.wunderbar.junit.provider.MavenCoordinates;
 import com.github.t1.wunderbar.junit.provider.WunderBarTestFinder;
 import com.github.t1.wunderbar.junit.provider.WunderBarTestFinder.Test;
@@ -24,6 +25,8 @@ import java.util.List;
 import java.util.function.Function;
 
 import static com.github.t1.wunderbar.common.Utils.deleteRecursive;
+import static com.github.t1.wunderbar.junit.ContractFormat.BAR;
+import static com.github.t1.wunderbar.junit.ContractFormat.OPENAPI;
 import static com.github.t1.wunderbar.junit.provider.WunderBarTestFinder.findTestsIn;
 import static org.assertj.core.api.BDDAssertions.then;
 
@@ -32,6 +35,7 @@ class ApiProviderFixture implements Extension, BeforeEachCallback, AfterEachCall
 
     private Path path;
     private BarWriter bar;
+    private ContractFormat format = BAR;
     private int nextTestValue = 0;
 
     private final List<Test> expected = new ArrayList<>();
@@ -46,10 +50,21 @@ class ApiProviderFixture implements Extension, BeforeEachCallback, AfterEachCall
     }
 
     @Override public void beforeEach(@NonNull ExtensionContext context) {
-        this.path = tmp.resolve("wunder.bar");
+        this.format = BAR;
+        this.path = defaultPath();
         bar = null;
     }
 
+    private Path defaultPath() {
+        return tmp.resolve(format == OPENAPI ? "wunder.openapi.json" : "wunder.bar");
+    }
+
+
+    ApiProviderFixture withFormat(@SuppressWarnings("SameParameterValue") ContractFormat format) {
+        this.format = format;
+        this.path = defaultPath();
+        return this;
+    }
 
     ApiProviderFixture in(Path path) {
         this.path = path;
@@ -63,7 +78,7 @@ class ApiProviderFixture implements Extension, BeforeEachCallback, AfterEachCall
     }
 
     ApiProviderFixture withTest(String directory, HttpRequest request, HttpResponse response) {
-        if (bar == null) bar = BarWriter.to(path.toString());
+        if (bar == null) bar = BarWriter.to(format, path.toString());
 
         bar.setDirectory(directory);
         bar.save(request, response);
@@ -90,11 +105,11 @@ class ApiProviderFixture implements Extension, BeforeEachCallback, AfterEachCall
 
 
     public DynamicNode findTests() {
-        return findTestsIn(bar.getPath(), EXECUTION_COLLECTOR);
+        return findTestsIn(bar.getPath(), format, EXECUTION_COLLECTOR);
     }
 
     public DynamicNode findTestsInArtifact(MavenCoordinates coordinates) {
-        return WunderBarTestFinder.findTestsInArtifact(coordinates, EXECUTION_COLLECTOR);
+        return WunderBarTestFinder.findTestsInArtifact(coordinates, format, EXECUTION_COLLECTOR);
     }
 
     @Override public void afterEach(@NonNull ExtensionContext context) {
