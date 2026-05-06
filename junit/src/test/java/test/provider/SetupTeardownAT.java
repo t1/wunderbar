@@ -1,9 +1,9 @@
 package test.provider;
 
 import com.github.t1.wunderbar.common.mock.MockService;
-import com.github.t1.wunderbar.junit.http.HttpInteraction;
-import com.github.t1.wunderbar.junit.http.HttpRequest;
-import com.github.t1.wunderbar.junit.http.HttpResponse;
+import com.github.t1.wunderbar.http.HttpInteraction;
+import com.github.t1.wunderbar.http.HttpRequest;
+import com.github.t1.wunderbar.http.HttpResponse;
 import com.github.t1.wunderbar.junit.provider.Actual;
 import com.github.t1.wunderbar.junit.provider.AfterDynamicTest;
 import com.github.t1.wunderbar.junit.provider.AfterInteraction;

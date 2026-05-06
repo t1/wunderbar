@@ -2,9 +2,9 @@ package com.github.t1.wunderbar.junit.provider;
 
 import com.github.t1.wunderbar.common.Utils;
 import com.github.t1.wunderbar.junit.WunderBarException;
-import com.github.t1.wunderbar.junit.http.HttpInteraction;
-import com.github.t1.wunderbar.junit.http.HttpRequest;
-import com.github.t1.wunderbar.junit.http.HttpResponse;
+import com.github.t1.wunderbar.http.HttpInteraction;
+import com.github.t1.wunderbar.http.HttpRequest;
+import com.github.t1.wunderbar.http.HttpResponse;
 import com.github.t1.wunderbar.junit.provider.WunderBarApiProviderJUnitExtension.Execution;
 import jakarta.json.Json;
 import jakarta.json.JsonPointer;
@@ -17,7 +17,7 @@ import org.assertj.core.api.BDDSoftAssertions;
 import java.lang.reflect.Method;
 
 import static com.github.t1.wunderbar.junit.assertions.WunderBarBDDAssertions.then;
-import static com.github.t1.wunderbar.junit.http.HttpUtils.isCompatible;
+import static com.github.t1.wunderbar.http.HttpUtils.isCompatible;
 
 @RequiredArgsConstructor
 class OnInteractionErrorMethodHandler {

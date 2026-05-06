@@ -1,4 +1,4 @@
-package com.github.t1.wunderbar.junit.http;
+package com.github.t1.wunderbar.http;
 
 import lombok.Value;
 import lombok.With;

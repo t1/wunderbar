@@ -9,10 +9,10 @@ import com.github.t1.wunderbar.junit.consumer.Service;
 import com.github.t1.wunderbar.junit.consumer.Some;
 import com.github.t1.wunderbar.junit.consumer.SystemUnderTest;
 import com.github.t1.wunderbar.junit.consumer.WunderBarApiConsumer;
-import com.github.t1.wunderbar.junit.http.Authorization;
-import com.github.t1.wunderbar.junit.http.HttpRequest;
-import com.github.t1.wunderbar.junit.http.HttpResponse;
-import com.github.t1.wunderbar.junit.http.HttpServer;
+import com.github.t1.wunderbar.http.Authorization;
+import com.github.t1.wunderbar.http.HttpRequest;
+import com.github.t1.wunderbar.http.HttpResponse;
+import com.github.t1.wunderbar.http.HttpServer;
 import io.smallrye.graphql.client.GraphQLClientException;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
@@ -22,7 +22,7 @@ import test.SomeProducts;
 
 import java.net.URI;
 
-import static com.github.t1.wunderbar.junit.http.HttpUtils.JSONB;
+import static com.github.t1.wunderbar.http.HttpUtils.JSONB;
 import static org.assertj.core.api.BDDAssertions.catchThrowableOfType;
 import static org.assertj.core.api.BDDAssertions.then;
 

@@ -11,7 +11,7 @@ import java.lang.reflect.AnnotatedElement;
 import java.util.List;
 import java.util.Optional;
 
-import static com.github.t1.wunderbar.junit.http.HttpUtils.readJson;
+import static com.github.t1.wunderbar.http.HttpUtils.readJson;
 
 public @Internal @Value class GeneratedDataPoint {
     static Optional<GeneratedDataPoint> find(List<GeneratedDataPoint> list, Object value) {

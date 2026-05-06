@@ -1,9 +1,9 @@
 package test;
 
 import com.github.t1.wunderbar.common.mock.MockService;
-import com.github.t1.wunderbar.junit.http.HttpRequest;
-import com.github.t1.wunderbar.junit.http.HttpResponse;
-import com.github.t1.wunderbar.junit.http.HttpServer;
+import com.github.t1.wunderbar.http.HttpRequest;
+import com.github.t1.wunderbar.http.HttpResponse;
+import com.github.t1.wunderbar.http.HttpServer;
 import org.junit.jupiter.api.extension.BeforeEachCallback;
 import org.junit.jupiter.api.extension.Extension;
 import org.junit.jupiter.api.extension.ExtensionContext;

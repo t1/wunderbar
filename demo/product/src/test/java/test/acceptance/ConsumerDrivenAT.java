@@ -1,10 +1,10 @@
 package test.acceptance;
 
 import com.github.t1.wunderbar.demo.product.Product;
-import com.github.t1.wunderbar.junit.http.Authorization;
-import com.github.t1.wunderbar.junit.http.HttpInteraction;
-import com.github.t1.wunderbar.junit.http.HttpRequest;
-import com.github.t1.wunderbar.junit.http.HttpResponse;
+import com.github.t1.wunderbar.http.Authorization;
+import com.github.t1.wunderbar.http.HttpInteraction;
+import com.github.t1.wunderbar.http.HttpRequest;
+import com.github.t1.wunderbar.http.HttpResponse;
 import com.github.t1.wunderbar.junit.provider.AfterDynamicTest;
 import com.github.t1.wunderbar.junit.provider.BeforeInteraction;
 import com.github.t1.wunderbar.junit.provider.WunderBarApiProvider;
@@ -31,7 +31,7 @@ import java.util.Optional;
 import java.util.regex.Pattern;
 
 import static com.github.t1.wunderbar.junit.assertions.WunderBarBDDAssertions.then;
-import static com.github.t1.wunderbar.junit.http.HttpUtils.jsonString;
+import static com.github.t1.wunderbar.http.HttpUtils.jsonString;
 import static com.github.t1.wunderbar.junit.provider.WunderBarTestFinder.findTestsIn;
 import static com.github.t1.wunderbar.junit.provider.WunderBarTestFinder.findTestsInArtifact;
 import static java.nio.charset.StandardCharsets.UTF_8;

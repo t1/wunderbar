@@ -1,4 +1,4 @@
-package com.github.t1.wunderbar.junit.http;
+package com.github.t1.wunderbar.http;
 
 import jakarta.json.Json;
 import jakarta.json.JsonObjectBuilder;

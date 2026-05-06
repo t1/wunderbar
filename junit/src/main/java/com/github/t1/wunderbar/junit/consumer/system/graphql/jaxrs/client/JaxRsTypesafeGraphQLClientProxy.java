@@ -11,7 +11,7 @@ import java.util.Collections;
 import java.util.Map;
 
 import static com.github.t1.wunderbar.common.Utils.prefix;
-import static com.github.t1.wunderbar.junit.http.HttpUtils.APPLICATION_JSON_UTF8;
+import static com.github.t1.wunderbar.http.HttpUtils.APPLICATION_JSON_UTF8;
 import static jakarta.ws.rs.client.Entity.entity;
 import static jakarta.ws.rs.core.Response.Status.Family.SUCCESSFUL;
 

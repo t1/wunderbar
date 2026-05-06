@@ -1,6 +1,6 @@
 package com.github.t1.wunderbar.common.mock;
 
-import com.github.t1.wunderbar.junit.http.HttpResponse;
+import com.github.t1.wunderbar.http.HttpResponse;
 import jakarta.json.Json;
 import jakarta.json.JsonArrayBuilder;
 import jakarta.json.JsonObject;

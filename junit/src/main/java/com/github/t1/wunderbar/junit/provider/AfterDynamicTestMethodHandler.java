@@ -1,6 +1,6 @@
 package com.github.t1.wunderbar.junit.provider;
 
-import com.github.t1.wunderbar.junit.http.HttpResponse;
+import com.github.t1.wunderbar.http.HttpResponse;
 import com.github.t1.wunderbar.junit.provider.WunderBarApiProviderJUnitExtension.Executions;
 
 import java.lang.reflect.Method;

@@ -1,8 +1,8 @@
 package com.github.t1.wunderbar.junit.assertions;
 
 import com.github.t1.wunderbar.junit.assertions.JsonValueAssert.JsonObjectAssert;
-import com.github.t1.wunderbar.junit.http.HttpRequest;
-import com.github.t1.wunderbar.junit.http.HttpResponse;
+import com.github.t1.wunderbar.http.HttpRequest;
+import com.github.t1.wunderbar.http.HttpResponse;
 import jakarta.ws.rs.core.Response.Status;
 import org.assertj.core.api.AbstractAssert;
 import org.assertj.core.api.AbstractStringAssert;

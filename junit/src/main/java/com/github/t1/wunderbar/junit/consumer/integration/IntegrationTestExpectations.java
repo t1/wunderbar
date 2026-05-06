@@ -6,9 +6,9 @@ import com.github.t1.wunderbar.junit.consumer.Technology;
 import com.github.t1.wunderbar.junit.consumer.WunderBarExpectation;
 import com.github.t1.wunderbar.junit.consumer.WunderBarExpectations;
 import com.github.t1.wunderbar.junit.consumer.WunderbarExpectationBuilder;
-import com.github.t1.wunderbar.junit.http.HttpRequest;
-import com.github.t1.wunderbar.junit.http.HttpResponse;
-import com.github.t1.wunderbar.junit.http.HttpServer;
+import com.github.t1.wunderbar.http.HttpRequest;
+import com.github.t1.wunderbar.http.HttpResponse;
+import com.github.t1.wunderbar.http.HttpServer;
 import lombok.extern.slf4j.Slf4j;
 
 import java.lang.reflect.Method;

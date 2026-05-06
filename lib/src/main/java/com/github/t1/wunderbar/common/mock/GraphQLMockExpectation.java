@@ -1,6 +1,6 @@
 package com.github.t1.wunderbar.common.mock;
 
-import com.github.t1.wunderbar.junit.http.HttpRequest;
+import com.github.t1.wunderbar.http.HttpRequest;
 import jakarta.json.JsonObject;
 import lombok.EqualsAndHashCode;
 import lombok.RequiredArgsConstructor;

@@ -1,8 +1,8 @@
 package com.github.t1.wunderbar.common.mock;
 
-import com.github.t1.wunderbar.junit.http.HttpRequest;
-import com.github.t1.wunderbar.junit.http.HttpResponse;
-import com.github.t1.wunderbar.junit.http.ProblemDetails;
+import com.github.t1.wunderbar.http.HttpRequest;
+import com.github.t1.wunderbar.http.HttpResponse;
+import com.github.t1.wunderbar.http.ProblemDetails;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.ArrayList;

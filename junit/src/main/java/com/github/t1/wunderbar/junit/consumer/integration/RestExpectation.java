@@ -1,8 +1,8 @@
 package com.github.t1.wunderbar.junit.consumer.integration;
 
-import com.github.t1.wunderbar.junit.http.HttpRequest;
-import com.github.t1.wunderbar.junit.http.HttpResponse;
-import com.github.t1.wunderbar.junit.http.ProblemDetails;
+import com.github.t1.wunderbar.http.HttpRequest;
+import com.github.t1.wunderbar.http.HttpResponse;
+import com.github.t1.wunderbar.http.ProblemDetails;
 import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.core.MediaType;
 import lombok.extern.slf4j.Slf4j;
@@ -10,7 +10,7 @@ import lombok.extern.slf4j.Slf4j;
 import java.lang.reflect.Method;
 import java.net.URI;
 
-import static com.github.t1.wunderbar.junit.http.HttpUtils.APPLICATION_JSON_UTF8;
+import static com.github.t1.wunderbar.http.HttpUtils.APPLICATION_JSON_UTF8;
 
 @Slf4j
 class RestExpectation extends HttpServiceExpectation {

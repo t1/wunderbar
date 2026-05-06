@@ -1,8 +1,8 @@
 package com.github.t1.wunderbar.junit.consumer;
 
 import com.github.t1.wunderbar.common.Internal;
-import com.github.t1.wunderbar.junit.http.HttpRequest;
-import com.github.t1.wunderbar.junit.http.HttpResponse;
+import com.github.t1.wunderbar.http.HttpRequest;
+import com.github.t1.wunderbar.http.HttpResponse;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 
@@ -14,8 +14,8 @@ import java.util.Optional;
 import java.util.Properties;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import static com.github.t1.wunderbar.junit.http.HttpUtils.properties;
-import static com.github.t1.wunderbar.junit.http.HttpUtils.toJson;
+import static com.github.t1.wunderbar.http.HttpUtils.properties;
+import static com.github.t1.wunderbar.http.HttpUtils.toJson;
 import static java.util.Collections.emptyList;
 
 @Setter @Slf4j

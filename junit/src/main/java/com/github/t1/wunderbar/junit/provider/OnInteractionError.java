@@ -1,5 +1,9 @@
 package com.github.t1.wunderbar.junit.provider;
 
+import com.github.t1.wunderbar.http.HttpInteraction;
+import com.github.t1.wunderbar.http.HttpRequest;
+import com.github.t1.wunderbar.http.HttpResponse;
+
 import java.lang.annotation.Retention;
 
 import static java.lang.annotation.RetentionPolicy.RUNTIME;
@@ -15,9 +19,9 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
  * <p>
  * The annotated method can take any of these parameters:
  * <ul>
- * <li>{@link com.github.t1.wunderbar.junit.http.HttpInteraction HttpInteraction}: the expected request and response
- * <li>{@link com.github.t1.wunderbar.junit.http.HttpRequest HttpRequest}: the expected request
- * <li>{@link com.github.t1.wunderbar.junit.http.HttpResponse HttpResponse}: the expected response
+ * <li>{@link HttpInteraction HttpInteraction}: the expected request and response
+ * <li>{@link HttpRequest HttpRequest}: the expected request
+ * <li>{@link HttpResponse HttpResponse}: the expected response
  * <li>{@link org.assertj.core.api.BDDSoftAssertions BDDSoftAssertions}: the mismatches that WunderBar has found. You can turn them
  *     into an {@link AssertionError} by calling {@link org.assertj.core.api.BDDSoftAssertions#assertAll() assertAll()}.
  * <li><code>{@link com.github.t1.wunderbar.junit.provider.WunderBarExecution WunderBarExecution}</code>: meta data about

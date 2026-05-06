@@ -16,7 +16,7 @@ import java.util.List;
 
 import static com.github.t1.wunderbar.junit.consumer.Level.INTEGRATION;
 import static com.github.t1.wunderbar.junit.consumer.WunderbarExpectationBuilder.given;
-import static com.github.t1.wunderbar.junit.http.HttpUtils.APPLICATION_JSON_UTF8;
+import static com.github.t1.wunderbar.http.HttpUtils.APPLICATION_JSON_UTF8;
 import static org.assertj.core.api.Assertions.contentOf;
 import static org.assertj.core.api.BDDAssertions.then;
 

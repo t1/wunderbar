@@ -1,4 +1,4 @@
-package com.github.t1.wunderbar.junit.http;
+package com.github.t1.wunderbar.http;
 
 import jakarta.json.bind.adapter.JsonbAdapter;
 import jakarta.ws.rs.core.Response.Status;

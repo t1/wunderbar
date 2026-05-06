@@ -1,4 +1,4 @@
-package com.github.t1.wunderbar.junit.http;
+package com.github.t1.wunderbar.http;
 
 import com.sun.net.httpserver.HttpExchange;
 import jakarta.ws.rs.core.MediaType;

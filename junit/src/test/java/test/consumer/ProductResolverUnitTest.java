@@ -3,7 +3,7 @@ package test.consumer;
 import com.github.t1.wunderbar.junit.consumer.Level;
 import com.github.t1.wunderbar.junit.consumer.Technology;
 import com.github.t1.wunderbar.junit.consumer.WunderBarApiConsumer;
-import com.github.t1.wunderbar.junit.http.ProblemDetails;
+import com.github.t1.wunderbar.http.ProblemDetails;
 import jakarta.ws.rs.core.Response.StatusType;
 import org.junit.jupiter.api.Test;
 

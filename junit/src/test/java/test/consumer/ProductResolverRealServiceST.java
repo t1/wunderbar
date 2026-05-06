@@ -6,9 +6,9 @@ import com.github.t1.wunderbar.junit.consumer.Service;
 import com.github.t1.wunderbar.junit.consumer.Some;
 import com.github.t1.wunderbar.junit.consumer.SystemUnderTest;
 import com.github.t1.wunderbar.junit.consumer.WunderBarApiConsumer;
-import com.github.t1.wunderbar.junit.http.HttpRequest;
-import com.github.t1.wunderbar.junit.http.HttpResponse;
-import com.github.t1.wunderbar.junit.http.HttpServer;
+import com.github.t1.wunderbar.http.HttpRequest;
+import com.github.t1.wunderbar.http.HttpResponse;
+import com.github.t1.wunderbar.http.HttpServer;
 import jakarta.json.Json;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
@@ -18,7 +18,7 @@ import test.consumer.ProductResolver.Products;
 
 import static com.github.t1.wunderbar.junit.assertions.WunderBarBDDAssertions.then;
 import static com.github.t1.wunderbar.junit.consumer.WunderbarExpectationBuilder.given;
-import static com.github.t1.wunderbar.junit.http.HttpUtils.readJson;
+import static com.github.t1.wunderbar.http.HttpUtils.readJson;
 import static org.assertj.core.api.Assertions.catchThrowable;
 
 @WunderBarApiConsumer

@@ -1,4 +1,4 @@
-package com.github.t1.wunderbar.junit.http;
+package com.github.t1.wunderbar.http;
 
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response.Status;
@@ -12,7 +12,7 @@ import java.net.http.HttpResponse.BodySubscribers;
 import java.net.http.HttpResponse.ResponseInfo;
 import java.time.Duration;
 
-import static com.github.t1.wunderbar.junit.http.HttpUtils.charset;
+import static com.github.t1.wunderbar.http.HttpUtils.charset;
 import static jakarta.ws.rs.core.HttpHeaders.ACCEPT;
 import static jakarta.ws.rs.core.HttpHeaders.AUTHORIZATION;
 import static jakarta.ws.rs.core.HttpHeaders.CONTENT_TYPE;

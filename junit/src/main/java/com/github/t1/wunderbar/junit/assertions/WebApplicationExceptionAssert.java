@@ -7,7 +7,7 @@ import org.assertj.core.api.AbstractAssert;
 import org.assertj.core.api.InstanceOfAssertFactory;
 
 import static com.github.t1.wunderbar.junit.assertions.WunderBarBDDAssertions.then;
-import static com.github.t1.wunderbar.junit.http.HttpUtils.readJson;
+import static com.github.t1.wunderbar.http.HttpUtils.readJson;
 
 /**
  * Assertions about a {@link WebApplicationException} that contains a

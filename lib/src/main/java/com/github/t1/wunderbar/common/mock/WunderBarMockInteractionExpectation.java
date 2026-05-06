@@ -1,13 +1,13 @@
 package com.github.t1.wunderbar.common.mock;
 
-import com.github.t1.wunderbar.junit.http.HttpRequest;
-import com.github.t1.wunderbar.junit.http.HttpResponse;
+import com.github.t1.wunderbar.http.HttpRequest;
+import com.github.t1.wunderbar.http.HttpResponse;
 import lombok.Builder;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.extern.slf4j.Slf4j;
 
-import static com.github.t1.wunderbar.junit.http.HttpUtils.toFlatString;
+import static com.github.t1.wunderbar.http.HttpUtils.toFlatString;
 
 @Slf4j
 @Data @Builder @EqualsAndHashCode(callSuper = true)

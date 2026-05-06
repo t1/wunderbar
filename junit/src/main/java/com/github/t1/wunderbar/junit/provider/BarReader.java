@@ -1,11 +1,11 @@
 package com.github.t1.wunderbar.junit.provider;
 
 import com.github.t1.wunderbar.junit.WunderBarException;
-import com.github.t1.wunderbar.junit.http.Authorization;
-import com.github.t1.wunderbar.junit.http.Authorization.Dummy;
-import com.github.t1.wunderbar.junit.http.HttpInteraction;
-import com.github.t1.wunderbar.junit.http.HttpRequest;
-import com.github.t1.wunderbar.junit.http.HttpResponse;
+import com.github.t1.wunderbar.http.Authorization;
+import com.github.t1.wunderbar.http.Authorization.Dummy;
+import com.github.t1.wunderbar.http.HttpInteraction;
+import com.github.t1.wunderbar.http.HttpRequest;
+import com.github.t1.wunderbar.http.HttpResponse;
 import com.github.t1.wunderbar.junit.provider.WunderBarTestFinder.Test;
 import jakarta.ws.rs.core.MediaType;
 import lombok.NonNull;
@@ -23,8 +23,8 @@ import java.util.Properties;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
-import static com.github.t1.wunderbar.junit.http.HttpUtils.optional;
-import static com.github.t1.wunderbar.junit.http.HttpUtils.properties;
+import static com.github.t1.wunderbar.http.HttpUtils.optional;
+import static com.github.t1.wunderbar.http.HttpUtils.properties;
 import static jakarta.ws.rs.core.HttpHeaders.ACCEPT;
 import static jakarta.ws.rs.core.HttpHeaders.AUTHORIZATION;
 import static jakarta.ws.rs.core.HttpHeaders.CONTENT_TYPE;

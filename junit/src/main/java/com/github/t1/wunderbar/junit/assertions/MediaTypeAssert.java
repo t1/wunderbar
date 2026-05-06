@@ -1,6 +1,6 @@
 package com.github.t1.wunderbar.junit.assertions;
 
-import com.github.t1.wunderbar.junit.http.HttpUtils;
+import com.github.t1.wunderbar.http.HttpUtils;
 import jakarta.ws.rs.WebApplicationException;
 import jakarta.ws.rs.core.MediaType;
 import org.assertj.core.api.AbstractAssert;

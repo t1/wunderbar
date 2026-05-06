@@ -1,11 +1,11 @@
 package com.github.t1.wunderbar.junit.consumer.system;
 
 import com.github.t1.wunderbar.junit.consumer.BarWriter;
-import com.github.t1.wunderbar.junit.http.Authorization;
-import com.github.t1.wunderbar.junit.http.HttpRequest;
-import com.github.t1.wunderbar.junit.http.HttpRequest.HttpRequestBuilder;
-import com.github.t1.wunderbar.junit.http.HttpResponse;
-import com.github.t1.wunderbar.junit.http.HttpResponse.HttpResponseBuilder;
+import com.github.t1.wunderbar.http.Authorization;
+import com.github.t1.wunderbar.http.HttpRequest;
+import com.github.t1.wunderbar.http.HttpRequest.HttpRequestBuilder;
+import com.github.t1.wunderbar.http.HttpResponse;
+import com.github.t1.wunderbar.http.HttpResponse.HttpResponseBuilder;
 import jakarta.ws.rs.client.ClientRequestContext;
 import jakarta.ws.rs.client.ClientRequestFilter;
 import jakarta.ws.rs.client.ClientResponseContext;
@@ -20,7 +20,7 @@ import java.io.IOException;
 import java.net.URI;
 import java.util.function.Supplier;
 
-import static com.github.t1.wunderbar.junit.http.HttpUtils.formatJson;
+import static com.github.t1.wunderbar.http.HttpUtils.formatJson;
 import static jakarta.ws.rs.core.HttpHeaders.AUTHORIZATION;
 import static jakarta.ws.rs.core.MediaType.APPLICATION_JSON_TYPE;
 

@@ -1,4 +1,4 @@
-package com.github.t1.wunderbar.junit.http;
+package com.github.t1.wunderbar.http;
 
 import jakarta.ws.rs.WebApplicationException;
 import jakarta.ws.rs.core.Response.StatusType;
@@ -7,9 +7,9 @@ import lombok.Value;
 
 import java.net.URI;
 
-import static com.github.t1.wunderbar.junit.http.HttpUtils.PROBLEM_DETAIL_TYPE;
-import static com.github.t1.wunderbar.junit.http.HttpUtils.errorCode;
-import static com.github.t1.wunderbar.junit.http.HttpUtils.splitCamel;
+import static com.github.t1.wunderbar.http.HttpUtils.PROBLEM_DETAIL_TYPE;
+import static com.github.t1.wunderbar.http.HttpUtils.errorCode;
+import static com.github.t1.wunderbar.http.HttpUtils.splitCamel;
 import static jakarta.ws.rs.core.Response.Status.INTERNAL_SERVER_ERROR;
 import static java.util.Locale.ROOT;
 

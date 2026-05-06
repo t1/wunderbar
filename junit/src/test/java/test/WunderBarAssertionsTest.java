@@ -17,8 +17,8 @@ import static com.github.t1.wunderbar.junit.assertions.MediaTypeAssert.MEDIA_TYP
 import static com.github.t1.wunderbar.junit.assertions.MediaTypeAssert.compatibleTo;
 import static com.github.t1.wunderbar.junit.assertions.MediaTypeAssert.isCompatibleToAny;
 import static com.github.t1.wunderbar.junit.assertions.WunderBarBDDAssertions.then;
-import static com.github.t1.wunderbar.junit.http.HttpUtils.isCompatible;
-import static com.github.t1.wunderbar.junit.http.HttpUtils.mediaTypes;
+import static com.github.t1.wunderbar.http.HttpUtils.isCompatible;
+import static com.github.t1.wunderbar.http.HttpUtils.mediaTypes;
 import static jakarta.ws.rs.core.MediaType.APPLICATION_JSON_TYPE;
 
 class WunderBarAssertionsTest {

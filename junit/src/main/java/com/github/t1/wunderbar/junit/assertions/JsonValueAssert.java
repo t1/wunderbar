@@ -1,6 +1,6 @@
 package com.github.t1.wunderbar.junit.assertions;
 
-import com.github.t1.wunderbar.junit.http.HttpUtils;
+import com.github.t1.wunderbar.http.HttpUtils;
 import jakarta.json.Json;
 import jakarta.json.JsonObject;
 import jakarta.json.JsonPointer;

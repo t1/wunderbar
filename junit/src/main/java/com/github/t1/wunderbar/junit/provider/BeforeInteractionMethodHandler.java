@@ -1,7 +1,7 @@
 package com.github.t1.wunderbar.junit.provider;
 
-import com.github.t1.wunderbar.junit.http.HttpInteraction;
-import com.github.t1.wunderbar.junit.http.HttpRequest;
+import com.github.t1.wunderbar.http.HttpInteraction;
+import com.github.t1.wunderbar.http.HttpRequest;
 import com.github.t1.wunderbar.junit.provider.WunderBarApiProviderJUnitExtension.Execution;
 
 import java.lang.reflect.Method;

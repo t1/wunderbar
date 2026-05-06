@@ -1,6 +1,6 @@
 package com.github.t1.wunderbar.junit.assertions;
 
-import com.github.t1.wunderbar.junit.http.HttpRequest;
+import com.github.t1.wunderbar.http.HttpRequest;
 import org.assertj.core.api.AbstractAssert;
 
 import static com.github.t1.wunderbar.junit.assertions.WunderBarBDDAssertions.then;

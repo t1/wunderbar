@@ -1,4 +1,4 @@
-package com.github.t1.wunderbar.junit.http;
+package com.github.t1.wunderbar.http;
 
 import com.github.t1.wunderbar.common.Internal;
 import jakarta.json.Json;
@@ -28,14 +28,14 @@ import java.util.regex.MatchResult;
 import java.util.regex.Pattern;
 
 import static com.github.t1.wunderbar.common.Utils.nonAddFieldDiff;
-import static com.github.t1.wunderbar.junit.http.HttpUtils.APPLICATION_JSON_UTF8;
-import static com.github.t1.wunderbar.junit.http.HttpUtils.JSONB;
-import static com.github.t1.wunderbar.junit.http.HttpUtils.firstMediaType;
-import static com.github.t1.wunderbar.junit.http.HttpUtils.formatJson;
-import static com.github.t1.wunderbar.junit.http.HttpUtils.isCompatible;
-import static com.github.t1.wunderbar.junit.http.HttpUtils.mediaTypes;
-import static com.github.t1.wunderbar.junit.http.HttpUtils.normalizeTitle;
-import static com.github.t1.wunderbar.junit.http.HttpUtils.read;
+import static com.github.t1.wunderbar.http.HttpUtils.APPLICATION_JSON_UTF8;
+import static com.github.t1.wunderbar.http.HttpUtils.JSONB;
+import static com.github.t1.wunderbar.http.HttpUtils.firstMediaType;
+import static com.github.t1.wunderbar.http.HttpUtils.formatJson;
+import static com.github.t1.wunderbar.http.HttpUtils.isCompatible;
+import static com.github.t1.wunderbar.http.HttpUtils.mediaTypes;
+import static com.github.t1.wunderbar.http.HttpUtils.normalizeTitle;
+import static com.github.t1.wunderbar.http.HttpUtils.read;
 import static jakarta.json.JsonValue.ValueType.OBJECT;
 import static jakarta.ws.rs.core.HttpHeaders.ACCEPT;
 import static jakarta.ws.rs.core.HttpHeaders.AUTHORIZATION;

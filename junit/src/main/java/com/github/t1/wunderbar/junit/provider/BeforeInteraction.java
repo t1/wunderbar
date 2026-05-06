@@ -1,5 +1,9 @@
 package com.github.t1.wunderbar.junit.provider;
 
+import com.github.t1.wunderbar.http.HttpInteraction;
+import com.github.t1.wunderbar.http.HttpRequest;
+import com.github.t1.wunderbar.http.HttpResponse;
+
 import java.lang.annotation.Retention;
 
 import static java.lang.annotation.RetentionPolicy.RUNTIME;
@@ -12,9 +16,9 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
  * <p>
  * The annotated method can optionally take parameters of these types:
  * <ul>
- * <li><code>{@link com.github.t1.wunderbar.junit.http.HttpInteraction HttpInteraction}: expected interactions</code>,
- * <li><code>{@link com.github.t1.wunderbar.junit.http.HttpRequest HttpRequest}: expected requests</code>,
- * <li><code>{@link com.github.t1.wunderbar.junit.http.HttpResponse HttpResponse}: expected responses</code>,
+ * <li><code>{@link HttpInteraction HttpInteraction}: expected interactions</code>,
+ * <li><code>{@link HttpRequest HttpRequest}: expected requests</code>,
+ * <li><code>{@link HttpResponse HttpResponse}: expected responses</code>,
  * <li><code>{@link com.github.t1.wunderbar.junit.provider.WunderBarExecution WunderBarExecution}</code>: meta data about
  * the running interaction</li>
  * </ul>
@@ -22,9 +26,9 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
  * The annotated method can optionally return an object of one of these types to change the expectations,
  * e.g. to replace the dummy credentials with real ones:
  * <ul>
- * <li><code>{@link com.github.t1.wunderbar.junit.http.HttpInteraction HttpInteraction}: expected interactions</code>,
- * <li><code>{@link com.github.t1.wunderbar.junit.http.HttpRequest HttpRequest}: expected requests</code>,
- * <li><code>{@link com.github.t1.wunderbar.junit.http.HttpResponse HttpResponse}: expected responses</code>,
+ * <li><code>{@link HttpInteraction HttpInteraction}: expected interactions</code>,
+ * <li><code>{@link HttpRequest HttpRequest}: expected requests</code>,
+ * <li><code>{@link HttpResponse HttpResponse}: expected responses</code>,
  * </ul>
  *
  * @see BeforeDynamicTest

@@ -1,8 +1,8 @@
 package test.provider;
 
 import com.github.t1.wunderbar.junit.consumer.BarWriter;
-import com.github.t1.wunderbar.junit.http.HttpRequest;
-import com.github.t1.wunderbar.junit.http.HttpResponse;
+import com.github.t1.wunderbar.http.HttpRequest;
+import com.github.t1.wunderbar.http.HttpResponse;
 import com.github.t1.wunderbar.junit.provider.MavenCoordinates;
 import com.github.t1.wunderbar.junit.provider.WunderBarTestFinder;
 import com.github.t1.wunderbar.junit.provider.WunderBarTestFinder.Test;

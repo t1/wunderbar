@@ -11,7 +11,7 @@ import java.util.Optional;
 import java.util.Properties;
 import java.util.regex.Pattern;
 
-import static com.github.t1.wunderbar.junit.http.HttpUtils.readJson;
+import static com.github.t1.wunderbar.http.HttpUtils.readJson;
 
 @RequiredArgsConstructor
 class VariablesCollector {

@@ -1,8 +1,8 @@
 package com.github.t1.wunderbar.junit.consumer.integration;
 
-import com.github.t1.wunderbar.junit.http.Authorization;
-import com.github.t1.wunderbar.junit.http.HttpRequest;
-import com.github.t1.wunderbar.junit.http.HttpResponse;
+import com.github.t1.wunderbar.http.Authorization;
+import com.github.t1.wunderbar.http.HttpRequest;
+import com.github.t1.wunderbar.http.HttpResponse;
 import io.smallrye.graphql.client.typesafe.api.AuthorizationHeader;
 import io.smallrye.graphql.client.typesafe.api.GraphQLClientApi;
 import io.smallrye.graphql.client.typesafe.api.TypesafeGraphQLClientBuilder;
@@ -14,8 +14,8 @@ import org.eclipse.microprofile.graphql.Query;
 import java.lang.reflect.Method;
 import java.net.URI;
 
-import static com.github.t1.wunderbar.junit.http.HttpUtils.errorCode;
-import static com.github.t1.wunderbar.junit.http.HttpUtils.readJson;
+import static com.github.t1.wunderbar.http.HttpUtils.errorCode;
+import static com.github.t1.wunderbar.http.HttpUtils.readJson;
 
 class GraphQlExpectation extends HttpServiceExpectation {
     private final String configKey;

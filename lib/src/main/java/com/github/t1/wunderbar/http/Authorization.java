@@ -1,11 +1,11 @@
-package com.github.t1.wunderbar.junit.http;
+package com.github.t1.wunderbar.http;
 
 import lombok.AllArgsConstructor;
 import lombok.Value;
 
-import static com.github.t1.wunderbar.junit.http.HttpUtils.base64;
-import static com.github.t1.wunderbar.junit.http.HttpUtils.base64decode;
-import static com.github.t1.wunderbar.junit.http.HttpUtils.jwtUpn;
+import static com.github.t1.wunderbar.http.HttpUtils.base64;
+import static com.github.t1.wunderbar.http.HttpUtils.base64decode;
+import static com.github.t1.wunderbar.http.HttpUtils.jwtUpn;
 import static java.util.Locale.ROOT;
 
 public interface Authorization {

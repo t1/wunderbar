@@ -1,9 +1,9 @@
 package test;
 
-import com.github.t1.wunderbar.junit.http.HttpClient;
-import com.github.t1.wunderbar.junit.http.HttpRequest;
-import com.github.t1.wunderbar.junit.http.HttpResponse;
-import com.github.t1.wunderbar.junit.http.HttpServer;
+import com.github.t1.wunderbar.http.HttpClient;
+import com.github.t1.wunderbar.http.HttpRequest;
+import com.github.t1.wunderbar.http.HttpResponse;
+import com.github.t1.wunderbar.http.HttpServer;
 import jakarta.ws.rs.core.MediaType;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Test;

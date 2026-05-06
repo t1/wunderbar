@@ -1,6 +1,6 @@
 package com.github.t1.wunderbar.demo.product;
 
-import com.github.t1.wunderbar.junit.http.ProblemDetails;
+import com.github.t1.wunderbar.http.ProblemDetails;
 import jakarta.annotation.PostConstruct;
 import jakarta.annotation.security.RolesAllowed;
 import jakarta.inject.Inject;

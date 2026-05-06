@@ -1,5 +1,9 @@
 package com.github.t1.wunderbar.junit.provider;
 
+import com.github.t1.wunderbar.http.HttpInteraction;
+import com.github.t1.wunderbar.http.HttpRequest;
+import com.github.t1.wunderbar.http.HttpResponse;
+
 import java.lang.annotation.Retention;
 
 import static java.lang.annotation.RetentionPolicy.RUNTIME;
@@ -16,9 +20,9 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
  * <p>
  * The annotated method can optionally take parameters of these types:
  * <ul>
- * <li><code>List&lt;{@link com.github.t1.wunderbar.junit.http.HttpInteraction HttpInteraction}&gt;: expected interactions</code>,
- * <li><code>List&lt;{@link com.github.t1.wunderbar.junit.http.HttpRequest HttpRequest}&gt;: expected requests</code>,
- * <li><code>List&lt;{@link com.github.t1.wunderbar.junit.http.HttpResponse HttpResponse}&gt;: expected responses</code>,
+ * <li><code>List&lt;{@link HttpInteraction HttpInteraction}&gt;: expected interactions</code>,
+ * <li><code>List&lt;{@link HttpRequest HttpRequest}&gt;: expected requests</code>,
+ * <li><code>List&lt;{@link HttpResponse HttpResponse}&gt;: expected responses</code>,
  * <li><code>{@link com.github.t1.wunderbar.junit.provider.WunderBarExecutions WunderBarExecutions}</code>: meta data about
  * the running dynamic test</li>
  * </ul>
@@ -26,9 +30,9 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
  * These lists are immutable; in order to change the interactions, the annotated method can optionally return an object
  * of one of these types. You can use this to, e.g., replace the dummy credentials with real ones:
  * <ul>
- * <li><code>List&lt;{@link com.github.t1.wunderbar.junit.http.HttpInteraction HttpInteraction}&gt;: expected interactions</code>,
- * <li><code>List&lt;{@link com.github.t1.wunderbar.junit.http.HttpRequest HttpRequest}&gt;: expected requests</code>,
- * <li><code>List&lt;{@link com.github.t1.wunderbar.junit.http.HttpResponse HttpResponse}&gt;: expected responses</code>,
+ * <li><code>List&lt;{@link HttpInteraction HttpInteraction}&gt;: expected interactions</code>,
+ * <li><code>List&lt;{@link HttpRequest HttpRequest}&gt;: expected requests</code>,
+ * <li><code>List&lt;{@link HttpResponse HttpResponse}&gt;: expected responses</code>,
  * </ul>
  * <p>
  * Note: it's generally easier to use {@link BeforeInteraction}, esp. if you have interactions that mutate the result of previous interactions.
