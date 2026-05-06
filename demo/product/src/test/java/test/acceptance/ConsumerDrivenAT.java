@@ -44,7 +44,6 @@ import static test.tools.QuarkusServiceExtension.ENDPOINT;
 class ConsumerDrivenAT {
     private static final String GRAPHQL_ENDPOINT = ENDPOINT + "/graphql";
 
-    @SuppressWarnings("SpellCheckingInspection")
     private static final String JWT =
             "Bearer " +
             "eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9" +
@@ -90,7 +89,7 @@ class ConsumerDrivenAT {
 
         var throwable = catchThrowableOfType(GraphQLClientException.class, () -> api.store(product));
 
-        then(throwable.getErrors().get(0).getCode()).isEqualTo("unauthorized");
+        then(throwable.getErrors().getFirst().getCode()).isEqualTo("unauthorized");
     }
 
     @TestFactory DynamicNode demoOrderConsumerTests() {
@@ -175,7 +174,7 @@ class ConsumerDrivenAT {
     private Product checkExists() {
         var message = "the consumer has to request the _old_ state before requesting an update";
         then(ConsumerDrivenAT.createdProductIds).as(message).hasSize(1);
-        var id = createdProductIds.get(0);
+        var id = createdProductIds.getFirst();
         var product = backdoor.maybeProduct(id);
         then(product).describedAs("product " + id + " does not yet exist; " + message).isNotNull();
         return product;
@@ -284,7 +283,7 @@ class ConsumerDrivenAT {
             if (graphQlResponse.errors == null || graphQlResponse.errors.isEmpty()) return Optional.empty();
             if (graphQlResponse.errors.size() != 1)
                 throw new RuntimeException("expected exactly one error but got " + graphQlResponse.errors);
-            return Optional.of(graphQlResponse.errors.get(0).extensions().code());
+            return Optional.of(graphQlResponse.errors.getFirst().extensions().code());
         }
 
         private Optional<String> dataName() {return Optional.of(graphQlResponse.data.product != null ? "product" : "update");}

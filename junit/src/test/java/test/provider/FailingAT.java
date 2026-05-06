@@ -34,19 +34,19 @@ class FailingAT {
     String endpoint() {return mockServer.baseUri() + "/dummy-mock-server";}
 
     @BeforeDynamicTest void shouldFailBeforeToModifyPassedInteractions(List<HttpInteraction> interactions) {
-        var throwable = catchThrowable(() -> interactions.remove(0));
+        var throwable = catchThrowable(interactions::removeFirst);
 
         then(throwable).isInstanceOf(UnsupportedOperationException.class);
     }
 
     @BeforeDynamicTest void shouldFailBeforeToModifyPassedRequests(List<HttpRequest> requests) {
-        var throwable = catchThrowable(() -> requests.remove(0));
+        var throwable = catchThrowable(requests::removeFirst);
 
         then(throwable).isInstanceOf(UnsupportedOperationException.class);
     }
 
     @BeforeDynamicTest void shouldFailBeforeToModifyPassedResponses(List<HttpResponse> responses) {
-        var throwable = catchThrowable(() -> responses.remove(0));
+        var throwable = catchThrowable(responses::removeFirst);
 
         then(throwable).isInstanceOf(UnsupportedOperationException.class);
     }
@@ -72,19 +72,19 @@ class FailingAT {
 
 
     @AfterDynamicTest void shouldFailAfterToModifyPassedInteractions(List<HttpInteraction> interactions) {
-        var throwable = catchThrowable(() -> interactions.remove(0));
+        var throwable = catchThrowable(interactions::removeFirst);
 
         then(throwable).isInstanceOf(UnsupportedOperationException.class);
     }
 
     @AfterDynamicTest void shouldFailAfterToModifyPassedRequests(List<HttpRequest> requests) {
-        var throwable = catchThrowable(() -> requests.remove(0));
+        var throwable = catchThrowable(requests::removeFirst);
 
         then(throwable).isInstanceOf(UnsupportedOperationException.class);
     }
 
     @AfterDynamicTest void shouldFailAfterToModifyPassedResponses(List<HttpResponse> responses) {
-        var throwable = catchThrowable(() -> responses.remove(0));
+        var throwable = catchThrowable(responses::removeFirst);
 
         then(throwable).isInstanceOf(UnsupportedOperationException.class);
     }

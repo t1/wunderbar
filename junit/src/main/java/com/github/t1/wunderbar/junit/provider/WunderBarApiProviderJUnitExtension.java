@@ -10,6 +10,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.SneakyThrows;
+import org.jspecify.annotations.NonNull;
 import org.junit.jupiter.api.extension.AfterEachCallback;
 import org.junit.jupiter.api.extension.BeforeEachCallback;
 import org.junit.jupiter.api.extension.Extension;
@@ -41,7 +42,7 @@ class WunderBarApiProviderJUnitExtension implements Extension, BeforeEachCallbac
     private final List<OnInteractionErrorMethodHandler> onInteractionErrorMethods = new ArrayList<>();
     private final List<AfterDynamicTestMethodHandler> afterDynamicTestMethods = new ArrayList<>();
 
-    @Override public void beforeEach(ExtensionContext context) {
+    @Override public void beforeEach(@NonNull ExtensionContext context) {
         INSTANCE = this;
         this.context = context;
         this.settings = findSettings();
@@ -121,7 +122,7 @@ class WunderBarApiProviderJUnitExtension implements Extension, BeforeEachCallbac
         return invoke(instance, method).toString();
     }
 
-    @Override public void afterEach(ExtensionContext context) {
+    @Override public void afterEach(@NonNull ExtensionContext context) {
         afterDynamicTestMethods.clear();
         onInteractionErrorMethods.clear();
         afterInteractionMethods.clear();

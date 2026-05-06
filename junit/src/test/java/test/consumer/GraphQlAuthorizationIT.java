@@ -27,7 +27,6 @@ class GraphQlAuthorizationIT {
             "URI: /graphql\n" +
             "Accept: " + APPLICATION_JSON_UTF8 + "\n" +
             "Content-Type: " + APPLICATION_JSON_UTF8 + "\n";
-    @SuppressWarnings("SpellCheckingInspection")
     private static final String BASIC_AUTH = "Basic ZHVtbXktdXNlcm5hbWU6ZHVtbXktcGFzc3dvcmQ=";  // dummy-username:dummy-password
     private static final String BEARER_AUTH = // a JWT token with upn 'dummy-token'
             "Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9" +

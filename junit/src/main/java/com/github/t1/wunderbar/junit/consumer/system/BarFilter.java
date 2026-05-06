@@ -58,7 +58,7 @@ class BarFilter implements ClientRequestFilter, ClientResponseFilter {
                     .uri(local(requestContext.getUri()));
             log.info("request {} {}", requestContext.getMethod(), request.build().getUri());
             if (!requestContext.getAcceptableMediaTypes().isEmpty())
-                request.accept(requestContext.getAcceptableMediaTypes().get(0));
+                request.accept(requestContext.getAcceptableMediaTypes().getFirst());
             this.requestMediaType = requestContext.getMediaType();
             if (requestMediaType != null)
                 request.contentType(requestMediaType);

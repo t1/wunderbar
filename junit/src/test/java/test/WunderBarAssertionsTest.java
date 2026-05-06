@@ -31,9 +31,9 @@ class WunderBarAssertionsTest {
         switch (leftTypes.size()) {
             case 0 -> then(isCompatible(leftTypes, rightTypes)).isTrue();
             case 1 -> {
-                then(leftTypes.get(0)).isCompatibleTo(rightTypes);
+                then(leftTypes.getFirst()).isCompatibleTo(rightTypes);
                 if (rightTypes.size() == 1) {
-                    then(leftTypes.get(0)).isCompatibleTo(rightTypes.get(0));
+                    then(leftTypes.getFirst()).isCompatibleTo(rightTypes.getFirst());
                 }
                 then(leftTypes).are(compatibleTo(rightTypes));
                 then(leftTypes).singleElement().is(compatibleTo(rightTypes));
@@ -95,7 +95,7 @@ class WunderBarAssertionsTest {
                 .withMessage("bar-message")
                 .withMessageContaining("bar")
                 .withMessageThat().contains("-");
-        Object error = exception.getErrors().get(0);
+        Object error = exception.getErrors().getFirst();
         then(error).asInstanceOf(GRAPHQL_ERROR).withMessage("foo-message");
     }
 

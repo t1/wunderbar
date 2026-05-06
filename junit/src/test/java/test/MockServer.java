@@ -4,10 +4,10 @@ import com.github.t1.wunderbar.common.mock.MockService;
 import com.github.t1.wunderbar.http.HttpRequest;
 import com.github.t1.wunderbar.http.HttpResponse;
 import com.github.t1.wunderbar.http.HttpServer;
+import org.jspecify.annotations.NonNull;
 import org.junit.jupiter.api.extension.BeforeEachCallback;
 import org.junit.jupiter.api.extension.Extension;
 import org.junit.jupiter.api.extension.ExtensionContext;
-import org.junit.jupiter.api.extension.ExtensionContext.Store.CloseableResource;
 
 import java.net.URI;
 
@@ -23,13 +23,13 @@ public class MockServer implements Extension, BeforeEachCallback {
 
     private static HttpResponse handle(HttpRequest request) {return new MockService().service(request.withoutContextPath());}
 
-    @Override public void beforeEach(ExtensionContext context) {
+    @Override public void beforeEach(@NonNull ExtensionContext context) {
         if (initialized) return;
         registerShutdownHook(SERVER::stop, context);
         initialized = true;
     }
 
-    private static void registerShutdownHook(CloseableResource shutDown, ExtensionContext context) {
+    private static void registerShutdownHook(AutoCloseable shutDown, ExtensionContext context) {
         context.getRoot().getStore(GLOBAL).put(MockServer.class.getName(), shutDown);
     }
 }

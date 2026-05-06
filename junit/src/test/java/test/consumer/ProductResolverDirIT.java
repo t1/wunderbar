@@ -33,7 +33,6 @@ import static test.consumer.ProductResolverDirIT.DIR;
 
 @WunderBarApiConsumer(fileName = DIR)
 @Register(SomeProducts.class)
-@SuppressWarnings("JUnitMalformedDeclaration")
 class ProductResolverDirIT {
     static final String DIR = "target/wunder-bar/";
 

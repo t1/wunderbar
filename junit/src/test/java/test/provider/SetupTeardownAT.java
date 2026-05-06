@@ -101,7 +101,7 @@ class SetupTeardownAT {
 
     @Order(7)
     @BeforeDynamicTest List<HttpInteraction> removeDummyInteraction(List<HttpInteraction> interactions, WunderBarExecutions executions) {
-        var last = interactions.get(interactions.size() - 1);
+        var last = interactions.getLast();
         then(last.getNumber()).isEqualTo(DUMMY_INTERACTION.getNumber());
         then(last.getRequest()).hasUriEndingWith("/100"); // one inc
         then(last.getResponse()).asString().isEqualTo(DUMMY_INTERACTION.getResponse().getBody());

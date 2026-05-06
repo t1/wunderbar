@@ -7,6 +7,7 @@ import com.github.t1.wunderbar.junit.provider.MavenCoordinates;
 import com.github.t1.wunderbar.junit.provider.WunderBarTestFinder;
 import com.github.t1.wunderbar.junit.provider.WunderBarTestFinder.Test;
 import lombok.SneakyThrows;
+import org.jspecify.annotations.NonNull;
 import org.junit.jupiter.api.DynamicNode;
 import org.junit.jupiter.api.extension.AfterAllCallback;
 import org.junit.jupiter.api.extension.AfterEachCallback;
@@ -44,7 +45,7 @@ class ApiProviderFixture implements Extension, BeforeEachCallback, AfterEachCall
         this.tmp = Files.createTempDirectory("wunderbar-fixture");
     }
 
-    @Override public void beforeEach(ExtensionContext context) {
+    @Override public void beforeEach(@NonNull ExtensionContext context) {
         this.path = tmp.resolve("wunder.bar");
         bar = null;
     }
@@ -96,12 +97,12 @@ class ApiProviderFixture implements Extension, BeforeEachCallback, AfterEachCall
         return WunderBarTestFinder.findTestsInArtifact(coordinates, EXECUTION_COLLECTOR);
     }
 
-    @Override public void afterEach(ExtensionContext context) {
+    @Override public void afterEach(@NonNull ExtensionContext context) {
         if (path != null) deleteRecursive(path);
         then(executed).describedAs("executed tests").containsExactlyElementsOf(expected);
     }
 
-    @Override public void afterAll(ExtensionContext context) {
+    @Override public void afterAll(@NonNull ExtensionContext context) {
         deleteRecursive(tmp);
     }
 }

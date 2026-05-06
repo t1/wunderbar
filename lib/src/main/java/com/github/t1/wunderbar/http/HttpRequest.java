@@ -12,7 +12,6 @@ import jakarta.ws.rs.core.MediaType;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 import lombok.NonNull;
 import lombok.Value;
 import lombok.With;
@@ -49,8 +48,10 @@ import static lombok.AccessLevel.NONE;
 @Value @Builder @With @EqualsAndHashCode(exclude = "jsonValue")
 public class HttpRequest {
     @NonNull String method;
+
     @NonNull String uri;
     Authorization authorization;
+
     @NonNull MediaType contentType;
     List<MediaType> accept;
     List<Header> headers;
@@ -86,7 +87,7 @@ public class HttpRequest {
     }
 
     public String accept() {
-        return (accept.size() == 1) ? accept.get(0).toString()
+        return (accept.size() == 1) ? accept.getFirst().toString()
                 : accept.stream().map(MediaType::toString).collect(joining("; "));
     }
 
@@ -186,17 +187,14 @@ public class HttpRequest {
 
     public HttpRequest with(JsonValue body) {return withBody(formatJson(body));}
 
-    @NoArgsConstructor(force = true)
-    public static @Value class Header {
-        @NonNull String name;
-        @NonNull List<String> values;
-
+    public record Header(@NonNull String name, @NonNull List<String> values) {
         public Header(@NonNull String name, @NonNull List<String> values) {
             this.name = normalizeTitle(name);
             this.values = values;
         }
 
-        @Override public String toString() {return (values.isEmpty()) ? "" : name + ": " + String.join("; ", values);}
+        @Override
+        public @NonNull String toString() {return (values.isEmpty()) ? "" : name + ": " + String.join("; ", values);}
     }
 
     @SuppressWarnings("unused")
@@ -246,14 +244,14 @@ public class HttpRequest {
             switch (name) {
                 case AUTHORIZATION:
                     assert values.size() == 1;
-                    authorization(Authorization.valueOf(values.get(0)));
+                    authorization(Authorization.valueOf(values.getFirst()));
                     break;
                 case ACCEPT:
                     values.forEach(this::accept);
                     break;
                 case CONTENT_TYPE:
                     assert values.size() == 1;
-                    contentType(values.get(0));
+                    contentType(values.getFirst());
                     break;
                 default:
                     if (this.headers == null) this.headers = new ArrayList<>();
