@@ -19,17 +19,13 @@ import static com.github.t1.wunderbar.junit.assertions.WunderBarBDDAssertions.th
 import static com.github.t1.wunderbar.junit.provider.WunderBarTestFinder.findTestsIn;
 import static org.junit.jupiter.api.Assertions.fail;
 
-/**
- * The tests for forbidden and unknown ids are quite straight forward.
- * But we do quite a round-trip with the id for the happy path:
- * <ol>
- * <li>The files request the URI with <code>expected-product-id</code> and expect that id in the response.
- * <li>We replace the URI with <code>requested-product-id</code> in {@link #prepareRequest(HttpRequest)}.
- * <li>We stub a response to return <code>generated-product-id</code> in {@link #prepareRequest(HttpRequest)}.
- * <li>We replace the <code>expected-product-id</code> in the expected response with the <code>generated-product-id</code>
- * in {@link #adjustResponse(HttpRequest, HttpResponse, HttpResponse)}.
- * </ol>
- */
+/// The tests for forbidden and unknown ids are quite straight forward.
+/// But we do quite a round-trip with the id for the happy path:
+/// 1. The files request the URI with `expected-product-id` and expect that id in the response.
+/// 2. We replace the URI with `requested-product-id` in [prepareRequest][prepareRequest].
+/// 3. We stub a response to return `generated-product-id` in [prepareRequest][prepareRequest].
+/// 4. We replace the `expected-product-id` in the expected response with the `generated-product-id`
+///    in [adjustResponse][adjustResponse].
 @WunderBarApiProvider(baseUri = "{endpoint()}")
 class WunderBarAT {
     @RegisterExtension static MockServer mockServer = new MockServer();

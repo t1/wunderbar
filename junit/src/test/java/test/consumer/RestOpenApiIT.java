@@ -16,11 +16,12 @@ import static com.github.t1.wunderbar.http.HttpUtils.readJson;
 import static com.github.t1.wunderbar.junit.ContractFormat.OPENAPI;
 import static com.github.t1.wunderbar.junit.assertions.WunderBarBDDAssertions.then;
 import static com.github.t1.wunderbar.junit.consumer.Level.INTEGRATION;
+import static com.github.t1.wunderbar.junit.consumer.WunderBarApiConsumer.Output;
 import static com.github.t1.wunderbar.junit.consumer.WunderbarExpectationBuilder.given;
 
 @WunderBarApiConsumer(level = INTEGRATION, output = {
-        @WunderBarApiConsumer.Output(fileName = RestOpenApiIT.BAR_FILE),
-        @WunderBarApiConsumer.Output(format = OPENAPI, fileName = RestOpenApiIT.OPEN_API_FILE)
+        @Output(fileName = RestOpenApiIT.BAR_FILE),
+        @Output(format = OPENAPI, fileName = RestOpenApiIT.OPEN_API_FILE)
 })
 class RestOpenApiIT {
     static final String BAR_FILE = "target/rest-openapi.bar";
@@ -37,11 +38,11 @@ class RestOpenApiIT {
         var response = gateway.product(new Item(product.id));
 
         then(response).usingRecursiveComparison().isEqualTo(product);
-        org.assertj.core.api.BDDAssertions.then(Files.exists(Path.of(BAR_FILE))).isTrue();
+        then(Path.of(BAR_FILE)).exists();
 
         var openApi = readJson(Files.readString(Path.of(OPEN_API_FILE))).asJsonObject();
         then(openApi.getString("openapi")).isEqualTo("3.1.0");
         then(openApi.getJsonObject("paths").getJsonObject("/rest/products/open-api-product-id").containsKey("get")).isTrue();
-        org.assertj.core.api.BDDAssertions.then(openApi.getJsonArray("x-wunderbar-tests")).hasSize(1);
+        then(openApi.containsKey("x-wunderbar-tests")).isFalse();
     }
 }

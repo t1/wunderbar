@@ -56,7 +56,7 @@ public class HttpRequest {
     List<MediaType> accept;
     List<Header> headers;
     String body;
-    /** internal, lazily converted json */
+    /// internal, lazily converted json
     @Getter(NONE) AtomicReference<Optional<JsonValue>> jsonValue = new AtomicReference<>();
 
     @Internal @JsonbCreator public HttpRequest(
@@ -100,7 +100,7 @@ public class HttpRequest {
         return withUri(uri().substring(contextPath.length()));
     }
 
-    /** The first part of the path, a.k.a. servlet name or context path. */
+    /// The first part of the path, a.k.a. servlet name or context path.
     public String getContextPath() {return "/" + Path.of(uri()).getName(0);}
 
     public MatchResult matchUri(String pattern) {return matchUri(Pattern.compile(pattern));}
@@ -112,11 +112,9 @@ public class HttpRequest {
         return matcher.toMatchResult(); // make immutable
     }
 
-    /**
-     * Almost the same as <code>equals</code>, but
-     * the content types only have to be compatible, and
-     * <code>that</code> body may contain more fields than <code>this</code> does.
-     */
+    /// Almost the same as `equals`, but
+    /// the content types only have to be compatible, and
+    /// `that` body may contain more fields than `this` does.
     public boolean matches(HttpRequest that) {
         return this.method.equals(that.method)
                && this.uri.equals(that.uri)
@@ -238,6 +236,14 @@ public class HttpRequest {
         public HttpRequestBuilder body(String body) {
             this.body = body;
             return this;
+        }
+
+        public HttpRequestBuilder header(String name, String... values) {
+            return header(name, List.of(values));
+        }
+
+        public HttpRequestBuilder header(Header header) {
+            return header(header.name(), header.values());
         }
 
         public HttpRequestBuilder header(String name, List<String> values) {

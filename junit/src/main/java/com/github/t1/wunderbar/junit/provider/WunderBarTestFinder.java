@@ -21,82 +21,75 @@ import static java.util.stream.Collectors.joining;
 import static org.junit.jupiter.api.DynamicContainer.dynamicContainer;
 import static org.junit.jupiter.api.DynamicTest.dynamicTest;
 
-/**
- * Static methods to find WunderBar contract files, e.g. BAR or OpenAPI files.
- *
- * @see WunderBarApiProvider
- */
+/// Static methods to find WunderBar contract files, e.g. BAR or OpenAPI files.
+///
+/// BAR files are read with full fidelity. OpenAPI files are imported only as a simple, lossy subset suitable for
+/// interoperability and straightforward provider checks.
+///
+/// See also: [WunderBarApiProvider]
 @Slf4j
 public class WunderBarTestFinder {
-    /**
-     * Find all tests in that file. Usage:
-     * <pre><code>
-     * &#64;TestFactory DynamicNode consumerDrivenContractTests() {
-     *     return findTestsIn("wunder.bar");
-     *     // or: return findTestsIn("openapi.json");
-     * }
-     * </code></pre>
-     */
+    /// Find all tests in that file. Usage:
+    /// ```
+    /// @TestFactory DynamicNode consumerDrivenContractTests() {
+    ///     return findTestsIn("wunder.bar");
+    ///     // or: return findTestsIn("openapi.json");
+    /// }
+    /// ```
     public static DynamicNode findTestsIn(String barPath) {return findTestsIn(Path.of(barPath));}
 
-    /** Find all tests in that file using the given contract format. */
+    /// Find all tests in that file using the given contract format.
     public static DynamicNode findTestsIn(String path, ContractFormat format) {return findTestsIn(Path.of(path), format);}
 
-    /**
-     * Find all tests in that file. Usage:
-     * <pre><code>
-     * &#64;TestFactory DynamicNode consumerDrivenContractTests() {
-     *     return findTestsIn("wunder.bar");
-     *     // or: return findTestsIn("openapi.json");
-     * }
-     * </code></pre>
-     */
+    /// Find all tests in that file. Usage:
+    /// ```
+    /// @TestFactory DynamicNode consumerDrivenContractTests() {
+    ///     return findTestsIn("wunder.bar");
+    ///     // or: return findTestsIn("openapi.json");
+    /// }
+    /// ```
     public static DynamicNode findTestsIn(Path barPath) {return findTestsIn(barPath, AUTO);}
 
-    /** Find all tests in that file using the given contract format. */
+    /// Find all tests in that file using the given contract format.
     public static DynamicNode findTestsIn(Path path, ContractFormat format) {return findTestsIn(path, format, null);}
 
-    /** used for tests */
+    /// used for tests
     public static @Internal DynamicNode findTestsIn(Path path, ContractFormat format, Function<Test, Executable> executableFactory) {
         return new WunderBarTestFinder(path, format, executableFactory).toDynamicNode();
     }
 
 
-    /**
-     * Find all tests in that maven artifact, downloading it from a maven repository with the <code>mvn</code> command
-     * when it's not already in the local repository. In this case, Maven has to be installed; the Maven configuration
-     * (mainly the <code>settings.xml</code>) is considered.
-     * <p>
-     * The coordinates are a String consisting of:
-     * <p>
-     * <code>&lt;groupId&gt;:&lt;artifactId&gt;:&lt;version&gt;[:&lt;packaging&gt;[:&lt;classifier&gt;]]</code>
-     * <p>
-     * Note that both the <code>classifier</code> and the <code>packaging</code> (the file extension) are optional and default to <code>bar</code>.
-     * Use {@link ContractFormat#OPENAPI OPENAPI} to default to <code>json</code>/<code>openapi</code> instead.
-     */
+    /// Find all tests in that maven artifact, downloading it from a maven repository with the `mvn` command
+    /// when it's not already in the local repository. In this case, Maven has to be installed; the Maven configuration
+    /// (mainly the `settings.xml`) is considered.
+    ///
+    /// The coordinates are a String consisting of:
+    ///
+    /// `<groupId>:<artifactId>:<version>[:<packaging>[:<classifier>]]`
+    ///
+    /// Note that both the `classifier` and the `packaging` (the file extension) are optional and default to `bar`.
+    /// Use [OPENAPI][ContractFormat.OPENAPI] to default to `json`/`openapi` instead.
     public static DynamicNode findTestsInArtifact(String coordinates) {return findTestsInArtifact(MavenCoordinates.of(coordinates));}
 
-    /** Find all tests in that maven artifact using the given contract format. */
+    /// Find all tests in that maven artifact using the given contract format.
     public static DynamicNode findTestsInArtifact(String coordinates, ContractFormat format) {
         return findTestsInArtifact(MavenCoordinates.of(coordinates), format);
     }
 
-    /**
-     * Find all tests in that maven artifact, downloading it from a maven repository with the <code>mvn</code> command
-     * when it's not already in the local repository. In this case, Maven has to be installed; the Maven configuration
-     * (mainly the <code>settings.xml</code>) is considered.
-     * <p>
-     * Note that both the <code>classifier</code> and the <code>packaging</code> (the file extension) are optional and default to <code>bar</code>.
-     * Use {@link ContractFormat#OPENAPI OPENAPI} to default to <code>json</code>/<code>openapi</code> instead.
-     */
+    /// Find all tests in that maven artifact, downloading it from a maven repository with the `mvn` command
+    /// when it's not already in the local repository. In this case, Maven has to be installed; the Maven configuration
+    /// (mainly the `settings.xml`) is considered.
+    ///
+    /// Note that both the `classifier` and the `packaging` (the file extension) are optional and default to `bar`.
+    /// Use [OPENAPI][ContractFormat.OPENAPI] to default to `json`/`openapi` instead.
     public static DynamicNode findTestsInArtifact(MavenCoordinates coordinates) {return findTestsInArtifact(coordinates, AUTO);}
 
-    /** Find all tests in that maven artifact using the given contract format. */
+    /// Find all tests in that maven artifact using the given contract format.
     public static DynamicNode findTestsInArtifact(MavenCoordinates coordinates, ContractFormat format) {
         return findTestsInArtifact(coordinates, format, null);
     }
 
-    /** used for tests */
+    /// used for tests
     public static @Internal DynamicNode findTestsInArtifact(MavenCoordinates coordinates, ContractFormat format, Function<Test, Executable> executableFactory) {
         coordinates = withDefaults(coordinates, format);
         coordinates.download();

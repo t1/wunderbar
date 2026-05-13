@@ -23,7 +23,7 @@ public interface Authorization {
         };
     }
 
-    /** The credentials as used for the http <code>Authorization</code> header */
+    /// The credentials as used for the HTTP `Authorization` header.
     String toHeader();
 
     Dummy toDummy();

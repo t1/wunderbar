@@ -55,7 +55,7 @@ public class HttpResponse {
     @JsonbTypeAdapter(MediaTypeAdapter.class)
     MediaType contentType;
     String body;
-    /** internal, lazily converted json */
+    /// internal, lazily converted json
     @Getter(NONE) AtomicReference<Optional<JsonValue>> jsonValue = new AtomicReference<>();
 
     @JsonbCreator public HttpResponse(StatusType status, MediaType contentType, String body) {

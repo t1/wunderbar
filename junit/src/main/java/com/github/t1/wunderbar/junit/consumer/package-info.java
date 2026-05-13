@@ -1,6 +1,4 @@
-/**
- * This is the API consumer side.
- *
- * @see com.github.t1.wunderbar.junit.consumer.WunderBarApiConsumer
- */
+/// This is the API consumer side.
+///
+/// See also: [WunderBarApiConsumer]
 package com.github.t1.wunderbar.junit.consumer;

@@ -8,22 +8,18 @@ import java.lang.reflect.InvocationHandler;
 import java.net.URI;
 import java.util.Objects;
 
-/**
- * Static methods for building expectations, etc.
- *
- * @see #given
- * @see #createService(Class)
- * @see #baseUri(Object)
- */
+/// Static methods for building expectations, etc.
+///
+/// See also: [given], [createService], [baseUri]
 public class WunderbarExpectationBuilder<T> {
     private WunderbarExpectationBuilder() {}
 
-    /**
-     * Starts to specify the behavior of the {@link Service} API that the test expects.
-     * The parameter is the result of a call to your API interface;
-     * call {@link #returns} (a.k.a. {@link #willReturn}) or {@link #willThrow} on the result of this method; e.g.:
-     * <pre><code>given(api.findProduct(ID)).returns(PRODUCT);</code></pre>
-     */
+    /// Starts to specify the behavior of the [Service] API that the test expects.
+    /// The parameter is the result of a call to your API interface;
+    /// call [returns] (a.k.a. [willReturn]) or [willThrow] on the result of this method; e.g.:
+    /// ```
+    /// given(api.findProduct(ID)).returns(PRODUCT);
+    /// ```
     public static <T> WunderbarExpectationBuilder<T> given(T dummyValue) {
         if (buildingExpectation == null || !Objects.equals(dummyValue, buildingExpectation.nullValue()))
             throw new StubbingMismatchException();
@@ -40,13 +36,13 @@ public class WunderbarExpectationBuilder<T> {
     public static Depletion times(int maxValue) {return Depletion.builder().maxCallCount(maxValue).build();}
 
 
-    /** Specifies that the API returns this object as a response. */
+    /// Specifies that the API returns this object as a response.
     public void willReturn(T response) {returns(response);}
 
-    /** Specifies that the API returns this object as a response. */
+    /// Specifies that the API returns this object as a response.
     public void returns(T response) {returns(always(), response);}
 
-    /** Specifies that the API returns this object as a response. */
+    /// Specifies that the API returns this object as a response with a custom depletion policy.
     public void returns(Depletion depletion, T response) {
         if (buildingExpectation == null) throw new StubbingMismatchException();
         try {
@@ -56,58 +52,48 @@ public class WunderbarExpectationBuilder<T> {
         }
     }
 
-    /**
-     * Specifies that the API returns this error as a response, e.g.:
-     * <pre><code>given(api.findProduct(ID)).willThrow(new NotFoundException("product ID not found"));</code></pre>
-     * <p>
-     * Note that your {@link SystemUnderTest} may need to handle specific (mainly business) errors, e.g. to distinguish
-     * a <code>404 Not Found</code> for technical reasons from when a specific product id is not found.
-     * It can do so by checking the <code><b>code</b></code> that is returned for {@link Level#INTEGRATION integration} tests:
-     * <ul>
-     * <li>If the API is a REST service, the mock service returns the status code of a <code>WebApplicationException</code>
-     * (if it is one) and a <a href="https://datatracker.ietf.org/doc/html/rfc7807">RFC-7807</a> style body with:
-     *     <ul>
-     *     <li>a <code>detail</code> field containing the exception message,
-     *     <li>a <code>title</code> field containing the exception class name, and
-     *     <li>a <code>type</code> field containing the <code><b>code</b></code> derived from the exception type name.
-     *     </ul>
-     * <li>If the API is a GraphQL service, the mock service returns an <code>error</code> with:
-     *     <ul>
-     *     <li>a <code>message</code> field containing the exception message and
-     *     <li>a <code><b>code</b></code> extension field containing the code derived from the exception type name.
-     *     </ul>
-     * </ul>
-     * The <code><b>code</b></code> is derived from the simple name of the exception without the <code>Exception</code> suffix,
-     * by converting camel case to kebab case, e.g. <code>ProductNotFoundException</code> becomes <code>product-not-found</code>.
-     * These are also important requirements for the service to implement.
-     */
+    /// Specifies that the API throws this exception as a response, e.g.:
+    /// ```
+    /// given(api.findProduct(ID)).willThrow(new NotFoundException("product ID not found"));
+    /// ```
+    ///
+    /// Note that your [SystemUnderTest] may need to handle specific (mainly business) errors, e.g. to distinguish
+    /// a `404 Not Found` for technical reasons from when a specific product id is not found.
+    /// It can do so by checking the **`code`** that is returned for [integration][Level.INTEGRATION] tests:
+    /// - If the API is a REST service, the mock service returns the status code of a `WebApplicationException`
+    ///   (if it is one) and a [RFC-7807](https://datatracker.ietf.org/doc/html/rfc7807) style body with:
+    ///     - a `detail` field containing the exception message,
+    ///     - a `title` field containing the exception class name, and
+    ///     - a `type` field containing the **`code`** derived from the exception type name.
+    /// - If the API is a GraphQL service, the mock service returns an `error` with:
+    ///     - a `message` field containing the exception message and
+    ///     - a **`code`** extension field containing the code derived from the exception type name.
+    ///
+    /// The **`code`** is derived from the simple name of the exception without the `Exception` suffix,
+    /// by converting camel case to kebab case, e.g. `ProductNotFoundException` becomes `product-not-found`.
+    /// These are also important requirements for the service to implement.
     public void willThrow(Exception exception) {willThrow(always(), exception);}
 
-    /**
-     * Specifies that the API returns this error as a response, e.g.:
-     * <pre><code>given(api.findProduct(ID)).willThrow(new NotFoundException("product ID not found"));</code></pre>
-     * <p>
-     * Note that your {@link SystemUnderTest} may need to handle specific (mainly business) errors, e.g. to distinguish
-     * a <code>404 Not Found</code> for technical reasons from when a specific product id is not found.
-     * It can do so by checking the <code><b>code</b></code> that is returned for {@link Level#INTEGRATION integration} tests:
-     * <ul>
-     * <li>If the API is a REST service, the mock service returns the status code of a <code>WebApplicationException</code>
-     * (if it is one) and a <a href="https://datatracker.ietf.org/doc/html/rfc7807">RFC-7807</a> style body with:
-     *     <ul>
-     *     <li>a <code>detail</code> field containing the exception message,
-     *     <li>a <code>title</code> field containing the exception class name, and
-     *     <li>a <code>type</code> field containing the <code><b>code</b></code> derived from the exception type name.
-     *     </ul>
-     * <li>If the API is a GraphQL service, the mock service returns an <code>error</code> with:
-     *     <ul>
-     *     <li>a <code>message</code> field containing the exception message and
-     *     <li>a <code><b>code</b></code> extension field containing the code derived from the exception type name.
-     *     </ul>
-     * </ul>
-     * The <code><b>code</b></code> is derived from the simple name of the exception without the <code>Exception</code> suffix,
-     * by converting camel case to kebab case, e.g. <code>ProductNotFoundException</code> becomes <code>product-not-found</code>.
-     * These are also important requirements for the service to implement.
-     */
+    /// Specifies that the API throws this exception as a response, e.g.:
+    /// ```
+    /// given(api.findProduct(ID)).willThrow(new NotFoundException("product ID not found"));
+    /// ```
+    ///
+    /// Note that your [SystemUnderTest] may need to handle specific (mainly business) errors, e.g. to distinguish
+    /// a `404 Not Found` for technical reasons from when a specific product id is not found.
+    /// It can do so by checking the **`code`** that is returned for [integration][Level.INTEGRATION] tests:
+    /// - If the API is a REST service, the mock service returns the status code of a `WebApplicationException`
+    ///   (if it is one) and a [RFC-7807](https://datatracker.ietf.org/doc/html/rfc7807) style body with:
+    ///     - a `detail` field containing the exception message,
+    ///     - a `title` field containing the exception class name, and
+    ///     - a `type` field containing the **`code`** derived from the exception type name.
+    /// - If the API is a GraphQL service, the mock service returns an `error` with:
+    ///     - a `message` field containing the exception message and
+    ///     - a **`code`** extension field containing the code derived from the exception type name.
+    ///
+    /// The **`code`** is derived from the simple name of the exception without the `Exception` suffix,
+    /// by converting camel case to kebab case, e.g. `ProductNotFoundException` becomes `product-not-found`.
+    /// These are also important requirements for the service to implement.
     public void willThrow(Depletion depletion, Exception exception) {
         if (buildingExpectation == null) throw new StubbingMismatchException();
         try {
@@ -118,10 +104,8 @@ public class WunderbarExpectationBuilder<T> {
         }
     }
 
-    /**
-     * Disables recording for one stub call, e.g. when testing the error handling in your consumer code,
-     * so this interaction is not an expected behavior of the API provider.
-     */
+    /// Disables recording for one stub call, e.g. when testing the error handling in your consumer code,
+    /// so this interaction is not a specified behavior of the API provider.
     public WunderbarExpectationBuilder<T> withoutRecording() {
         if (buildingExpectation == null) throw new StubbingMismatchException();
         buildingExpectation.setRecording(false);
@@ -133,14 +117,10 @@ public class WunderbarExpectationBuilder<T> {
     }
 
 
-    /**
-     * Creates an instance of the service, which normally is done via the {@link Service @Service} annotation.
-     */
+    /// Creates an instance of the service, which normally is done via the [@Service][Service] annotation.
     public static <T> T createService(Class<T> type) {return createService(type, Service.DEFAULT);}
 
-    /**
-     * Creates an instance of the service, which normally is done via the {@link Service @Service} annotation.
-     */
+    /// Creates an instance of the service, which normally is done via the [@Service][Service] annotation.
     public static <T> T createService(Class<T> type, Service.Literal service) {
         return createProxy(type, service).getStubbingProxy();
     }
@@ -152,11 +132,9 @@ public class WunderbarExpectationBuilder<T> {
     }
 
 
-    /**
-     * Return the base uri of the service proxy injected, or <code>null</code> if it's a unit test.
-     *
-     * @throws IllegalArgumentException if the argument is not a service proxy instance
-     */
+    /// Return the base uri of the service proxy injected, or `null` if it's a unit test.
+    ///
+    /// Throws `IllegalArgumentException` if the argument is not a service proxy instance
     public static URI baseUri(Object proxyInstance) {
         var invocationHandler = java.lang.reflect.Proxy.getInvocationHandler(proxyInstance);
         return getProxy(invocationHandler).getExpectations().baseUri();

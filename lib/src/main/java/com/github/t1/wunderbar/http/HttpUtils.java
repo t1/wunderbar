@@ -35,7 +35,7 @@ import static java.util.stream.Collectors.joining;
 
 @UtilityClass
 public class HttpUtils {
-    /** <code>application/json;charset=utf-8</code> */
+    /// `application/json;charset=utf-8`
     public static final MediaType APPLICATION_JSON_UTF8 = APPLICATION_JSON_TYPE.withCharset("utf-8");
     public static final MediaType PROBLEM_DETAIL_TYPE = MediaType.valueOf("application/problem+json;charset=utf-8");
     public static final Jsonb JSONB = JsonbBuilder.create(new JsonbConfig()
@@ -138,11 +138,8 @@ public class HttpUtils {
         return new String(Base64.getDecoder().decode(string.getBytes(UTF_8)), UTF_8);
     }
 
-    /**
-     * Like {@link MediaType#isCompatible(MediaType)}, but taking suffixes like <b><code>+json</code></b> into account.
-     *
-     * @see <a href="https://datatracker.ietf.org/doc/html/rfc6838#section-4.2.8">RFC-6838</a>
-     */
+    /// Like [MediaType.isCompatible], but taking suffixes like **`+json`** into account;
+    /// see [RFC-6838](https://datatracker.ietf.org/doc/html/rfc6838#section-4.2.8).
     public static boolean isCompatible(List<MediaType> left, List<MediaType> right) {
         if (left == null || left.isEmpty()) return right == null || right.isEmpty();
         for (MediaType leftType : left)
@@ -151,11 +148,8 @@ public class HttpUtils {
         return false;
     }
 
-    /**
-     * Like {@link MediaType#isCompatible(MediaType)}, but taking suffixes like <b><code>+json</code></b> into account.
-     *
-     * @see <a href="https://datatracker.ietf.org/doc/html/rfc6838#section-4.2.8">RFC-6838</a>
-     */
+    /// Like [MediaType.isCompatible], but taking suffixes like **`+json`** into account;
+    /// see [RFC-6838](https://datatracker.ietf.org/doc/html/rfc6838#section-4.2.8).
     public static boolean isCompatible(MediaType left, MediaType right) {
         if (left == null) return right == null;
         if (right == null) return false;
@@ -170,7 +164,7 @@ public class HttpUtils {
         return subtype.contains("+") ? subtype.substring(subtype.indexOf('+') + 1) : subtype;
     }
 
-    /** The username (upn) in a JWT token string. Careful: this fails terribly with invalid tokens */
+    /// The username (upn) in a JWT token string. Careful: this fails terribly with invalid tokens.
     public static String jwtUpn(String token) {
         return readJson(base64decode(token.split("\\.", 3)[1])).asJsonObject().getString("upn");
     }

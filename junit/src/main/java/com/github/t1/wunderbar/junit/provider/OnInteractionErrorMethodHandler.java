@@ -89,10 +89,8 @@ class OnInteractionErrorMethodHandler {
             return response.json().orElse(JsonValue.NULL);
         }
 
-        /**
-         * The Problem Details fields <code>title</code> and <code>detail</code> are meant for human readability
-         * and, like <code>instance</code>, explicitly allowed to change between calls; don't check those
-         */
+        /// The Problem Details fields `title` and `detail` are meant for human readability
+        /// and, like `instance`, explicitly allowed to change between calls; don't check those
         private HttpResponse withoutVolatileProblemDetails(HttpResponse response) {
             return response.with(json -> json
                     .remove("title")
@@ -107,7 +105,7 @@ class OnInteractionErrorMethodHandler {
             assertions.check(() -> then(actual).isEqualToIgnoringNewFields(expected));
         }
 
-        /** GraphQL: show unexpected errors in addition to the missing or only partial data */
+        /// GraphQL: show unexpected errors in addition to the missing or only partial data
         private void checkForUnexpectedErrors(JsonStructure actual, JsonStructure expected) {
             if (ERRORS.containsValue(actual) && !ERRORS.containsValue(expected))
                 assertions.then(ERRORS.getValue(actual)).as("errors").isNull();

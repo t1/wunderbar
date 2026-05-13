@@ -8,6 +8,6 @@ public @Internal enum Technology {
     GRAPHQL,
     REST;
 
-    /** As it's commonly used in URI paths */
+    /// As it's commonly used in URI paths
     public String path() {return name().toLowerCase(ROOT);}
 }

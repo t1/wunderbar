@@ -30,7 +30,7 @@ import static org.assertj.core.api.BDDAssertions.catchThrowable;
 @WunderBarApiConsumer(output = @Output(fileName = "target/system-wunder.jar"))
 @Register({SomeProducts.class, SomeProductIds.class})
 class ProductsGatewayST {
-    /** this server would normally be a real server running somewhere */
+    /// this server would normally be a real server running somewhere
     private final HttpServer server = new HttpServer(this::handle);
 
     HttpResponse handle(HttpRequest request) {

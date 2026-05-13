@@ -61,7 +61,7 @@ class ConsumerDrivenAT {
     private final Backdoor backdoor = TypesafeGraphQLClientBuilder.newBuilder().endpoint(GRAPHQL_ENDPOINT).build(Backdoor.class);
     private Authorization authorization;
 
-    /** We use this backdoor to set up and tear down the test data */
+    /// We use this backdoor to set up and tear down the test data.
     @GraphQLClientApi
     @SuppressWarnings("UnusedReturnValue")
     @Header(name = "Authorization", constant = JWT)
@@ -80,7 +80,7 @@ class ConsumerDrivenAT {
         @Mutation @NonNull Product store(@NonNull Product product);
     }
 
-    /** It's not the job of the client to check for auth, so we do it ourselves */
+    /// It's not the job of the client to check for auth, so we do it ourselves.
     @Test void shouldFailToStoreWhenUnauthorized() {
         var api = TypesafeGraphQLClientBuilder.newBuilder()
                 .endpoint(GRAPHQL_ENDPOINT)
@@ -119,10 +119,8 @@ class ConsumerDrivenAT {
         return findTestsInArtifact("com.github.t1:wunderbar.demo.order:" + getVersion() + ":json:openapi");
     }
 
-    /**
-     * Get the currently running version of the wunderbar.demo.product artifact.
-     * We assume this to be the same version as the wunderbar.demo.order artifact.
-     */
+    /// Get the currently running version of the `wunderbar.demo.product` artifact.
+    /// We assume this to be the same version as the `wunderbar.demo.order` artifact.
     private String getVersion() throws IOException {
         var pom = Files.readString(Path.of("pom.xml"), UTF_8);
         var matcher = Pattern.compile("<version>(?<version>[^<]+)</version>").matcher(pom);
@@ -136,12 +134,9 @@ class ConsumerDrivenAT {
         createdProductIds.clear();
     }
 
-    /**
-     * We provide a REST as well as a GraphQL service. To make our setup code simpler, we make it specific to the technology.
-     * In this case the business logic is really simple, but if you have more complex setup logic, there may be better options.
-     *
-     * @return the request with the <code>Authorization</code> header set, when necessary
-     */
+    /// We provide a REST as well as a GraphQL service. To make our setup code simpler, we make it specific to the technology.
+    /// In this case the business logic is really simple, but if you have more complex setup logic, there may be better options.
+    /// Returns the request with the `Authorization` header set, when necessary.
     @BeforeInteraction HttpInteraction createTestData(HttpInteraction interaction) {
         var request = interaction.getRequest();
         var isGraphQL = request.getUri().getPath().equals("/graphql");

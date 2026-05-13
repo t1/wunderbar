@@ -5,9 +5,7 @@ import org.assertj.core.api.AbstractAssert;
 
 import static com.github.t1.wunderbar.junit.assertions.WunderBarBDDAssertions.then;
 
-/**
- * AssertJ assertion on {@link HttpRequest}
- */
+/// AssertJ assertion on [HttpRequest].
 @SuppressWarnings("UnusedReturnValue")
 public class HttpRequestAssert<SELF extends HttpRequestAssert<SELF, ACTUAL>, ACTUAL extends HttpRequest>
         extends AbstractAssert<SELF, ACTUAL> {

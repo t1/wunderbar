@@ -11,10 +11,7 @@ import java.util.List;
 
 import static com.github.t1.wunderbar.junit.assertions.WunderBarBDDAssertions.then;
 
-/**
- * Assertions about a {@link WebApplicationException} that contains a
- * <a href="https://datatracker.ietf.org/doc/html/rfc7807">RFC-7807 Problems Detail</a> body.
- */
+/// AssertJ assertions on [MediaType].
 @SuppressWarnings("UnusedReturnValue")
 public class MediaTypeAssert<SELF extends MediaTypeAssert<SELF, ACTUAL>, ACTUAL extends MediaType>
         extends AbstractAssert<SELF, ACTUAL> {

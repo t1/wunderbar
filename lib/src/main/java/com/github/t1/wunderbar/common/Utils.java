@@ -86,7 +86,7 @@ public @Internal class Utils {
         field.set(instance, value);
     }
 
-    /** {@link AnnotatedElement} doesn't declare a <code>getName</code> method, although most implementations do. */
+    /// [AnnotatedElement] doesn't declare a `getName` method, although most implementations do.
     public static String name(AnnotatedElement annotatedElement) {
         if (annotatedElement instanceof Class) return ((Class<?>) annotatedElement).getName();
         if (annotatedElement instanceof Member) return ((Member) annotatedElement).getName();

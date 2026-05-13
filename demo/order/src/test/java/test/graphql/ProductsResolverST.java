@@ -30,7 +30,7 @@ import static org.assertj.core.api.BDDAssertions.then;
 @WunderBarApiConsumer(output = @Output(fileName = "target/system-wunder.jar"))
 @Register(SomeProducts.class)
 class ProductsResolverST {
-    /** this server would normally be a real server running somewhere */
+    /// this server would normally be a real server running somewhere
     private final HttpServer server = new HttpServer(this::handle);
 
     private static final String SYSTEM_TEST_USER = "system-test-user";

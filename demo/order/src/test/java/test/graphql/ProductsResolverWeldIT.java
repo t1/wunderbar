@@ -56,7 +56,7 @@ class ProductsResolverWeldIT {
         then(resolvedProduct2).usingRecursiveComparison().isEqualTo(givenProduct2);
     }
 
-    /** before you mutate an existing object, make sure it exists in the unmodified state */
+    /// before you mutate an existing object, make sure it exists in the unmodified state
     @Test void shouldUpdateExistingProductPrice(@Some Product product, @Some int newPrice) {
         given(products.product(product.getId())).returns(product);
         given(products.update(new Product().withId(product.getId()).withPrice(newPrice))).returns(product.withPrice(newPrice));

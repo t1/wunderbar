@@ -2,13 +2,9 @@ package com.github.t1.wunderbar.junit;
 
 import java.util.Locale;
 
-/**
- * The format used to store or load consumer-driven contract files.
- * <p>
- * {@link #AUTO} infers the format from the file name when possible.
- */
+/// The format used to store or load consumer-driven contract files.
 public enum ContractFormat {
-    /** Infer the format from the file name. */
+    /// Infer the format from the file name, when possible
     AUTO {
         @Override public ContractFormat resolve(String fileName) {
             var lowerCaseFileName = fileName.toLowerCase(Locale.ROOT);
@@ -23,7 +19,7 @@ public enum ContractFormat {
         @Override public String defaultClassifier() {throw new IllegalStateException("AUTO has no default classifier");}
     },
 
-    /** The traditional WunderBar archive format. */
+    /// WunderBar's full-fidelity native format
     BAR {
         @Override public ContractFormat resolve(String fileName) {return this;}
 
@@ -32,7 +28,12 @@ public enum ContractFormat {
         @Override public String defaultClassifier() {return "bar";}
     },
 
-    /** A JSON OpenAPI document with WunderBar vendor extensions. */
+    /// A JSON OpenAPI document.
+    ///
+    /// This format is intentionally lossy compared to [#BAR]. It is suitable for simple single-interaction cases
+    /// and interoperability with other tools, but it does not preserve all WunderBar semantics. When exporting,
+    /// WunderBar logs warnings about dropped fidelity where possible. When importing, only a simple subset of OpenAPI
+    /// can be consumed reliably.
     OPENAPI {
         @Override public ContractFormat resolve(String fileName) {return this;}
 

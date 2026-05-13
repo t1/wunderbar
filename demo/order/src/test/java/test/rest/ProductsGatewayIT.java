@@ -55,7 +55,7 @@ class ProductsGatewayIT {
         then(response2).usingRecursiveComparison().isEqualTo(givenProduct2);
     }
 
-    /** before you mutate an existing object, make sure it exists in the unmodified state */
+    /// before you mutate an existing object, make sure it exists in the unmodified state
     @Test void shouldUpdateProductPrice(@Some int newPrice) {
         given(products.product(product.getId())).returns(product);
         var expected = product.withPrice(newPrice);

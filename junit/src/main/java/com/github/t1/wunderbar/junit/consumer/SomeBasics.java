@@ -34,17 +34,15 @@ import static com.github.t1.wunderbar.common.Utils.name;
 import static com.github.t1.wunderbar.common.Utils.setField;
 import static java.time.ZoneOffset.UTC;
 
-/**
- * Generates random values, but tries to keep them small, positive, and unique, so they are as easy to handle as possible.
- * These prerequisites are not achievable for booleans or null, obviously.
- * Strings, etc., also contain a numeric value to make them unique.
- * The default starting point is 100, so you can use smaller constants in your code without interfering with the generated
- * values. If you need bigger constants, you can change the starting point by calling {@link #reset(int)},
- * e.g. in a {@link org.junit.jupiter.api.BeforeEach} method.
- * <p>
- * Note that the <code>some...</code> methods are public, but the `@Some` annotation comes with superpowers:
- * automatic logging, reset for every test, and most often a location that you can look up.
- */
+/// Generates random values, but tries to keep them small, positive, and unique, so they are as easy to handle as possible.
+/// These prerequisites are not achievable for booleans or null, obviously.
+/// Strings, etc., also contain a numeric value to make them unique.
+/// The default starting point is 100, so you can use smaller constants in your code without interfering with the generated
+/// values. If you need bigger constants, you can change the starting point by calling [reset(int)][reset],
+/// e.g. in a [BeforeEach][org.junit.jupiter.api.BeforeEach] method.
+///
+/// Note that the `some...` methods are public, but the `@Some` annotation comes with superpowers:
+/// automatic logging, reset for every test, and most often a location that you can look up.
 @Slf4j
 @RequiredArgsConstructor
 public class SomeBasics implements SomeData {

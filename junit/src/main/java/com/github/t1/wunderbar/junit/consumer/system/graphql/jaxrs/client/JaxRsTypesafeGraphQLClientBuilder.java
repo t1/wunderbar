@@ -15,7 +15,7 @@ import java.net.URI;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-/// This is an alternative to the standard {@link io.smallrye.graphql.client.vertx.typesafe.VertxTypesafeGraphQLClientBuilder}
+/// This is an alternative to the standard [VertxTypesafeGraphQLClientBuilder][io.smallrye.graphql.client.vertx.typesafe.VertxTypesafeGraphQLClientBuilder]
 /// that uses JAX-RS to transport via http, so we can use the same filters as for REST calls.
 public class JaxRsTypesafeGraphQLClientBuilder implements TypesafeGraphQLClientBuilder {
     private String configKey = null;
@@ -117,10 +117,8 @@ public class JaxRsTypesafeGraphQLClientBuilder implements TypesafeGraphQLClientB
         return graphQlClient.invoke(apiClass, methodInvocation);
     }
 
-    /**
-     * Applies values from known global configuration. This does NOT override values passed to this
-     * builder by method calls.
-     */
+    /// Applies values from known global configuration. This does NOT override values passed to this
+    /// builder by method calls.
     private void applyConfig(GraphQLClientConfiguration configuration) {
         if (this.endpoint == null && configuration.getUrl() != null) {
             this.endpoint = URI.create(configuration.getUrl());

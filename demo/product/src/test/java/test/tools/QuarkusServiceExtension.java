@@ -4,12 +4,15 @@ import jakarta.ws.rs.GET;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.core.Response;
+import lombok.extern.slf4j.Slf4j;
 import org.eclipse.microprofile.rest.client.RestClientBuilder;
 import org.junit.jupiter.api.extension.AfterAllCallback;
 import org.junit.jupiter.api.extension.BeforeAllCallback;
 import org.junit.jupiter.api.extension.Extension;
 import org.junit.jupiter.api.extension.ExtensionContext;
 
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
 import java.net.URI;
 import java.time.Duration;
 import java.time.Instant;
@@ -19,14 +22,19 @@ import static jakarta.ws.rs.core.MediaType.APPLICATION_JSON;
 import static jakarta.ws.rs.core.MediaType.TEXT_PLAIN_TYPE;
 import static jakarta.ws.rs.core.Response.Status.Family.SUCCESSFUL;
 
-/** @see QuarkusService */
+/// See also: [QuarkusService]
+@Slf4j
 public class QuarkusServiceExtension implements Extension, BeforeAllCallback, AfterAllCallback {
     public static final String ENDPOINT = "http://localhost:8081";
     private Process service;
 
     @Override public void beforeAll(ExtensionContext context) throws Exception {
         System.out.println("start quarkus");
-        service = new ProcessBuilder().command("java", "-jar", "target/quarkus-app/quarkus-run.jar").inheritIO().start();
+        service = new ProcessBuilder().command("java", "-jar", "target/quarkus-app/quarkus-run.jar")
+                .redirectErrorStream(true)
+                .start();
+        var stdout = new BufferedReader(new InputStreamReader(service.getInputStream()));
+        Thread.ofVirtual().name("quarkus-stdout").start(() -> stdout.lines().forEach(QuarkusServiceExtension::logQuarkusLine));
         System.out.println("starting quarkus");
         waitUntilReady();
     }
@@ -51,6 +59,19 @@ public class QuarkusServiceExtension implements Extension, BeforeAllCallback, Af
             Thread.sleep(100);
         } while (Duration.between(start, Instant.now()).getSeconds() < 10);
         throw new TimeoutException("while waiting for readiness. Last got: " + info(response));
+    }
+
+    private static final java.util.regex.Pattern QUARKUS_PREFIX =
+            java.util.regex.Pattern.compile("^\\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2}:\\d{2},\\d{3} (\\w+) +");
+
+    private static void logQuarkusLine(String line) {
+        var matcher = QUARKUS_PREFIX.matcher(line);
+        var message = matcher.find() ? line.substring(matcher.end()) : line;
+        var level = matcher.find(0) ? matcher.group(1) : "";
+        if (level.equals("ERROR")) log.error(message);
+        else if (level.equals("WARN")) log.warn(message);
+        else if (level.equals("INFO")) log.info(message);
+        else log.debug(message);
     }
 
     private boolean isSuccessful(Response response) {return SUCCESSFUL.equals(response.getStatusInfo().getFamily());}

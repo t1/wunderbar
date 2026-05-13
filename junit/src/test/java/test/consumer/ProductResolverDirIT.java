@@ -24,6 +24,7 @@ import java.nio.file.Path;
 import java.util.Properties;
 
 import static com.github.t1.wunderbar.junit.assertions.WunderBarBDDAssertions.then;
+import static com.github.t1.wunderbar.junit.consumer.WunderBarApiConsumer.*;
 import static com.github.t1.wunderbar.junit.consumer.WunderbarExpectationBuilder.given;
 import static com.github.t1.wunderbar.http.HttpUtils.APPLICATION_JSON_UTF8;
 import static com.github.t1.wunderbar.http.HttpUtils.properties;
@@ -31,7 +32,7 @@ import static com.github.t1.wunderbar.http.HttpUtils.readJson;
 import static org.assertj.core.api.Assertions.contentOf;
 import static test.consumer.ProductResolverDirIT.DIR;
 
-@WunderBarApiConsumer(output = @WunderBarApiConsumer.Output(fileName = DIR))
+@WunderBarApiConsumer(output = @Output(fileName = DIR))
 @Register(SomeProducts.class)
 class ProductResolverDirIT {
     static final String DIR = "target/wunder-bar/";

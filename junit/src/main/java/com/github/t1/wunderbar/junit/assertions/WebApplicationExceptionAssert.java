@@ -9,10 +9,8 @@ import org.assertj.core.api.InstanceOfAssertFactory;
 import static com.github.t1.wunderbar.junit.assertions.WunderBarBDDAssertions.then;
 import static com.github.t1.wunderbar.http.HttpUtils.readJson;
 
-/**
- * Assertions about a {@link WebApplicationException} that contains a
- * <a href="https://datatracker.ietf.org/doc/html/rfc7807">RFC-7807 Problems Detail</a> body.
- */
+/// Assertions about a [WebApplicationException] that contains a
+/// [RFC-7807 Problems Detail](https://datatracker.ietf.org/doc/html/rfc7807) body.
 @SuppressWarnings("UnusedReturnValue")
 public class WebApplicationExceptionAssert<SELF extends WebApplicationExceptionAssert<SELF, ACTUAL>, ACTUAL extends WebApplicationException>
         extends AbstractAssert<SELF, ACTUAL> {

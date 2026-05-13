@@ -6,10 +6,8 @@ import java.lang.annotation.Retention;
 
 import static java.lang.annotation.RetentionPolicy.RUNTIME;
 
-/**
- * Just for internal use. It would be nice to use just `@QuarkusTest`, but that fails, as the `AfterEach` of the
- * {@link com.github.t1.wunderbar.junit.consumer.WunderBarApiConsumer} is called before the dynamic tests are run.
- */
+/// Just for internal use. It would be nice to use just `@QuarkusTest`, but that fails, as the `AfterEach` of the
+/// [WunderBarApiConsumer][com.github.t1.wunderbar.junit.consumer.WunderBarApiConsumer] is called before the dynamic tests are run.
 @Retention(RUNTIME)
 @ExtendWith(QuarkusServiceExtension.class)
 public @interface QuarkusService {}

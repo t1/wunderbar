@@ -14,19 +14,15 @@ import org.junit.jupiter.api.Test;
 import test.SomeProductIds;
 import test.SomeProducts;
 
-import static com.github.t1.wunderbar.junit.consumer.WunderBarApiConsumer.*;
-import static org.assertj.core.api.BDDAssertions.catchThrowableOfType;
-import static com.github.t1.wunderbar.junit.ContractFormat.OPENAPI;
 import static com.github.t1.wunderbar.junit.consumer.WunderbarExpectationBuilder.given;
+import static org.assertj.core.api.BDDAssertions.catchThrowableOfType;
 import static org.assertj.core.api.BDDAssertions.then;
 
-@WunderBarApiConsumer(output = {
-        @Output(fileName = "target/wunder.bar"),
-        @Output(format = OPENAPI, fileName = "target/openapi.json")
-})
+@WunderBarApiConsumer
 @Register({SomeProducts.class, SomeProductIds.class})
 class ProductsResolverIT {
     @Service Products products;
+
     @SystemUnderTest ProductsResolver resolver;
 
     @Test void shouldResolveProduct(@Some Product product) {
@@ -48,7 +44,7 @@ class ProductsResolverIT {
         then(resolvedProduct2).usingRecursiveComparison().isEqualTo(product2);
     }
 
-    /** before you mutate an existing object, make sure it exists in the unmodified state */
+    /// before you mutate an existing object, make sure it exists in the unmodified state
     @Test void shouldUpdateExistingProductPrice(@Some Product product, @Some int newPrice) {
         given(products.product(product.getId())).returns(product);
         given(products.update(new Product().withId(product.getId()).withPrice(newPrice))).returns(product.withPrice(newPrice));

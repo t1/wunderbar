@@ -71,7 +71,7 @@ public @Value class MavenCoordinates {
                 .start();
         var exited = mvn.waitFor(30, SECONDS);
         if (!exited || mvn.exitValue() != 0) {
-            System.err.println(readAll(mvn.getInputStream()));
+            readAll(mvn.getInputStream()).lines().forEach(log::error);
             throw new RuntimeException((
                     (exited ? "can't download" : "timeout while downloading")
                     + " maven artifact: " + getCompactString() + " " + readAll(mvn.getErrorStream())).trim());

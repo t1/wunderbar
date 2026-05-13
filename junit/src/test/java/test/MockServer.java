@@ -13,7 +13,7 @@ import java.net.URI;
 
 import static org.junit.jupiter.api.extension.ExtensionContext.Namespace.GLOBAL;
 
-/** This would normally be a real server running somewhere with a deployed {@link MockService}, e.g. with the MockServlet. */
+/// This would normally be a real server running somewhere with a deployed [MockService], e.g. with the MockServlet.
 public class MockServer implements Extension, BeforeEachCallback {
     private static boolean initialized;
 

@@ -18,9 +18,7 @@ import static com.github.t1.wunderbar.junit.assertions.WunderBarBDDAssertions.th
 import static jakarta.json.JsonValue.ValueType.OBJECT;
 import static jakarta.json.JsonValue.ValueType.STRING;
 
-/**
- * AssertJ assertion on JSON values
- */
+/// AssertJ assertion on JSON values
 @SuppressWarnings("UnusedReturnValue")
 public class JsonValueAssert<SELF extends JsonValueAssert<SELF, ACTUAL>, ACTUAL extends JsonValue>
         extends AbstractAssert<SELF, ACTUAL> {

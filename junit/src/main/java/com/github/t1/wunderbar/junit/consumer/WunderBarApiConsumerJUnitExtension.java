@@ -53,7 +53,7 @@ import static org.junit.jupiter.api.extension.ExtensionContext.Namespace.GLOBAL;
 
 @Slf4j
 class WunderBarApiConsumerJUnitExtension implements Extension, BeforeEachCallback, AfterEachCallback, ParameterResolver {
-    /** We need to access this instance from the static methods in the {@link WunderbarExpectationBuilder} */
+    /// We need to access this instance from the static methods in the [WunderbarExpectationBuilder].
     static WunderBarApiConsumerJUnitExtension INSTANCE;
     private static boolean initialized = false;
     static final Map<ArchiveTarget, BarWriter> BAR_WRITERS = new LinkedHashMap<>();

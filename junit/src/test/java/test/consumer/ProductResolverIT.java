@@ -14,6 +14,7 @@ import test.consumer.ProductResolver.Products;
 import java.net.URI;
 
 import static com.github.t1.wunderbar.junit.consumer.Level.INTEGRATION;
+import static com.github.t1.wunderbar.junit.consumer.WunderBarApiConsumer.*;
 import static com.github.t1.wunderbar.junit.consumer.WunderbarExpectationBuilder.baseUri;
 import static com.github.t1.wunderbar.junit.consumer.WunderbarExpectationBuilder.given;
 import static org.assertj.core.api.Assertions.catchThrowable;
@@ -21,7 +22,7 @@ import static org.assertj.core.api.BDDAssertions.then;
 import static test.consumer.ProductResolverIT.WithConfigKeyGenerator.TEST_CONFIG_KEY;
 import static test.consumer.ProductResolverIT.WithConfigKeyGenerator.WITH_CONFIG_KEY_BAR;
 
-/** {@link WunderBarApiConsumer} with <code>level = AUTO</code> is inherited */
+/// [WunderBarApiConsumer] with `level = AUTO` is inherited
 class ProductResolverIT extends ProductResolverTest {
     @Test void testLevelShouldBeIntegration(Level level) {then(level).isEqualTo(INTEGRATION);}
 
@@ -43,7 +44,7 @@ class ProductResolverIT extends ProductResolverTest {
         }
     }
 
-    /** These test fail with a Mockito UnfinishedStubbing exception, when running at unit test level */
+    /// These tests fail with a Mockito `UnfinishedStubbing` exception when running at unit test level.
     @Nested class StubThenNull {
         @Test void shouldFailToCallWillThrowWithNull() {
             var stub = given(products.product("dummy"));
@@ -59,7 +60,7 @@ class ProductResolverIT extends ProductResolverTest {
         Product product(String id);
     }
 
-    @WunderBarApiConsumer(level = INTEGRATION, output = @WunderBarApiConsumer.Output(fileName = WITH_CONFIG_KEY_BAR))
+    @WunderBarApiConsumer(level = INTEGRATION, output = @Output(fileName = WITH_CONFIG_KEY_BAR))
     @Nested class WithConfigKeyGenerator {
         static final String TEST_CONFIG_KEY = "test-config-key";
         static final String WITH_CONFIG_KEY_BAR = "target/WithConfigKeyGenerator-bar/";

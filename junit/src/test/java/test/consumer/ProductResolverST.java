@@ -12,7 +12,7 @@ import java.net.URI;
 import static com.github.t1.wunderbar.junit.consumer.Level.SYSTEM;
 import static org.assertj.core.api.BDDAssertions.then;
 
-/** {@link WunderBarApiConsumer} with <code>level = AUTO</code> is inherited */
+/// [WunderBarApiConsumer] with `level = AUTO` is inherited
 class ProductResolverST extends ProductResolverTest {
     @Test void testLevelShouldBeSystem(Level level) {then(level).isEqualTo(SYSTEM);}
 

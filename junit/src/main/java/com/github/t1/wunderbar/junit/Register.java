@@ -10,13 +10,11 @@ import static java.lang.annotation.ElementType.METHOD;
 import static java.lang.annotation.ElementType.TYPE;
 import static java.lang.annotation.RetentionPolicy.RUNTIME;
 
-/**
- * Register these classes as {@link com.github.t1.wunderbar.junit.consumer.SomeData test data generators}
- * to be usable with {@link com.github.t1.wunderbar.junit.consumer.Some @Some}.
- * <p>
- * Note that you can put this annotation on {@link org.junit.jupiter.api.Nested nested} test classes as well as test methods,
- * and they will only be used in that scope.
- */
+/// Register these classes as [test data generators][com.github.t1.wunderbar.junit.consumer.SomeData]
+/// to be usable with [@Some][com.github.t1.wunderbar.junit.consumer.Some].
+///
+/// Note that you can put this annotation on [nested][org.junit.jupiter.api.Nested] test classes as well as test methods,
+/// and they will only be used in that scope.
 @Target({TYPE, METHOD})
 @Retention(RUNTIME)
 @Inherited

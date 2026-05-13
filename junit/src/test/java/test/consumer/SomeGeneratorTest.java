@@ -53,7 +53,7 @@ import static org.assertj.core.api.BDDAssertions.then;
 import static test.consumer.SomeGeneratorTest.SomeCustomGenerics;
 import static test.consumer.SomeGeneratorTest.SomeCustomWrappers;
 
-/** the fact that @Register is @Inherited is tested by the subclasses of the ProductResolverTest */
+/// the fact that @Register is @Inherited is tested by the subclasses of the ProductResolverTest
 @WunderBarApiConsumer
 @Register({SomeCustomWrappers.class, SomeCustomGenerics.class})
 @SuppressWarnings("JUnitMalformedDeclaration")

@@ -8,14 +8,14 @@ import java.net.URI;
 public @Internal interface WunderBarExpectations<T> {
     URI baseUri();
 
-    /** the proxy can be used in two roles. this is the first: for the stubbing in the test class */
+    /// the proxy can be used in two roles. this is the first: for the stubbing in the test class
     default T asStubbingProxy(T proxy) {return proxy;}
 
-    /** the proxy can be used in two roles. this is the second: for the actual calls in the system under test */
+    /// the proxy can be used in two roles. this is the second: for the actual calls in the system under test
     default T asSutProxy(T proxy) {return proxy;}
 
     Object invoke(Method method, Object... args);
 
-    /** the test is finished and the proxy won't be used anymore */
+    /// the test is finished and the proxy won't be used anymore
     void done();
 }
