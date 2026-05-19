@@ -19,7 +19,7 @@ class HttpServerTest {
     }
 
     @Test void should() {
-        var server = new HttpServer(8080, HttpServerTest::handle);
+        var server = new HttpServer(HttpServerTest::handle);
 
         try {
             var client = new HttpClient(server.baseUri()).logging(true);
