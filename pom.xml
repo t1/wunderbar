@@ -22,7 +22,7 @@
 
         <microprofile.version>7.1</microprofile.version>
         <jakarta.ws.rs.version>4.0.0</jakarta.ws.rs.version>
-        <smallrye-graphql.version>2.18.1</smallrye-graphql.version>
+        <smallrye-graphql.version>2.18.2</smallrye-graphql.version>
         <slf4j.version>2.0.18</slf4j.version>
         <resteasy.version>7.0.2.Final</resteasy.version>
         <jersey.mp.rest-client.version>4.0.2</jersey.mp.rest-client.version>
