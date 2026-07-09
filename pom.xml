@@ -36,7 +36,7 @@
 
         <junit.version>6.0.3</junit.version>
         <assertj.version>3.27.7</assertj.version>
-        <logback.version>1.5.37</logback.version>
+        <logback.version>1.5.38</logback.version>
 
         <maven-test-plugins.version>3.5.6</maven-test-plugins.version>
         <skip.surefire.tests>false</skip.surefire.tests>
