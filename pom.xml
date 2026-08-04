@@ -24,7 +24,7 @@
         <jakarta.ws.rs.version>4.0.0</jakarta.ws.rs.version>
         <smallrye-graphql.version>2.18.4</smallrye-graphql.version>
         <slf4j.version>2.0.18</slf4j.version>
-        <resteasy.version>7.0.2.Final</resteasy.version>
+        <resteasy.version>7.0.3.Final</resteasy.version>
         <jersey.mp.rest-client.version>4.0.2</jersey.mp.rest-client.version>
         <microprofile.rest-client.version>4.0</microprofile.rest-client.version>
         <quarkus.version>3.38.0</quarkus.version>
