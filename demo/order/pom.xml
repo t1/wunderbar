@@ -131,7 +131,7 @@
         <dependency>
             <groupId>jakarta.enterprise</groupId>
             <artifactId>jakarta.enterprise.cdi-api</artifactId>
-            <version>4.1.0</version>
+            <version>5.0.0</version>
             <!-- needed at compile-time and at test-time, but not at runtime -->
             <optional>true</optional>
         </dependency>
