@@ -5,6 +5,13 @@
   ],
   "packageRules": [
     {
+      "description": "Don't look up this project's own modules on Maven Central",
+      "matchPackageNames": [
+        "/^com\\.github\\.t1:wunderbar/"
+      ],
+      "enabled": false
+    },
+    {
       "description": "Automerge non-major updates",
       "matchUpdateTypes": [
         "minor",
