@@ -65,7 +65,7 @@
             <scope>runtime</scope>
         </dependency>
         <dependency>
-            <groupId>org.eclipse</groupId>
+            <groupId>org.eclipse.yasson</groupId>
             <artifactId>yasson</artifactId>
             <version>${yasson.version}</version>
             <scope>runtime</scope>
