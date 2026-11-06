@@ -216,6 +216,13 @@
                     <tagNameFormat>v@{project.version}</tagNameFormat>
                     <useReleaseProfile>false</useReleaseProfile>
                     <releaseProfiles>release</releaseProfiles>
+                    <!--
+                      The default `clean verify` runs in a forked process that does not see the
+                      reactor's own modules, and Quarkus' generate-code-tests resolves the
+                      `wunderbar.demo.order:war` dependency from the local repository.
+                      `clean install` puts the release artifacts there first.
+                    -->
+                    <preparationGoals>clean install</preparationGoals>
                 </configuration>
             </plugin>
             <plugin>
