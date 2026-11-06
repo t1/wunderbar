@@ -4,7 +4,7 @@
 
     <groupId>com.github.t1</groupId>
     <artifactId>wunderbar.parent</artifactId>
-    <version>1.4.2-SNAPSHOT</version>
+    <version>4.0.1-SNAPSHOT</version>
     <name>Wunderbar : Behavior Archives</name>
     <description>Code-first, low ceremony Consumer Driven Contracts test tool for Java natives.</description>
     <packaging>pom</packaging>
@@ -15,7 +15,7 @@
         <maven.compiler.target>21</maven.compiler.target>
         <maven.compiler.parameters>true</maven.compiler.parameters>
         <maven.compiler.proc>full</maven.compiler.proc>
-        <project.build.outputTimestamp>2026-11-06T08:56:52Z</project.build.outputTimestamp>
+        <project.build.outputTimestamp>2026-11-06T09:17:16Z</project.build.outputTimestamp>
         <project.build.sourceEncoding>utf-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>utf-8</project.reporting.outputEncoding>
 
